@@ -52,10 +52,9 @@ class HsJoinPrioritized_randomized_TC(HsJoinPrioritizedTC):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(FifoTC('test_normalOp'))
-
-    suite.addTest(unittest.makeSuite(HsJoinPrioritizedTC))
-    suite.addTest(unittest.makeSuite(HsJoinPrioritized_randomized_TC))
+    _ALL_TCs = [HsJoinPrioritizedTC, HsJoinPrioritized_randomized_TC]
+    testLoader = unittest.TestLoader()
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

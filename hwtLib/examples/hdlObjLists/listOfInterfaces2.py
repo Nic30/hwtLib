@@ -97,8 +97,8 @@ if __name__ == "__main__":
     print(to_rtl_str(u))
 
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(ListOfInterfacesSample2TC('test_simplePass'))
-    suite.addTest(unittest.makeSuite(ListOfInterfacesSample2TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([ListOfInterfacesSample2TC("test_simplePass")])
+    suite = testLoader.loadTestsFromTestCase(ListOfInterfacesSample2TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

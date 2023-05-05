@@ -230,7 +230,7 @@ class StatementsTC(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(StatementsTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(StatementsTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

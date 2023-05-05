@@ -84,10 +84,11 @@ class RamResourcesTC(TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(RamTC('test_async_resources'))
-    suite.addTest(unittest.makeSuite(RamResourcesTC))
-    suite.addTest(unittest.makeSuite(SimpleAsyncRamTC))
-    suite.addTest(unittest.makeSuite(SimpleSyncRamTC))
+    _ALL_TCs = [RamResourcesTC, SimpleAsyncRamTC, SimpleSyncRamTC]
+
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([RamResourcesTC("test_async_resources")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

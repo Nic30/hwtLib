@@ -138,8 +138,8 @@ class HashTableCoreWithRamTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    #suite.addTest(HashTableCoreWithRamTC('test_lookupInsertLookup_randomized'))
-    suite.addTest(unittest.makeSuite(HashTableCoreWithRamTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HashTableCoreWithRamTC("test_lookupInsertLookup_randomized")])
+    suite = testLoader.loadTestsFromTestCase(HashTableCoreWithRamTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

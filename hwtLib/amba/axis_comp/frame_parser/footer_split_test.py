@@ -153,13 +153,10 @@ if __name__ == '__main__':
         useParallelTest = False
     # useParallelTest = False
 
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiS_footerSplitTC('test_nop'))
-    # suite.addTest(AxiS_footerSplitTC('test_frames_8'))
-    # suite.addTest(AxiS_footerSplitTC('test_frames_16'))
-    # suite.addTest(AxiS_footerSplitTC('test_frames_24'))
-    # suite.addTest(AxiS_footerSplitTC('test_frames_8_randomized'))
-    suite.addTest(unittest.makeSuite(AxiS_footerSplitTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiS_footerSplitTC("test_frames_8_randomized")])
+    suite = testLoader.loadTestsFromTestCase(AxiS_footerSplitTC)
+    
     runner = unittest.TextTestRunner(verbosity=3)
     if useParallelTest:
         # Run same tests across multiple processes

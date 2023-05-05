@@ -55,9 +55,9 @@ UtmiAgentTCs = [
 
 if __name__ == '__main__':
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(UtmiAgentTC("test_link_to_phy"))
-    for tc in UtmiAgentTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([UtmiAgentTC("test_link_to_phy")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in UtmiAgentTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

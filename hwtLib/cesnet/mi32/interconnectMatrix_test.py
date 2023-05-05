@@ -76,10 +76,9 @@ class Mi32InterconnectMatrixTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(Mi32InterconnectMatrixTC('test_read_lat1'))
-    suite.addTest(unittest.makeSuite(Mi32InterconnectMatrixTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Mi32InterconnectMatrixTC("test_read_lat1")])
+    suite = testLoader.loadTestsFromTestCase(Mi32InterconnectMatrixTC)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

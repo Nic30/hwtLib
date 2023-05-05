@@ -60,9 +60,10 @@ class HandshakedCdc_fast_to_slow_TC(HandshakedCdc_slow_to_fast_TC):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(HandshakedCdcTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(HandshakedCdc_slow_to_fast_TC))
-    suite.addTest(unittest.makeSuite(HandshakedCdc_fast_to_slow_TC))
+    _ALL_TCs = [HandshakedCdc_slow_to_fast_TC, HandshakedCdc_fast_to_slow_TC]
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HandshakedCdc_slow_to_fast_TC("test_normalOp")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

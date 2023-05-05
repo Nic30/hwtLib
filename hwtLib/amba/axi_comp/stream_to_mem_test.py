@@ -55,8 +55,8 @@ class Axi4_streamToMemTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Axi4_streamToMemTC('test_endstrbMultiFrame'))
-    suite.addTest(unittest.makeSuite(Axi4_streamToMemTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Axi4_streamToMemTC("test_endstrbMultiFrame")])
+    suite = testLoader.loadTestsFromTestCase(Axi4_streamToMemTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

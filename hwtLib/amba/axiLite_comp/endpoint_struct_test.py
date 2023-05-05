@@ -9,7 +9,6 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.types.ctypes import uint32_t, uint16_t
 
-
 structHierarchy = HStruct(
                           (HStruct(
                               (uint32_t, "field0"),
@@ -196,10 +195,10 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(AxiLiteEndpoint_arrayStruct_TC('test_read'))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpoint_struct_TC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpoint_arrayStruct_TC))
+    _ALL_TCs = [AxiLiteEndpoint_struct_TC, AxiLiteEndpoint_arrayStruct_TC]
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiLiteEndpoint_struct_TC("test_read")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

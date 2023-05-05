@@ -64,9 +64,9 @@ if __name__ == "__main__":
     print(to_rtl_str(u))
 
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
-    suite.addTest(unittest.makeSuite(SimpleUnitWithParamTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SimpleUnitWithParamTC("test_nothingEnable")])
+    suite = testLoader.loadTestsFromTestCase(SimpleUnitWithParamTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

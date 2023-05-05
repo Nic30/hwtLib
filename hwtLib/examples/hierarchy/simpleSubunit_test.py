@@ -56,16 +56,8 @@ class SimpleSubunitTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    # this is how you can run testcase,
-    # there are many way and lots of tools support direct running of tests
-    # (like eclipse)
-    suite = unittest.TestSuite()
-
-    # this is how you can select specific test
-    # suite.addTest(SimpleSubunitTC('test_simple'))
-
-    # this is how you add all test from testcase
-    suite.addTest(unittest.makeSuite(SimpleSubunitTC))
-
+    # This is one of ways how to run tests in python unittest framework (nothing HWT specific)
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(SimpleSubunitTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

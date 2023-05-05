@@ -145,8 +145,8 @@ class RStrictOrderInterconnectTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(RStrictOrderInterconnectTC('test_passWithouData'))
-    suite.addTest(unittest.makeSuite(RStrictOrderInterconnectTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([RStrictOrderInterconnectTC("test_passWithouData")])
+    suite = testLoader.loadTestsFromTestCase(RStrictOrderInterconnectTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

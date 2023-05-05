@@ -100,8 +100,8 @@ class AvalonMmAgentTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(AvalonMmAgentTC('test_sim_ram'))
-    suite.addTest(unittest.makeSuite(AvalonMmAgentTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AvalonMmAgentTC("test_sim_ram")])
+    suite = testLoader.loadTestsFromTestCase(AvalonMmAgentTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

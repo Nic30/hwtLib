@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
 
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
@@ -51,8 +54,8 @@ class RtlLvlTC(BaseSerializationTC):
 
 if __name__ == '__main__':
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(RtlLvlTC('test_axiReaderCore'))
-    suite.addTest(unittest.makeSuite(RtlLvlTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([RtlLvlTC("test_axiReaderCore")])
+    suite = testLoader.loadTestsFromTestCase(RtlLvlTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

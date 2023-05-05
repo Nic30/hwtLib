@@ -365,10 +365,9 @@ AxiS_FrameJoin_TCs = [
 ]
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    #suite.addTest(AxiS_FrameJoin_3x_in_1B_on_2B_len0_inf_TC('test_pass_data_min_len'))
-    for tc in AxiS_FrameJoin_TCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiS_FrameJoin_3x_in_1B_on_2B_len0_inf_TC("test_pass_data_min_len")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiS_FrameJoin_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

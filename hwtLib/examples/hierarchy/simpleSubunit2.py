@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print(to_rtl_str(SimpleSubunit2()))
 
     import unittest
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(SimpleSubunit2TC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(SimpleSubunit2TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

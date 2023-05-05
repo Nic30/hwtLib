@@ -266,8 +266,8 @@ class AxiS_fifoMeasuringTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
 
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiS_fifoMeasuringTC('test_singleWordPacket'))
-    suite.addTest(unittest.makeSuite(AxiS_fifoMeasuringTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiS_fifoMeasuringTC("test_singleWordPacket")])
+    suite = testLoader.loadTestsFromTestCase(AxiS_fifoMeasuringTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

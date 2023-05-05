@@ -37,9 +37,9 @@ class MultiplierBoothTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(MultiplierBoothTC('test_possitive'))
-    suite.addTest(unittest.makeSuite(MultiplierBoothTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([MultiplierBoothTC("test_possitive")])
+    suite = testLoader.loadTestsFromTestCase(MultiplierBoothTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

@@ -81,8 +81,8 @@ class ResourceAnalyzer_TC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(ResourceAnalyzer_TC('test_BoolToBits'))
-    suite.addTest(unittest.makeSuite(ResourceAnalyzer_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([ResourceAnalyzer_TC("test_BoolToBits")])
+    suite = testLoader.loadTestsFromTestCase(ResourceAnalyzer_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

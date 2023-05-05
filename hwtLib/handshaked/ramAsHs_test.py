@@ -128,9 +128,9 @@ RamAsHs_TCs = [RamAsHs_TC, RamAsHs_R_only_TC]
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(RamAsHs_TC('test_writeAndRead_randomized'))
-    for tc in RamAsHs_TCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([RamAsHs_TC("test_writeAndRead_randomized")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in RamAsHs_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

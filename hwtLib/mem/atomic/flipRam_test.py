@@ -65,8 +65,8 @@ class FlipRamTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
-    suite.addTest(unittest.makeSuite(FlipRamTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([FlipRamTC("test_withStops")])
+    suite = testLoader.loadTestsFromTestCase(FlipRamTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

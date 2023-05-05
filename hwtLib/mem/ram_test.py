@@ -31,8 +31,8 @@ class RamTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
-    suite.addTest(unittest.makeSuite(RamTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([RamTC("test_withStops")])
+    suite = testLoader.loadTestsFromTestCase(RamTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -164,11 +164,9 @@ AxiReadAggregator_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    #suite.addTest(AxiReadAggregator_1word_burst_TC('test_read_from_random_addr_100x_from_5addresses_1id'))
-    for tc in AxiReadAggregator_TCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiReadAggregator_1word_burst_TC("test_read_from_random_addr_100x_from_5addresses_1id")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiReadAggregator_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

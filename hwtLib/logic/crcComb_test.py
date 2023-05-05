@@ -237,8 +237,8 @@ class CrcCombTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(CrcCombTC('test_crc5_usb'))
-    suite.addTest(unittest.makeSuite(CrcCombTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CrcCombTC("test_crc5_usb")])
+    suite = testLoader.loadTestsFromTestCase(CrcCombTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.statements.vldMaskConflictsResolving import VldMaskConflictsResolving
@@ -27,8 +26,8 @@ class VldMaskConflictsResolvingTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
-    suite.addTest(unittest.makeSuite(VldMaskConflictsResolvingTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([VldMaskConflictsResolvingTC("test_nothingEnable")])
+    suite = testLoader.loadTestsFromTestCase(VldMaskConflictsResolvingTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

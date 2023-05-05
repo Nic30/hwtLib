@@ -39,8 +39,8 @@ class CastTc(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(CastTc('test_reinterpret_bits_to_array'))
-    suite.addTest(unittest.makeSuite(CastTc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CastTc("test_reinterpret_bits_to_array")])
+    suite = testLoader.loadTestsFromTestCase(CastTc)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -72,8 +72,8 @@ class HwExceptionCatch_TC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(HwExceptionCatch_TC('test_reply1x'))
-    suite.addTest(unittest.makeSuite(HwExceptionCatch_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HwExceptionCatch_TC("test_reply1x")])
+    suite = testLoader.loadTestsFromTestCase(HwExceptionCatch_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

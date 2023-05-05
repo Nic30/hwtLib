@@ -113,12 +113,10 @@ class RegSerializationTC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-
-    suite = unittest.TestSuite()
-    # suite.addTest(RegSerializationTC('test_dreg_systemc'))
-    suite.addTest(unittest.makeSuite(DRegTC))
-    suite.addTest(unittest.makeSuite(DoubleRRegTC))
-    suite.addTest(unittest.makeSuite(DReg_asyncRstTC))
-    suite.addTest(unittest.makeSuite(RegSerializationTC))
+    _ALL_TCs = [DRegTC, DoubleRRegTC, DReg_asyncRstTC, RegSerializationTC]
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([DRegTC("test_dreg_systemc")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -70,9 +70,9 @@ class UartRxTC(UartRxBasicTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(UartRxTC('test_simple'))
-    suite.addTest(unittest.makeSuite(UartRxBasicTC))
-    suite.addTest(unittest.makeSuite(UartRxTC))
+    _ALL_TCs = [UartRxBasicTC, UartRxTC]
+    testLoader = unittest.TestLoader()
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

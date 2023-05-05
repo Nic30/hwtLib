@@ -127,8 +127,8 @@ if __name__ == "__main__":
     u = BitonicSorter()
     print(to_rtl_str(u))
 
-    suite = unittest.TestSuite()
-    # suite.addTest(BitonicSorterTC('test_sorted'))
-    suite.addTest(unittest.makeSuite(BitonicSorterTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([BitonicSorterTC("test_sorted")])
+    suite = testLoader.loadTestsFromTestCase(BitonicSorterTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.statements.forLoopCntrl import StaticForLoopCntrl
@@ -29,8 +28,8 @@ class StaticForLoopCntrlTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
-    suite.addTest(unittest.makeSuite(StaticForLoopCntrlTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([StaticForLoopCntrlTC("test_nothingEnable")])
+    suite = testLoader.loadTestsFromTestCase(StaticForLoopCntrlTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

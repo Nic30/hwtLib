@@ -44,8 +44,8 @@ class MdioMasterTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(MdioMasterTC('test_write'))
-    suite.addTest(unittest.makeSuite(MdioMasterTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([MdioMasterTC("test_write")])
+    suite = testLoader.loadTestsFromTestCase(MdioMasterTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

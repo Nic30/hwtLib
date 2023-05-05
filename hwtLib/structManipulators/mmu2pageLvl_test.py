@@ -104,8 +104,8 @@ class MMU_2pageLvl_TC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(MMU_2pageLvl_TC('test_translate10xRandomized'))
-    suite.addTest(unittest.makeSuite(MMU_2pageLvl_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([MMU_2pageLvl_TC("test_translate10xRandomized")])
+    suite = testLoader.loadTestsFromTestCase(MMU_2pageLvl_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

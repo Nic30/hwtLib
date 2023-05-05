@@ -103,8 +103,8 @@ class UnionIntfTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(BitsSlicingTC('test_slice_bits_sig'))
-    suite.addTest(unittest.makeSuite(UnionIntfTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([UnionIntfTC("test_slice_bits_sig")])
+    suite = testLoader.loadTestsFromTestCase(UnionIntfTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

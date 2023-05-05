@@ -153,7 +153,7 @@ if __name__ == "__main__":
     # print(to_rtl_str(u))
 
     import unittest
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TimerTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(TimerTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

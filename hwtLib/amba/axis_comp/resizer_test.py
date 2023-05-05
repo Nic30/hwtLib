@@ -93,6 +93,7 @@ class AxiS_resizer_upscale_TC(SimTestCase):
 
 
 class AxiS_resizer_downscale_TC(SimTestCase):
+
     @classmethod
     def setUpClass(cls):
         u = cls.u = AxiS_resizer()
@@ -149,6 +150,7 @@ class AxiS_resizer_downscale_TC(SimTestCase):
 
 
 class TestComp_AxiS_resizer_downAndUp(AxiS_resizer):
+
     def _config(self):
         AxiS_resizer._config(self)
         self.INTERNAL_SIZE = Param(8)
@@ -229,10 +231,9 @@ AxiS_resizer_TCs = [
 ]
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiS_resizer_downscale_TC('test_noLast'))
-    for tc in AxiS_resizer_TCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiS_resizer_downscale_TC("test_noLast")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiS_resizer_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

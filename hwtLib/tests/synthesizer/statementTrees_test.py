@@ -335,8 +335,8 @@ class StatementTreesTC(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    # suite.addTest(StatementTreesTC('test_ifs3LvlInSwitch'))
-    suite.addTest(unittest.makeSuite(StatementTreesTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([StatementTreesTC("test_ifs3LvlInSwitch")])
+    suite = testLoader.loadTestsFromTestCase(StatementTreesTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

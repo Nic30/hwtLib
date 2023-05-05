@@ -43,9 +43,9 @@ class SimpleWithNonDirectIntConncetionTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(SimpleWithNonDirectIntConncetionTC('test_passData'))
-    suite.addTest(unittest.makeSuite(SimpleWithNonDirectIntConncetionTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SimpleWithNonDirectIntConncetionTC("test_passData")])
+    suite = testLoader.loadTestsFromTestCase(SimpleWithNonDirectIntConncetionTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

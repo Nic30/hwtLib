@@ -105,8 +105,8 @@ class IndexingTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(IndexingTC('test_split'))
-    suite.addTest(unittest.makeSuite(IndexingTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([IndexingTC("test_split")])
+    suite = testLoader.loadTestsFromTestCase(IndexingTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

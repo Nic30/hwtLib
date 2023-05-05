@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.utils import to_rtl_str
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
@@ -22,9 +21,9 @@ class EmptyUnitWithSpiTC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
-    suite.addTest(unittest.makeSuite(EmptyUnitWithSpiTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([EmptyUnitWithSpiTC("test_withStops")])
+    suite = testLoader.loadTestsFromTestCase(EmptyUnitWithSpiTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

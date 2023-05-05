@@ -61,8 +61,8 @@ class UartTxTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(UartTxTC('test_multiple_randomized2'))
-    suite.addTest(unittest.makeSuite(UartTxTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([UartTxTC("test_multiple_randomized2")])
+    suite = testLoader.loadTestsFromTestCase(UartTxTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

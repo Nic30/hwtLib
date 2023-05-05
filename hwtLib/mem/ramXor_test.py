@@ -35,8 +35,8 @@ class RamXorSingleClockTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
-    suite.addTest(unittest.makeSuite(RamXorSingleClockTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([RamXorSingleClockTC("test_withStops")])
+    suite = testLoader.loadTestsFromTestCase(RamXorSingleClockTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

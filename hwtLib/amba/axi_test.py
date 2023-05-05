@@ -27,8 +27,8 @@ class AxiTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiTC('test_axi_size'))
-    suite.addTest(unittest.makeSuite(AxiTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiTC("test_axi_size")])
+    suite = testLoader.loadTestsFromTestCase(AxiTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

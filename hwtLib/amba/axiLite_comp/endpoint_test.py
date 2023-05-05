@@ -268,12 +268,10 @@ AxiLiteEndpointTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
-    for tc in AxiLiteEndpointTCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiLiteEndpointStructsInArray("test_write")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiLiteEndpointTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

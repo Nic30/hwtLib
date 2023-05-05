@@ -46,8 +46,8 @@ class SimpleUnitAxiStream_TC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(SimpleUnitAxiStream_TC('test_nop'))
-    suite.addTest(unittest.makeSuite(SimpleUnitAxiStream_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SimpleUnitAxiStream_TC("test_nop")])
+    suite = testLoader.loadTestsFromTestCase(SimpleUnitAxiStream_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -297,8 +297,8 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    # suite.addTest(InterfaceSyntherisatorTC('test_IntfDirections_multistream_setSrc'))
-    suite.addTest(unittest.makeSuite(InterfaceSynthesizerTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([InterfaceSynthesizerTC("test_IntfDirections_multistream_setSrc")])
+    suite = testLoader.loadTestsFromTestCase(InterfaceSynthesizerTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -133,8 +133,8 @@ class HValueTC(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    # suite.addTest(HValueTC('testValue'))
-    suite.addTest(unittest.makeSuite(HValueTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HValueTC("testValue")])
+    suite = testLoader.loadTestsFromTestCase(HValueTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

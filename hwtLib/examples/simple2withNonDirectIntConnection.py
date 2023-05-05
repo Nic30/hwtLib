@@ -60,9 +60,9 @@ class Simple2withNonDirectIntConnectionTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(Simple2withNonDirectIntConnectionTC('test_passData'))
-    suite.addTest(unittest.makeSuite(Simple2withNonDirectIntConnectionTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Simple2withNonDirectIntConnectionTC("test_passData")])
+    suite = testLoader.loadTestsFromTestCase(Simple2withNonDirectIntConnectionTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

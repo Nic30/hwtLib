@@ -73,7 +73,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
         ).Else(
            b(0)
         )
-        self.assertEqual(stm._inputs, [a, c, c & a, c | a] )
+        self.assertEqual(stm._inputs, [a, c, c & a, c | a])
         self.assertTrue(stm._replace_input((a, c)))
         stm_ref = \
         If(c,
@@ -144,8 +144,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
 
 if __name__ == '__main__':
     import sys
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(AstNodeIoReplacingTC))
-    # suite.addTest(AstNodeIoReplacingTC("test_If_elif_replace_input"))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(AstNodeIoReplacingTC)
     runner = unittest.TextTestRunner(verbosity=3)
     sys.exit(not runner.run(suite).wasSuccessful())

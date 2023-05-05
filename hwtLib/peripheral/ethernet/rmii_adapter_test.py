@@ -48,8 +48,8 @@ class RmiiAdapterTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(RmiiAdapterTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(RmiiAdapterTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([RmiiAdapterTC("test_normalOp")])
+    suite = testLoader.loadTestsFromTestCase(RmiiAdapterTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

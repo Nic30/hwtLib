@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
 from hwt.synthesizer.exceptions import TypeConversionErr
@@ -52,8 +55,8 @@ class ErrorsTC(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    # suite.addTest(ErrorsTC('testBitAnd'))
-    suite.addTest(unittest.makeSuite(ErrorsTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([ErrorsTC("testBitAnd")])
+    suite = testLoader.loadTestsFromTestCase(ErrorsTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

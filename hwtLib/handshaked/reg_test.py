@@ -58,9 +58,9 @@ HandshakedRegTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(HandshakedRegL1D0TC('test_r_passdata'))
-    for tc in HandshakedRegTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HandshakedRegL1D0TC("test_r_passdata")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in HandshakedRegTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

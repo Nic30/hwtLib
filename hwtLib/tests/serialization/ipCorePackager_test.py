@@ -101,8 +101,8 @@ class IpCorePackagerTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(IpCorePackagerTC('test_sWithStartPadding'))
-    suite.addTest(unittest.makeSuite(IpCorePackagerTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([IpCorePackagerTC("test_sWithStartPadding")])
+    suite = testLoader.loadTestsFromTestCase(IpCorePackagerTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

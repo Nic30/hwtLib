@@ -73,8 +73,8 @@ class AvalonStAgentTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(HsFifoTC('test_passdata'))
-    suite.addTest(unittest.makeSuite(AvalonStAgentTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AvalonStAgentTC("test_passdata")])
+    suite = testLoader.loadTestsFromTestCase(AvalonStAgentTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

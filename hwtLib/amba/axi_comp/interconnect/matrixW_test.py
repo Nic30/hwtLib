@@ -189,10 +189,9 @@ AxiInterconnectMatrixW_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiInterconnectMatrixW_1to1TC('test_write'))
-    for tc in AxiInterconnectMatrixW_TCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiInterconnectMatrixW_1to1TC("test_write")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiInterconnectMatrixW_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -446,9 +446,9 @@ Axi_wDatapumpTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Axi4Lite_wDatapump_alignas8TC('test_simpleUnalignedWithData'))
-    for tc in Axi_wDatapumpTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Axi4Lite_wDatapump_alignas8TC("test_simpleUnalignedWithData")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in Axi_wDatapumpTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

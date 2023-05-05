@@ -117,9 +117,9 @@ Dsp48e1Add_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Dsp48e1Add_48b_noRegsTC('test_3_exact_values'))
-    for tc in Dsp48e1Add_TCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Dsp48e1Add_48b_noRegsTC("test_3_exact_values")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in Dsp48e1Add_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

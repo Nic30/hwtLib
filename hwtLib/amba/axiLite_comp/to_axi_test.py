@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from random import shuffle
-
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
@@ -58,7 +56,7 @@ class AxiLite_to_Axi_TC(SimTestCase):
 
         expected_data = []
         allocated_wods = list(range(N))
-        shuffle(allocated_wods, random=self._rand.random)
+        self._rand.shuffle(allocated_wods)
         for word_i in allocated_wods:
             rand_data = self._rand.getrandbits(u.DATA_WIDTH)
             a_t = self.addr_trans(word_i)
@@ -81,7 +79,7 @@ class AxiLite_to_Axi_TC(SimTestCase):
 
         expected_data = []
         allocated_wods = list(range(N))
-        shuffle(allocated_wods, random=self._rand.random)
+        self._rand.shuffle(allocated_wods)
         for word_i in allocated_wods:
             rand_data = self._rand.getrandbits(u.DATA_WIDTH)
 
@@ -102,9 +100,8 @@ class AxiLite_to_Axi_TC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(AxiLite_to_Axi_TC('test_read'))
-    suite.addTest(unittest.makeSuite(AxiLite_to_Axi_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiLite_to_Axi_TC("test_read")])
+    suite = testLoader.loadTestsFromTestCase(AxiLite_to_Axi_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

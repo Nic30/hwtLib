@@ -23,8 +23,8 @@ class ConstDriverTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
-    suite.addTest(unittest.makeSuite(ConstDriverTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([ConstDriverTC("test_nothingEnable")])
+    suite = testLoader.loadTestsFromTestCase(ConstDriverTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

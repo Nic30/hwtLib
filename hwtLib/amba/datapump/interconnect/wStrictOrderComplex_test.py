@@ -8,7 +8,6 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b, Axi4_addr, Axi4
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
@@ -113,8 +112,8 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(WStrictOrderInterconnectTC('test_randomized'))
-    suite.addTest(unittest.makeSuite(WStrictOrderInterconnectComplexTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([WStrictOrderInterconnectComplexTC("test_randomized")])
+    suite = testLoader.loadTestsFromTestCase(WStrictOrderInterconnectComplexTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

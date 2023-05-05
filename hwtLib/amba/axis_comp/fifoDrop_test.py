@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
@@ -67,8 +70,8 @@ class AxiSFifoDropTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiSFifoDropTC('test_singleWordPacket'))
-    suite.addTest(unittest.makeSuite(AxiSFifoDropTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiSFifoDropTC("test_singleWordPacket")])
+    suite = testLoader.loadTestsFromTestCase(AxiSFifoDropTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

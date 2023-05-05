@@ -61,7 +61,7 @@ class UnitWrapperTC(BaseSerializationTC):
 if __name__ == "__main__":
     import unittest
 
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(UnitWrapperTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(UnitWrapperTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -5,10 +5,10 @@ from collections import deque
 from itertools import chain
 
 from hwt.math import log2ceil
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
 from hwtSimApi.constants import CLK_PERIOD
-from hwt.simulator.simTestCase import SimTestCase
 
 
 class AxiInterconnectMatrixAddrCrossbar_1to1TC(SimTestCase):
@@ -86,7 +86,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SimTestCase):
                     slave_a.append(tuple(trans))
 
         max_trans_duration = max(len(m._ag.data) for m in u.s)
-        self.runSim((40 + 4 * max_trans_duration *
+        self.runSim((40 + 4 * max_trans_duration * 
                      transaction_cnt) * CLK_PERIOD)
         # assert all data was send
         for m_i, m in enumerate(u.s):
@@ -131,7 +131,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to3TC(AxiInterconnectMatrixAddrCrossbar
     @classmethod
     def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
-        u.MASTERS = ({0, 1, 2}, )
+        u.MASTERS = ({0, 1, 2},)
         u.SLAVES = (
             (0x0000, 0x1000),
             (0x1000, 0x1000),
@@ -139,6 +139,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to3TC(AxiInterconnectMatrixAddrCrossbar
         )
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
         cls.compileSim(u)
+
 
 class AxiInterconnectMatrixAddrCrossbar_3to1TC(AxiInterconnectMatrixAddrCrossbar_1to1TC):
 
@@ -158,11 +159,11 @@ class AxiInterconnectMatrixAddrCrossbar_3to3TC(AxiInterconnectMatrixAddrCrossbar
     @classmethod
     def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
-        #u.MASTERS = ({0, 1}, {0, 1})
-        #u.SLAVES = (
+        # u.MASTERS = ({0, 1}, {0, 1})
+        # u.SLAVES = (
         #    (0x0000, 0x1000),
         #    (0x1000, 0x1000),
-        #)
+        # )
 
         u.MASTERS = ({0, 1, 2}, {0, 1, 2}, {0, 1, 2})
         u.SLAVES = (
@@ -180,6 +181,7 @@ class AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC(AxiInterconnectMatrix
     M2,M3 -> S1
     M4    -> S0,S1
     """
+
     @classmethod
     def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
@@ -202,10 +204,10 @@ AxiInterconnectMatrixAddrCrossbar_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiInterconnectMatrixAddrCrossbar_3to3TC(''))
-    for tc in AxiInterconnectMatrixAddrCrossbar_TCs:
-        suite.addTest(unittest.makeSuite(tc))
 
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiInterconnectMatrixAddrCrossbar_3to3TC("test_nop")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiInterconnectMatrixAddrCrossbar_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -90,8 +90,8 @@ class Mi32Axi4LiteBrigesTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Mi32Axi4LiteBrigesTC('test_singleLong'))
-    suite.addTest(unittest.makeSuite(Mi32Axi4LiteBrigesTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Mi32Axi4LiteBrigesTC("test_singleLong")])
+    suite = testLoader.loadTestsFromTestCase(Mi32Axi4LiteBrigesTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

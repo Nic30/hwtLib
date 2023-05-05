@@ -56,7 +56,7 @@ class ReorderBufferTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ReorderBufferTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(ReorderBufferTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

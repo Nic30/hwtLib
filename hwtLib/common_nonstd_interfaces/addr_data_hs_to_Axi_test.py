@@ -1,14 +1,16 @@
-from math import ceil
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-from pyMathBitPrecise.bit_utils import mask
+from math import ceil
 
 from hwt.pyUtils.arrayQuery import grouper
 from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi import AddrDataHs_to_Axi
 from hwtLib.tools.debug_bus_monitor_ctl import select_bit_range
 from hwtSimApi.constants import CLK_PERIOD
-from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AddrDataHs_to_Axi_1_to_1_TC(SimTestCase):
@@ -159,9 +161,9 @@ AddrDataHs_to_Axi_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(AddrDataHs_to_Axi_TC('test_read'))
-    for tc in AddrDataHs_to_Axi_TCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AddrDataHs_to_Axi_TC("test_read")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AddrDataHs_to_Axi_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

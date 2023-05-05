@@ -28,8 +28,8 @@ class PrivateSignalsOfStructTypeTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(PrivateSignalsOfStructTypeTC('test_pass_data'))
-    suite.addTest(unittest.makeSuite(PrivateSignalsOfStructTypeTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([PrivateSignalsOfStructTypeTC("test_pass_data")])
+    suite = testLoader.loadTestsFromTestCase(PrivateSignalsOfStructTypeTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

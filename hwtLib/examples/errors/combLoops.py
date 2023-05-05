@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
 from hwt.code import If
@@ -202,8 +205,8 @@ class CombLoopAnalysisTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(CombLoopAnalysisTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(CombLoopAnalysisTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

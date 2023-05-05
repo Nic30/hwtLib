@@ -32,8 +32,8 @@ class CamTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
-    suite.addTest(unittest.makeSuite(CamTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CamTC("test_withStops")])
+    suite = testLoader.loadTestsFromTestCase(CamTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

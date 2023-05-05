@@ -80,8 +80,8 @@ class Hd44780Driver8bTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(Hd44780Driver8bTC('test_new_line_last_row'))
-    suite.addTest(unittest.makeSuite(Hd44780Driver8bTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Hd44780Driver8bTC("test_new_line_last_row")])
+    suite = testLoader.loadTestsFromTestCase(Hd44780Driver8bTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -404,10 +404,10 @@ class FrameJoinUtilsTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(FrameJoinUtilsTC('test_fsm0_0B'))
-    for tc in [FrameJoinUtilsTC, ]:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    #suite = unittest.TestSuite([FrameJoinUtilsTC("test_fsm0_0B")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in [FrameJoinUtilsTC, ]]
+    suite = unittest.TestSuite(loadedTcs)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

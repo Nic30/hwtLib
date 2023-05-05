@@ -185,8 +185,8 @@ class CLinkedListWriterTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(CLinkedListWriterTC('test_regularUpload'))
-    suite.addTest(unittest.makeSuite(CLinkedListWriterTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CLinkedListWriterTC("test_regularUpload")])
+    suite = testLoader.loadTestsFromTestCase(CLinkedListWriterTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

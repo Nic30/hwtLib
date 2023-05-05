@@ -31,8 +31,8 @@ class HsSlrCrossingTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(HsFifoTC('test_passdata'))
-    suite.addTest(unittest.makeSuite(HsSlrCrossingTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HsSlrCrossingTC("test_passdata")])
+    suite = testLoader.loadTestsFromTestCase(HsSlrCrossingTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

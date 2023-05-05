@@ -99,8 +99,8 @@ class BitsSlicingTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(BitsSlicingTC('test_slice_bits_sig'))
-    suite.addTest(unittest.makeSuite(BitsSlicingTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([BitsSlicingTC("test_slice_bits_sig")])
+    suite = testLoader.loadTestsFromTestCase(BitsSlicingTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

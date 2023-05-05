@@ -142,8 +142,8 @@ class ConcatTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(IndexingTC('test_rangeJoin'))
-    suite.addTest(unittest.makeSuite(ConcatTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([ConcatTC("test_rangeJoin")])
+    suite = testLoader.loadTestsFromTestCase(ConcatTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

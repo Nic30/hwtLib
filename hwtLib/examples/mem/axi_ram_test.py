@@ -103,9 +103,8 @@ class Axi4BRam_TC(Axi_to_AxiLite_TC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(Axi4BRam_TC('test_read'))
-    suite.addTest(unittest.makeSuite(Axi4BRam_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Axi4BRam_TC("test_read")])
+    suite = testLoader.loadTestsFromTestCase(Axi4BRam_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

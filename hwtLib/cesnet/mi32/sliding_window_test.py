@@ -78,10 +78,9 @@ class Mi32SlidingWindowTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    #suite.addTest(Mi32SlidingWindowTC('test_write_with_offset'))
-    suite.addTest(unittest.makeSuite(Mi32SlidingWindowTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Mi32SlidingWindowTC("test_write_with_offset")])
+    suite = testLoader.loadTestsFromTestCase(Mi32SlidingWindowTC)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

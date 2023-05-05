@@ -32,8 +32,8 @@ class FlipRegTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
-    suite.addTest(unittest.makeSuite(FlipRegTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([FlipRegTC("test_withStops")])
+    suite = testLoader.loadTestsFromTestCase(FlipRegTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

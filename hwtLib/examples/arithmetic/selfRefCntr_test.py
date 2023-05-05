@@ -24,8 +24,8 @@ class SelfRefCntrTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(SelfRefCntrTC('test_overflow'))
-    suite.addTest(unittest.makeSuite(SelfRefCntrTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SelfRefCntrTC("test_overflow")])
+    suite = testLoader.loadTestsFromTestCase(SelfRefCntrTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

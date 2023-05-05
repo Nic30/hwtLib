@@ -76,8 +76,8 @@ if __name__ == "__main__":
 
     print(to_rtl_str(BinToOneHot()))
 
-    suite = unittest.TestSuite()
-    # suite.addTest(IndexingTC('test_split'))
-    suite.addTest(unittest.makeSuite(BinToOneHotTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([BinToOneHotTC("test_split")])
+    suite = testLoader.loadTestsFromTestCase(BinToOneHotTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

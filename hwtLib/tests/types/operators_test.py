@@ -395,8 +395,8 @@ class OperatorTC(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    # suite.addTest(OperatorTC('test_bitwiseSigReduce'))
-    suite.addTest(unittest.makeSuite(OperatorTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([OperatorTC("test_bitwiseSigReduce")])
+    suite = testLoader.loadTestsFromTestCase(OperatorTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

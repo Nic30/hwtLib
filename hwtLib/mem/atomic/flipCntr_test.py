@@ -38,8 +38,8 @@ class FlipCntrTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(FlipCntrTC('test_nop'))
-    suite.addTest(unittest.makeSuite(FlipCntrTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([FlipCntrTC("test_nop")])
+    suite = testLoader.loadTestsFromTestCase(FlipCntrTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

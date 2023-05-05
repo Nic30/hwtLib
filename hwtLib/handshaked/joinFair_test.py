@@ -119,9 +119,10 @@ class HsJoinFair_3inputs_TC(HsJoinFair_2inputs_TC):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(HsJoinFair_2inputs_TC('test_passdata'))
-    suite.addTest(unittest.makeSuite(HsJoinFair_2inputs_TC))
-    suite.addTest(unittest.makeSuite(HsJoinFair_3inputs_TC))
+    _ALL_TCs = [HsJoinFair_2inputs_TC, HsJoinFair_3inputs_TC]
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HsJoinFair_2inputs_TC("test_passdata")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

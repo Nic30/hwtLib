@@ -111,8 +111,8 @@ class SerializerHdlRename_TC(BaseSerializationTC):
 if __name__ == '__main__':
     import unittest
 
-    suite = unittest.TestSuite()
-    # suite.addTest(SerializerHdlRename_TC('test_SimpleUnitReanamedPort5'))
-    suite.addTest(unittest.makeSuite(SerializerHdlRename_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SerializerHdlRename_TC("test_SimpleUnitReanamedPort5")])
+    suite = testLoader.loadTestsFromTestCase(SerializerHdlRename_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -6,8 +6,8 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Mi32_to_Axi4LiteTC(SimTestCase):
@@ -56,10 +56,9 @@ class Mi32_to_Axi4LiteTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(Mi32_to_Axi4LiteTC('test_write'))
-    suite.addTest(unittest.makeSuite(Mi32_to_Axi4LiteTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Mi32_to_Axi4LiteTC("test_write")])
+    suite = testLoader.loadTestsFromTestCase(Mi32_to_Axi4LiteTC)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

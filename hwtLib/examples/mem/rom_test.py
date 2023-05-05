@@ -79,10 +79,10 @@ class RomResourcesTC(TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(RomTC('test_sync_resources'))
-    suite.addTest(unittest.makeSuite(SimpleRomTC))
-    suite.addTest(unittest.makeSuite(SimpleSyncRomTC))
-    suite.addTest(unittest.makeSuite(RomResourcesTC))
+    _ALL_TCs = [SimpleRomTC, SimpleSyncRomTC, RomResourcesTC]
+
+    testLoader = unittest.TestLoader()
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

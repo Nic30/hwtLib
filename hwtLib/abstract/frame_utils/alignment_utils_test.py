@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from math import inf
 from typing import Union
 import unittest
@@ -134,9 +137,9 @@ class FrameAlignmentUtilsTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(StreamJoiningUtilsTC('test_struct2xStream64'))
-    suite.addTest(unittest.makeSuite(FrameAlignmentUtilsTC))
+    testLoader = unittest.TestLoader()
+    #suite = unittest.TestSuite([FrameAlignmentUtilsTC("test_struct2xStream64")])
+    suite = testLoader.loadTestsFromTestCase(FrameAlignmentUtilsTC)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -159,7 +159,6 @@ class AxiInterconnectMatrixR_3to3TC(AxiInterconnectMatrixR_1to1TC):
         cls.compileSim(u)
 
 
-
 AxiInterconnectMatrixR_TCs = [
     AxiInterconnectMatrixR_1to1TC,
     AxiInterconnectMatrixR_1to3TC,
@@ -169,10 +168,10 @@ AxiInterconnectMatrixR_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiInterconnectMatrixR_1to1TC('test_read'))
-    for tc in AxiInterconnectMatrixR_TCs:
-        suite.addTest(unittest.makeSuite(tc))
 
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiInterconnectMatrixR_1to1TC("test_read")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiInterconnectMatrixR_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

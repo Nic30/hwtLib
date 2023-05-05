@@ -62,8 +62,8 @@ class AxiS_localLinkConvTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiS_localLinkConvTC('test_withPause'))
-    suite.addTest(unittest.makeSuite(AxiS_localLinkConvTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiS_localLinkConvTC("test_withPause")])
+    suite = testLoader.loadTestsFromTestCase(AxiS_localLinkConvTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

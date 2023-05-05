@@ -124,11 +124,9 @@ Mi32EndpointTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(Mi32EndpointTC('test_read'))
-    for tc in Mi32EndpointTCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Mi32EndpointTC("test_read")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in Mi32EndpointTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

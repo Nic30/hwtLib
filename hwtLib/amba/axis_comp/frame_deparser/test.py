@@ -570,9 +570,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
 
 if __name__ == "__main__":
 
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiS_frameDeparser_TC('test_struct2xStream8_0B'))
-    suite.addTest(unittest.makeSuite(AxiS_frameDeparser_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiS_frameDeparser_TC("test_struct2xStream8_0B")])
+    suite = testLoader.loadTestsFromTestCase(AxiS_frameDeparser_TC)
     runner = unittest.TextTestRunner(verbosity=3)
 
     runner.run(suite)

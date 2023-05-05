@@ -308,10 +308,9 @@ class FifoTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(FifoWriterAgentTC))
-    suite.addTest(unittest.makeSuite(FifoReaderAgentTC))
-    suite.addTest(unittest.makeSuite(FifoTC))
-    # suite.addTest(FifoTC("test_tryMore2"))
+    _ALL_TCs = [FifoWriterAgentTC, FifoReaderAgentTC, FifoTC]
+    testLoader = unittest.TestLoader()
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -153,9 +153,9 @@ UlpiAgent_TCs = [
 ]
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    # suite.addTest(UlpiAgentTC("test_phy_to_link"))
-    for tc in UlpiAgent_TCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([UlpiAgentTC("test_phy_to_link")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in UlpiAgent_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

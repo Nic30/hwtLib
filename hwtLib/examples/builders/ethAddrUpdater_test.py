@@ -80,9 +80,9 @@ EthAddrUpdaterTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(EthAddrUpdaterTC('test_simpleOp'))
-    for tc in EthAddrUpdaterTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([EthAddrUpdaterTC("test_simpleOp")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in EthAddrUpdaterTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

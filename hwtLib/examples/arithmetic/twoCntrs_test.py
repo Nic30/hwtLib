@@ -84,8 +84,8 @@ class TwoCntrsTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_aEnable'))
-    suite.addTest(unittest.makeSuite(TwoCntrsTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([TwoCntrsTC("test_aEnable")])
+    suite = testLoader.loadTestsFromTestCase(TwoCntrsTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

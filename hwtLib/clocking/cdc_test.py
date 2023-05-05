@@ -72,8 +72,8 @@ class CdcTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(CdcTC('test_invalidData'))
-    suite.addTest(unittest.makeSuite(CdcTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CdcTC("test_invalidData")])
+    suite = testLoader.loadTestsFromTestCase(CdcTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

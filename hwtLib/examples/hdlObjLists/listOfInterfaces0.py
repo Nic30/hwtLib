@@ -146,9 +146,9 @@ class ListOfInterfacesSample0TC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Simple2withNonDirectIntConnectionTC('test_passData'))
-    suite.addTest(unittest.makeSuite(ListOfInterfacesSample0TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([ListOfInterfacesSample0TC("test_passData")])
+    suite = testLoader.loadTestsFromTestCase(ListOfInterfacesSample0TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

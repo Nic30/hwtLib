@@ -70,10 +70,10 @@ class CntrResourceAnalysisTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(CntrTC('test_overflow'))
-    # suite.addTest(CntrTC('test_contingWithStops'))
-    suite.addTest(unittest.makeSuite(CntrTC))
-    suite.addTest(unittest.makeSuite(CntrResourceAnalysisTC))
+    ALL_TCs = [CntrTC, CntrResourceAnalysisTC]
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CntrTC("test_overflow")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

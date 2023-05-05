@@ -71,9 +71,9 @@ AxiStaticRemapTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiStaticRemap1TC('test_read'))
-    for tc in AxiStaticRemapTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiStaticRemap1TC("test_read")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiStaticRemapTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

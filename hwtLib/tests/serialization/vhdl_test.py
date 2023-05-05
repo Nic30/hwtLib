@@ -104,8 +104,8 @@ if __name__ == '__main__':
     import unittest
     # from hwt.synthesizer.utils import to_rtl_str
     # print(to_rtl_str(TernaryInConcatExample()))
-    suite = unittest.TestSuite()
-    # suite.addTest(RdSyncedPipe('test_basic_data_pass'))
-    suite.addTest(unittest.makeSuite(Vhdl2008Serializer_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Vhdl2008Serializer_TC("test_basic_data_pass")])
+    suite = testLoader.loadTestsFromTestCase(Vhdl2008Serializer_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

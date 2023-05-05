@@ -1,9 +1,11 @@
-from hwt.simulator.simTestCase import SimTestCase
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.datapump.r import Axi_rDatapump
 from hwtLib.amba.datapump.r_aligned_test import Axi3Lite_rDatapumpTC, \
     Axi3_rDatapumpTC
-from hwtLib.amba.axi3 import Axi3
 
 
 class Axi4Lite_rDatapump_alignas8TC(Axi3Lite_rDatapumpTC):
@@ -49,10 +51,9 @@ Axi_rDatapump_unalignedTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Axi4Lite_rDatapump_16b_from_64bTC('test_notSplitedReqWithData'))
-    for tc in Axi_rDatapump_unalignedTCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Axi4Lite_rDatapump_16b_from_64bTC("test_notSplitedReqWithData")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in Axi_rDatapump_unalignedTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

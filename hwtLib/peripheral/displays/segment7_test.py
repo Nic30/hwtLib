@@ -14,8 +14,8 @@ class Segment7TC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(OneHotToBinTC('test_basic'))
-    suite.addTest(unittest.makeSuite(Segment7TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Segment7TC("test_basic")])
+    suite = testLoader.loadTestsFromTestCase(Segment7TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

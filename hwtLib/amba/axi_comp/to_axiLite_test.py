@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from typing import List
 
 from hwt.pyUtils.arrayQuery import iter_with_last
@@ -133,9 +136,8 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(Axi_to_AxiLite_TC('test_read'))
-    suite.addTest(unittest.makeSuite(Axi_to_AxiLite_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Axi_to_AxiLite_TC("test_read")])
+    suite = testLoader.loadTestsFromTestCase(Axi_to_AxiLite_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

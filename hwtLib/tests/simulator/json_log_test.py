@@ -18,8 +18,8 @@ class HsFifoJsonLogTC(HsFifoTC):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(HsFifoJsonLogTC('test_passdata'))
-    suite.addTest(unittest.makeSuite(HsFifoJsonLogTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HsFifoJsonLogTC("test_passdata")])
+    suite = testLoader.loadTestsFromTestCase(HsFifoJsonLogTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

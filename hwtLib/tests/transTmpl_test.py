@@ -104,8 +104,8 @@ class TransTmpl_TC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(TransTmpl_TC('test_walkFlatten_arr'))
-    suite.addTest(unittest.makeSuite(TransTmpl_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([TransTmpl_TC("test_walkFlatten_arr")])
+    suite = testLoader.loadTestsFromTestCase(TransTmpl_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

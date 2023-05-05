@@ -79,8 +79,8 @@ class Usb2SieDeviceTxTC(SimTestCase):
 
 if __name__ == '__main__':
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Usb2SieDeviceTxTC("test_link_to_phy"))
-    suite.addTest(unittest.makeSuite(Usb2SieDeviceTxTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Usb2SieDeviceTxTC("test_link_to_phy")])
+    suite = testLoader.loadTestsFromTestCase(Usb2SieDeviceTxTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

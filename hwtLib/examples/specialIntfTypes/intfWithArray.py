@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.interfaces.std import Signal
 from hwt.serializer.vhdl import ToHdlAstVhdl2008
 from hwt.synthesizer.hObjList import HObjList
@@ -140,8 +143,8 @@ class InterfaceWithArrayTypesTC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(InterfaceWithArrayTypesTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(InterfaceWithArrayTypesTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
     # print(to_rtl_str(Interface1d()))

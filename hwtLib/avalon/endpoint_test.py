@@ -223,11 +223,9 @@ AvalonMmEndpointTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(AvalonMmEndpointTC('test_write'))
-    for tc in AvalonMmEndpointTCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AvalonMmEndpointTC("test_write")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AvalonMmEndpointTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

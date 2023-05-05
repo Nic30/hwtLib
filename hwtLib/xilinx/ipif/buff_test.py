@@ -52,10 +52,9 @@ class IpifBuffTC(IpifEndpointTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(IpifBuffTC('test_read'))
-    suite.addTest(unittest.makeSuite(IpifBuffTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([IpifBuffTC("test_read")])
+    suite = testLoader.loadTestsFromTestCase(IpifBuffTC)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

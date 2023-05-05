@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.interfaces.std import Handshaked
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.handshakedToAxiStream import HandshakedToAxiStream
@@ -101,9 +104,9 @@ HandshakedToAxiStreamTCs = [
 if __name__ == "__main__":
     import unittest
 
-    suite = unittest.TestSuite()
-    # suite.addTest(HandshakedToAxiStream_MAX_FRAME_WORDS_TC('test_stuckedData'))
-    for tc in HandshakedToAxiStreamTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HandshakedToAxiStream_MAX_FRAME_WORDS_TC("test_stuckedData")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in HandshakedToAxiStreamTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -78,10 +78,9 @@ class IpifInterconnectMatrixTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(IpifInterconnectMatrixTC('test_read_lat1'))
-    suite.addTest(unittest.makeSuite(IpifInterconnectMatrixTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([IpifInterconnectMatrixTC("test_read_lat1")])
+    suite = testLoader.loadTestsFromTestCase(IpifInterconnectMatrixTC)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

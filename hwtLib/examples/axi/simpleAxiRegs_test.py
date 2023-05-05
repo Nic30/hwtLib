@@ -61,8 +61,8 @@ class SimpleAxiRegsTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(SimpleAxiRegsTC('test_write'))
-    suite.addTest(unittest.makeSuite(SimpleAxiRegsTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SimpleAxiRegsTC("test_write")])
+    suite = testLoader.loadTestsFromTestCase(SimpleAxiRegsTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -48,8 +48,8 @@ class OneHotToBinTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(OneHotToBinTC('test_basic'))
-    suite.addTest(unittest.makeSuite(OneHotToBinTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([OneHotToBinTC("test_basic")])
+    suite = testLoader.loadTestsFromTestCase(OneHotToBinTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

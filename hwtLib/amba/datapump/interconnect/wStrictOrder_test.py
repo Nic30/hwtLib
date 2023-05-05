@@ -227,9 +227,10 @@ class WStrictOrderInterconnect2TC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(WStrictOrderInterconnectTC('test_randomized2'))
-    suite.addTest(unittest.makeSuite(WStrictOrderInterconnectTC))
-    suite.addTest(unittest.makeSuite(WStrictOrderInterconnect2TC))
+    _ALL_TCs = [WStrictOrderInterconnectTC, WStrictOrderInterconnect2TC]
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([WStrictOrderInterconnectTC("test_randomized2")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

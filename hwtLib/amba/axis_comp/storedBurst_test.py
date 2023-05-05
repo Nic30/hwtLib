@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import unittest
 
 from hwt.hdl.constants import Time
@@ -45,8 +44,8 @@ class AxiSStoredBurstTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(AxiSStoredBurstTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiSStoredBurstTC("test_normalOp")])
+    suite = testLoader.loadTestsFromTestCase(AxiSStoredBurstTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -58,8 +58,8 @@ class I2CMasterBitCntrlTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(I2CMasterBitCntrlTC('test_nop'))
-    suite.addTest(unittest.makeSuite(I2CMasterBitCntrlTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([I2CMasterBitCntrlTC("test_nop")])
+    suite = testLoader.loadTestsFromTestCase(I2CMasterBitCntrlTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

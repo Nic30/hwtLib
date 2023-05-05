@@ -163,8 +163,8 @@ class StructWriter_TC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(StructWriter_TC('test_doubleField'))
-    suite.addTest(unittest.makeSuite(StructWriter_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([StructWriter_TC("test_doubleField")])
+    suite = testLoader.loadTestsFromTestCase(StructWriter_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

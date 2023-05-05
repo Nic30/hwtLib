@@ -186,13 +186,9 @@ class IpifEndpointArray(AxiLiteEndpointArrayTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(IpifEndpointTC('test_nop'))
-    suite.addTest(unittest.makeSuite(IpifEndpointTC))
-    suite.addTest(unittest.makeSuite(IpifEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(IpifEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(IpifEndpointArray))
-
+    _ALL_TCs = [IpifEndpointTC, IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray]
+    testLoader = unittest.TestLoader()
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

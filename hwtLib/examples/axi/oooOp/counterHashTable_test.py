@@ -349,9 +349,9 @@ OooOpExampleCounterHashTable_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(OooOpExampleCounterHashTable_4threads_TC('test_r_10x_swap_delete_unallocated'))
-    for tc in OooOpExampleCounterHashTable_TCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([OooOpExampleCounterHashTable_4threads_TC("test_r_10x_swap_delete_unallocated")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in OooOpExampleCounterHashTable_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

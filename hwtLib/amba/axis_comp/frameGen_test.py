@@ -70,8 +70,8 @@ class AxisFrameGenTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(AxisFrameGenTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxisFrameGenTC("test_normalOp")])
+    suite = testLoader.loadTestsFromTestCase(AxisFrameGenTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

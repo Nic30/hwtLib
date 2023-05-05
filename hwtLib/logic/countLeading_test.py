@@ -56,8 +56,8 @@ class CountLeadingTC(SimTestCase):
 if __name__ == '__main__':
     import sys
     import unittest
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(CountLeadingTC))
-    # suite.addTest(CountLeadingTC("test_CountLeadingZeros"))
+
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(CountLeadingTC)
     runner = unittest.TextTestRunner(verbosity=3)
     sys.exit(not runner.run(suite).wasSuccessful())

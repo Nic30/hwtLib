@@ -34,8 +34,8 @@ class FifoAsyncTC(FifoTC):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(FifoAsyncTC('test_tryMore'))
-    suite.addTest(unittest.makeSuite(FifoAsyncTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([FifoAsyncTC("test_tryMore")])
+    suite = testLoader.loadTestsFromTestCase(FifoAsyncTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

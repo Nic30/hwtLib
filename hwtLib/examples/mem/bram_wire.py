@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.hdl.constants import READ
 from hwt.interfaces.std import BramPort_withoutClk
 from hwt.interfaces.utils import addClkRst
@@ -38,8 +41,8 @@ class BramWireTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(RamTC('test_async_resources'))
-    suite.addTest(unittest.makeSuite(BramWireTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([BramWireTC("test_async_resources")])
+    suite = testLoader.loadTestsFromTestCase(BramWireTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

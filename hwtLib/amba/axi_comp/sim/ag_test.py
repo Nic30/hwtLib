@@ -163,8 +163,8 @@ class Axi_ag_TC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Axi_ag_TC('test_axi4_ag'))
-    suite.addTest(unittest.makeSuite(Axi_ag_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Axi_ag_TC("test_axi4_ag")])
+    suite = testLoader.loadTestsFromTestCase(Axi_ag_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

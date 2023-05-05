@@ -43,8 +43,8 @@ class Utmi_to_UlpiTC(UlpiAgentTC):
 
 if __name__ == '__main__':
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Utmi_to_UlpiTC("test_link_to_phy"))
-    suite.addTest(unittest.makeSuite(Utmi_to_UlpiTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Utmi_to_UlpiTC("test_link_to_phy")])
+    suite = testLoader.loadTestsFromTestCase(Utmi_to_UlpiTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

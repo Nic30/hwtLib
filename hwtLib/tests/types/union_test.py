@@ -189,8 +189,8 @@ class UnionTC(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    # suite.addTest(UnionTC('testValue'))
-    suite.addTest(unittest.makeSuite(UnionTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([UnionTC("testValue")])
+    suite = testLoader.loadTestsFromTestCase(UnionTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

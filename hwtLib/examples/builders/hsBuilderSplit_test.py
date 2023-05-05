@@ -59,8 +59,8 @@ class HsBuilderSplit_TC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(HsBuilderSplit_TC('test_reply1x'))
-    suite.addTest(unittest.makeSuite(HsBuilderSplit_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HsBuilderSplit_TC("test_reply1x")])
+    suite = testLoader.loadTestsFromTestCase(HsBuilderSplit_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

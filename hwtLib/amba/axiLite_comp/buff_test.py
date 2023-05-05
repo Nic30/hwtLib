@@ -57,8 +57,8 @@ class AxiRegTC(AxiLiteEndpointTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Axi4_wDatapumpTC('test_singleLong'))
-    suite.addTest(unittest.makeSuite(AxiRegTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiRegTC("test_singleLong")])
+    suite = testLoader.loadTestsFromTestCase(AxiRegTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

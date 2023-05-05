@@ -33,8 +33,8 @@ class HsFifoAsyncTC(HsFifoTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(HsFifoAsyncTC('test_stuckedData'))
-    suite.addTest(unittest.makeSuite(HsFifoAsyncTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HsFifoAsyncTC("test_stuckedData")])
+    suite = testLoader.loadTestsFromTestCase(HsFifoAsyncTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

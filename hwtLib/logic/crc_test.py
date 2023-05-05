@@ -272,12 +272,7 @@ class CrcTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(CrcTC('test_simple'))
-    # suite.addTest(CrcTC('test_wide'))
-    # suite.addTest(CrcTC('test_240B_CRC32_init_refout_finxor'))
-    # suite.addTest(CrcTC('test_240B'))
-    # suite.addTest(CrcTC("test_simple_mask_3_outof_4"))
-    suite.addTest(unittest.makeSuite(CrcTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(CrcTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

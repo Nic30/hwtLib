@@ -15,7 +15,6 @@ from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.types.ctypes import uint32_t
 from pyMathBitPrecise.bit_utils import mask
 
-
 structTwoArr = HStruct(
                        (uint32_t[4], "field0"),
                        (uint32_t[4], "field1")
@@ -123,9 +122,10 @@ class AxiLiteEndpointArrayTC(AxiLiteEndpointTC):
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         self.assertEqual(s, structTwoArr_str)
 
+
 class AxiLiteEndpointArray2TC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoArr2
-    FIELD_ADDR = [0x0, 3*0x04]
+    FIELD_ADDR = [0x0, 3 * 0x04]
 
     def test_nop(self):
         u = self.mySetUp(32)
@@ -284,7 +284,7 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
 
         self.assertValSequenceEqual(u.bus.b._ag.data,
                                     [RESP_OKAY for _ in range(2 * N)]
-                                    + [RESP_SLVERR])
+                                    +[RESP_SLVERR])
 
 
 AxiLiteEndpointArrTCs = [
@@ -295,15 +295,17 @@ AxiLiteEndpointArrTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(AxiLiteEndpointArray2TC('test_read'))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    for tc in AxiLiteEndpointArrTCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    _ALL_TCs = [
+        AxiLiteEndpointTC,
+        AxiLiteEndpointDenseStartTC,
+        AxiLiteEndpointDenseTC,
+        *AxiLiteEndpointArrTCs,
+    ]
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiLiteEndpointTC("test_read")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

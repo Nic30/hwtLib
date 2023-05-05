@@ -182,11 +182,9 @@ BramPortEndpointTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    #suite.addTest(BramPortEndpointTC('test_read'))
-    for tc in BramPortEndpointTCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([BramPortEndpointTC("test_read")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in BramPortEndpointTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

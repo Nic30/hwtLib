@@ -174,8 +174,8 @@ class PingResponderTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(PingResponderTC('test_reply1x'))
-    suite.addTest(unittest.makeSuite(PingResponderTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([PingResponderTC("test_reply1x")])
+    suite = testLoader.loadTestsFromTestCase(PingResponderTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

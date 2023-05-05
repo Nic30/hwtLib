@@ -59,10 +59,9 @@ class Mi32AgentTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(Mi32AgentTC('test_write'))
-    suite.addTest(unittest.makeSuite(Mi32AgentTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Mi32AgentTC("test_write")])
+    suite = testLoader.loadTestsFromTestCase(Mi32AgentTC)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

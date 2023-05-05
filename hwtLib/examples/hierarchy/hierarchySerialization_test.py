@@ -96,8 +96,8 @@ class HierarchySerializationTC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(HierarchySerializationTC("test_MultiConfigUnitWrapper_same_io_type_different_int_param_verilog"))
-    suite.addTest(unittest.makeSuite(HierarchySerializationTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HierarchySerializationTC("test_MultiConfigUnitWrapper_same_io_type_different_int_param_verilog")])
+    suite = testLoader.loadTestsFromTestCase(HierarchySerializationTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

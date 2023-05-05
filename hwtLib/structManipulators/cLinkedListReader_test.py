@@ -311,8 +311,8 @@ class CLinkedListReaderTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(CLinkedListReaderTC('test_downloadFullBlockRandomized'))
-    suite.addTest(unittest.makeSuite(CLinkedListReaderTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CLinkedListReaderTC("test_downloadFullBlockRandomized")])
+    suite = testLoader.loadTestsFromTestCase(CLinkedListReaderTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

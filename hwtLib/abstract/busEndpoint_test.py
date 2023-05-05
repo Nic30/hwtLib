@@ -188,8 +188,8 @@ class BusEndpointTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(BusEndpointTC('test_HTypeFromIntfMap_ArrayOfStructsOfStructs'))
-    suite.addTest(unittest.makeSuite(BusEndpointTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([BusEndpointTC("test_HTypeFromIntfMap_ArrayOfStructsOfStructs")])
+    suite = testLoader.loadTestsFromTestCase(BusEndpointTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -44,8 +44,8 @@ class HsSplitCopy_randomized_TC(HsSplitCopyTC):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(HsSplitCopy_randomized_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HsSplitCopy_randomized_TC("test_normalOp")])
+    suite = testLoader.loadTestsFromTestCase(HsSplitCopy_randomized_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

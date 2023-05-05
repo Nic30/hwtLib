@@ -40,8 +40,8 @@ class Usb2CdcVcpTC(UlpiAgentBaseTC):
 
 if __name__ == '__main__':
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Usb2CdcVcpTC("test_phy_to_link"))
-    suite.addTest(unittest.makeSuite(Usb2CdcVcpTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Usb2CdcVcpTC("test_phy_to_link")])
+    suite = testLoader.loadTestsFromTestCase(Usb2CdcVcpTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

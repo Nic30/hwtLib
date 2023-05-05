@@ -56,8 +56,8 @@ class FileUtilsTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_sWithStartPadding'))
-    suite.addTest(unittest.makeSuite(FileUtilsTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([FileUtilsTC("test_sWithStartPadding")])
+    suite = testLoader.loadTestsFromTestCase(FileUtilsTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

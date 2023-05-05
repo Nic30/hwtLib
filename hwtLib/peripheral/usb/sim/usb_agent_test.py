@@ -93,8 +93,8 @@ class UsbAgentTC(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_frameHeader_trimmed'))
-    suite.addTest(unittest.makeSuite(UsbAgentTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([UsbAgentTC("test_frameHeader_trimmed")])
+    suite = testLoader.loadTestsFromTestCase(UsbAgentTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

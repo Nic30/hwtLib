@@ -223,8 +223,8 @@ if __name__ == '__main__':
     import unittest
     # print(to_rtl_str(UnitWithArrIntfParent()))
 
-    suite = unittest.TestSuite()
-    # suite.addTest(SubunitsSynthesisTC('test_used_param_from_other_unit'))
-    suite.addTest(unittest.makeSuite(SubunitsSynthesisTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SubunitsSynthesisTC("test_used_param_from_other_unit")])
+    suite = testLoader.loadTestsFromTestCase(SubunitsSynthesisTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

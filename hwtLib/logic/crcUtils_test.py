@@ -19,8 +19,8 @@ class CrcUtilsTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(CrcCombTC('test_crc1'))
-    suite.addTest(unittest.makeSuite(CrcUtilsTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CrcUtilsTC("test_crc1")])
+    suite = testLoader.loadTestsFromTestCase(CrcUtilsTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

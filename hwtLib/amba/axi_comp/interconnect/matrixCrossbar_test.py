@@ -82,7 +82,7 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SimTestCase):
     def test_all(self, transaction_cnt=10, magic=0):
         # :param transaction_cnt: transactions per master per connected slave
         u = self.u
-        #self.randomize_all()
+        # self.randomize_all()
 
         expected_transactions = [[] for _ in u.dataOut]
         for output_i, accesible_inputs in enumerate(u.OUTPUTS):
@@ -94,12 +94,11 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SimTestCase):
                         magic, input_i, output_i, expected_transactions)
 
         max_trans_duration = max(len(dout) for dout in expected_transactions)
-        self.runSim((500 + 5 * max_trans_duration *
+        self.runSim((500 + 5 * max_trans_duration * 
                      transaction_cnt) * CLK_PERIOD)
         # assert all data was send
         for m_i, din in enumerate(u.dataIn):
             self.assertEmpty(din._ag.data, f"dataIn: {m_i:d}")
-
 
         # check the address transactions arrived correctly on slave
         for dout_i, (dout, dout_ref) in enumerate(zip(
@@ -128,6 +127,7 @@ class AxiInterconnectMatrixCrossbar_3to1TC(AxiInterconnectMatrixCrossbar_1to1TC)
         u.ADDR_WIDTH = log2ceil(0x2000 - 1)
         cls.compileSim(u)
 
+
 class AxiInterconnectMatrixCrossbar_3to3TC(AxiInterconnectMatrixCrossbar_1to1TC):
 
     @classmethod
@@ -145,13 +145,12 @@ AxiInterconnectMatrixCrossbar_TCs = [
     AxiInterconnectMatrixCrossbar_3to3TC,
 ]
 
-
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiInterconnectMatrixCrossbar_3to3TC(''))
-    for tc in AxiInterconnectMatrixCrossbar_TCs:
-        suite.addTest(unittest.makeSuite(tc))
 
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiInterconnectMatrixCrossbar_3to3TC("")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiInterconnectMatrixCrossbar_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

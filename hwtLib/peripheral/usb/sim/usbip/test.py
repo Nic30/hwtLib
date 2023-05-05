@@ -116,9 +116,9 @@ class UsbipSessionUtilsTC(unittest.TestCase):
 UsbipTCs = [UsbipTC, UsbipSessionUtilsTC]
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(UsbipTC("test_phy_to_link"))
-    for tc in UsbipTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([UsbipTC("test_phy_to_link")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in UsbipTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

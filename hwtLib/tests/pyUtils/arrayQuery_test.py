@@ -17,8 +17,8 @@ class ArrayQueryTC(unittest.TestCase):
 
 if __name__ == "__main__":
     import sys
-    suite = unittest.TestSuite()
-    # suite.addTest(ArrayQueryTC('test_sWithStartPadding'))
-    suite.addTest(unittest.makeSuite(ArrayQueryTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([ArrayQueryTC("test_sWithStartPadding")])
+    suite = testLoader.loadTestsFromTestCase(ArrayQueryTC)
     runner = unittest.TextTestRunner(verbosity=3)
     sys.exit(not runner.run(suite).wasSuccessful())

@@ -85,8 +85,8 @@ class GrayCntrTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(GrayCntrTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(GrayCntrTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

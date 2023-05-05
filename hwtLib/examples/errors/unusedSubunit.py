@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.interfaces.std import Signal
 from hwt.synthesizer.unit import Unit
 

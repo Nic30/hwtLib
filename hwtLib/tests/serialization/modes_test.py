@@ -61,8 +61,8 @@ class SerializerModes_TC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(TransTmpl_TC('test_walkFlatten_arr'))
-    suite.addTest(unittest.makeSuite(SerializerModes_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SerializerModes_TC("test_walkFlatten_arr")])
+    suite = testLoader.loadTestsFromTestCase(SerializerModes_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

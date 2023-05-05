@@ -24,8 +24,8 @@ class Showcase0TC(BaseSerializationTC):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(Showcase0TC("test_systemc"))
-    suite.addTest(unittest.makeSuite(Showcase0TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Showcase0TC("test_systemc")])
+    suite = testLoader.loadTestsFromTestCase(Showcase0TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -191,8 +191,8 @@ dout2_snapshot:
             self.assertEqual(buff_dot.getvalue(), f.read())
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(DebugBusMonitorExampleAxiTC('test_write'))
-    suite.addTest(unittest.makeSuite(DebugBusMonitorExampleAxiTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([DebugBusMonitorExampleAxiTC("test_write")])
+    suite = testLoader.loadTestsFromTestCase(DebugBusMonitorExampleAxiTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

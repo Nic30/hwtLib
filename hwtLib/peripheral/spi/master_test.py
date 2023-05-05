@@ -57,8 +57,8 @@ class SpiMasterTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(SpiMasterTC('test_readAndWrite8bits'))
-    suite.addTest(unittest.makeSuite(SpiMasterTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SpiMasterTC("test_readAndWrite8bits")])
+    suite = testLoader.loadTestsFromTestCase(SpiMasterTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

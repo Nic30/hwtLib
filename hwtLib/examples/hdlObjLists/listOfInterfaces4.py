@@ -257,11 +257,10 @@ class ListOfInterfacesSample4TC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b_intfIterations'))
-    # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b'))
 
-    suite.addTest(unittest.makeSuite(ListOfInterfacesSample4TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([ListOfInterfacesSample4TC("test_ListOfInterfacesSample4b_intfIterations")])
+    suite = testLoader.loadTestsFromTestCase(ListOfInterfacesSample4TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

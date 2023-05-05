@@ -174,8 +174,8 @@ class IfStmTC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(IfStmTC('test_resources_SimpleIfStatement2c'))
-    suite.addTest(unittest.makeSuite(IfStmTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([IfStmTC("test_resources_SimpleIfStatement2c")])
+    suite = testLoader.loadTestsFromTestCase(IfStmTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

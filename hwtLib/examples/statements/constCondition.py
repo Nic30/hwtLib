@@ -52,8 +52,8 @@ def main():
     u = ConstCondition()
     print(to_rtl_str(u))
 
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ConstConditionTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(ConstConditionTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

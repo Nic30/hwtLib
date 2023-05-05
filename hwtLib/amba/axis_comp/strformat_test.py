@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -162,9 +165,9 @@ class AxiS_strFormat_TC(SimTestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiS_strFormat_TC('test_args_numbers'))
-    suite.addTest(unittest.makeSuite(AxiS_strFormat_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiS_strFormat_TC("test_args_numbers")])
+    suite = testLoader.loadTestsFromTestCase(AxiS_strFormat_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
     # from hwt.synthesizer.utils import to_rtl_str

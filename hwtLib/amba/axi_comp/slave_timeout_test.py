@@ -96,8 +96,8 @@ class AxiSlaveTimeoutTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiSlaveTimeoutTC('test_singleLong'))
-    suite.addTest(unittest.makeSuite(AxiSlaveTimeoutTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiSlaveTimeoutTC("test_singleLong")])
+    suite = testLoader.loadTestsFromTestCase(AxiSlaveTimeoutTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

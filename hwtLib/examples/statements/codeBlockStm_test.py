@@ -120,8 +120,8 @@ class CodeBlokStmTC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(CodeBlokStmTC('test_resources_SimpleIfStatement2c'))
-    suite.addTest(unittest.makeSuite(CodeBlokStmTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CodeBlokStmTC("test_resources_SimpleIfStatement2c")])
+    suite = testLoader.loadTestsFromTestCase(CodeBlokStmTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

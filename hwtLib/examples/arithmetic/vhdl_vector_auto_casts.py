@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal
 from hwt.synthesizer.unit import Unit
@@ -57,8 +60,8 @@ if __name__ == '__main__':
     print(to_rtl_str(u, Vhdl2008Serializer))
 
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(VhdlVectorAutoCastExampleTC('test_vhdl'))
-    suite.addTest(unittest.makeSuite(VhdlVectorAutoCastExampleTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([VhdlVectorAutoCastExampleTC("test_vhdl")])
+    suite = testLoader.loadTestsFromTestCase(VhdlVectorAutoCastExampleTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

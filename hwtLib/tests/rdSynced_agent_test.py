@@ -37,8 +37,8 @@ class RdSynced_agent_TC(SimTestCase):
 
 if __name__ == '__main__':
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(RdSyncedPipe('test_basic_data_pass'))
-    suite.addTest(unittest.makeSuite(RdSynced_agent_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([RdSynced_agent_TC("test_basic_data_pass")])
+    suite = testLoader.loadTestsFromTestCase(RdSynced_agent_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

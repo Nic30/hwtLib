@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 import unittest
 
 from hwt.hdl.constants import Time
@@ -49,11 +50,10 @@ class FsmSerializationTC(BaseSerializationTC):
 
 
 if __name__ == "__main__":
-
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
-    suite.addTest(unittest.makeSuite(FsmExampleTC))
-    suite.addTest(unittest.makeSuite(HadrcodedFsmExampleTC))
-    suite.addTest(unittest.makeSuite(FsmSerializationTC))
+    _ALL_TCs = [FsmExampleTC, HadrcodedFsmExampleTC, FsmSerializationTC]
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([FsmExampleTC("test_nothingEnable")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

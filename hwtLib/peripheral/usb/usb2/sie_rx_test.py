@@ -182,8 +182,8 @@ class Usb2SieDeviceRxTC(SimTestCase):
 
 if __name__ == '__main__':
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Usb2SieDeviceRxTC("test_token_setup"))
-    suite.addTest(unittest.makeSuite(Usb2SieDeviceRxTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Usb2SieDeviceRxTC("test_token_setup")])
+    suite = testLoader.loadTestsFromTestCase(Usb2SieDeviceRxTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

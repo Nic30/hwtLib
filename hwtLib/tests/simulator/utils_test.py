@@ -174,8 +174,8 @@ class SimulatorUtilsTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(IpCorePackagerTC('test_sWithStartPadding'))
-    suite.addTest(unittest.makeSuite(SimulatorUtilsTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([SimulatorUtilsTC("test_sWithStartPadding")])
+    suite = testLoader.loadTestsFromTestCase(SimulatorUtilsTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

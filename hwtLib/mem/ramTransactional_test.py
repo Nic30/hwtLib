@@ -343,9 +343,9 @@ RamTransactionalTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(RamTransactional_1wTC("test_read"))
-    for tc in RamTransactionalTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([RamTransactional_1wTC("test_read")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in RamTransactionalTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -190,9 +190,9 @@ OooOpExampleCounterArray_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    #suite.addTest(OooOpExampleCounterArray_2w_2WtoB_TC('test_incr_10x_same'))
-    for tc in OooOpExampleCounterArray_TCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([OooOpExampleCounterArray_2w_2WtoB_TC("test_incr_10x_same")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in OooOpExampleCounterArray_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

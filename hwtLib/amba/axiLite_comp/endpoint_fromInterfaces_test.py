@@ -351,10 +351,10 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
+    _ALL_TCs = [AxiLiteEndpoint_fromInterfaceTC, AxiLiteEndpoint_fromInterface_arr_TC]
 
-    # suite.addTest(AxiLiteEndpoint_fromInterface_arr_TC('test_read'))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterfaceTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterface_arr_TC))
+    testLoader = unittest.TestLoader()
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import unittest
 
@@ -87,8 +89,8 @@ class TemplateConfigured_TC(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    # suite.addTest(TemplateConfigured_TC('test_separate_streams_nested'))
-    suite.addTest(unittest.makeSuite(TemplateConfigured_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([TemplateConfigured_TC("test_separate_streams_nested")])
+    suite = testLoader.loadTestsFromTestCase(TemplateConfigured_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

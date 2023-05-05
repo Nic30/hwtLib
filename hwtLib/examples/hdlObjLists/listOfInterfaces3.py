@@ -143,9 +143,9 @@ class ListOfInterfacesSample3TC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(ListOfInterfacesSample3TC('test_simplePass'))
-    suite.addTest(unittest.makeSuite(ListOfInterfacesSample3TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([ListOfInterfacesSample3TC("test_simplePass")])
+    suite = testLoader.loadTestsFromTestCase(ListOfInterfacesSample3TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.hdlComments import SimpleComentedUnit, \
     SimpleComentedUnit3, SimpleComentedUnit2
@@ -26,8 +25,8 @@ class HdlCommentsTC(BaseSerializationTC):
 if __name__ == '__main__':
     import unittest
 
-    suite = unittest.TestSuite()
-    # suite.addTest(OperatorTC('testBitAnd'))
-    suite.addTest(unittest.makeSuite(HdlCommentsTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HdlCommentsTC("testBitAnd")])
+    suite = testLoader.loadTestsFromTestCase(HdlCommentsTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

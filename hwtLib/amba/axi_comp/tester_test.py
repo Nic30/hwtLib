@@ -171,8 +171,8 @@ class AxiTesterTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(Axi4_wDatapumpTC('test_singleLong'))
-    suite.addTest(unittest.makeSuite(AxiTesterTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiTesterTC("test_singleLong")])
+    suite = testLoader.loadTestsFromTestCase(AxiTesterTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -47,8 +47,9 @@ BasicRtlSimulatorVcdTmpDirs_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    for tc in BasicRtlSimulatorVcdTmpDirs_TCs:
-        suite.addTest(unittest.makeSuite(tc))
+
+    testLoader = unittest.TestLoader()
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in BasicRtlSimulatorVcdTmpDirs_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

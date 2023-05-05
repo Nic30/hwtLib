@@ -98,8 +98,8 @@ class HsResizerTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(HandshakedResizerTC('test_1to3'))
-    suite.addTest(unittest.makeSuite(HsResizerTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HsResizerTC("test_1to3")])
+    suite = testLoader.loadTestsFromTestCase(HsResizerTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -44,8 +44,8 @@ class HsFifoTC(FifoTC):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(HsFifoTC('test_passdata'))
-    suite.addTest(unittest.makeSuite(HsFifoTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HsFifoTC("test_passdata")])
+    suite = testLoader.loadTestsFromTestCase(HsFifoTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

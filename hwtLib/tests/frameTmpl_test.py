@@ -596,8 +596,8 @@ class FrameTmplTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    #suite.addTest(FrameTmplTC('test_frameHeader_trimmed'))
-    suite.addTest(unittest.makeSuite(FrameTmplTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([FrameTmplTC("test_frameHeader_trimmed")])
+    suite = testLoader.loadTestsFromTestCase(FrameTmplTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

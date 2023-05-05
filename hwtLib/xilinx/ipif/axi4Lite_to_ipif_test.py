@@ -168,10 +168,9 @@ class Axi4Lite_to_IpifTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(Axi4Lite_to_IpifTC('test_read_lat1'))
-    suite.addTest(unittest.makeSuite(Axi4Lite_to_IpifTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([Axi4Lite_to_IpifTC("test_read_lat1")])
+    suite = testLoader.loadTestsFromTestCase(Axi4Lite_to_IpifTC)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

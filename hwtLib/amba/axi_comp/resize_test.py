@@ -91,10 +91,9 @@ class AxiResizeTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(Mi32AgentTC('test_write'))
-    suite.addTest(unittest.makeSuite(AxiResizeTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiResizeTC("test_write")])
+    suite = testLoader.loadTestsFromTestCase(AxiResizeTC)
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

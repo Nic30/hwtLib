@@ -313,9 +313,9 @@ AxiCacheWriteAllocWawOnlyWritePropagatingTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(AxiCacheWriteAllocWawOnlyWritePropagatingTC('test_write_to_empty'))
-    for tc in AxiCacheWriteAllocWawOnlyWritePropagatingTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiCacheWriteAllocWawOnlyWritePropagatingTC("test_write_to_empty")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiCacheWriteAllocWawOnlyWritePropagatingTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

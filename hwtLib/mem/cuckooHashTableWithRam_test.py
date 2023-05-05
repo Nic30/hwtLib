@@ -272,9 +272,9 @@ CuckooHashTableWithRamTCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(CuckooHashTableWithRam_2Table_collisionTC('test_insert_coliding'))
-    for tc in CuckooHashTableWithRamTCs:
-        suite.addTest(unittest.makeSuite(tc))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([CuckooHashTableWithRam_2Table_collisionTC("test_insert_coliding")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in CuckooHashTableWithRamTCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

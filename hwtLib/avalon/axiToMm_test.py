@@ -111,11 +111,9 @@ AxiToAvalonMm_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(AxiToAvalonMm_len2_TC('test_write_r'))
-    for tc in AxiToAvalonMm_TCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiToAvalonMm_len2_TC("test_write_r")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiToAvalonMm_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -101,9 +101,8 @@ class AvalonMmBuff_TC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(AvalonMmBuff_TC('test_write'))
-    suite.addTest(unittest.makeSuite(AvalonMmBuff_TC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AvalonMmBuff_TC("test_write")])
+    suite = testLoader.loadTestsFromTestCase(AvalonMmBuff_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

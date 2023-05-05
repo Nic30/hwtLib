@@ -107,8 +107,8 @@ class StructReaderTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(StructReaderTC('test_multiframe'))
-    suite.addTest(unittest.makeSuite(StructReaderTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([StructReaderTC("test_multiframe")])
+    suite = testLoader.loadTestsFromTestCase(StructReaderTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

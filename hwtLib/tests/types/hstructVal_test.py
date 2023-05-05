@@ -33,8 +33,8 @@ class HStructValTC(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_sWithStartPadding'))
-    suite.addTest(unittest.makeSuite(HStructValTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([HStructValTC("test_sWithStartPadding")])
+    suite = testLoader.loadTestsFromTestCase(HStructValTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

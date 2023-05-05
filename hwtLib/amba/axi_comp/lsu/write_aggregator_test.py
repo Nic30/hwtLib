@@ -3,15 +3,15 @@
 
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
+from hwtLib.amba.axi4 import Axi4_addrAgent
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.lsu.write_aggregator import AxiWriteAggregator
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.axis import AxiStreamAgent
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, int_list_to_int, \
     get_bit_range, int_to_int_list
-from hwtLib.amba.axi4 import Axi4_addrAgent
-from hwtLib.amba.axis import AxiStreamAgent
-from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
 
 
 class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
@@ -218,12 +218,9 @@ AxiWriteAggregator_TCs = [
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-
-    #suite.addTest(AxiWriteAggregator_2words_per_cachelineTC('test_non_mergable_no_ack'))
-    # suite.addTest(AxiWriteAggregator_1word_per_cachelineTC('test_mergable'))
-    for tc in AxiWriteAggregator_TCs:
-        suite.addTest(unittest.makeSuite(tc))
-
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([AxiWriteAggregator_1word_per_cachelineTC("test_mergable")])
+    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in AxiWriteAggregator_TCs]
+    suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

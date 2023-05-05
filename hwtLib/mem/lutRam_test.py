@@ -56,8 +56,8 @@ class LutRamTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
-    suite.addTest(unittest.makeSuite(LutRamTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([LutRamTC("test_withStops")])
+    suite = testLoader.loadTestsFromTestCase(LutRamTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

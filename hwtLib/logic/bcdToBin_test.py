@@ -68,8 +68,8 @@ class BcdToBinTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(IndexingTC('test_split'))
-    suite.addTest(unittest.makeSuite(BcdToBinTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([BcdToBinTC("test_split")])
+    suite = testLoader.loadTestsFromTestCase(BcdToBinTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

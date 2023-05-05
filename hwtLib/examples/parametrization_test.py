@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 from hwtLib.examples.parametrization import ParametrizationExample
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
@@ -16,16 +15,8 @@ class ParametrizationTC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-
-    # this is how you can run testcase,
-    # there are many way and lots of tools support direct running of tests
-    # (like eclipse)
-    suite = unittest.TestSuite()
-
-    # this is how you can select specific test
-    # suite.addTest(SimpleTC('test_simple'))
-
-    # this is how you add all test from testcase
-    suite.addTest(unittest.makeSuite(ParametrizationTC))
+    # This is one of ways how to run tests in python unittest framework (nothing HWT specific)
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(ParametrizationTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

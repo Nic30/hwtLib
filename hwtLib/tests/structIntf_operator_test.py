@@ -88,8 +88,8 @@ class StructIntf_operatorTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(StructIntf_operatorTC('test_eq_simple'))
-    suite.addTest(unittest.makeSuite(StructIntf_operatorTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([StructIntf_operatorTC("test_eq_simple")])
+    suite = testLoader.loadTestsFromTestCase(StructIntf_operatorTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
