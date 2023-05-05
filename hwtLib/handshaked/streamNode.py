@@ -340,11 +340,11 @@ class StreamNode():
             extraCond = self.extraConds.get(i, NOT_SPECIFIED)
             skipWhen = self.skipWhen.get(i, NOT_SPECIFIED)
             if extraCond is not NOT_SPECIFIED and skipWhen is not NOT_SPECIFIED:
-                res.append(f"({i}, extraCond={extraCond}, skipWhen={skipWhen})")
+                res.append(f"({i},\n            extraCond={extraCond},\n            skipWhen={skipWhen})")
             elif extraCond is not NOT_SPECIFIED:
-                res.append(f"({i}, extraCond={extraCond})")
+                res.append(f"({i},\n            extraCond={extraCond})")
             elif skipWhen is not NOT_SPECIFIED:
-                res.append(f"({i}, skipWhen={skipWhen})")
+                res.append(f"({i},\n            skipWhen={skipWhen})")
             else:
                 res.append(f"{i}")
 
