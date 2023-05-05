@@ -32,7 +32,7 @@ class Hd44780Intf(Interface):
     CHAR_MAP = {
         **{chr(c): c for c in range(ord(' '), ord('}') + 1)},
         **{
-            '¥': 0b01011100,  # replaces \\ glyph in ASCII range ablowe
+            '¥': 0b01011100,  # replaces \\ glyph in ASCII range above
             '←': 0b01111110,
             '→': 0b01111111,
             # 'ヲ': 0b10100110,
