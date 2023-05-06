@@ -75,7 +75,7 @@ class BinToBcd(Unit):
                     bin_r(din.data)
                 ))\
             .Case(st_t.busy,
-                bin_r(bin_r[INPUT_WIDTH - 1:]._concat(BIT.from_py(0))))
+                bin_r(bin_r[INPUT_WIDTH - 1:]._concat(BIT.from_py(0)))) # bin_r <<= 1
 
         Switch(state)\
             .Case(st_t.busy,
