@@ -3,9 +3,10 @@ from typing import List, Optional, Tuple, Union, Dict
 from hwt.code import And, Or
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.types.defs import BIT
+from hwt.hdl.value import HValue
 from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
 def _get_ready_signal(intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
@@ -193,14 +194,16 @@ class StreamNode():
                 a = m.ack()
             else:
                 a = _get_valid_signal(m)
-                if isinstance(a, int):
-                    a = BIT.from_py(a)
-
-            if extra:
-                a = And(a, *extra)
-
-            if skip is not None:
-                a = Or(a, skip)
+            
+            if isinstance(a, (int, HValue)):
+                assert int(a) == 1, (m, a)
+                a = BIT.from_py(1)
+            else:
+                if extra:
+                    a = And(a, *extra)
+    
+                if skip is not None:
+                    a = Or(a, skip)
 
             acks.append(a)
 
@@ -211,15 +214,15 @@ class StreamNode():
             else:
                 a = _get_ready_signal(s)
 
-            if isinstance(a, int):
-                assert a == 1, a
+            if isinstance(a, (int, HValue)):
+                assert int(a) == 1, (s, a)
                 a = BIT.from_py(1)
-
-            if extra:
-                a = And(a, *extra)
-
-            if skip is not None:
-                a = Or(a, skip)
+            else:
+                if extra:
+                    a = And(a, *extra)
+    
+                if skip is not None:
+                    a = Or(a, skip)
 
             acks.append(a)
 
