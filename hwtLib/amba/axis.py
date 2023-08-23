@@ -109,6 +109,7 @@ class AxiStreamAgent(BaseAxiAgent, UniversalHandshakedAgent):
 def packAxiSFrame(dataWidth, structVal, withStrb=False):
     """
     pack data of structure into words on axis interface
+    Words are tuples (data, last) or (data, mask, last) depending on args.
     """
     if withStrb:
         byte_cnt = dataWidth // 8
@@ -160,7 +161,17 @@ def unpackAxiSFrame(structT: HdlType, frameData: Deque[Union[BitsVal, int]], get
     return res
 
 
-def _axis_recieve_bytes(ag_data, D_B, use_keep, use_id) -> Tuple[int, List[int]]:
+def _axis_recieve_bytes(ag_data: Deque[Union[
+                                        Tuple[BitsVal, BitsVal, BitsVal, BitsVal],
+                                        Tuple[BitsVal, BitsVal, BitsVal],
+                                        Tuple[BitsVal, BitsVal]]],
+                        D_B: int, use_keep: bool, use_id: bool) -> Tuple[int, List[int]]:
+    """
+    :param ag_data: list of axi stream words, number of item in tuple depends on use_keep and use_id
+    :param use_keep: specifies if input tuples contain keep mask
+    :param use_id: specifies if input tuples contain axi stream id
+    :param D_B: number of bytes in word
+    """
     offset = None
     data_B = []
     last = False
@@ -217,7 +228,7 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, use_id) -> Tuple[int, List[int]]
             first = False
             current_id = id_
         elif not last:
-            assert keep == mask_all, keep
+            assert keep == mask_all, (keep, "Does not support non-full words in the non-last word of the frame")
         if not first:
             assert current_id == id_, ("id changed in frame beats", current_id, "->", id_)
         if last:
@@ -254,7 +265,7 @@ def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
     return _axis_recieve_bytes(ag_data, D_B, use_keep, USE_ID)
 
 
-def _axis_send_bytes(axis: AxiStream, data_B: List[int], withStrb, offset)\
+def _axis_send_bytes(axis: AxiStream, data_B: List[int], withStrb:bool, offset:int)\
         ->List[Tuple[int, int, int]]:
     if data_B:
         t = uint8_t[len(data_B) + offset]
@@ -262,7 +273,7 @@ def _axis_send_bytes(axis: AxiStream, data_B: List[int], withStrb, offset)\
     else:
         _data_B = data_B
     # :attention: strb signal is reinterpreted as a keep signal
-    return packAxiSFrame(axis.DATA_WIDTH, _data_B ,
+    return packAxiSFrame(axis.DATA_WIDTH, _data_B,
         withStrb=withStrb)
 
 

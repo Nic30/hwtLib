@@ -17,7 +17,7 @@ For example there is a component [AxiLiteEndpoint](https://github.com/Nic30/hwtL
 Another example is [AxiS_frameParser](https://github.com/Nic30/hwtLib/blob/master/hwtLib/amba/axis_comp/frame_parser/_parser.py#L438), which is configured in same way and performs an extraction of the data fields from an input stream. Hwt type system does contains all c-like and SystemVerilog-like types but in addition it allows for better specification of padding and allignment and has an explicit data type for streams. This allows AxiS_frameParser to be easily configured to change alignemnt of the stream, cut/split/replace part of the steam with an easy to read HLS-like description.
 
 Verifications are write in UVM like style and as [hwt](https://github.com/Nic30/hwt) based design are actually a graph we can easily analyse them.
-This is every usefull as it allows us to generate most of the test environment automatically in a user controlled and predictable way and write mostly only a test scenario. For example there is no need to build bus transactions manually as [AddressSpaceProbe](https://github.com/Nic30/hwtLib/blob/master/hwtLib/abstract/discoverAddressSpace.py#L47) can discover the mapped address space (for any interface) and we can set register values using a proxy as if it was a normal value.
+This is every useful as it allows us to generate most of the test environment automatically in a user controlled and predictable way and write mostly only a test scenario. For example there is no need to build bus transactions manually as [AddressSpaceProbe](https://github.com/Nic30/hwtLib/blob/master/hwtLib/abstract/discoverAddressSpace.py#L47) can discover the mapped address space (for any interface) and we can set register values using a proxy as if it was a normal value.
 This means that you can write a verification which will have a component with arbitrary bus/address space and it will work as long as you keep the names of the registers the same.
 
 Clock frequencies and target chips usually does not matter but if componet [generates constraints](https://github.com/Nic30/hwtLib/blob/master/hwtLib/handshaked/cdc.py#L154) it surely needs a correct clock period to generate them correctly.
@@ -85,4 +85,4 @@ sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/r
 * [Vitis_Libraries](https://github.com/Xilinx/Vitis_Libraries) - C++/VitisHls - set of various algorithms implemented in VitisHls
 * [wav-lpddr-hw](https://github.com/waviousllc/wav-lpddr-hw) - SV - LPDDR4x/LPDDR5, DFI5.0
 * [hlslibs](https://github.com/hlslibs) - C++/VitisHls - set of libraries for mostly focused on ML/DSP and generic math
-
+* [OpenXiangShan](https://github.com/OpenXiangShan) - Chisel3 - performance focused RISC-V 
