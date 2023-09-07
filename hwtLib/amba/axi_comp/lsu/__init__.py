@@ -7,4 +7,5 @@ Other LSU implementations:
 * https://github.com/rsd-devel/rsd - has N issue RISC-V LSU
 * https://github.com/bluespec/Toooba - has RISC-V LSU in BlueSpecVerilog
 * https://github.com/openhwgroup/cv32e40p - has RISC-V LSU for in order pipeline
+* https://github.com/VerticalResearchGroup/miaow/
 """
