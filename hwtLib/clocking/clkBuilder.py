@@ -31,7 +31,7 @@ class ClkBuilder(AbstractComponentBuilder):
         generate counters specified by count of iterations
 
         :param periods: list tick period or tuple (name, period) for timer,
-            period is sepecified in the number of clk ticks
+            period is specified in the number of clk ticks
         :param enableSig: enable signal for all counters
         :param rstSig: reset signal for all counters
         :attention: if tick of timer his high and enableSig falls low tick will stay high
@@ -161,7 +161,7 @@ class ClkBuilder(AbstractComponentBuilder):
 
     def reg_path(self, din, number_of_regs, name=None, def_val=None):
         """
-        Instanciate path of registers used to delay the signal or to filter IO
+        Instantiate path of registers used to delay the signal or to filter IO
 
         :return: the last register in path
         """

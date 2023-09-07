@@ -3,7 +3,7 @@ This package contains components, interfaces, data types and other utils
 related to Universal Serial Bus (USB) protocol.
 
 The USB bus is composed of Host (the main device which controls the bus), Hub(s) (a port extender) and a Device(s).
-The USB protocol stack (v3.2) is composed of multipl layers as depicted in:
+The USB protocol stack (v3.2) is composed of multiple layers as depicted in:
 
 .. figure:: ./_static/USB-Protocol-Stack-V3.png
 
@@ -46,6 +46,7 @@ Physical Layer:
     And the receive part of physical Layer performs de-serialization, 8b10b decoding,
     data descrambling, and receiver clock and data recovery.
     In USB >=3.2 it may have additional RX and TX lane.
+  * https://electronics.stackexchange.com/questions/409912/usb-softcore-for-fpga-extra-resistor-on-fpga-transmitter-pin 
 
 :note: USB Documentation, Christopher D. Leary and Devrin TalenDecember 17, 2007
 
@@ -76,4 +77,7 @@ The Endpoints may support following types of transfer:
 
 
 .. figure:: ./_static/usb_transaction_example.png
+
+Similar projects:
+* https://github.com/WangXuan95/FPGA-USB-Device
 """
