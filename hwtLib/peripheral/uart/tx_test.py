@@ -4,7 +4,7 @@
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valToInt
 from hwtLib.peripheral.uart.tx import UartTx
-from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.utils import freq_to_period
 
 
 class UartTxTC(SimTestCase):
@@ -14,6 +14,7 @@ class UartTxTC(SimTestCase):
         u = cls.u = UartTx()
         u.BAUD = 115200
         u.FREQ = 115200
+        cls.CLK_PERIOD = int(freq_to_period(u.FREQ))
         cls.compileSim(u)
 
     def setUp(self):
@@ -49,13 +50,13 @@ class UartTxTC(SimTestCase):
             self.u.dataIn._ag.data.append(ord(ch))
 
     def test_nop(self):
-        self.runSim(20 * CLK_PERIOD)
+        self.runSim(20 * self.CLK_PERIOD)
         self.assertEqual(self.getStr(), "")
 
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.runSim(10 * (len(t) + 10) * CLK_PERIOD)
+        self.runSim((len(t) + 10) * self.CLK_PERIOD * self.u.BAUD)
         self.assertEqual(self.getStr(), t)
 
 

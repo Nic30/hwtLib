@@ -9,13 +9,14 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.peripheral.uart.rx import UartRx
 from hwtLib.peripheral.uart.tx import UartTx
-from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.utils import freq_to_period
 
 
 class TestUnit_uart(Unit):
+
     def _config(self):
         self.DATA_WIDTH = Param(8)
-        self.FREQ = Param(115200*16)
+        self.FREQ = Param(115200 * 16)
         self.BAUD = Param(115200)
         self.OVERSAMPLING = Param(16)
 
@@ -43,6 +44,7 @@ class UartTxRxTC(SimTestCase):
         u.BAUD = 115200
         u.FREQ = 115200 * 16
         u.OVERSAMPLING = 16
+        cls.CLK_PERIOD = int(freq_to_period(u.FREQ))
         cls.compileSim(u)
 
     def getStr(self):
@@ -53,13 +55,13 @@ class UartTxRxTC(SimTestCase):
             self.u.din._ag.data.append(ord(s))
 
     def test_nop(self):
-        self.runSim(20 * CLK_PERIOD)
+        self.runSim(20 * self.CLK_PERIOD)
         self.assertEqual(self.getStr(), "")
 
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.runSim(10 * (len(t) * 16 + 10) * CLK_PERIOD)
+        self.runSim(10 * (len(t) * 16 + 10) * self.CLK_PERIOD)
         self.assertEqual(self.getStr(), t)
 
 

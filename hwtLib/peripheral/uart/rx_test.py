@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valToInt
 from hwtLib.peripheral.uart.rx import UartRx
-from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.utils import freq_to_period
 from pyMathBitPrecise.bit_utils import get_bit
 
 
@@ -17,6 +16,7 @@ class UartRxBasicTC(SimTestCase):
         u.OVERSAMPLING = cls.OVERSAMPLING = 16
         u.FREQ = cls.FREQ = 115200 * cls.OVERSAMPLING
         u.BAUD = cls.BAUD = 115200
+        cls.CLK_PERIOD = int(freq_to_period(u.FREQ))
         cls.compileSim(u)
 
     def getStr(self):
@@ -42,14 +42,14 @@ class UartRxBasicTC(SimTestCase):
 
     def test_nop(self):
         self.u.rxd._ag.data.append(1)
-        self.runSim(200 * Time.ns,)
+        self.runSim(20 * self.CLK_PERIOD)
         self.assertEqual(self.getStr(), "")
 
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
         self.runSim(self.OVERSAMPLING *
-                    (self.FREQ // self.BAUD) * (len(t) + 5) * CLK_PERIOD)
+                    (self.FREQ // self.BAUD) * (len(t) + 5) * self.CLK_PERIOD)
         self.assertEqual(self.getStr(), t)
 
 

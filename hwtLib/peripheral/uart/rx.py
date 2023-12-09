@@ -49,7 +49,6 @@ class UartRx(Unit):
         RxD_data = self._reg("RxD_data", Bits(1 + 8))
         startBitWasNotStartbit = self._sig("startBitWasNotStartbit")
         # it can happen that there is just glitch on wire and bit was not startbit only begin was resolved wrong
-        # eval because otherwise vhdl int overflows
         sampleTick = clkBuilder.timer(("sampleTick", self.FREQ // self.BAUD // self.OVERSAMPLING),
                                       enableSig=en,
                                       rstSig=~en)
