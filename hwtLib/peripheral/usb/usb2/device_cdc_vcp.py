@@ -22,7 +22,7 @@ from hwt.code_utils import rename_signal
 
 class Usb2CdcVcp(Usb2DeviceCommon):
     """
-    USB2.0 communcation device class virtual com port core (serial/uart over USB)
+    USB2.0 communication device class virtual com port core (serial/uart over USB)
 
     :see: :class:`hwtLib.peripheral.usb.usb2.device_common.Usb2DeviceCommon`
     :ivar RX_AGGREGATION_TIMEOUT: the timeout (in clk ticks) for a packing of incomming bytes
