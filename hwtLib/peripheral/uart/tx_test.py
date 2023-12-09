@@ -56,7 +56,7 @@ class UartTxTC(SimTestCase):
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.runSim((len(t) + 10) * self.CLK_PERIOD * self.u.BAUD)
+        self.runSim((10 * len(t) + 20) * self.CLK_PERIOD * (self.u.FREQ // self.u.BAUD))
         self.assertEqual(self.getStr(), t)
 
 
