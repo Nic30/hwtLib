@@ -7,7 +7,7 @@ from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descri
 from hwtLib.peripheral.usb.usb2.device_cdc_vcp import Usb2CdcVcp
 from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgentBaseTC
 from hwtLib.peripheral.usb.usb2.utmi_usb_agent import UtmiUsbAgent
-from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.utils import freq_to_period
 
 
 class Usb2CdcVcpTC(UlpiAgentBaseTC):
@@ -25,8 +25,9 @@ class Usb2CdcVcpTC(UlpiAgentBaseTC):
         u.phy._ag.RETRY_CNTR_MAX = 100
 
     def test_descriptor_download(self):
-        self.runSim(600 * CLK_PERIOD)
         u = self.u
+        CLK_PERIOD = int(freq_to_period(u.CLK_FREQ))
+        self.runSim(600 * CLK_PERIOD)
 
         self.assertUlpiAgFinished(u.phy._ag)
         host = u.phy._ag.usb_driver
