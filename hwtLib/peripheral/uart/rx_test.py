@@ -65,6 +65,7 @@ class UartRxTC(UartRxBasicTC):
         u.BAUD = cls.BAUD
         u.FREQ = cls.FREQ
         u.OVERSAMPLING = cls.OVERSAMPLING
+        cls.CLK_PERIOD = int(freq_to_period(u.FREQ))
         cls.compileSim(u)
 
 
