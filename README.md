@@ -88,3 +88,4 @@ sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/r
 * [wav-lpddr-hw](https://github.com/waviousllc/wav-lpddr-hw) - SV - LPDDR4x/LPDDR5, DFI5.0
 * [hlslibs](https://github.com/hlslibs) - C++/VitisHls - set of libraries for mostly focused on ML/DSP and generic math
 * [OpenXiangShan](https://github.com/OpenXiangShan) - Chisel3 - performance focused RISC-V
+* [Parretto/DisplayPort](https://github.com/Parretto/DisplayPort) - SV - universal RX/TX DisplayPort core
