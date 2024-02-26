@@ -9,7 +9,11 @@ from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
-def _get_ready_signal(intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
+ValidReadyTuple = Tuple[Union[RtlSignal, int], Union[RtlSignal, int]]
+InterfaceOrValidReadyTuple = Union[Interface, ValidReadyTuple]
+
+
+def _get_ready_signal(intf: InterfaceOrValidReadyTuple) -> RtlSignal:
     try:
         return intf.rd
     except AttributeError:
@@ -22,7 +26,7 @@ def _get_ready_signal(intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> Rt
     return intf.ready
 
 
-def _get_valid_signal(intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
+def _get_valid_signal(intf: InterfaceOrValidReadyTuple) -> RtlSignal:
     try:
         return intf.vld
     except AttributeError:
@@ -73,16 +77,15 @@ class ExclusiveStreamGroups(list):
         return Or(*(_exStreamMemberAck(m) for m in self))
 
 
-INTERFACE_OR_VLD_RD_TUPLE = Union[Interface, Tuple[Union[RtlSignal, int], Union[RtlSignal, int]]]
-
-
 class StreamNode():
     """
     Group of stream master and slave interfaces to synchronize them to each other
 
-    :ivar ~.masters: interfaces which are inputs into this node
-    :ivar ~.slaves: interfaces which are outputs of this node
-    :ivar ~.extraConds: {dict interface : extraConditionSignal}
+    :ivar ~.masters: list of unique interfaces which are inputs into this node
+    :ivar ~.slaves: list of unique interfaces which are outputs of this node
+    :note: instead of interface it is possible to use tuple (valid, ready) signal,
+        this tuple can also be (1, 1) but can only in masters or only in slaves
+    :ivar ~.extraConds: dict {interface : extraConditionSignal}
         where extra conditions will be added to expression for channel enable.
         For master it means it will obtain ready=1 only if extraConditionSignal
         is 1.
@@ -90,19 +93,18 @@ class StreamNode():
         if extraConditionSignal is 1.
         All interfaces have to wait on each other so if an extraCond!=1 it causes
         blocking on all interfaces if not overridden by skipWhen.
-    :note: instead of interface it is possilble to use tuple (valid, ready) signal
-    :ivar ~.skipWhen: dict interface : skipSignal
-        where if skipSignal is high interface is disconnected from stream
-        sync node and others does not have to wait on it
+    :ivar ~.skipWhen: dict {interface : skipSignal}
+        where if skipSignal is high, the interface is disconnected from stream
+        sync node and others does not have to wait for it
         (master does not need to have valid and slave ready)
-    :attention: skipWhen has higher priority
+    :attention: skipWhen has higher priority than extraCond
     """
 
     def __init__(self,
-                 masters: Optional[List[INTERFACE_OR_VLD_RD_TUPLE]]=None,
-                 slaves: Optional[List[INTERFACE_OR_VLD_RD_TUPLE]]=None,
-                 extraConds: Optional[Dict[INTERFACE_OR_VLD_RD_TUPLE, RtlSignal]]=None,
-                 skipWhen: Optional[Dict[INTERFACE_OR_VLD_RD_TUPLE, RtlSignal]]=None):
+                 masters: Optional[List[InterfaceOrValidReadyTuple]]=None,
+                 slaves: Optional[List[InterfaceOrValidReadyTuple]]=None,
+                 extraConds: Optional[Dict[InterfaceOrValidReadyTuple, RtlSignal]]=None,
+                 skipWhen: Optional[Dict[InterfaceOrValidReadyTuple, RtlSignal]]=None):
         if masters is None:
             masters = []
         if slaves is None:
@@ -123,7 +125,7 @@ class StreamNode():
         (generate valid/ready synchronization logic for interfaces)
 
         :param enSig: optional signal to enable this node
-        :return: list of assignements which are responsible for synchronization of streams
+        :return: list of assignments which are responsible for synchronization of streams
         """
         masters = self.masters
         slaves = self.slaves
@@ -155,7 +157,7 @@ class StreamNode():
                 rd = _get_ready_signal(m)
                 if isinstance(rd, int):
                     assert rd == 1
-                    a = []
+                    continue
                 else:
                     a = [rd(r), ]
 
@@ -173,7 +175,7 @@ class StreamNode():
                 vld = _get_valid_signal(s)
                 if isinstance(vld, int):
                     assert vld == 1
-                    a = []
+                    continue
                 else:
                     a = [vld(v), ]
 
@@ -194,14 +196,14 @@ class StreamNode():
                 a = m.ack()
             else:
                 a = _get_valid_signal(m)
-            
+
             if isinstance(a, (int, HValue)):
                 assert int(a) == 1, (m, a)
-                a = BIT.from_py(1)
+                continue
             else:
                 if extra:
                     a = And(a, *extra)
-    
+
                 if skip is not None:
                     a = Or(a, skip)
 
@@ -216,22 +218,22 @@ class StreamNode():
 
             if isinstance(a, (int, HValue)):
                 assert int(a) == 1, (s, a)
-                a = BIT.from_py(1)
+                continue
             else:
                 if extra:
                     a = And(a, *extra)
-    
+
                 if skip is not None:
                     a = Or(a, skip)
 
             acks.append(a)
 
-        if not acks:
+        if acks:
+            return And(*acks)
+        else:
             return True
 
-        return And(*acks)
-
-    def getExtraAndSkip(self, intf: INTERFACE_OR_VLD_RD_TUPLE) -> Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
+    def getExtraAndSkip(self, intf: InterfaceOrValidReadyTuple) -> Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
         """
         :return: optional extraCond and skip flags for interface
         """
@@ -247,7 +249,7 @@ class StreamNode():
 
         return extra, skip
 
-    def vld(self, intf: INTERFACE_OR_VLD_RD_TUPLE) -> RtlSignal:
+    def vld(self, intf: InterfaceOrValidReadyTuple) -> RtlSignal:
         """
         :return: valid signal of master interface for synchronization of othres
         """
@@ -271,7 +273,7 @@ class StreamNode():
         else:
             return v | s
 
-    def rd(self, intf: INTERFACE_OR_VLD_RD_TUPLE) -> RtlSignal:
+    def rd(self, intf: InterfaceOrValidReadyTuple) -> RtlSignal:
         """
         :return: ready signal of slave interface for synchronization of othres
         """
@@ -295,7 +297,7 @@ class StreamNode():
         else:
             return r | s
 
-    def ackForMaster(self, master: INTERFACE_OR_VLD_RD_TUPLE) -> RtlSignal:
+    def ackForMaster(self, master: InterfaceOrValidReadyTuple) -> RtlSignal:
         """
         :return: driver of ready signal for master
         """
@@ -316,7 +318,7 @@ class StreamNode():
 
         return r
 
-    def ackForSlave(self, slave: INTERFACE_OR_VLD_RD_TUPLE) -> RtlSignal:
+    def ackForSlave(self, slave: InterfaceOrValidReadyTuple) -> RtlSignal:
         """
         :return: driver of valid signal for slave
         """
