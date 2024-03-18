@@ -92,4 +92,3 @@ class RtlSignalBuilder():
                     return a & ~bMask
                 else:
                     return a & (b & ~bMask)
-
