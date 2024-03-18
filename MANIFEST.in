@@ -76,6 +76,7 @@ include hwtLib/tests/serialization/AssignToASliceOfReg3b.vhd
 include hwtLib/tests/serialization/AssignToASliceOfReg3c.vhd
 include hwtLib/tests/serialization/AssignToASliceOfReg3d.vhd
 include hwtLib/tests/serialization/ExampleA.vhd
+include hwtLib/tests/serialization/ExampleRom.v
 include hwtLib/tests/serialization/SimpleUnitReanamedPort0.vhd
 include hwtLib/tests/serialization/SimpleUnitReanamedPort1.vhd
 include hwtLib/tests/serialization/SimpleUnitReanamedPort2.vhd

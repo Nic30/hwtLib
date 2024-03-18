@@ -19,8 +19,6 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTCs
 from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axi_comp.cache.cacheWriteAllocWawOnlyWritePropagating_test import AxiCacheWriteAllocWawOnlyWritePropagatingTCs
 from hwtLib.amba.axi_comp.cache.pseudo_lru_test import PseudoLru_TC
-from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
-    AxiInterconnectMatrixAddrCrossbar_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
     AxiInterconnectMatrixCrossbar_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_TCs
@@ -28,6 +26,7 @@ from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrix
 from hwtLib.amba.axi_comp.lsu.read_aggregator_test import AxiReadAggregator_TCs
 from hwtLib.amba.axi_comp.lsu.store_queue_write_propagating_test import AxiStoreQueueWritePropagating_TCs
 from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_TCs
+from hwtLib.amba.axi_comp.oooOp.reorder_buffer_test import ReorderBufferTC
 from hwtLib.amba.axi_comp.resize_test import AxiResizeTC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
@@ -216,6 +215,7 @@ from hwtLib.tests.serialization.hdlReaname_test import SerializerHdlRename_TC
 from hwtLib.tests.serialization.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.serialization.modes_test import SerializerModes_TC
 from hwtLib.tests.serialization.tmpVar_test import Serializer_tmpVar_TC
+from hwtLib.tests.serialization.verilog_test import VerilogSerializer_TC
 from hwtLib.tests.serialization.vhdl_test import Vhdl2008Serializer_TC
 from hwtLib.tests.simulator.basicRtlSimulatorVcdTmpDirs_test import BasicRtlSimulatorVcdTmpDirs_TCs
 from hwtLib.tests.simulator.json_log_test import HsFifoJsonLogTC
@@ -246,7 +246,10 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
-from hwtLib.amba.axi_comp.oooOp.reorder_buffer_test import ReorderBufferTC
+
+
+from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
+    AxiInterconnectMatrixAddrCrossbar_TCs
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -317,6 +320,7 @@ suite = testSuiteFromTCs(
     ResourceAnalyzer_TC,
     CombLoopAnalysisTC,
     Vhdl2008Serializer_TC,
+    VerilogSerializer_TC,
     CodeBlokStmTC,
     IfStmTC,
     SwitchStmTC,
