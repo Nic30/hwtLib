@@ -15,9 +15,28 @@ from hwtLib.examples.errors.invalidTypeConnetion import InvalidTypeConnetion
 from hwtLib.examples.errors.multipleDriversOfChildNet import \
     MultipleDriversOfChildNet, MultipleDriversOfChildNet2
 from hwtLib.examples.errors.unusedSubunit import UnusedSubunit, UnusedSubunit2
+from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.bits import Bits
+from hwt.interfaces.std import Signal
+from hwtLib.types.ctypes import uint8_t
+
+
+class ExampleRomWithTooLargeArrayInit(Unit):
+
+    def _declr(self):
+        self.idx = Signal(Bits(2))
+        self.data = Signal(Bits(8, signed=False))._m()
+
+    def _impl(self):
+
+        lut = self._sig(name="rom", dtype=uint8_t[1],
+                                    def_val=[3, 10, 12, 99])
+
+        self.data(lut[self.idx])
 
 
 class ErrorsTC(unittest.TestCase):
+
     def test_invalidTypeConnetion(self):
         u = InvalidTypeConnetion()
         with self.assertRaises(TypeConversionErr):
@@ -51,6 +70,11 @@ class ErrorsTC(unittest.TestCase):
     def test_accessingSubunitInternalIntf(self):
         u = AccessingSubunitInternalIntf()
         with self.assertRaises(AssertionError):
+            to_rtl_str(u)
+
+    def test_ExampleRomWithTooLargeArrayInit(self):
+        u = ExampleRomWithTooLargeArrayInit()
+        with self.assertRaises(ValueError):
             to_rtl_str(u)
 
 
