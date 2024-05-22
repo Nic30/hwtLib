@@ -34,9 +34,9 @@ class AxiLite_to_Axi(BusBridge):
     .. hwt-autodoc::
     """
 
-    def __init__(self, hwIOCls=Axi4, hdl_name_override:Optional[str]=None):
+    def __init__(self, hwIOCls=Axi4, hdlName:Optional[str]=None):
         self.hwIOCls = hwIOCls
-        super(AxiLite_to_Axi, self).__init__(hdl_name_override=hdl_name_override)
+        super(AxiLite_to_Axi, self).__init__(hdlName=hdlName)
 
     def _config(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)

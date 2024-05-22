@@ -72,8 +72,8 @@ class ExtractedHwModule(HwModule):
     def __init__(self, externInputs: SetList[RtlSignal],
                   externObjsToExtract: SetList[Union[RtlSignal, HOperatorNode]],
                   externOutputs: SetList[RtlSignal],
-                  hdl_name_override:Optional[str]=None):
-        HwModule.__init__(self, hdl_name_override=hdl_name_override)
+                  hdlName:Optional[str]=None):
+        HwModule.__init__(self, hdlName=hdlName)
         self._externInputs = externInputs
         self._externObjsToExtract = externObjsToExtract
         self._externOutputs = externOutputs
@@ -91,7 +91,7 @@ class ExtractedHwModule(HwModule):
 
             if iCloned is None:
                 iCloned = HwIOSignal(i._dtype)
-            name = AbstractComponentBuilder(self, None, "")._findSuitableName(i.name, firstWithoutCntrSuffix=True)
+            name = AbstractComponentBuilder(self, None, "")._findSuitableName(i._name, firstWithoutCntrSuffix=True)
             setattr(self, name, iCloned)
             assert i not in ioMap
             ioMap[i] = iCloned
@@ -99,7 +99,7 @@ class ExtractedHwModule(HwModule):
         for o in self._externOutputs:
             o: RtlSignal
             oCloned = HwIOSignal(o._dtype)._m()
-            name = AbstractComponentBuilder(self, None, "")._findSuitableName(o.name, firstWithoutCntrSuffix=True)
+            name = AbstractComponentBuilder(self, None, "")._findSuitableName(o._name, firstWithoutCntrSuffix=True)
             setattr(self, name, oCloned)
             assert o not in ioMap
             ioMap[o] = oCloned
@@ -288,7 +288,7 @@ class ExtractedHwModule(HwModule):
         # re-connect signals which should be connected to IO of new subunit
         translation = {i: self._ioMap[i]._sig for i in self._externInputs}
         interOuts = {i: self._ioMap[i]._sig for i in self._externOutputs}
-        self._cleanAsSubunit()
+        self._cleanThisSubunitRtlSignals()
         super(ExtractedHwModule, self)._signalsForSubHwModuleEntity(self._parent._ctx, "sig_" + self._name)
         
         outerIo = {i: self._ioMap[i]._sig for i in chain(self._externInputs, self._externOutputs)}

@@ -32,10 +32,10 @@ class AxiTester(HwModule):
     .. hwt-autodoc::
     """
 
-    def __init__(self, axiCls=Axi4, cntrlCls=Axi4Lite, hdl_name_override:Optional[str]=None):
+    def __init__(self, axiCls=Axi4, cntrlCls=Axi4Lite, hdlName:Optional[str]=None):
         self._axiCls = axiCls
         self._cntrlCls = cntrlCls
-        super(AxiTester, self).__init__(hdl_name_override=hdl_name_override)
+        super(AxiTester, self).__init__(hdlName=hdlName)
 
     def _config(self):
         self._axiCls._config(self)

@@ -12,7 +12,7 @@ from ipCorePackager.constants import DIRECTION
 class SimpleHwModuleRenamedPort0(HwModule):
 
     def _declr(self):
-        self.a = HwIOSignal(hdl_name="a_in_hdl")
+        self.a = HwIOSignal(hdlName="a_in_hdl")
         self.b = HwIOSignal()._m()
 
     def _impl(self):
@@ -22,7 +22,7 @@ class SimpleHwModuleRenamedPort0(HwModule):
 class SimpleHwModuleRenamedPort1(HwModule):
 
     def _declr(self):
-        self.a = HwIODataRdVld(hdl_name="a_in_hdl")
+        self.a = HwIODataRdVld(hdlName="a_in_hdl")
         self.b = HwIODataRdVld()._m()
 
     def _impl(self):
@@ -32,9 +32,9 @@ class SimpleHwModuleRenamedPort1(HwModule):
 class SimpleHwModuleRenamedPort2(HwModule):
 
     def _declr(self):
-        self.a = HwIODataRdVld(hdl_name={"data": "a_in_hdl",
-                                      "vld": "a_in_hdl_valid",
-                                      "rd": "a_in_hdl_ready"})
+        self.a = HwIODataRdVld(hdlName={"data": "a_in_hdl",
+                                        "vld": "a_in_hdl_valid",
+                                        "rd": "a_in_hdl_ready"})
         self.b = HwIODataRdVld()._m()
 
     def _impl(self):
@@ -44,7 +44,7 @@ class SimpleHwModuleRenamedPort2(HwModule):
 class SimpleHwModuleRenamedPort3(HwModule):
 
     def _declr(self):
-        self.a = HwIODataRdVld(hdl_name="")
+        self.a = HwIODataRdVld(hdlName="")
         self.b = HwIODataRdVld()._m()
 
     def _impl(self):
@@ -54,7 +54,7 @@ class SimpleHwModuleRenamedPort3(HwModule):
 class SimpleHwModuleRenamedPort4(HwModule):
 
     def _declr(self):
-        self.a = Axi4StreamFullDuplex(hdl_name="")
+        self.a = Axi4StreamFullDuplex(hdlName="")
         self.b = Axi4StreamFullDuplex()._m()
 
     def _impl(self):
@@ -66,20 +66,20 @@ class _Axi4StreamFullDuplex(Axi4StreamFullDuplex):
     def _declr(self):
         with self._hwParamsShared():
             if self.HAS_TX:
-                self.tx = Axi4Stream(hdl_name="eth_tx")
+                self.tx = Axi4Stream(hdlName="eth_tx")
 
             if self.HAS_RX:
                 self.rx = Axi4Stream(masterDir=DIRECTION.IN,
-                                    hdl_name={
-                                        "data": "eth_rx",
-                                        "valid": "eth_rx_vld",
-                                    })
+                                     hdlName={
+                                         "data": "eth_rx",
+                                         "valid": "eth_rx_vld",
+                                     })
 
 
 class SimpleHwModuleRenamedPort5(HwModule):
 
     def _declr(self):
-        self.a = _Axi4StreamFullDuplex(hdl_name="")
+        self.a = _Axi4StreamFullDuplex(hdlName="")
         self.b = _Axi4StreamFullDuplex()._m()
 
     def _impl(self):

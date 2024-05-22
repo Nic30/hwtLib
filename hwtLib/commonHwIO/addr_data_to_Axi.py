@@ -48,9 +48,9 @@ class AddrDataRdVld_to_Axi(BusBridge):
     .. hwt-autodoc:: example_AddrDataRdVld_to_Axi
     """
 
-    def __init__(self, hwIOCls=Axi4, hdl_name_override:Optional[str]=None):
+    def __init__(self, hwIOCls=Axi4, hdlName:Optional[str]=None):
         self.hwIOCls = hwIOCls
-        super(AddrDataRdVld_to_Axi, self).__init__(hdl_name_override=hdl_name_override)
+        super(AddrDataRdVld_to_Axi, self).__init__(hdlName=hdlName)
 
     def _config(self):
         self.hwIOCls._config(self)

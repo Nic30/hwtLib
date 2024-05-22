@@ -87,7 +87,7 @@ class HwModuleWithGenericOfChild(HwModule):
 
 
 def count_components(m: HwModule):
-    return len([o for o in m._ctx.arch.objs if isinstance(o, HdlCompInst)])
+    return len([o for o in m._ctx.hwModDef.objs if isinstance(o, HdlCompInst)])
 
 
 class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):

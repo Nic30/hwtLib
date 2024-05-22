@@ -23,9 +23,9 @@ class AxiInterconnectMatrixCrossbar(HwModule):
     .. hwt-autodoc:: example_AxiInterconnectMatrixCrossbar
     """
 
-    def __init__(self, hwIOCls, hdl_name_override:Optional[str]=None):
+    def __init__(self, hwIOCls, hdlName:Optional[str]=None):
         self.hwIOCls = hwIOCls
-        super(AxiInterconnectMatrixCrossbar, self).__init__(hdl_name_override=hdl_name_override)
+        super(AxiInterconnectMatrixCrossbar, self).__init__(hdlName=hdlName)
 
     @staticmethod
     def _masters_for_slave(masters, slave_cnt) -> Dict[int, Set[int]]:

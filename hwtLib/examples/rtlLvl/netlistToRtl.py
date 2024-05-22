@@ -22,10 +22,10 @@ def netlistToVhdlStr(name: str, netlist: RtlNetlist,
         s._hwIO = True
         pi = HdlPortItem.fromSignal(s, netlist, d)
         # port of current top component
-        s.name = name_scope.checked_name(s.name, s)
+        s._name = name_scope.checked_name(s._name, s)
         pi.connectInternSig(s)
-        netlist.ent.ports.append(pi)
-    netlist.ent.ports.sort(key=lambda x: x.name)
+        netlist.hwModDec.ports.append(pi)
+    netlist.hwModDec.ports.sort(key=lambda x: x.name)
     netlist.create_HdlModuleDef(DummyPlatform(), store_manager)
-    store_manager.write(netlist.arch)
+    store_manager.write(netlist.hwModDef)
     return buff.getvalue()

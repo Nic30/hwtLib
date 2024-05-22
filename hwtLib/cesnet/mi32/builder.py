@@ -12,9 +12,9 @@ from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 class _Mi32Buff(Mi32Buff):
     """Mi32Buff constructor which ignores interface in constructor"""
 
-    def __init__(self, hwIOCls, hdl_name_override:Optional[str]=None):
+    def __init__(self, hwIOCls, hdlName:Optional[str]=None):
         assert hwIOCls is Mi32
-        super(_Mi32Buff, self).__init__(hdl_name_override=hdl_name_override)
+        super(_Mi32Buff, self).__init__(hdlName=hdlName)
 
 
 class Mi32Builder(AxiBuilder):

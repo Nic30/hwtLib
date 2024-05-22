@@ -128,15 +128,15 @@ class HwIOSynthesizerTC(BaseSynthesizerTC):
 
         self.assertIsNot(bram.a, bram.b, 'instances are properly instantiated')
 
-        port_a = list(where(bram._ctx.ent.ports, lambda x: x.name == "a"))
-        port_b = list(where(bram._ctx.ent.ports, lambda x: x.name == "b"))
+        port_a = list(where(bram._ctx.hwModDec.ports, lambda x: x.name == "a"))
+        port_b = list(where(bram._ctx.hwModDec.ports, lambda x: x.name == "b"))
 
         self.assertEqual(len(port_a), 1, 'entity has single port a')
         port_a = port_a[0]
         self.assertEqual(len(port_b), 1, 'entity has single port b')
         port_b = port_b[0]
 
-        self.assertEqual(len(bram._ctx.ent.ports), 2,
+        self.assertEqual(len(bram._ctx.hwModDec.ports), 2,
                          'entity has right number of ports')
 
         self.assertEqual(port_a.direction, D.IN,
@@ -153,7 +153,7 @@ class HwIOSynthesizerTC(BaseSynthesizerTC):
         dut = Em()
         dut = synthesised(dut)
 
-        e = dut._ctx.ent
+        e = dut._ctx.hwModDec
         a = self.getPort(e, 'a')
         b = self.getPort(e, 'b')
         self.assertEqual(a.direction, D.IN)
@@ -169,7 +169,7 @@ class HwIOSynthesizerTC(BaseSynthesizerTC):
 
         dut = synthesised(dut)
         self.assertTrue(dut.a.ar.addr._isExtern)
-        e = dut._ctx.ent
+        e = dut._ctx.hwModDec
 
         a_ar_addr = self.getPort(e, 'a_ar_addr')
         self.assertEqual(a_ar_addr.direction, D.IN)

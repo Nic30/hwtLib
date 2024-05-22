@@ -12,14 +12,14 @@ class HandshakedCompBase(HwModule):
     """
 
     def __init__(self, hshwIO: Type[HwIORdVldSync],
-                 hdl_name_override:Optional[str]=None):
+                 hdlName:Optional[str]=None):
         """
         :param hshwIO: class of interface which should be used
             as interface of this unit
         """
         assert(issubclass(hshwIO, (HwIODataRdVld, HwIORdVldSync))), hshwIO
         self.hwIOCls = hshwIO
-        HwModule.__init__(self, hdl_name_override=hdl_name_override)
+        HwModule.__init__(self, hdlName=hdlName)
 
     def _config(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)

@@ -9,12 +9,12 @@ class Axi4SCompBase(HandshakedCompBase):
     Abstract base for axis components
     """
 
-    def __init__(self, hwIOCls=Axi4Stream, hdl_name_override:Optional[str]=None):
+    def __init__(self, hwIOCls=Axi4Stream, hdlName:Optional[str]=None):
         """
         :param hshwIO: class of interface which should be used as interface of this unit
         """
         self.hwIOCls = hwIOCls
-        HwModule.__init__(self, hdl_name_override=hdl_name_override)
+        HwModule.__init__(self, hdlName=hdlName)
 
     @classmethod
     def get_valid_signal(cls, hwIO):

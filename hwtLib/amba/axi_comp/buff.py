@@ -18,9 +18,9 @@ class AxiBuff(BusBridge):
     .. hwt-autodoc:: _example_AxiBuff
     """
 
-    def __init__(self, hwIOCls, hdl_name_override:Optional[str]=None):
+    def __init__(self, hwIOCls, hdlName:Optional[str]=None):
         self.hwIOCls = hwIOCls
-        super(AxiBuff, self).__init__(hdl_name_override=hdl_name_override)
+        super(AxiBuff, self).__init__(hdlName=hdlName)
 
     def _config(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)

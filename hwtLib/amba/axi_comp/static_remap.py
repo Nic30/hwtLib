@@ -16,9 +16,9 @@ class Axi4StaticRemap(BusStaticRemap):
     .. hwt-autodoc:: _example_Axi4StaticRemap
     """
 
-    def __init__(self, hwIOCls=Axi4, hdl_name_override:Optional[str]=None):
+    def __init__(self, hwIOCls=Axi4, hdlName:Optional[str]=None):
         self.hwIOCls = hwIOCls
-        super(Axi4StaticRemap, self).__init__(hdl_name_override=hdl_name_override)
+        super(Axi4StaticRemap, self).__init__(hdlName=hdlName)
 
     def _config(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)

@@ -22,7 +22,7 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, dut: OooOpExampleCoun
         clk = clk._sig
     else:
         clk = clk._sigInside
-    clk = getattr(m, clk.name)
+    clk = getattr(m, clk._name)
 
     def int_or_none(v):
         try:
@@ -39,7 +39,7 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, dut: OooOpExampleCoun
                 return tuple(read_data(hwIO) for hwIO in sig._hwIOs)
             else:
                 sig = sig._sig
-        return int_or_none(getattr(m, sig.name).read())
+        return int_or_none(getattr(m, sig._name).read())
     
     has_operation = hasattr(dut, "OPERATION")
     has_trans_data = dut.TRANSACTION_STATE_T is not None
@@ -97,7 +97,7 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, dut: OooOpExampleCoun
                                 if cd:
                                     collision = hwIO
                                     # assert read_data(u.pipeline[hwIO].valid), (clk_i,
-                                    #    u.pipeline[hwIO].valid.name,
+                                    #    u.pipeline[hwIO].valid_name,
                                     #    "not valid and we expecting collision with it")            
                                     break
                             

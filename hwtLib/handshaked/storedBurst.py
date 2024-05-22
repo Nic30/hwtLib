@@ -19,9 +19,9 @@ class HandshakedStoredBurst(HwModule):
 
     .. hwt-autodoc::
     """
-    def __init__(self, hwIOCls=HwIODataRdVld, hdl_name_override:Optional[str]=None):
+    def __init__(self, hwIOCls=HwIODataRdVld, hdlName:Optional[str]=None):
         self.hwIOCls = hwIOCls
-        super(HandshakedStoredBurst, self).__init__(hdl_name_override=hdl_name_override)
+        super(HandshakedStoredBurst, self).__init__(hdlName=hdlName)
 
     def _config(self):
         self.hwIOCls._config(self)

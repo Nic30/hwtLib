@@ -23,9 +23,9 @@ class Axi4SlaveTimeout(BusBridge):
     .. hwt-autodoc:: _example_Axi4SlaveTimeout
     """
 
-    def __init__(self, hwIOCls, hdl_name_override:Optional[str]=None):
+    def __init__(self, hwIOCls, hdlName:Optional[str]=None):
         self.hwIOCls = hwIOCls
-        super(Axi4SlaveTimeout, self).__init__(hdl_name_override=hdl_name_override)
+        super(Axi4SlaveTimeout, self).__init__(hdlName=hdlName)
 
     def _config(self):
         self.TIMEOUT = HwParam(4096)

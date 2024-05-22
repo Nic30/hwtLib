@@ -82,17 +82,17 @@ class HwExceptionCtx():
         for s in HwIO_walkSignals(hwIO):
             if s._direction == INTF_DIRECTION.SLAVE:
                 ep = s._sig.endpoints
-                ep.remove(s._hdl_port)
+                ep.remove(s._hdlPort)
 
             elif s._direction == INTF_DIRECTION.MASTER:
                 dr = s._sig.drivers
-                dr.remove(s._hdl_port)
+                dr.remove(s._hdlPort)
             else:
                 raise ValueError(s._direction)
 
             s._sig.ctx.hwIOs.pop(s._sig)
-            self.parent._ctx.ent.ports.remove(s._hdl_port)
-            s._hdl_port = None
+            self.parent._ctx.hwModDec.ports.remove(s._hdlPort)
+            s._hdlPort = None
             s._isExtern = False
 
     def hw_raise(self, exception: InHwError,
