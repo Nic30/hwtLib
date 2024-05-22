@@ -5,6 +5,7 @@ from typing import Optional
 
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
@@ -22,13 +23,15 @@ class AxiBuff(BusBridge):
         self.hwIOCls = hwIOCls
         super(AxiBuff, self).__init__(hdlName=hdlName)
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)
-        self.hwIOCls._config(self)
+        self.hwIOCls.hwConfig(self)
         self.ADDR_BUFF_DEPTH = HwParam(4)
         self.DATA_BUFF_DEPTH = HwParam(4)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -42,7 +45,8 @@ class AxiBuff(BusBridge):
             " it should not be instantiated at all",
             self.ADDR_BUFF_DEPTH, self.DATA_BUFF_DEPTH)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         ADDR_DEPTH = self.ADDR_BUFF_DEPTH
         DATA_DEPTH = self.DATA_BUFF_DEPTH
 

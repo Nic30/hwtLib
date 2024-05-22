@@ -12,6 +12,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIOSignal, HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.amba.axis_comp.frame_parser import Axi4S_frameParser
@@ -37,7 +38,8 @@ class Usb2SieDeviceRx(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.enable = HwIOSignal()
         self.rx = Utmi_8b_rx()
@@ -101,7 +103,8 @@ class Usb2SieDeviceRx(HwModule):
 
         return rx_data_tmp
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         rx = self._Utmi_8b_rx_to_DataErrVldStrbLast(self.rx)
         rx_ending = rename_signal(self, rx.vld & rx.last, "rx_ending")
 

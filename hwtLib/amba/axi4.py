@@ -1,13 +1,14 @@
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_r, Axi3_b, IP_Axi3, Axi3, _DEFAULT
 from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.amba.axi_common import Axi_strb, Axi_hs
 from hwtLib.amba.axi4s import Axi4Stream, Axi4StreamAgent
+from hwtLib.amba.axi_common import Axi_strb, Axi_hs
+from hwtLib.amba.constants import BURST_INCR, LOCK_DEFAULT, PROT_DEFAULT, \
+    BYTES_IN_TRANS, QOS_DEFAULT, CACHE_DEFAULT
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
-from hwtLib.amba.constants import BURST_INCR, LOCK_DEFAULT, PROT_DEFAULT,\
-    BYTES_IN_TRANS, QOS_DEFAULT, CACHE_DEFAULT
 
 
 #####################################################################
@@ -22,10 +23,12 @@ class Axi4_addr(Axi3_addr):
     LEN_WIDTH = 8
     LOCK_WIDTH = 1
 
-    def _declr(self):
-        Axi3_addr._declr(self)
+    @override
+    def hwDeclr(self):
+        Axi3_addr.hwDeclr(self)
         self.qos = HwIOVectSignal(4)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi4_addrAgent(sim, self)
 
@@ -92,15 +95,18 @@ class Axi4_w(Axi_hs, Axi_strb):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.data = HwIOVectSignal(self.DATA_WIDTH)
-        Axi_strb._declr(self)
+        Axi_strb.hwDeclr(self)
         self.last = HwIOSignal()
-        Axi_hs._declr(self)
+        Axi_hs.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         Axi4Stream._initSimAgent(self, sim)
 
@@ -139,12 +145,14 @@ class Axi4(Axi3):
     R_CLS = Axi4_r
     B_CLS = Axi4_b
 
-    def _config(self):
-        Axi4Lite._config(self)
+    @override
+    def hwConfig(self):
+        Axi4Lite.hwConfig(self)
         self.ID_WIDTH = HwParam(6)
         self.LOCK_WIDTH = 1
         self.ADDR_USER_WIDTH = HwParam(0)
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Axi4
 

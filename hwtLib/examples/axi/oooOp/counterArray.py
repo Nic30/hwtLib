@@ -15,8 +15,8 @@ class OooOpExampleCounterArray(OutOfOrderCummulativeOp):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        OutOfOrderCummulativeOp._config(self)
+    def hwConfig(self):
+        OutOfOrderCummulativeOp.hwConfig(self)
         # the transaction always just increments the counter
         # so there is no need for transaction state
         self.TRANSACTION_STATE_T = None

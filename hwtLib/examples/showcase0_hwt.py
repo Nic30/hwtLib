@@ -16,7 +16,7 @@ class Showcase0(HwModule):
         .. hwt-autodoc::
         
     """
-    def _declr(self):
+    def hwDeclr(self):
         # ports
         self.a = HwIOSignal(HBits(32, signed=False))
         self.b = HwIOSignal(HBits(32, signed=True))
@@ -44,7 +44,7 @@ class Showcase0(HwModule):
         self.sc_signal = HwIOSignal(HBits(8))._m()
         # component instances
 
-    def _impl(self):
+    def hwImpl(self):
         a, b, c, clk, cmp_0, cmp_1, cmp_2, cmp_3, cmp_4, cmp_5, contOut, \
         d, e, f, fitted, g, h, i, j, k, out, \
         output, rst_n, sc_signal = \

@@ -8,7 +8,7 @@ Library is structuralized mostly by main interface.
 Note that many compoments are parametrizable and do work with multiple interfaces.
 
 The compoment is a class which inherits from Unit class.
-Interfaces are added in _declr() method and parameters in _config() method of unit class.
+Interfaces are added in hwDeclr() method and parameters in hwConfig() method of unit class.
 For component there is usually the schematic, which can be opened from link under the name of the component in this documentation.
 
 

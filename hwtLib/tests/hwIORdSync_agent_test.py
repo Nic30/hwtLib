@@ -6,21 +6,25 @@ from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
 from hwt.simulator.simTestCase import SimTestCase
 from hwtSimApi.constants import CLK_PERIOD
+from hwt.pyUtils.typingFuture import override
 
 
 class RdSyncedPipe(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HwIODataRd()
         self.b = HwIODataRd()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 
 class HwIORdSync_agent_TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = RdSyncedPipe()
         cls.compileSim(cls.dut)

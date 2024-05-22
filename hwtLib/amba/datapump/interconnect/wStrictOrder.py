@@ -11,6 +11,7 @@ from hwt.hwParam import HwParam
 from hwtLib.amba.axi_comp.interconnect.base import AxiInterconnectBase
 from hwtLib.amba.datapump.intf import HwIOAxiWDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwt.pyUtils.typingFuture import override
 
 
 @serializeParamsUniq
@@ -23,15 +24,17 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DRIVER_CNT = HwParam(2)
         self.MAX_TRANS_OVERLAP = HwParam(16)
-        HwIOAxiWDatapump._config(self)
+        HwIOAxiWDatapump.hwConfig(self)
 
     def getDpHwIO(self, unit):
         return unit.wDatapump
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.drivers = HObjList(
@@ -109,7 +112,8 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
             d(ack, exclude=[d.vld, d.rd])
             d.vld(ack.vld & fAckOut.vld & fAckOut.data._eq(i))
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         assert int(self.DRIVER_CNT) > 1, "It makes no sense to use interconnect in this case"
         propagateClkRstn(self)
         self.reqHandler(self.wDatapump.req, self.orderInfoFifoW.dataIn)

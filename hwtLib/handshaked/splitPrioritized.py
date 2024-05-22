@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or
+from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.splitCopy import HsSplitCopy
 
 
@@ -17,10 +18,12 @@ class HsSplitPrioritized(HsSplitCopy):
     .. hwt-autodoc:: _example_HsSplitPrioritized
     """
 
-    def _declr(self):
-        HsSplitCopy._declr(self)
+    @override
+    def hwDeclr(self):
+        HsSplitCopy.hwDeclr(self)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         dataOut = list(reversed(self.dataOut))
         self.get_ready_signal(self.dataIn)(Or(*map(lambda x: self.get_ready_signal(x), dataOut)))
         for i, out in enumerate(dataOut):

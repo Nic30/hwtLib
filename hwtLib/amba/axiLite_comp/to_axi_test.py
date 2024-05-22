@@ -2,18 +2,20 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hwIOs.utils import addClkRstn
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axiLite_comp.to_axi import AxiLite_to_Axi
 from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AxiLite_to_Axi_withClk(AxiLite_to_Axi):
-    def _declr(self):
-        AxiLite_to_Axi._declr(self)
+    @override
+    def hwDeclr(self):
+        AxiLite_to_Axi.hwDeclr(self)
         addClkRstn(self)
 
 
@@ -21,6 +23,7 @@ class AxiLite_to_Axi_TC(SimTestCase):
     TRANSACTION_CNT = 32
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = AxiLite_to_Axi_withClk()
         cls.compileSim(cls.dut)

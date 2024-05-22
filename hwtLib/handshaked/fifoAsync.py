@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hwIOs.std import HwIOClk, HwIORst_n, HwIOVectSignal
-from hwt.math import log2ceil, isPow2
-from hwt.serializer.mode import serializeParamsUniq
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil, isPow2
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mem.fifoAsync import FifoAsync
 
@@ -19,12 +20,14 @@ class HsFifoAsync(HandshakedFifo):
 
     .. hwt-autodoc:: _example_HsFifoAsync
     """
-    def _config(self):
-        HandshakedFifo._config(self)
+    @override
+    def hwConfig(self):
+        HandshakedFifo.hwConfig(self)
         self.IN_FREQ = HwParam(int(100e6))
         self.OUT_FREQ = HwParam(int(100e6))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert isPow2(self.DEPTH - 1), (
             "DEPTH has to be 2**n + 1"
             " because fifo has have DEPTH 2**n"
@@ -58,8 +61,9 @@ class HsFifoAsync(HandshakedFifo):
         if self.EXPORT_SPACE:
             self.space = HwIOVectSignal(SIZE_W, signed=False)
 
-    def _impl(self):
-        HandshakedFifo._impl(
+    @override
+    def hwImpl(self):
+        HandshakedFifo.hwImpl(
             self,
             clk_rst=(
                 (self.dataIn_clk, self.dataIn_rst_n),

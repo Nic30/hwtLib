@@ -3,8 +3,9 @@
 
 from hwt.constants import Time
 from hwt.hwIOs.std import HwIOSignal
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 
 
 class SimpleHwModuleWithNonDirectIntConncetion(HwModule):
@@ -15,11 +16,13 @@ class SimpleHwModuleWithNonDirectIntConncetion(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.c = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b = HwIOSignal()
 
         self.b(self.a)
@@ -29,6 +32,7 @@ class SimpleHwModuleWithNonDirectIntConncetion(HwModule):
 class SimpleModuleWithNonDirectIntConncetionTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = SimpleHwModuleWithNonDirectIntConncetion()
         cls.compileSim(cls.dut)

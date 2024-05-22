@@ -7,18 +7,21 @@ from hwt.hwIOs.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.oneHotToBin import OneHotToBin
 from hwtSimApi.constants import CLK_PERIOD
+from hwt.pyUtils.typingFuture import override
 
 
 class OneHotToBinSimWrap(OneHotToBin):
 
-    def _declr(self):
-        OneHotToBin._declr(self)
+    @override
+    def hwDeclr(self):
+        OneHotToBin.hwDeclr(self)
         addClkRstn(self)
 
 
 class OneHotToBinTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = OneHotToBinSimWrap()
         cls.ONE_HOT_WIDTH = 8

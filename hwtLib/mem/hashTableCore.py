@@ -15,6 +15,7 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTable_intf import HwIOLookupKey, HwIOHashTable
+from hwt.pyUtils.typingFuture import override
 
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
@@ -55,8 +56,9 @@ class HashTableCore(HwModule):
         super(HashTableCore, self).__init__()
         self.POLYNOME = polynome
 
-    def _config(self):
-        HwIOHashTable._config(self)
+    @override
+    def hwConfig(self):
+        HwIOHashTable.hwConfig(self)
 
     def _declr_common(self):
         addClkRstn(self)
@@ -67,7 +69,8 @@ class HashTableCore(HwModule):
         h.DATA_WIDTH = self.KEY_WIDTH
         h.setConfig(self.POLYNOME)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self._declr_common()
         self.r = HwIORamRdVldR()._m()
         self.w = HwIOAddrDataRdVld()._m()
@@ -168,7 +171,8 @@ class HashTableCore(HwModule):
         ramW.addr(In.hash)
         StreamNode(masters=[In], slaves=[ramW]).sync()
 
-    def _impl(self, r: Optional[HwIORamRdVldR]=None, w: Optional[HwIOAddrDataRdVld]=None):
+    @override
+    def hwImpl(self, r: Optional[HwIORamRdVldR]=None, w: Optional[HwIOAddrDataRdVld]=None):
         if r is None:
             r = self.r
         if w is None:

@@ -12,23 +12,26 @@ from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axi4s import Axi4Stream
 from pyMathBitPrecise.bit_utils import mask
+from hwt.pyUtils.typingFuture import override
 
 
-class AxisFrameGen(HwModule):
+class Axi4sFrameGen(HwModule):
     """
-    Generator of axi stream frames for testing purposes
+    Generator of AXI stream frames for testing purposes
 
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.MAX_LEN = HwParam(511)
         self.CNTRL_ADDR_WIDTH = HwParam(4)
         self.CNTRL_DATA_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(64)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.axis_out = Axi4Stream()._m()
@@ -43,7 +46,8 @@ class AxisFrameGen(HwModule):
                                     )
                             )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         cntr = self._reg("wordCntr", HBits(log2ceil(self.MAX_LEN)), def_val=0)
         en = self._reg("enable", def_val=0)
@@ -84,7 +88,7 @@ class AxisFrameGen(HwModule):
 
 if __name__ == "__main__":
     from hwt.synth import to_rtl_str
-    m = AxisFrameGen()
+    m = Axi4sFrameGen()
     print(to_rtl_str(m))
 
     # import os

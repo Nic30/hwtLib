@@ -1,9 +1,10 @@
 from typing import List
 
 from hwt.hdl.types.bits import HBits
-from hwt.hwIOs.std import HwIOVectSignal, HwIOClk
 from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIOVectSignal, HwIOClk
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
@@ -40,13 +41,15 @@ class XgmiiChannel(HwIO):
         TERM = HBits(8).from_py(0xFD)
         ERROR = HBits(8).from_py(0xFE)
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
         self.FREQ = HwParam(int(156.25e6))
         self.IS_DDR = HwParam(True)
         self.ALIGNMENT = HwParam(1)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.ALIGNMENT > 0 and self.ALIGNMENT < self.DATA_WIDTH // 8, self.ALIGNMENT
         self.clk = HwIOClk()
         self.clk.FREQ = self.FREQ
@@ -79,10 +82,12 @@ class Xgmii(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        XgmiiChannel._config(self)
+    @override
+    def hwConfig(self):
+        XgmiiChannel.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.rx = XgmiiChannel(masterDir=DIRECTION.IN)
         self.tx = XgmiiChannel()
 

@@ -4,12 +4,14 @@
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
 class VhdlVectorAutoCastExample(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         std_logic = HBits(1)
         std_logic_vector_0 = HBits(1, force_vector=True)
 
@@ -28,7 +30,8 @@ class VhdlVectorAutoCastExample(HwModule):
 
         self.j = HwIOSignal(dtype=std_logic)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # no conversion
         self.b(self.a)
 

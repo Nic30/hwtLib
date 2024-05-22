@@ -11,29 +11,35 @@ from hwt.hwModule import HwModule
 from hwt.serializer.vhdl import ToHdlAstVhdl2008
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.types.ctypes import uint8_t
+from hwt.pyUtils.typingFuture import override
 
 
 # class Interface1d(HwModule):
 #
-#     def _config(self):
+#     @override
+#     def hwConfig(self):
 #         self.SIZE = HwParam(3)
 #
-#     def _declr(self):
+#     @override
+#     def hwDeclr(self):
 #         self.din = HwIOSignal(dtype=uint8_t[self.SIZE])
 #         self.dout = HObjList([HwIOSignal(dtype=uint8_t)._m()
 #                               for _ in range(self.SIZE)])
 #
-#     def _impl(self):
+#     @override
+#     def hwImpl(self):
 #         for i in range(self.SIZE):
 #             o = self.din[i]
 #             self.dout[i](o)
 # class Interface2d(HwModule):
 #
-#     def _config(self):
+#     @override
+#     def hwConfig(self):
 #         self.SIZE_X = HwParam(3)
 #         self.SIZE_Y = HwParam(3)
 #
-#     def _declr(self):
+#     @override
+#     def hwDeclr(self):
 #         self.din = HwIOSignal(dtype=uint8_t[self.SIZE_X][self.SIZE_Y])
 #         self.dout = HObjList([
 #             HObjList([
@@ -42,7 +48,8 @@ from hwtLib.types.ctypes import uint8_t
 #             for _ in range(self.SIZE_X)
 #         ])
 #
-#     def _impl(self):
+#     @override
+#     def hwImpl(self):
 #         # for x in range(self.SIZE_X):
 #         #     for y in range(self.SIZE_Y):
 #         #         o = self.din[x][y]
@@ -79,10 +86,12 @@ def example_use_vhdl_declared_array1d(SIZE_X):
 
 class HwIOWithVHDLUnconstrainedArrayImportedType(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.SIZE_X = HwParam(3)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         # lets suppose that there is some package which has vhdl type defined as:
         #   type data_vector is array (natural range <>, natural range <>) of integer;
         #   type mem is array(natural range <>) of std_logic_vector;
@@ -102,17 +111,20 @@ class HwIOWithVHDLUnconstrainedArrayImportedType(HwModule):
             for _ in range(self.SIZE_X)
         ])
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         for d_in, d_out in zip(self.din, self.dout):
             d_out(d_in)
 
 
 class HwIOWithVHDLUnconstrainedArrayImportedType2(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.SIZE_X = HwParam(3)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         array1d_t = example_use_vhdl_declared_array1d(self.SIZE_X)
 
         self.dout = HwIOSignal(dtype=array1d_t)._m()
@@ -121,7 +133,8 @@ class HwIOWithVHDLUnconstrainedArrayImportedType2(HwModule):
             for _ in range(self.SIZE_X)
         ])
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         for d_in, d_out in zip(self.din, self.dout):
             d_out(d_in)
 

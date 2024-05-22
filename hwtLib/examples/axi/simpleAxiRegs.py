@@ -7,6 +7,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.types.ctypes import uint32_t
@@ -20,11 +21,13 @@ class SimpleAxiRegs(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(8)
         self.DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.axi = Axi4Lite()
@@ -38,7 +41,8 @@ class SimpleAxiRegs(HwModule):
                                     (uint32_t, "reg1")
                                     ))
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         self.conv.bus(self.axi, fit=True)
 

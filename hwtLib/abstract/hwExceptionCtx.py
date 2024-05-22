@@ -10,6 +10,7 @@ from hwt.synthesizer.interfaceLevel.utils import HwIO_walkSignals
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 from hwtLib.abstract.debug_bus_monitor import monitor_of, connect_to_HwIOMonitor
 from ipCorePackager.constants import DIRECTION, INTF_DIRECTION
+from hwt.pyUtils.typingFuture import override
 
 
 class InHwError(Exception):
@@ -37,8 +38,9 @@ class ExceptionHandleInterface(HwIORdVldSync):
         HwIORdVldSync.__init__(self, masterDir=masterDir, loadConfig=loadConfig)
         self._exception = exception
 
-    def _declr(self):
-        HwIORdVldSync._declr(self)
+    @override
+    def hwDeclr(self):
+        HwIORdVldSync.hwDeclr(self)
         args = HObjList()
         for a in self._exception.hw_args:
             _a = monitor_of(a)
@@ -66,7 +68,7 @@ class HwExceptionCtx():
     def _HwModule_registerPublicHwIOInImpl(self, hwIO: ExceptionHandleInterface, name:str):
         p = self.parent
         p._registerHwIO(name, hwIO, isPrivate=False)
-        p._loadInterface(hwIO, True)
+        p._loadHwIODeclarations(hwIO, True)
         hwIO._signalsForHwIO(
             p._ctx, p._ctx.hwIOs, p._store_manager.name_scope,
             reverse_dir=True)

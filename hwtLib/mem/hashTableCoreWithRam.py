@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.ramAsAddrDataRdVld import RamAsAddrDataRdVld
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTableCore import HashTableCore
@@ -15,7 +16,8 @@ class HashTableCoreWithRam(HashTableCore):
     .. hwt-autodoc:: _example_HashTableCoreWithRam
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         HashTableCoreWithRam._declr_common(self)
         t = self.table = RamSingleClock()
         t.PORT_CNT = 1
@@ -26,10 +28,11 @@ class HashTableCoreWithRam(HashTableCore):
         tc.ADDR_WIDTH = t.ADDR_WIDTH
         tc.DATA_WIDTH = t.DATA_WIDTH
 
-    def _impl(self, r=None, w=None):
+    @override
+    def hwImpl(self, r=None, w=None):
         table = self.tableConnector
         self.table.port[0](table.ram)
-        HashTableCore._impl(self, r=table.r, w=table.w)
+        HashTableCore.hwImpl(self, r=table.r, w=table.w)
 
 
 def _example_HashTableCoreWithRam():

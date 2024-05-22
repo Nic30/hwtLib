@@ -5,8 +5,9 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import HdlType_select
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi_comp.virtualDma import AxiVirtualDma
 from hwtLib.handshaked.builder import HsBuilder
@@ -37,11 +38,13 @@ class EthAddrUpdater(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
-        Axi3._config(self)
+    @override
+    def hwConfig(self):
+        Axi3.hwConfig(self)
         self.ALIGNAS = HwParam(self.DATA_WIDTH)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -50,7 +53,8 @@ class EthAddrUpdater(HwModule):
         a = self.packetAddr = HwIODataRdVld()
         a.DATA_WIDTH = self.ADDR_WIDTH
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         dma = AxiVirtualDma(self.axi_m, alignas=self.ALIGNAS)
         rxGet, rxR = dma.read(frameHeader)
         txSet, txW, wAck = dma.write(frameHeader)

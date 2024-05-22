@@ -3,8 +3,9 @@
 
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
-from hwt.hwModule import HwModule
 from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class SimpleIndexingSplit(HwModule):
@@ -12,12 +13,14 @@ class SimpleIndexingSplit(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(2)
         self.b = HwIOSignal()._m()
         self.c = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a[0])
         self.c(self.a[1])
 
@@ -27,12 +30,14 @@ class SimpleIndexingJoin(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(2)._m()
         self.b = HwIOSignal()
         self.c = HwIOSignal()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.a[0](self.b)
         self.a[1](self.c)
 
@@ -42,12 +47,14 @@ class SimpleIndexingRangeJoin(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(4)._m()
         self.b = HwIOVectSignal(2)
         self.c = HwIOVectSignal(2)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.a[2:0](self.b)
         self.a[4:2](self.c)
         assert len(self.a._sig.drivers) == 2
@@ -58,11 +65,13 @@ class IndexingInernRangeSplit(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(4)
         self.b = HwIOVectSignal(4)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         internA = self._sig("internA", HBits(2))
         internB = self._sig("internB", HBits(2))
 
@@ -78,11 +87,13 @@ class IndexingInternSplit(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(2)
         self.b = HwIOVectSignal(2)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         internA = self._sig("internA")
         internB = self._sig("internB")
 
@@ -98,13 +109,15 @@ class IndexingInernJoin(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.c = HwIOSignal()._m()
         self.d = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         intern = self._sig("internSig", HBits(2))
 
         intern[0](self.a)
@@ -119,12 +132,14 @@ class AssignmentToRegIndex(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HwIOVectSignal(2)
         self.b = HwIOVectSignal(2)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         intern = self._reg("internReg", HBits(2))
 
         intern[0](intern[0] & self.a[0])

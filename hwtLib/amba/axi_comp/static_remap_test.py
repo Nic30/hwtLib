@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.hdl.types.struct import HStructField
 from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.hwIOs.utils import propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
-from hwt.hdl.types.struct import HStructField
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
@@ -14,7 +15,9 @@ from hwtLib.amba.axi_comp.static_remap import Axi4StaticRemap
 
 
 class AxiLiteEndpointBehindStaticRemap(HwModule):
-    def _config(self):
+
+    @override
+    def hwConfig(self):
         self.MEM_MAP = HwParam([])
 
     def __init__(self, structTemplate, hwIOCls=Axi4Lite, shouldEnterFn=BusEndpoint._defaultShouldEnterFn):
@@ -25,13 +28,15 @@ class AxiLiteEndpointBehindStaticRemap(HwModule):
     def _mkFieldInterface(self, structHwIO: HwIOStruct, field: HStructField):
         return BusEndpoint._mkFieldInterface(self, structHwIO, field)
 
-    def _declr(self):
-        AxiLiteEndpoint._declr(self)
+    @override
+    def hwDeclr(self):
+        AxiLiteEndpoint.hwDeclr(self)
         with self._hwParamsShared():
             self.ep = AxiLiteEndpoint(self.STRUCT_TEMPLATE)
             self.remap = Axi4StaticRemap(Axi4Lite)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.remap.s(self.bus)
         self.ep.bus(self.remap.m)
         self.decoded(self.ep.decoded)

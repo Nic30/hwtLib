@@ -8,6 +8,7 @@ from hwt.hwIOs.utils import addClkRstn
 from hwt.serializer.mode import serializeOnce
 from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 @serializeOnce
@@ -26,11 +27,13 @@ class FlipRegister(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(32)
         self.DEFAULT_VAL = HwParam(0)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             addClkRstn(self)
             self.first = HwIORegCntrl()
@@ -54,7 +57,8 @@ class FlipRegister(HwModule):
             self.second.din(regB)
         ]
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         first = self._reg("first_reg", HBits(self.DATA_WIDTH), def_val=self.DEFAULT_VAL)
         second = self._reg("second_reg", HBits(self.DATA_WIDTH), def_val=self.DEFAULT_VAL)
 

@@ -6,13 +6,15 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class TwoCntrs(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         self.a_en = HwIOSignal()
@@ -23,7 +25,8 @@ class TwoCntrs(HwModule):
         self.lt = HwIOSignal()._m()
         self.gt = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         index_t = HBits(8, signed=False)
 
         a = self._reg("reg_a", index_t, def_val=0)

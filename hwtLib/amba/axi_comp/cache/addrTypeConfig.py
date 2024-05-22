@@ -31,7 +31,7 @@ class CacheAddrTypeConfig(HwModule):
       of the requested address
     """
 
-    def _config(self):
+    def hwConfig(self):
         if not hasattr(self, "ADDR_WIDTH"):
             self.ADDR_WIDTH = HwParam(32)
         self.CACHE_LINE_SIZE = HwParam(64)

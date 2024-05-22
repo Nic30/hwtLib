@@ -4,6 +4,7 @@
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.builder import HsBuilder
 
 
@@ -13,7 +14,8 @@ class HsBuilderSplit(HwModule):
 
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         self.a = HwIODataRdVld()
@@ -44,7 +46,8 @@ class HsBuilderSplit(HwModule):
         self.e_select = HwIODataRdVld()
         self.e_select.DATA_WIDTH = 3
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # Builder is class which simplifies building of datapaths
         # and keeps components which are used  which this interface together
         a = HsBuilder(self, self.a, name="builderFromA")

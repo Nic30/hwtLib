@@ -5,8 +5,9 @@ import unittest
 
 from hwt.hwIOs.std import HwIOFifoReader, HwIOFifoWriter
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.fifo import Fifo
 from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Timer, WaitWriteOnly
@@ -14,18 +15,21 @@ from hwtSimApi.triggers import Timer, WaitWriteOnly
 
 class FifoReaderPassTrought(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.din = HwIOFifoReader()
         self.dout = HwIOFifoReader()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.dout(self.din)
 
 
 class FifoWriterPassTrought(FifoReaderPassTrought):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.din = HwIOFifoWriter()
         self.dout = HwIOFifoWriter()._m()
@@ -35,6 +39,7 @@ class FifoReaderAgentTC(SimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = FifoReaderPassTrought()
         cls.compileSim(cls.dut)
@@ -55,6 +60,7 @@ class FifoWriterAgentTC(SimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = FifoWriterPassTrought()
         cls.compileSim(cls.dut)
@@ -79,6 +85,7 @@ class FifoTC(SimTestCase):
     CLK = max(IN_CLK, OUT_CLK)  # clock used for resolving of sim duration
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = Fifo()
         dut.DATA_WIDTH = 8

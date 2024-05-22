@@ -7,6 +7,7 @@ from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwtLib.abstract.hwExceptionCtx import HwExceptionCtx, InHwError
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.pyUtils.typingFuture import override
 
 
 class ExampleHwException0(InHwError):
@@ -28,12 +29,13 @@ class HwExceptionRaise(HwModule):
     An example of :class:`hwtLib.abstract.hwExceptionCtx.HwExceptionCtx` usage.
 
     (a handshaked wire which will stall until exception is handled, however only exception caused by value 1
-     has an interface for handlig and thus all other exceptions will cause stall until reset)
+     has an interface for handling and thus all other exceptions will cause stall until reset)
 
     .. hwt-autodoc:
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         # clock and reset is required because the status
         # of the exception handling needs to be stored in register
         addClkRstn(self)
@@ -41,7 +43,8 @@ class HwExceptionRaise(HwModule):
         self.dataOut = HwIODataRdVld()._m()
 
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         err0 = self._sig("exception_handling_in_progress0")
         err0_detected = self._sig("exception_detected0")
         err1 = self._sig("exception_handling_in_progress1")
@@ -105,10 +108,12 @@ class HwExceptionCatch(HwModule):
     .. hwt-autodoc:
     """
 
-    def _declr(self):
-        HwExceptionRaise._declr(self)
+    @override
+    def hwDeclr(self):
+        HwExceptionRaise.hwDeclr(self)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         c = self.c = HwExceptionRaise()
         err0 = self._sig("exception_handling_in_progress0")
         err0_detected = self._sig("exception_detected0")

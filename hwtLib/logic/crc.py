@@ -11,6 +11,7 @@ from hwt.hwIOs.std import HwIODataVld, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.commonHwIO.data_mask_last_hs import HwIODataMaskLastRdVld
@@ -33,14 +34,16 @@ class Crc(HwModule):
     .. hwt-autodoc:: _example_Crc
     """
 
-    def _config(self):
-        CrcComb._config(self)
+    @override
+    def hwConfig(self):
+        CrcComb.hwConfig(self)
         self.setConfig(CRC_32)
         self.LATENCY = HwParam(1)
         self.DATA_WIDTH = 32
         self.MASK_GRANULARITY = HwParam(None)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             if self.MASK_GRANULARITY is None:
@@ -75,7 +78,8 @@ class Crc(HwModule):
             stateNext.append(b)
         return stateNext
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # prepare constants and bit arrays for inputs
         poly_bits, PW = CrcComb.parsePoly(self.POLY, self.POLY_WIDTH)
         din = self.dataIn

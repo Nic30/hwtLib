@@ -8,10 +8,11 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
 from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOSignal, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.storedBurst import HandshakedStoredBurst
@@ -23,15 +24,17 @@ class HwIOHd44780Cmd(HwIORdVldSync):
     """
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.rs = HwIOSignal()  # register select
         self.rw = HwIOSignal()
         self.long_wait = HwIOSignal()
         self.d = HwIOVectSignal(self.DATA_WIDTH)
-        super(HwIOHd44780Cmd, self)._declr()
+        super(HwIOHd44780Cmd, self).hwDeclr()
 
 
 class Hd44780CmdBurst(HandshakedStoredBurst):
@@ -44,6 +47,7 @@ class Hd44780CmdBurst(HandshakedStoredBurst):
         self.DATA = ((0, 0, 0, 0), # an example meaningless data
                      (0, 0, 0, 1))
 
+    @override
     def set_data(self, hwIO: HwIOHd44780Cmd, d):
         if d is None:
             rs, rw, long_wait, d = None, None, None, None
@@ -74,7 +78,8 @@ class Hd44780Driver(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.LCD_ROWS = HwParam(2)
         self.LCD_COLS = HwParam(16)
         self.LCD_DATA_WIDTH = HwParam(8)
@@ -82,7 +87,8 @@ class Hd44780Driver(HwModule):
         # frequency of this component to compute timing for LCD control
         self.FREQ = HwParam(int(100e6))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.clk.FREQ = self.FREQ
         with self._hwParamsShared(prefix="LCD_"):
@@ -224,7 +230,8 @@ class Hd44780Driver(HwModule):
         )
         data_out.en(en_delay)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         """
         * read on 'en' faling edge, write on 'en' rising edge
         * 'en' max frequency = LCD_FREQ / 10

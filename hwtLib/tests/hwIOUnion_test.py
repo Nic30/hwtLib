@@ -3,13 +3,14 @@
 
 from typing import Union
 
-from hwt.hwIOs.std import HwIODataRdVld
-from hwt.hwIOs.hwIOStruct import HwIOStruct
-from hwt.hwIOs.hwIOUnion import HwIOUnionSink, HwIOUnionSource
-from hwt.hwIOs.utils import addClkRstn
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOUnion import HwIOUnionSink, HwIOUnionSource
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.emptyHwModule import EmptyHwModule
 from hwtLib.types.ctypes import uint16_t, uint8_t, int16_t
@@ -53,20 +54,23 @@ class SimpleUnionSlave(EmptyHwModule):
         p.DATA_WIDTH = field.dtype.bit_length()
         return p
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HwIOUnionSink(self.dtype, tuple(), self.mkFieldHwIO)
 
 
 class SimpleUnionMaster(SimpleUnionSlave):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HwIOUnionSink(self.dtype, tuple(), self.mkFieldHwIO)._m()
 
 
 class HwIOUnionTC(SimTestCase):
 
+    @override
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)

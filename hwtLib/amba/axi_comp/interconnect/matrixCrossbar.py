@@ -5,14 +5,15 @@ from typing import Dict, Set, Optional
 
 from hwt.code import Or, Switch
 from hwt.code_utils import rename_signal
+from hwt.hObjList import HObjList
+from hwt.hwIO import HwIO
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4 import Axi4
-from hwt.hwIO import HwIO
 
 
 class AxiInterconnectMatrixCrossbar(HwModule):
@@ -35,14 +36,16 @@ class AxiInterconnectMatrixCrossbar(HwModule):
                 masters_for_slave[s_i].add(m_i)
         return masters_for_slave
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)
         self.INPUT_CNT = HwParam(1)
         # set of input indexes for each output
         self.OUTPUTS = HwParam([{0}])
-        self.hwIOCls._config(self)
+        self.hwIOCls.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         HWIO_CLS = self.hwIOCls
         INPUT_CNT = self.INPUT_CNT
@@ -206,7 +209,8 @@ class AxiInterconnectMatrixCrossbar(HwModule):
         self.handler_data_mux(dataOut_channels, dataIn_channels,
                               order_din_index_for_dout)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         dataOut_channels = self.dataOut
         dataIn_channels = self.dataIn

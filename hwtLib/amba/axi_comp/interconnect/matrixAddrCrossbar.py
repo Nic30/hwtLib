@@ -5,14 +5,15 @@ from typing import List, Tuple
 
 from hwt.code import Concat, SwitchLogic, Or
 from hwt.code_utils import rename_signal
-from hwt.hwIOs.std import HwIODataRdVld
-from hwt.hwModule import HwModule
 from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.defs import BIT
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
@@ -44,14 +45,16 @@ class AxiInterconnectMatrixAddrCrossbar(HwModule):
         self.hwIOCls = axi_addr_cls
         super(AxiInterconnectMatrixAddrCrossbar, self).__init__()
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)
         self.SLAVES = HwParam(tuple())
         self.MASTERS = HwParam(tuple())
-        self.hwIOCls._config(self)
+        self.hwIOCls.hwConfig(self)
 
-    def _declr(self):
-        AxiInterconnectCommon._declr(self, has_r=False, has_w=False)
+    @override
+    def hwDeclr(self):
+        AxiInterconnectCommon.hwDeclr(self, has_r=False, has_w=False)
         self.MASTERS_FOR_SLAVE = AxiInterconnectMatrixCrossbar._masters_for_slave(
             self.MASTERS, len(self.SLAVES))
         MASTER_INDEX_WIDTH = log2ceil(len(self.MASTERS))
@@ -257,7 +260,8 @@ class AxiInterconnectMatrixAddrCrossbar(HwModule):
 
             master_addr.ready(m_rd)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         master_addr_channels = [
             Axi4SBuilder(self, m).buff(1).end
             for m in self.s]

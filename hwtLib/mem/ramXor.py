@@ -8,6 +8,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
 from hwtLib.mem.ram import RamSingleClock
+from hwt.pyUtils.typingFuture import override
 
 
 @serializeParamsUniq
@@ -32,12 +33,14 @@ class RamXorSingleClock(RamSingleClock):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        RamSingleClock._config(self)
+    @override
+    def hwConfig(self):
+        RamSingleClock.hwConfig(self)
         self.PORT_CNT = (WRITE, WRITE, READ)
         self.PRIMITIVE_MEMORY_PORTS = HwParam((WRITE, READ))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRst(self)
         self._declr_ports()
 
@@ -82,9 +85,10 @@ class RamXorSingleClock(RamSingleClock):
         if can_be_primitive_ram:
             self._declr_children()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         if self._can_be_primitive_ram:
-            super(RamXorSingleClock, self)._impl()
+            super(RamXorSingleClock, self).hwImpl()
         else:
             if self.PRIMITIVE_MEMORY_PORTS != (WRITE, READ):
                 raise NotImplementedError(self.PRIMITIVE_MEMORY_PORTS)
@@ -111,7 +115,7 @@ class RamXorSingleClock(RamSingleClock):
                 for r in row:
                     if r is None:
                         continue
-                    r._updateParamsFrom(self, exclude=(("PORT_CNT",), ()))
+                    r._updateHwParamsFrom(self, exclude=(("PORT_CNT",), ()))
                     r.PORT_CNT = self.PRIMITIVE_MEMORY_PORTS
                     if self.INIT_DATA is not None:
                         raise NotImplementedError()

@@ -7,9 +7,10 @@ from hwt.hwIOs.hwIO_map import HwIOObjMap
 from hwt.hwIOs.std import HwIOBramPort_noClk, HwIODataVld, HwIORegCntrl, \
     HwIOVectSignal, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
@@ -27,28 +28,34 @@ class Loop(HwModule):
         self.interfaceCls = interfaceCls
         super(Loop, self).__init__()
 
-    def _config(self):
-        self.interfaceCls._config(self)
+    @override
+    def hwConfig(self):
+        self.interfaceCls.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.din = self.interfaceCls()
             self.dout = self.interfaceCls()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.dout(self.din)
 
 
 class SigLoop(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.din = HwIOVectSignal(self.DATA_WIDTH)
         self.dout = HwIOVectSignal(self.DATA_WIDTH)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.dout(self.din)
 
 
@@ -57,11 +64,13 @@ class TestHwModuleWithChilds(HwModule):
     Container of AxiLiteEndpoint constructed by fromHwIOMap
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.bus = Axi4Lite()
@@ -82,14 +91,15 @@ class TestHwModuleWithChilds(HwModule):
             self.bramOut = HwIOBramPort_noClk()._m()
             self.bramOut.ADDR_WIDTH = 2
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.signalLoop.din(self.signalIn)
         self.regCntrlOut(self.regCntrlLoop.dout)
         self.vldSyncedOut(self.vldSyncedLoop.dout)
         self.bramOut(self.bramLoop.dout)
 
         def configEp(ep):
-            ep._updateParamsFrom(self)
+            ep._updateHwParamsFrom(self)
 
         rltSig10 = self._sig("sig", HBits(self.DATA_WIDTH), def_val=10)
         interfaceMap = HwIOObjMap([
@@ -102,7 +112,7 @@ class TestHwModuleWithChilds(HwModule):
         ])
 
         axiLiteConv = AxiLiteEndpoint.fromHwIOMap(interfaceMap)
-        axiLiteConv._updateParamsFrom(self)
+        axiLiteConv._updateHwParamsFrom(self)
         self.conv = axiLiteConv
 
         axiLiteConv.connectByInterfaceMap(interfaceMap)
@@ -128,11 +138,13 @@ class TestHwModuleWithArr(HwModule):
     Container of AxiLiteEndpoint constructed by fromHwIOMap
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.bus = Axi4Lite()
@@ -146,13 +158,14 @@ class TestHwModuleWithArr(HwModule):
             self.regCntrlLoop2 = Loop(HwIORegCntrl)
             self.regCntrlOut2 = HwIORegCntrl()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.regCntrlOut0(self.regCntrlLoop0.dout)
         self.regCntrlOut1(self.regCntrlLoop1.dout)
         self.regCntrlOut2(self.regCntrlLoop2.dout)
 
         def configEp(ep):
-            ep._updateParamsFrom(self)
+            ep._updateHwParamsFrom(self)
 
         interfaceMap = HwIOObjMap([
                 ([self.regCntrlLoop0.din,
@@ -162,7 +175,7 @@ class TestHwModuleWithArr(HwModule):
             ])
 
         axiLiteConv = AxiLiteEndpoint.fromHwIOMap(interfaceMap)
-        axiLiteConv._updateParamsFrom(self)
+        axiLiteConv._updateHwParamsFrom(self)
         self.conv = axiLiteConv
 
         axiLiteConv.connectByInterfaceMap(interfaceMap)
@@ -179,6 +192,7 @@ struct {
 
 class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 
+    @override
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)
@@ -279,6 +293,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 
 class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
 
+    @override
     def mySetUp(self, data_width=32):
         dut = self.dut = TestHwModuleWithArr()
 

@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hwIOs.std import HwIOSignal, HwIOClk, HwIOVectSignal
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.mem.ram import RamMultiClock
 
 
@@ -11,11 +12,13 @@ class GroupOfBlockrams(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(8)
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             def extData():
                 return HwIOVectSignal(self.DATA_WIDTH)
@@ -40,7 +43,8 @@ class GroupOfBlockrams(HwModule):
                 w = self.bramW = RamMultiClock()
                 r.PORT_CNT = w.PORT_CNT = 2
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         s = self
         bramR = s.bramR
         bramW = s.bramW

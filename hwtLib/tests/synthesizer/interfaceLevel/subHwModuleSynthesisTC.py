@@ -3,15 +3,16 @@
 
 from hdlConvertorAst.hdlAst._structural import HdlCompInst
 from hwt.constants import DIRECTION
+from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.exceptions import TypeConversionErr
-from hwt.hObjList import HObjList
-from hwtLib.abstract.emptyHwModule import EmptyHwModule
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.synth import to_rtl_str, synthesised
+from hwt.synthesizer.exceptions import TypeConversionErr
+from hwtLib.abstract.emptyHwModule import EmptyHwModule
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axi4s_fullduplex import Axi4StreamFullDuplex
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
@@ -22,16 +23,19 @@ from hwtLib.examples.simpleHwModule2withNonDirectIntConnection import \
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
 
+
 D = DIRECTION
 
 
 class HwModuleWithArrHwIO(EmptyHwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.a = Axi4Stream()
             self.b = HObjList(Axi4Stream() for _ in range(2))._m()
@@ -39,11 +43,13 @@ class HwModuleWithArrHwIO(EmptyHwModule):
 
 class HwModuleWithArrHwIOParent(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.a = Axi4Stream()
             self.b0 = Axi4Stream()._m()
@@ -51,7 +57,8 @@ class HwModuleWithArrHwIOParent(HwModule):
 
             self.m0 = HwModuleWithArrHwIO()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.m0.a(self.a)
         self.b0(self.m0.b[0])
         self.b1(self.m0.b[1])
@@ -59,14 +66,17 @@ class HwModuleWithArrHwIOParent(HwModule):
 
 class HwModuleWithGenericOnPort(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.NESTED_PARAM = HwParam(123)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(self.NESTED_PARAM)
         self.b = HwIOVectSignal(self.NESTED_PARAM)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         tmp = self._sig("tmp", self.a._dtype)
         tmp(self.a)
         self.b(tmp)
@@ -74,12 +84,14 @@ class HwModuleWithGenericOnPort(HwModule):
 
 class HwModuleWithGenericOfChild(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(123)
         self.b = HwIOVectSignal(123)._m()
         self.ch = HwModuleWithGenericOnPort()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.ch.a(self.a)
         tmp = self._sig("tmp", self.ch.a._dtype)
         tmp(self.b)
@@ -98,7 +110,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
         Check interface directions pre and after synthesis
         """
         dut = GroupOfBlockrams()
-        dut._loadDeclarations()
+        dut._loadHwDeclarations()
         dut = synthesised(dut)
         self.assertEqual(count_components(dut), 2)
 
@@ -106,23 +118,23 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
 
         class InternHwModule(HwModule):
 
-            def _declr(self):
+            def hwDeclr(self):
                 dt = HBits(64)
                 self.a = HwIOSignal(dtype=dt)
                 self.b = HwIOSignal(dtype=dt)._m()
 
-            def _impl(self):
+            def hwImpl(self):
                 self.b(self.a)
 
         class OuterHwModule(HwModule):
 
-            def _declr(self):
+            def hwDeclr(self):
                 dt = HBits(32)
                 self.a = HwIOSignal(dtype=dt)
                 self.b = HwIOSignal(dtype=dt)
                 self.im = InternHwModule()
 
-            def _impl(self):
+            def hwImpl(self):
                 self.im.a(self.a)
                 self.b(self.im.b)
 
@@ -130,7 +142,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
 
     def test_twoSubHwModules(self):
         dut = HwModuleToHwModuleConnection()
-        dut._loadDeclarations()
+        dut._loadHwDeclarations()
         dut = synthesised(dut)
         self.assertEqual(count_components(dut), 2)
 
@@ -139,11 +151,11 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
         class ThreeHwModules(HwModule):
             """a -> m0 -> m1 -> u2 -> b"""
 
-            def _config(self):
+            def hwConfig(self):
                 self.DATA_WIDTH = HwParam(64)
                 self.USE_STRB = HwParam(True)
 
-            def _declr(self):
+            def hwDeclr(self):
                 addClkRstn(self)
                 with self._hwParamsShared():
                     self.a = Axi4Stream()
@@ -153,7 +165,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
                     self.m1 = SimpleHwModule2withNonDirectIntConnection()
                     self.u2 = SimpleHwModule2withNonDirectIntConnection()
 
-            def _impl(self):
+            def hwImpl(self):
                 propagateClkRstn(self)
                 self.m0.a(self.a)
                 self.m1.a(self.m0.c)
@@ -161,13 +173,13 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
                 self.b(self.u2.c)
 
         dut = ThreeHwModules()
-        dut._loadDeclarations()
+        dut._loadHwDeclarations()
         dut = synthesised(dut)
         self.assertEqual(count_components(dut), 3)
 
     def test_subHwModuleWithArrHwIO(self):
         dut = HwModuleWithArrHwIOParent()
-        dut._loadDeclarations()
+        dut._loadHwDeclarations()
         dut = synthesised(dut)
         self.assertEqual(count_components(dut), 1)
 
@@ -176,11 +188,11 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
         class ThreeSubunits(HwModule):
             """a -> m0 -> m1 -> u2 -> b"""
 
-            def _config(self):
+            def hwConfig(self):
                 self.DATA_WIDTH = HwParam(64)
                 self.USE_STRB = HwParam(True)
 
-            def _declr(self):
+            def hwDeclr(self):
                 addClkRstn(self)
                 with self._hwParamsShared():
                     self.a = Axi4Stream()
@@ -192,7 +204,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
                     self.u2_0 = SimpleHwModule2withNonDirectIntConnection()
                     self.u2_1 = SimpleHwModule2withNonDirectIntConnection()
 
-            def _impl(self):
+            def hwImpl(self):
                 propagateClkRstn(self)
                 self.m0.a(self.a)
                 self.m1.a(self.m0.c)
@@ -204,7 +216,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
                 self.b1(self.u2_1.c)
 
         dut = ThreeSubunits()
-        dut._loadDeclarations()
+        dut._loadHwDeclarations()
         dut = synthesised(dut)
         self.assertEqual(count_components(dut), 4)
 
@@ -212,16 +224,16 @@ class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
 
         class FDStreamConnection(HwModule):
 
-            def _declr(self):
+            def hwDeclr(self):
                 self.dataIn = Axi4StreamFullDuplex()
                 self.dataOut = Axi4StreamFullDuplex()._m()
 
-            def _impl(self):
+            def hwImpl(self):
                 self.dataOut.tx(self.dataIn.tx)
                 self.dataIn.rx(self.dataOut.rx)
 
         dut = FDStreamConnection()
-        dut._loadDeclarations()
+        dut._loadHwDeclarations()
         dut = synthesised(dut)
 
     def test_used_param_from_other_module(self):

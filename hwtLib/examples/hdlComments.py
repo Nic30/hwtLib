@@ -3,6 +3,7 @@
 
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class SimpleComentedHwModule(HwModule):
@@ -11,11 +12,13 @@ class SimpleComentedHwModule(HwModule):
     Do not forget that class inheritance does apply for docstring as well.
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 

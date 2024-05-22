@@ -3,6 +3,7 @@
 
 from hwt.constants import NOP, READ, WRITE
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.commonHwIO.addr_data import HwIOAddrDataRdVld
 from hwtLib.handshaked.ramAsAddrDataRdVld import RamAsAddrDataRdVld, HwIORamRdVldR
@@ -13,7 +14,8 @@ from hwtSimApi.triggers import Timer
 
 class RamWithRdVldSync(RamAsAddrDataRdVld):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -32,7 +34,8 @@ class RamWithRdVldSync(RamAsAddrDataRdVld):
                 assert self.HAS_W
                 r.PORT_CNT = (WRITE,)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         if self.HAS_R:
             self.conv.r(self.r)
@@ -44,6 +47,7 @@ class RamWithRdVldSync(RamAsAddrDataRdVld):
 class RamWithRdVldSync_R_only_TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = RamWithRdVldSync()
         dut.DATA_WIDTH = 16
@@ -82,6 +86,7 @@ class RamWithRdVldSync_R_only_TC(SimTestCase):
 class RamWithRdVldSync_TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = RamWithRdVldSync()
         dut.DATA_WIDTH = 32

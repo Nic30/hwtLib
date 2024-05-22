@@ -3,11 +3,12 @@
 
 from hwt.code import Concat
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.simulator.simTestCase import SimTestCase
 from hwtSimApi.constants import CLK_PERIOD
 
 
@@ -32,15 +33,18 @@ class BinToOneHot(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.din = HwIOVectSignal(log2ceil(self.DATA_WIDTH))
         self.en = HwIOSignal()
         self.dout = HwIOVectSignal(self.DATA_WIDTH)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         en = self.en
         dIn = self.din
 
@@ -55,6 +59,7 @@ class BinToOneHot(HwModule):
 class BinToOneHotTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = BinToOneHot()
         cls.compileSim(cls.dut)

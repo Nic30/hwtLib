@@ -2,11 +2,12 @@ from collections import deque
 
 from hwt.constants import DIRECTION
 from hwt.hdl.types.bits import HBits
-from hwt.hwIOs.std import HwIOClk, HwIOSignal, HwIOVectSignal
-from hwt.hwIOs.hwIOTristate import HwIOTristateSig
-from hwt.simulator.agentBase import SyncAgentBase
 from hwt.hwIO import HwIO
+from hwt.hwIOs.hwIOTristate import HwIOTristateSig
+from hwt.hwIOs.std import HwIOClk, HwIOSignal, HwIOVectSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.agentBase import SyncAgentBase
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
@@ -57,6 +58,7 @@ class SpiAgent(SyncAgentBase):
                                              self.driverTx,
                                              self.getEnable)
 
+    @override
     def setEnable(self, en):
         self._enabled = en
         self.monitorRx.setEnable(en)
@@ -146,10 +148,12 @@ class SpiAgent(SyncAgentBase):
             yield WaitWriteOnly()
             self.writeTxSig(self.hwIO.mosi)
 
+    @override
     def getDrivers(self):
         yield self.driverRx()
         yield self.driverTx()
 
+    @override
     def getMonitors(self):
         yield self.monitorRx()
         #  yield self.monitorTx_pre_set()
@@ -164,13 +168,15 @@ class Spi(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.SLAVE_CNT = HwParam(1)
         self.HAS_MISO = HwParam(True)
         self.HAS_MOSI = HwParam(True)
         self.FREQ = HwParam(HwIOClk.DEFAULT_FREQ)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.clk = HwIOClk()
         self.clk.FREQ = self.FREQ
 
@@ -184,6 +190,7 @@ class Spi(HwIO):
 
         self._associatedClk = self.clk
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = SpiAgent(sim, self)
 
@@ -195,11 +202,13 @@ class SpiTristate(Spi):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Spi._config(self)
+    @override
+    def hwConfig(self):
+        Spi.hwConfig(self)
         self.DATA_WIDTH = HwParam(1)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.clk = HwIOClk()
         with self._hwParamsShared():
             self.io = HwIOTristateSig()  # mosi and miso in one wire
@@ -215,6 +224,7 @@ class QSPI(SpiTristate):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Spi._config(self)
+    @override
+    def hwConfig(self):
+        Spi.hwConfig(self)
         self.DATA_WIDTH = HwParam(4)

@@ -21,13 +21,14 @@ from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.logic.binToBcd import BinToBcd
 from hwtLib.types.ctypes import uint32_t
 from hwt.hdl.types.defs import BIT
+from hwt.pyUtils.typingFuture import override
 
 
 class Axi4S_strFormatItem():
     """
-    :ivar member_path: path which specifies the loacation of interface with the value on input interface
+    :ivar member_path: path which specifies the location of interface with the value on input interface
     :ivar digits: number of digitsof output formated number (not used for 's' format)
-    :ivar format_type: is one of folloving characters.
+    :ivar format_type: is one of following characters.
         +------+-------------------------------+
         | char | format meaning                |
         +======+===============================+
@@ -96,7 +97,8 @@ class Axi4S_strFormat(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
         self.FORMAT = HwParam((
             "Axi4S_strFormat"
@@ -109,7 +111,8 @@ class Axi4S_strFormat(HwModule):
         ))
         self.ENCODING = HwParam("utf-8")
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         if self.INPUT_T is not None:
             # if INPUT_T is none it menas that the component is configured to print a costant string.
@@ -284,7 +287,8 @@ class Axi4S_strFormat(HwModule):
 
         return res, in_vld, in_last,
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         _string_rom, strings_offset_and_size, max_chars_per_format, max_bcd_digits = self.build_string_rom()
         if self.DATA_WIDTH != 8:
             # it self.DATA_WIDTH != 1B we need to handle all possible alignments and shifts, pre-compute some strings

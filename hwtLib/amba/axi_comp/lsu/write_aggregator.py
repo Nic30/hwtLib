@@ -5,10 +5,11 @@ from hwt.code import If, Concat
 from hwt.code_utils import rename_signal
 from hwt.constants import READ, WRITE
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.lsu.fifo_oooread import FifoOutOfOrderReadFiltered
 from hwtLib.amba.axi_comp.lsu.hIOs import HwIOAxiWriteAggregatorWriteTmp
@@ -43,11 +44,13 @@ class AxiWriteAggregator(HwModule):
     .. hwt-autodoc:: _example_AxiWriteAggregator
     """
 
-    def _config(self):
-        AxiWriteAggregatorWriteDispatcher._config(self)
+    @override
+    def hwConfig(self):
+        AxiWriteAggregatorWriteDispatcher.hwConfig(self)
         self.MAX_BLOCK_DATA_WIDTH = HwParam(None)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         AxiWriteAggregatorWriteDispatcher.precompute_constants(self)
         with self._hwParamsShared():
@@ -270,7 +273,8 @@ class AxiWriteAggregator(HwModule):
                           item_insert_last &
                           items.en.rd)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         of = self.ooo_fifo
         data_ram = self.data_ram
         self.data_insert(

@@ -73,7 +73,7 @@ class Axi4SBuilder(AbstractStreamBuilder):
         """
         assert self.master_to_slave
         m = Axi4S_frameParser(typeToParse)
-        m._updateParamsFrom(self.end)
+        m._updateHwParamsFrom(self.end)
 
         setattr(self.parent, self._findSuitableName("parser"), m)
         self._propagateClkRstn(m)

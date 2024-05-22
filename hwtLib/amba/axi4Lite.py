@@ -1,4 +1,5 @@
 from hwt.hwIOs.std import HwIOVectSignal
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi3Lite import IP_Axi3Lite, Axi3Lite, Axi3Lite_r, \
     Axi3Lite_b, Axi3Lite_w, Axi3Lite_addr, Axi3Lite_addrAgent
 from hwtLib.amba.axi_common import AxiMap
@@ -13,10 +14,12 @@ class Axi4Lite_addr(Axi3Lite_addr):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
-        super(Axi4Lite_addr, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(Axi4Lite_addr, self).hwDeclr()
         self.prot = HwIOVectSignal(3)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi4Lite_addrAgent(sim, self)
 
@@ -26,9 +29,11 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
     :ivar ~.data: iterable of addr
     """
 
+    @override
     def get_data(self):
         return self.hwIO.addr.read(), self.hwIO.prot.read()
 
+    @override
     def set_data(self, data):
         if data is None:
             addr, prot = None, None
@@ -38,6 +43,7 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
         self.hwIO.addr.write(addr)
         self.hwIO.prot.write(prot)
 
+    @override
     def create_addr_req(self, addr, prot=PROT_DEFAULT):
         return (addr, prot)
 
@@ -76,6 +82,7 @@ class Axi4Lite(Axi3Lite):
     R_CLS = Axi4Lite_r
     B_CLS = Axi4Lite_b
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Axi4Lite
 

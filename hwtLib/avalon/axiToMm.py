@@ -9,11 +9,12 @@ from hwt.constants import READ
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOVectSignal
 from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
@@ -25,14 +26,16 @@ from hwtLib.handshaked.streamNode import StreamNode
 
 class IdLenHs(HwIORdVldSync):
 
-    def _config(self) -> None:
+    @override
+    def hwConfig(self) -> None:
         self.ID_WIDTH = HwParam(4)
         self.LEN_WIDTH = HwParam(6)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.id = HwIOVectSignal(self.ID_WIDTH)
         self.len = HwIOVectSignal(self.LEN_WIDTH)
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
 
 class Axi4_to_AvalonMm(BusBridge):
@@ -44,15 +47,17 @@ class Axi4_to_AvalonMm(BusBridge):
     .. hwt-autodoc::
     """
 
-    def _config(self) -> None:
-        AvalonMM._config(self)
+    @override
+    def hwConfig(self) -> None:
+        AvalonMM.hwConfig(self)
         self.MAX_BURST = 512
         self.ID_WIDTH = HwParam(4)
         self.RW_PRIORITY = HwParam(READ)
         self.R_DATA_FIFO_DEPTH = HwParam(16)
         self.R_SIZE_FIFO_DEPTH = HwParam(16)
 
-    def _declr(self) -> None:
+    @override
+    def hwDeclr(self) -> None:
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -131,7 +136,8 @@ class Axi4_to_AvalonMm(BusBridge):
                 addr_tmp.vld(1),
             ]
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         avalon: AvalonMM = self.m
         axi = self.s
 

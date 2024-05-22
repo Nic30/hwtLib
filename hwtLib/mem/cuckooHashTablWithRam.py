@@ -3,6 +3,7 @@
 
 from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.logic.crcPoly import CRC_32, CRC_32C
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
@@ -21,26 +22,29 @@ class CuckooHashTableWithRam(CuckooHashTable):
         self.polynomials = polynomials
         CuckooHashTable.__init__(self)
 
-    def _config(self):
-        CuckooHashTable._config(self)
+    @override
+    def hwConfig(self):
+        CuckooHashTable.hwConfig(self)
         self.TABLE_CNT = len(self.polynomials)
         self.POLYNOMIALS = HwParam(tuple(self.polynomials))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self._declr_outer_io()
         tables = HObjList(HashTableCoreWithRam(p) for p in self.polynomials)
         self.configure_tables(tables)
         self.table_cores = tables
 
-    def _impl(self):
-        self.tables_tmp = HObjList([HwIOHashTable()._updateParamsFrom(t.io) for t in self.table_cores])
+    @override
+    def hwImpl(self):
+        self.tables_tmp = HObjList([HwIOHashTable()._updateHwParamsFrom(t.io) for t in self.table_cores])
 
         for t_io, t in zip(self.tables_tmp, self.table_cores):
             t.io(t_io, exclude={t.io.lookupRes})
             t_io.lookupRes(HsBuilder(self, t.io.lookupRes).buff(latency=(1, 2)).end)
 
         self.tables = list(self.tables_tmp)
-        CuckooHashTable._impl(self)
+        CuckooHashTable.hwImpl(self)
 
 
 def _example_CuckooHashTableWithRam():

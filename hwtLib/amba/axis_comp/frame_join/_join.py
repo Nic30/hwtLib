@@ -22,6 +22,7 @@ from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.frame_join.input_reg import FrameJoinInputReg, \
     UnalignedJoinRegIntf
 from pyMathBitPrecise.bit_utils import bit_list_to_int
+from hwt.pyUtils.typingFuture import override
 
 
 class Axi4S_FrameJoin(HwModule):
@@ -43,18 +44,20 @@ class Axi4S_FrameJoin(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.T = HwParam(HStruct(
             (HStream(HBits(8), frame_len=(1, inf),
                      start_offsets=[0]), "f0"),
             (HStream(HBits(16), frame_len=(1, 1)), "f1"),
         ))
-        Axi4Stream._config(self)
+        Axi4Stream.hwConfig(self)
         self.DATA_WIDTH = 16
         self.USE_KEEP = True
         self.OUT_OFFSET = HwParam(0)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.USE_KEEP
         t = self.T
         assert isinstance(t, HStruct)
@@ -73,7 +76,7 @@ class Axi4S_FrameJoin(HwModule):
 
     def generate_input_register(self, input_i: int, reg_cnt: int) -> Tuple[List[UnalignedJoinRegIntf], List[RtlSignal], RtlSignal]:
         in_reg = FrameJoinInputReg()
-        in_reg._updateParamsFrom(self)
+        in_reg._updateHwParamsFrom(self)
         in_reg.REG_CNT = reg_cnt
         setattr(self, f"in_reg{input_i:d}", in_reg)
         in_reg.dataIn(self.dataIn[input_i])
@@ -292,7 +295,8 @@ class Axi4S_FrameJoin(HwModule):
                     lambda: in_keep(0)
                 )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         regs = []
         keep_masks = []
         ready = []

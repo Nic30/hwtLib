@@ -3,6 +3,7 @@
 
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.examples.simpleHwModule import SimpleHwModule
 
 
@@ -10,7 +11,8 @@ class SimpleSubHwModule1(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()._m()
 
@@ -19,7 +21,8 @@ class SimpleSubHwModule1(HwModule):
         # but if you do it here, it offers more possibilities for parallelization
         self.submodule0 = SimpleHwModule()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         m = self.submodule0
         m.a(self.a)
         self.b(m.b)

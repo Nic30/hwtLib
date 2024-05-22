@@ -34,6 +34,7 @@ from hwt.hwIOs.utils import addClkRstn
 from hwt.hObjList import HObjList
 from hwt.hwModule import HwModule
 from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
+from hwt.pyUtils.typingFuture import override
 
 
 def foo(condition0, statements, condition1, fallback0, fallback1):
@@ -61,7 +62,8 @@ class Showcase0(HwModule):
         # constructor can be overloaded but parent one has to be called
         super(Showcase0, self).__init__()
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         """
         In this function collecting of public interfaces is performed
         on every attribute assignment. Instances of Interface or :class:`hwt.hwModule.HwModule` are recognized
@@ -109,7 +111,8 @@ class Showcase0(HwModule):
 
         self.k = HwIOVectSignal(32)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         """
         Purpose of this method
         In this method all public interfaces and configuration

@@ -9,10 +9,11 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIOSignal, HwIODataRdVld, HwIOVectSignal, \
     HwIORdVldSync
 from hwt.hwIOs.utils import propagateClkRstn
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.utils import NotSpecifiedError
-from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.datapump.base import AxiDatapumpBase
@@ -27,10 +28,12 @@ class WFifoIntf(HwIODataRdVld):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.SHIFT_OPTIONS = HwParam((0,))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.SHIFT_OPTIONS != (0,):
             # The encoded value of how many bytes should be the data from input write data be shifted
             # in order to fit the word on output write bus
@@ -40,8 +43,9 @@ class WFifoIntf(HwIODataRdVld):
             # this should not happen, this flags provides this information
             self.drop_last_word = HwIOSignal()
 
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim:HdlSimulator):
         raise NotSpecifiedError()
 
@@ -51,13 +55,16 @@ class BFifoIntf(HwIODataRdVld):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         pass
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.isLast = HwIOSignal()
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim:HdlSimulator):
         raise NotSpecifiedError()
 
@@ -72,8 +79,9 @@ class Axi_wDatapump(AxiDatapumpBase):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
-        super()._declr()  # add clk, rst, axi addr channel and req channel
+    @override
+    def hwDeclr(self):
+        super().hwDeclr()  # add clk, rst, axi addr channel and req channel
 
         self.errorWrite = HwIOSignal()._m()
         if self.ALIGNAS != 8:
@@ -237,7 +245,8 @@ class Axi_wDatapump(AxiDatapumpBase):
             }
         ).sync()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         b = self.axi.b
         wErrFlag = self._reg("wErrFlag", def_val=0)

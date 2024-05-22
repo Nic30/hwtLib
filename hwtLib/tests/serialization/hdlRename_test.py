@@ -1,69 +1,81 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hwModule import HwModule
 from hwt.hwIOs.std import HwIOSignal, HwIODataRdVld
-from hwtLib.examples.base_serialization_TC import BaseSerializationTC
-from hwtLib.amba.axi4s_fullduplex import Axi4StreamFullDuplex
+from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axi4s_fullduplex import Axi4StreamFullDuplex
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from ipCorePackager.constants import DIRECTION
 
 
 class SimpleHwModuleRenamedPort0(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal(hdlName="a_in_hdl")
         self.b = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 
 class SimpleHwModuleRenamedPort1(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIODataRdVld(hdlName="a_in_hdl")
         self.b = HwIODataRdVld()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 
 class SimpleHwModuleRenamedPort2(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIODataRdVld(hdlName={"data": "a_in_hdl",
                                         "vld": "a_in_hdl_valid",
                                         "rd": "a_in_hdl_ready"})
         self.b = HwIODataRdVld()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 
 class SimpleHwModuleRenamedPort3(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIODataRdVld(hdlName="")
         self.b = HwIODataRdVld()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 
 class SimpleHwModuleRenamedPort4(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = Axi4StreamFullDuplex(hdlName="")
         self.b = Axi4StreamFullDuplex()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 
 class _Axi4StreamFullDuplex(Axi4StreamFullDuplex):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             if self.HAS_TX:
                 self.tx = Axi4Stream(hdlName="eth_tx")
@@ -78,11 +90,13 @@ class _Axi4StreamFullDuplex(Axi4StreamFullDuplex):
 
 class SimpleHwModuleRenamedPort5(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = _Axi4StreamFullDuplex(hdlName="")
         self.b = _Axi4StreamFullDuplex()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 

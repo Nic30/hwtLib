@@ -6,6 +6,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.handshaked.splitCopy import HsSplitCopy
 
@@ -29,12 +30,14 @@ class HsSplitFair(HsSplitCopy):
     .. hwt-autodoc:: _example_HsSplitFair
     """
 
-    def _config(self):
-        HsSplitCopy._config(self)
+    @override
+    def hwConfig(self):
+        HsSplitCopy.hwConfig(self)
         self.EXPORT_SELECTED = HwParam(True)
 
-    def _declr(self):
-        HsSplitCopy._declr(self)
+    @override
+    def hwDeclr(self):
+        HsSplitCopy.hwDeclr(self)
         addClkRstn(self)
         if self.EXPORT_SELECTED:
             s = self.selectedOneHot = HwIODataRdVld()._m()
@@ -69,7 +72,8 @@ class HsSplitFair(HsSplitCopy):
 
         return rdSignals
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         din = self.dataIn
         rdSignals = self.isSelectedLogic(din)
 

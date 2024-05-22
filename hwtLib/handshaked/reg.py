@@ -4,12 +4,13 @@
 from typing import List, Tuple, Union
 
 from hwt.code import If
+from hwt.constants import NOT_SPECIFIED
 from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
 from hwt.pyUtils.arrayQuery import iter_with_last
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
-from hwt.hwParam import HwParam
-from hwt.constants import NOT_SPECIFIED
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
@@ -32,13 +33,15 @@ class HandshakedReg(HandshakedCompBase):
     .. hwt-autodoc:: _example_HandshakedReg
     """
 
-    def _config(self):
-        HandshakedCompBase._config(self)
+    @override
+    def hwConfig(self):
+        HandshakedCompBase.hwConfig(self)
         self.LATENCY: Union[int, Tuple[int, int]] = HwParam(1)
         self.DELAY = HwParam(0)
         self.INIT_DATA: tuple = HwParam(())
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataIn = self.hwIOCls()
@@ -178,7 +181,8 @@ class HandshakedReg(HandshakedCompBase):
 
         return outData
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         LATENCY = self.LATENCY
         DELAY = self.DELAY
 

@@ -8,6 +8,7 @@ from hwt.hwIOs.std import HwIORegCntrl, HwIOBramPort_noClk
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.typePath import TypePath
 from hwtLib.types.ctypes import uint8_t
@@ -67,7 +68,8 @@ class ListOfHwIOsSample4(HwModule):
 
         return p
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HObjList(
             HwIOStruct(
@@ -82,7 +84,8 @@ class ListOfHwIOsSample4(HwModule):
                 instantiateFieldFn=self._mkFieldInterface)
             for _ in range(3))._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 
@@ -92,6 +95,7 @@ class ListOfHwIOsSample4b(ListOfHwIOsSample4):
     """
 
     @staticmethod
+    @override
     def shouldEnterFn(field_path):
         return True, True
 
@@ -101,7 +105,8 @@ class ListOfHwIOsSample4c(ListOfHwIOsSample4b):
     .. hwt-autodoc::
     """
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         for a, b in zip(self.a, self.b):
             b(a)
 
@@ -111,7 +116,8 @@ class ListOfHwIOsSample4d(ListOfHwIOsSample4b):
     .. hwt-autodoc::
     """
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         for a, b in zip(self.a, self.b):
             b.f0(a.f0)
             for a_arr, b_arr in zip(a.arr0, b.arr0):
@@ -120,6 +126,7 @@ class ListOfHwIOsSample4d(ListOfHwIOsSample4b):
 
 class ListOfHwIOsSample4TC(SimTestCase):
 
+    @override
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)

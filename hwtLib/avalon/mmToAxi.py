@@ -19,20 +19,20 @@ class AvalonMm_to_Axi4(BusBridge):
     .. hwt-autodoc::
     """
 
-    def _config(self) -> None:
-        AvalonMM._config(self)
+    def hwConfig(self) -> None:
+        AvalonMM.hwConfig(self)
         self.ID_WIDTH = HwParam(1)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         addClkRstn(self)
 
         with self._hwParamsShared():
             self.s = AvalonMM()
             self.m: Axi4 = Axi4()._m()
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         avmm_buff = AvalonMmBuff()
-        avmm_buff._updateParamsFrom(self.s)
+        avmm_buff._updateHwParamsFrom(self.s)
         avmm_buff.ADDR_BUFF_DEPTH = 1
         avmm_buff.DATA_BUFF_DEPTH = 1
         self.avmm_buff = avmm_buff

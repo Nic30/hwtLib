@@ -14,14 +14,14 @@ def mk_regCntr(name, width):
     a = HwIORegCntrl()
     a.DATA_WIDTH = width
     a._name = name
-    a._loadDeclarations()
+    a._loadHwDeclarations()
     return a
 
 
 def mk_sig(name, width):
     a = HwIOVectSignal(width)
     a._name = name
-    a._loadDeclarations()
+    a._loadHwDeclarations()
     return a
 
 
@@ -29,7 +29,7 @@ def mk_vldSynced(name, width):
     a = HwIODataVld()
     a.DATA_WIDTH = width
     a._name = name
-    a._loadDeclarations()
+    a._loadHwDeclarations()
     return a
 
 

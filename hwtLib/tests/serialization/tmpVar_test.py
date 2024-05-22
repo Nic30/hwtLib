@@ -5,27 +5,32 @@ from hwt.code import Concat, If
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
 class TmpVarExample0(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(32)
         self.b = HwIOVectSignal(32)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         a = self.a[8:] + 4
         self.b(a[4:], fit=True)
 
 
 class TmpVarExample1(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(32)
         self.b = HwIOVectSignal(32)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         a = self.a
         c = Concat(a[:16]._eq(1), a[16:]._eq(1))
         b = self.b
@@ -38,11 +43,13 @@ class TmpVarExample1(HwModule):
 
 class TmpVarExample2(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(32)
         self.b = HwIOVectSignal(32)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         a = self.a
         c = Concat(a[:16]._eq(1), a[16:]._eq(1))
         c = c + 1
@@ -58,7 +65,8 @@ class TmpVarExample2(HwModule):
 
 class TmpVarExampleTernary(HwModule):
 
-    def _declr(self) -> None:
+    @override
+    def hwDeclr(self) -> None:
         self.a = HwIOSignal()
         self.b = HwIOVectSignal(1)
         self.c = HwIOSignal()
@@ -68,7 +76,8 @@ class TmpVarExampleTernary(HwModule):
         self.f = HwIOSignal()._m()
         self.g = HwIOSignal()._m()
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         a = self.a
         b = self.b
         c = self.c
@@ -80,7 +89,8 @@ class TmpVarExampleTernary(HwModule):
 
 class TmpVarSignCast(HwModule):
 
-    def _declr(self) -> None:
+    @override
+    def hwDeclr(self) -> None:
         self.a = HwIOSignal()
         self.b = HwIOSignal(dtype=HBits(1, signed=False))
         self.c = HwIOSignal(dtype=HBits(1, signed=False))._m()
@@ -90,7 +100,8 @@ class TmpVarSignCast(HwModule):
         self.i = HwIOSignal()
         self.o = HwIOSignal()._m()
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         self.c(self.a + self.b)
         self.d(self.b + self.a)
         self.o(self.e[self.i])

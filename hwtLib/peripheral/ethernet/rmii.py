@@ -1,6 +1,7 @@
-from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIOClk
 from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIOClk
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.peripheral.ethernet.rmii_agent import RmiiAgent, RmiiTxChannelAgent, \
     RmiiRxChannelAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -13,13 +14,16 @@ class RmiiTxChannel(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(2)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.d = HwIOVectSignal(self.DATA_WIDTH)
         self.en = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = RmiiTxChannelAgent(sim, self)
 
@@ -29,13 +33,16 @@ class RmiiRxChannel(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(2)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.d = HwIOVectSignal(self.DATA_WIDTH)
         self.crs_dv = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = RmiiRxChannelAgent(sim, self)
 
@@ -58,12 +65,14 @@ class Rmii(HwIO):
     """
 
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.CLK_MASTER_DIR = HwParam(DIRECTION.IN)
         self.FREQ = HwParam(int(50e6))
         self.DATA_WIDTH = HwParam(2)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.ref_clk = HwIOClk(masterDir=self.CLK_MASTER_DIR)
         self.ref_clk.FREQ = self.FREQ
         with self._hwParamsShared():
@@ -71,6 +80,7 @@ class Rmii(HwIO):
                 self.tx = RmiiTxChannel()
                 self.rx = RmiiRxChannel(masterDir=DIRECTION.IN)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = RmiiAgent(sim, self)
 

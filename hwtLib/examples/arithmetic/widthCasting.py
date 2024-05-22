@@ -3,11 +3,12 @@
 
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.vectorUtils import fitTo
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class WidthCastingExample(HwModule):
@@ -16,7 +17,8 @@ class WidthCastingExample(HwModule):
 
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         self.a = HwIOVectSignal(8)
@@ -25,7 +27,8 @@ class WidthCastingExample(HwModule):
         self.c = HwIOVectSignal(12)._m()
         self.d = HwIOVectSignal(8)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         c = self.c
         a = fitTo(self.a, c)
         b = fitTo(self.b, c)
@@ -37,6 +40,7 @@ class WidthCastingExample(HwModule):
 class WidthCastingExampleTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = WidthCastingExample()
         cls.compileSim(cls.dut)

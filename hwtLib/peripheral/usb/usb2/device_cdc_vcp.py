@@ -4,10 +4,11 @@
 from hwt.code import Switch
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import HBits
-from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import propagateClkRstn
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode
@@ -33,15 +34,17 @@ class Usb2CdcVcp(Usb2DeviceCommon):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Usb2DeviceCommon._config(self)
+    @override
+    def hwConfig(self):
+        Usb2DeviceCommon.hwConfig(self)
         self.DESCRIPTORS: UsbDescriptorBundle = get_default_usb_cdc_vcp_descriptors(
             productStr=self.__class__.__name__,
             bMaxPacketSize=512)
         self.RX_AGGREGATION_TIMEOUT = HwParam(512)
 
-    def _declr(self):
-        Usb2DeviceCommon._declr(self)
+    @override
+    def hwDeclr(self):
+        Usb2DeviceCommon.hwDeclr(self)
         self.rx:HwIODataRdVld = HwIODataRdVld()._m()
         self.tx = HwIODataRdVld()
         for i in [self.rx, self.tx]:
@@ -71,7 +74,8 @@ class Usb2CdcVcp(Usb2DeviceCommon):
                 )
                 # accept all, from some reason there is bRequest 0x25 which should be reserved value when used with usbip
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         ep_meta = self.DESCRIPTORS.get_endpoint_meta()
         ep_meta = list(ep_meta)
         for ep0_channel in ep_meta[0]:

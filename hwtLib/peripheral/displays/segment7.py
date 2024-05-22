@@ -4,6 +4,7 @@
 from hwt.code import Switch
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class Segment7(HwModule):
@@ -31,11 +32,13 @@ class Segment7(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.dataIn = HwIOVectSignal(4)
         self.dataOut = HwIOVectSignal(7)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         dec = [
             # 0
             0b0000001,

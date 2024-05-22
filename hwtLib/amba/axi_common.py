@@ -1,7 +1,8 @@
 from hwt.constants import DIRECTION
-from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIORdVldSync
 from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIORdVldSync
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
@@ -10,20 +11,24 @@ class Axi_id(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self, default_id_width=0):
+    @override
+    def hwConfig(self, default_id_width=0):
         self.ID_WIDTH = HwParam(default_id_width)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.ID_WIDTH:
             self.id = HwIOVectSignal(self.ID_WIDTH)
 
 
 class Axi_user(HwIO):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.USER_WIDTH:int = HwParam(0)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.USER_WIDTH:
             self.user = HwIOVectSignal(self.USER_WIDTH)
 
@@ -33,10 +38,12 @@ class Axi_strb(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.strb = HwIOVectSignal(self.DATA_WIDTH // 8)
 
 
@@ -52,10 +59,12 @@ class Axi_hs(HwIORdVldSync):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.ready = HwIOSignal(masterDir=DIRECTION.IN)
         self.valid = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()
 

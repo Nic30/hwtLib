@@ -8,13 +8,13 @@ class Axi4Lite_addr_withId(Axi4Lite_addr):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi_id._config(self)
-        Axi4Lite_addr._config(self)
+    def hwConfig(self):
+        Axi_id.hwConfig(self)
+        Axi4Lite_addr.hwConfig(self)
 
-    def _declr(self):
-        Axi_id._declr(self)
-        Axi4Lite_addr._declr(self)
+    def hwDeclr(self):
+        Axi_id.hwDeclr(self)
+        Axi4Lite_addr.hwDeclr(self)
 
 
 class Axi4Lite_w_withId(Axi4Lite_w):
@@ -22,13 +22,13 @@ class Axi4Lite_w_withId(Axi4Lite_w):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi_id._config(self)
-        Axi4Lite_w._config(self)
+    def hwConfig(self):
+        Axi_id.hwConfig(self)
+        Axi4Lite_w.hwConfig(self)
 
-    def _declr(self):
-        Axi_id._declr(self)
-        Axi4Lite_w._declr(self)
+    def hwDeclr(self):
+        Axi_id.hwDeclr(self)
+        Axi4Lite_w.hwDeclr(self)
 
 
 class Axi4Lite_r_withId(Axi4Lite_r):
@@ -36,13 +36,13 @@ class Axi4Lite_r_withId(Axi4Lite_r):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi_id._config(self)
-        Axi4Lite_r._config(self)
+    def hwConfig(self):
+        Axi_id.hwConfig(self)
+        Axi4Lite_r.hwConfig(self)
 
-    def _declr(self):
-        Axi_id._declr(self)
-        Axi4Lite_r._declr(self)
+    def hwDeclr(self):
+        Axi_id.hwDeclr(self)
+        Axi4Lite_r.hwDeclr(self)
 
 
 class Axi4Lite_b_withId(Axi4Lite_b):
@@ -50,13 +50,13 @@ class Axi4Lite_b_withId(Axi4Lite_b):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi_id._config(self)
-        Axi4Lite_b._config(self)
+    def hwConfig(self):
+        Axi_id.hwConfig(self)
+        Axi4Lite_b.hwConfig(self)
 
-    def _declr(self):
-        Axi_id._declr(self)
-        Axi4Lite_b._declr(self)
+    def hwDeclr(self):
+        Axi_id.hwDeclr(self)
+        Axi4Lite_b.hwDeclr(self)
 
 
 class Axi4LiteWithId(Axi4Lite):

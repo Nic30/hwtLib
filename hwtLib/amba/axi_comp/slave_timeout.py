@@ -4,10 +4,11 @@
 from typing import Optional
 
 from hwt.code import If
+from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwParam import HwParam
-from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.constants import RESP_SLVERR
 
@@ -27,18 +28,21 @@ class Axi4SlaveTimeout(BusBridge):
         self.hwIOCls = hwIOCls
         super(Axi4SlaveTimeout, self).__init__(hdlName=hdlName)
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.TIMEOUT = HwParam(4096)
-        self.hwIOCls._config(self)
+        self.hwIOCls.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.HWIO_CLS = HwParam(self.hwIOCls)
         with self._hwParamsShared():
             self.s = self.hwIOCls()
             self.m = self.hwIOCls()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         timer_t = HBits(log2ceil(self.TIMEOUT - 1))
         TIMER_MAX = self.TIMEOUT - 1
         m, s = self.s, self.m

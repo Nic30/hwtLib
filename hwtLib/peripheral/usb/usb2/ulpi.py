@@ -2,10 +2,11 @@ from hwt.code import Concat
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.hwIOs.std import HwIOSignal
-from hwt.hwIOs.hwIOTristate import HwIOTristateSig
 from hwt.hwIO import HwIO
+from hwt.hwIOs.hwIOTristate import HwIOTristateSig
+from hwt.hwIOs.std import HwIOSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.peripheral.usb.constants import USB_PID
 from hwtLib.peripheral.usb.usb2.utmi import utmi_function_control_t, \
     utmi_interface_control_t, utmi_otg_control_t, utmi_interrupt_t
@@ -239,10 +240,12 @@ class Ulpi(HwIO):
         PHY = 1
         LINK = 0
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         # the "t" has to be driven from outside of PHY (from Link usually implemented in FPGA)
         self.data = HwIOTristateSig(masterDir=DIRECTION.IN)
         self.data.DATA_WIDTH = self.DATA_WIDTH
@@ -250,9 +253,11 @@ class Ulpi(HwIO):
         self.stp = HwIOSignal(masterDir=DIRECTION.IN)
         self.nxt = HwIOSignal()
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Ulpi
 
+    @override
     def _initSimAgent(self, sim:HdlSimulator):
         from hwtLib.peripheral.usb.usb2.ulpi_agent import UlpiAgent
         self._ag = UlpiAgent(sim, self)

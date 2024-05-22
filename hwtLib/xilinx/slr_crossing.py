@@ -8,21 +8,24 @@ from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.xilinx.primitive.lutAsShiftReg import LutAsShiftReg
 
 
 class HsSlrCrossingIo(BusBridge):
     """
-    An abstract class with a declaration of interfaces for handskaked SLR crosings
+    An abstract class with a declaration of interfaces for handskaked SLR crossings
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.s = HwIODataRdVld()
@@ -34,7 +37,8 @@ class SlrCrossingSrc(HsSlrCrossingIo):
     A part of SLR crossing which should be placed in SLR of producer
     """
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         s, m = self.s, self.m
         reg = self._reg("reg", HStruct(
                 (s.data._dtype, "data"),
@@ -58,8 +62,9 @@ class SlrCrossingDst(HsSlrCrossingIo):
     A part of SLR crossing which should be placed in SLR of consumer
     """
 
-    def _declr(self):
-        super(SlrCrossingDst, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(SlrCrossingDst, self).hwDeclr()
         self.DEPTH = 4
 
         sh_d = LutAsShiftReg()
@@ -72,7 +77,8 @@ class SlrCrossingDst(HsSlrCrossingIo):
         sh_vld.ITEMS = self.DEPTH
         self.shift_reg_vld = sh_vld
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         DEPTH = self.DEPTH
         s, m = self.s, self.m
 
@@ -123,13 +129,15 @@ class HsSlrCrossing(HsSlrCrossingIo):
     The crossing itself is just a pipeline of registers.
     """
 
-    def _declr(self):
-        HsSlrCrossingIo._declr(self)
+    @override
+    def hwDeclr(self):
+        HsSlrCrossingIo.hwDeclr(self)
         with self._hwParamsShared():
             self.src = SlrCrossingSrc()
             self.dst = SlrCrossingDst()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         src, dst = self.src, self.dst
         src.s(self.s)

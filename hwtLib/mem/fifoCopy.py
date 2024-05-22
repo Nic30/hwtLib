@@ -7,6 +7,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOFifoWriter, HwIOFifoReader, HwIODataVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.mem.fifo import Fifo
 
@@ -24,7 +25,8 @@ class FifoCopy(Fifo):
     .. hwt-autodoc:: _example_FifoCopy
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert int(self.DEPTH) > 0, \
             "Fifo is disabled in this case, do not use it entirely"
         assert int(self.DEPTH) > 1, \
@@ -42,7 +44,8 @@ class FifoCopy(Fifo):
         if self.EXPORT_SIZE or self.EXPORT_SPACE:
             raise NotImplementedError()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         DEPTH = self.DEPTH
 
         index_t = HBits(log2ceil(DEPTH), signed=False)

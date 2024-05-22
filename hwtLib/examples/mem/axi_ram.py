@@ -17,12 +17,12 @@ class Axi4BRam(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self) -> None:
-        Axi4._config(self)
+    def hwConfig(self) -> None:
+        Axi4.hwConfig(self)
         self.DATA_WIDTH = 512
         self.ADDR_WIDTH = 10
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -30,7 +30,7 @@ class Axi4BRam(HwModule):
             self.ram = RamSingleClock()
             self.ram.ADDR_WIDTH = self.ADDR_WIDTH - log2ceil(self.DATA_WIDTH // 8 - 1)
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         ram = self.ram
         al = AxiBuilder(self, self.s).to_axi(Axi4Lite).end
         with self._hwParamsShared():

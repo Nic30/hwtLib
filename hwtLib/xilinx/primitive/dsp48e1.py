@@ -6,9 +6,10 @@ from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import  BIT
 from hwt.hwIOs.std import HwIOSignal, HwIOClk
-from hwt.serializer.mode import serializeExclude
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeExclude
 from hwtLib.xilinx.primitive.dsp48e1_constants import LOGIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1, \
     LOGIC_MODES_DRC_deassign_xyz_mux, ARITHMETIC_MODES_DRC_deassign_xyz_mux, \
     ARITHMETIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1, CARRYIN_SEL
@@ -18,12 +19,13 @@ from pyMathBitPrecise.bit_utils import mask
 @serializeExclude
 class DSP48E1(HwModule):
     """
-    DSP hadblock in Xilinx 7 series (2x pre adder, multiplier, ALU)
+    DSP hardblock in Xilinx 7 series (2x pre adder, multiplier, ALU)
 
     :see: https://www.xilinx.com/support/documentation/user_guides/ug479_7Series_DSP48E1.pdf
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ACASCREG = HwParam(1)
         self.ADREG = HwParam(1)
         self.ALUMODEREG = HwParam(1)
@@ -68,7 +70,8 @@ class DSP48E1(HwModule):
             # print("OPMODE Input Warning : The OPMODE %b requires attribute PREG set to 1.", qopmode_o_mux, sim.now // 1000.000000)
         ]
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.CLK = HwIOClk()
 
         # inputs
@@ -189,7 +192,8 @@ class DSP48E1(HwModule):
         if self.USE_MULT == "NONE" and self.MREG != 0:
             raise AssertionError(f"Attribute USE_MULT is set to \"NONE\" and MREG is set to {self.MREG}. MREG must be set to 0 when the multiplier is not used.")
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # internal signals
         ACASCREG, ADREG, ALUMODEREG, AREG, AUTORESET_PATDET, A_INPUT, BCASCREG, BREG, B_INPUT, CARRYINREG, CARRYINSELREG, \
         CREG, DREG, INMODEREG, IS_ALUMODE_INVERTED, IS_CARRYIN_INVERTED, IS_CLK_INVERTED, IS_INMODE_INVERTED, IS_OPMODE_INVERTED, MASK, MREG, \

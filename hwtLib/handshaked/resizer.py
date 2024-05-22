@@ -3,14 +3,15 @@
 
 from hwt.code import If, Concat, Switch
 from hwt.hdl.types.bits import HBits
+from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIORdVldSync
 from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
-from hwt.hwIOs.std import HwIORdVldSync
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.hwIO import HwIO
 
 
 class HsResizer(HandshakedCompBase):
@@ -43,10 +44,12 @@ class HsResizer(HandshakedCompBase):
         self._inIntfConfigFn = inHwIOConfigFn
         self._outIntfConfigFn = outHwIOConfigFn
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         pass
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.dataIn = self.hwIOCls()
         self._inIntfConfigFn(self.dataIn)
@@ -98,7 +101,7 @@ class HsResizer(HandshakedCompBase):
 
         # instantiate HandshakedReg, handshaked builder is not used to avoid dependencies
         inReg = HandshakedReg(self.hwIOCls)
-        inReg._updateParamsFrom(self.dataIn)
+        inReg._updateHwParamsFrom(self.dataIn)
         self.inReg = inReg
         inReg.clk(self.clk)
         inReg.rst_n(self.rst_n)
@@ -126,7 +129,8 @@ class HsResizer(HandshakedCompBase):
             )
         )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         scale = self._scale
         if scale[0] > scale[1]:
             self._downscale(scale[0])

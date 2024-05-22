@@ -13,6 +13,7 @@ from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
 from hwt.constants import NOT_SPECIFIED
+from hwt.pyUtils.typingFuture import override
 
 
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
@@ -29,7 +30,8 @@ class Fifo(HwModule):
     .. hwt-autodoc:: _example_Fifo
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
         self.DEPTH = HwParam(0)
         self.EXPORT_SIZE = HwParam(False)
@@ -43,7 +45,8 @@ class Fifo(HwModule):
         if self.EXPORT_SPACE:
             self.space = HwIOVectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.DEPTH > 0, \
             "Fifo is disabled in this case, do not use it entirely"
 
@@ -119,7 +122,8 @@ class Fifo(HwModule):
 
         return ack_ptr_list
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         DEPTH = self.DEPTH
 
         dout = self.dataOut

@@ -27,7 +27,7 @@ class AvalonMmEndpoint(BusEndpoint):
                              hwIOCls=hwIOCls,
                              shouldEnterFn=shouldEnterFn)
 
-    def _impl(self):
+    def hwImpl(self):
         self._parseTemplate()
         # build read data output mux
 

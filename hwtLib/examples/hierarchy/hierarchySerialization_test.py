@@ -3,6 +3,7 @@
 
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.hierarchy.extractHierarchyExamples import HwModuleWidthDynamicallyGeneratedSubunitsForRegisters, \
     HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr, HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters
@@ -15,18 +16,21 @@ from hwtLib.examples.simpleHwModuleWithHwParam import SimpleHwModuleWithHwParam
 
 class SimpleHwModuleWithParamWithIrrelevantParamAndAnotherParam(SimpleHwModuleWithHwParam):
 
-    def _config(self):
-        SimpleHwModuleWithHwParam._config(self)
+    @override
+    def hwConfig(self):
+        SimpleHwModuleWithHwParam.hwConfig(self)
         self.IRELEVANT_PARAM = HwParam(10)
         self.ADDR_WIDTH = HwParam(10)
 
-    def _declr(self):
-        SimpleHwModuleWithHwParam._declr(self)
+    @override
+    def hwDeclr(self):
+        SimpleHwModuleWithHwParam.hwDeclr(self)
         self.a_addr = HwIOVectSignal(self.ADDR_WIDTH)
         self.b_addr = HwIOVectSignal(self.ADDR_WIDTH)._m()
 
-    def _impl(self):
-        SimpleHwModuleWithHwParam._impl(self)
+    @override
+    def hwImpl(self):
+        SimpleHwModuleWithHwParam.hwImpl(self)
         self.b_addr(self.a_addr)
 
 

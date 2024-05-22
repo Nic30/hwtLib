@@ -6,11 +6,12 @@ from typing import Optional, Tuple, Union
 from hwt.code import If
 from hwt.hwIOs.std import HwIOVectSignal, HwIOClk, HwIORst_n, HwIORst
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.utils import HwIO_pack, \
     HwIO_connectPacked
-from hwt.hwParam import HwParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.mem.fifo import Fifo
 
@@ -27,12 +28,13 @@ class HandshakedFifo(HandshakedCompBase):
     FIFO_CLS = Fifo
     NON_DATA_BITS_CNT = 2  # 2 for control (valid, ready)
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DEPTH:int = HwParam(0)
         self.EXPORT_SIZE: bool = HwParam(False)
         self.EXPORT_SPACE: bool = HwParam(False)
         self.INIT_DATA: tuple = HwParam(())
-        super()._config()
+        super().hwConfig()
 
     def _declr_io(self):
         addClkRstn(self)
@@ -47,7 +49,8 @@ class HandshakedFifo(HandshakedCompBase):
         if self.EXPORT_SPACE:
             self.space:HwIOVectSignal = HwIOVectSignal(SIZE_W, signed=False)._m()
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.DEPTH > 0, \
             "Fifo is disabled in this case, do not use it entirely"
         assert self.DEPTH > 1 , \
@@ -120,7 +123,8 @@ class HandshakedFifo(HandshakedCompBase):
         )
         return out_vld
 
-    def _impl(self,
+    @override
+    def hwImpl(self,
               clk_rst: Optional[Tuple[
                   Tuple[HwIOClk, Union[HwIORst, HwIORst_n]],
                   Tuple[HwIOClk, Union[HwIORst, HwIORst_n]]]]=None):

@@ -1,5 +1,6 @@
 from hwt.hwIOs.agents.vldSync import HwIODataVldAgent
 from hwt.hwIOs.std import HwIOSignal, HwIODataVld, HwIOVectSignal
+from hwt.pyUtils.typingFuture import override
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
@@ -10,13 +11,15 @@ class VldSyncedDataErrLast(HwIODataVld):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
-        HwIODataVld._declr(self)
+    @override
+    def hwDeclr(self):
+        HwIODataVld.hwDeclr(self)
         if self.DATA_WIDTH > 8:
             self.mask = HwIOVectSignal(self.DATA_WIDTH // 8)
         self.err = HwIOSignal()
         self.last = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = VldSyncedDataErrLastAgent(sim, self)
 
@@ -27,6 +30,7 @@ class VldSyncedDataErrLastAgent(HwIODataVldAgent):
         HwIODataVldAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
         self.has_mask = hasattr(hwIO, "mask")
 
+    @override
     def get_data(self):
         i = self.hwIO
         if self.has_mask:
@@ -34,6 +38,7 @@ class VldSyncedDataErrLastAgent(HwIODataVldAgent):
         else:
             return (i.data.read(), i.err.read(), i.last.read())
 
+    @override
     def set_data(self, data):
         i = self.hwIO
         if self.has_mask:

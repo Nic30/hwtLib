@@ -1,6 +1,7 @@
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.examples.simpleHwModuleWithNonDirectIntConncetion import SimpleHwModuleWithNonDirectIntConncetion
 
 
@@ -9,14 +10,16 @@ class AccessingSubunitInternalIntf(HwModule):
     Example of error from accessing a internal interface of subunit
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.submodule0 = SimpleHwModuleWithNonDirectIntConncetion()
         self.a0 = HwIOSignal()
         self.b0 = HwIOSignal()._m()
         self.c0 = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         m = self.submodule0
         m.a(self.a0)

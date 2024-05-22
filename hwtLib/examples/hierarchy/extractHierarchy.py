@@ -78,7 +78,7 @@ class ExtractedHwModule(HwModule):
         self._externObjsToExtract = externObjsToExtract
         self._externOutputs = externOutputs
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         ioMap = self._ioMap = {}
         for i in self._externInputs:
             i: RtlSignal
@@ -87,7 +87,7 @@ class ExtractedHwModule(HwModule):
             if hwIO is not None:
                 if isinstance(hwIO, (HwIOClk, HwIORst, HwIORst_n)):
                     iCloned = hwIO.__class__()
-                    iCloned._updateParamsFrom(hwIO)
+                    iCloned._updateHwParamsFrom(hwIO)
 
             if iCloned is None:
                 iCloned = HwIOSignal(i._dtype)
@@ -283,7 +283,7 @@ class ExtractedHwModule(HwModule):
             else:
                 raise NotImplementedError(obj.__class__, obj)
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         # transfer circuit to subunit
         # re-connect signals which should be connected to IO of new subunit
         translation = {i: self._ioMap[i]._sig for i in self._externInputs}

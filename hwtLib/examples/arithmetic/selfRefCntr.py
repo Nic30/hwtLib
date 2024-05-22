@@ -6,20 +6,23 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class SelfRefCntr(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.dt = HBits(8, signed=False)
 
         addClkRstn(self)
 
         self.dout = HwIOSignal(dtype=self.dt)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         cntr = self._reg("cntr", self.dt, def_val=0)
 
         If(cntr._eq(4),

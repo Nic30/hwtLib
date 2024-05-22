@@ -6,6 +6,7 @@ from typing import Dict, Optional
 from hwt.hwIOs.std import HwIOClk, HwIORst_n, HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.debug_bus_monitor import DebugBusMonitor, \
     DebugBusMonitorDataRecord
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -20,10 +21,12 @@ class DebugBusMonitorExampleAxi(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi4Lite._config(self)
+    @override
+    def hwConfig(self):
+        Axi4Lite.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.s = Axi4Lite()
@@ -40,7 +43,8 @@ class DebugBusMonitorExampleAxi(HwModule):
             self.din2 = HwIODataRdVld()
             self.dout2 = HwIODataRdVld()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
 
         # spy on previously generated circuit
         db = DebugBusMonitor(Axi4Lite, AxiLiteEndpoint)

@@ -1,19 +1,22 @@
 from hwt.code import If
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIOClk
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtSimApi.constants import CLK_PERIOD
 
 
 class ConstCondition(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.clk = HwIOClk()
         self.a = HwIOVectSignal(2)
         self.b = HwIOVectSignal(2)
         self.c = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         one = self._sig('one', HBits(1))
         intermed = self._reg('intermed', HBits(1))
         one(1)
@@ -34,6 +37,7 @@ class ConstCondition(HwModule):
 class ConstConditionTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = ConstCondition()
         cls.compileSim(cls.dut)

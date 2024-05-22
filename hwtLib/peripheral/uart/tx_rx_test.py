@@ -3,10 +3,11 @@
 
 from hwt.hwIOs.std import HwIODataRdVld, HwIODataVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import Bits3valToInt
-from hwt.hwParam import HwParam
-from hwt.hwModule import HwModule
 from hwtLib.peripheral.uart.rx import UartRx
 from hwtLib.peripheral.uart.tx import UartTx
 from hwtSimApi.utils import freq_to_period
@@ -14,13 +15,15 @@ from hwtSimApi.utils import freq_to_period
 
 class TestHwModule_uart(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
         self.FREQ = HwParam(115200 * 16)
         self.BAUD = HwParam(115200)
         self.OVERSAMPLING = HwParam(16)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.din = HwIODataRdVld()
@@ -29,7 +32,8 @@ class TestHwModule_uart(HwModule):
             self.tx = UartTx()
             self.rx = UartRx()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         self.rx.rxd(self.tx.txd)
         self.tx.dataIn(self.din)
@@ -39,6 +43,7 @@ class TestHwModule_uart(HwModule):
 class UartTxRxTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = TestHwModule_uart()
         dut.BAUD = 115200

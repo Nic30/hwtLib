@@ -6,10 +6,11 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
 from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIORegCntrl
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import AddrSizeHs, HwIOAxiWDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -36,8 +37,9 @@ class ArrayBuff_writer(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        AddrSizeHs._config(self)
+    @override
+    def hwConfig(self):
+        AddrSizeHs.hwConfig(self)
         self.ID = HwParam(3)
         self.MAX_LEN = 15
         self.ITEM_WIDTH = HwParam(16)
@@ -45,7 +47,8 @@ class ArrayBuff_writer(HwModule):
         self.TIMEOUT = HwParam(1024)
         self.ITEMS = HwParam(4096 // 8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         self.items = HwIODataRdVld()
@@ -76,7 +79,8 @@ class ArrayBuff_writer(HwModule):
            uploadedCntr(uploadedCntr + fitTo(sizeOfitems, uploadedCntr))
         )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1)
         TIMEOUT_MAX = self.TIMEOUT - 1
         ITEMS = self.ITEMS

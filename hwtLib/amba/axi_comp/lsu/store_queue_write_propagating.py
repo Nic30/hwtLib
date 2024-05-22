@@ -4,10 +4,11 @@
 from hwt.code import If
 from hwt.code_utils import rename_signal
 from hwt.constants import READ
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIODataRdVld
 from hwt.hwIOs.utils import propagateClkRstn
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.amba.axi4 import Axi4_r
 from hwtLib.amba.axi_comp.lsu.write_aggregator import AxiWriteAggregator
@@ -21,13 +22,15 @@ from hwtLib.logic.oneHotToBin import oneHotToBin
 
 class HwIOAxiWriteAggregatorWriteTmp(HwIODataRdVld):
 
-    def _config(self):
-        HwIODataRdVld._config(self)
+    @override
+    def hwConfig(self):
+        HwIODataRdVld.hwConfig(self)
         self.ADDR_WIDTH = HwParam(32)
         self.ID_WIDTH = HwParam(4)
 
-    def _declr(self):
-        HwIODataRdVld._declr(self)
+    @override
+    def hwDeclr(self):
+        HwIODataRdVld.hwDeclr(self)
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         # a flag which tells if the data was valid when the time of snapshot of the original register
         self.valid = HwIOSignal()
@@ -56,8 +59,9 @@ class Axi4StoreQueueWritePropagating(AxiWriteAggregator):
     :ivar speculative_read_data: Read data for speculative read.
     """
 
-    def _declr(self):
-        AxiWriteAggregator._declr(self)
+    @override
+    def hwDeclr(self):
+        AxiWriteAggregator.hwDeclr(self)
         with self._hwParamsShared():
             self.speculative_read_addr = HwIOAddrRdVld()
             self.speculative_read_data = Axi4_r()._m()
@@ -101,7 +105,7 @@ class Axi4StoreQueueWritePropagating(AxiWriteAggregator):
         w_in_reg = self.w_in_reg.dataOut
         w_in_reg_tmp = HObjList(HandshakedReg(HwIOAxiWriteAggregatorWriteTmp) for _ in range(2))
         for r in w_in_reg_tmp:
-            r._updateParamsFrom(w_in_reg)
+            r._updateHwParamsFrom(w_in_reg)
             r.ID_WIDTH = self.ID_WIDTH
 
         self.w_in_reg_tmp = w_in_reg_tmp
@@ -198,8 +202,9 @@ class Axi4StoreQueueWritePropagating(AxiWriteAggregator):
            srd.last(1),
         )
 
-    def _impl(self):
-        AxiWriteAggregator._impl(self)
+    @override
+    def hwImpl(self):
+        AxiWriteAggregator.hwImpl(self)
         self.speculative_read_handler()
         propagateClkRstn(self)
 

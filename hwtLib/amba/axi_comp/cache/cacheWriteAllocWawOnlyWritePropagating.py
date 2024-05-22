@@ -5,15 +5,16 @@ from typing import List
 
 from hwt.code import Or, SwitchLogic, If
 from hwt.code_utils import rename_signal
-from hwt.hwIOs.std import HwIODataRdVld
-from hwt.hwIOs.hwIOStruct import HwIOStruct
-from hwt.hwIOs.hwIOStruct import HwIOStructRdVld
-from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.hwParam import HwParam
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOStruct import HwIOStructRdVld
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil, isPow2
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4 import Axi4, Axi4_r, Axi4_addr, Axi4_w, Axi4_b
 from hwtLib.amba.axi_comp.cache.addrTypeConfig import CacheAddrTypeConfig
@@ -81,14 +82,16 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
     .. hwt-autodoc:: _example_AxiCacheWriteAllocWawOnlyWritePropagating
     """
 
-    def _config(self):
-        Axi4._config(self)
+    @override
+    def hwConfig(self):
+        Axi4.hwConfig(self)
         self.WAY_CNT = HwParam(4)
         self.MAX_BLOCK_DATA_WIDTH = HwParam(None)
         self.IS_PREINITIALIZED = HwParam(False)
-        CacheAddrTypeConfig._config(self)
+        CacheAddrTypeConfig.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.CACHE_LINE_CNT > 0, self.CACHE_LINE_CNT
         assert self.WAY_CNT > 0 and isPow2(self.WAY_CNT), self.WAY_CNT
         assert self.CACHE_LINE_CNT % self.WAY_CNT == 0, (self.CACHE_LINE_CNT, self.WAY_CNT)
@@ -208,7 +211,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         self.axiAddrDefaults(axi_m_ar)
 
         data_arr_read = axi_s_r.__class__()
-        data_arr_read._updateParamsFrom(axi_s_r)
+        data_arr_read._updateHwParamsFrom(axi_s_r)
         self.data_arr_read = data_arr_read
 
         data_arr_read(da_r.data, exclude=[data_arr_read.resp])
@@ -428,7 +431,8 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
 
         axi_m_b.ready(1)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         """
         Read operation:
 

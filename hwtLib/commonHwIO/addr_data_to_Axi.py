@@ -10,16 +10,17 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.abstract.busEndpoint import AddressStepTranslation
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
-from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.amba.axis_comp.frame_deparser._deparser import Axi4S_frameDeparser
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
@@ -52,15 +53,17 @@ class AddrDataRdVld_to_Axi(BusBridge):
         self.hwIOCls = hwIOCls
         super(AddrDataRdVld_to_Axi, self).__init__(hdlName=hdlName)
 
-    def _config(self):
-        self.hwIOCls._config(self)
+    @override
+    def hwConfig(self):
+        self.hwIOCls.hwConfig(self)
         self.S_ADDR_STEP = HwParam(64)
         self.S_ADDR_WIDTH = HwParam(self.ADDR_WIDTH)
         self.S_DATA_WIDTH = HwParam(self.DATA_WIDTH)
         self.M_ADDR_OFFSET = HwParam(0)
         self.MAX_TRANS_OVERLAP = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared(prefix="S_"):
             if self.HAS_R:
@@ -246,7 +249,8 @@ class AddrDataRdVld_to_Axi(BusBridge):
 
         axi.b.ready(1)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         S_ADDR_STEP = self.S_ADDR_STEP
         assert S_ADDR_STEP >= self.S_DATA_WIDTH, \
             (S_ADDR_STEP, self.S_DATA_WIDTH)
@@ -256,7 +260,7 @@ class AddrDataRdVld_to_Axi(BusBridge):
         #    # multiple items can be in a single axi word
         #    # require the transaction alignment
         #    axi_resize = AxiResize(axi.__class__)
-        #    axi_resize._updateParamsFrom(axi)
+        #    axi_resize._updateHwParamsFrom(axi)
         #    axi_resize.DATA_WIDTH = self.S_ADDR_STEP
         #    axi_resize.OUT_DATA_WIDTH = axi.DATA_WIDTH
         #    axi_resize.OUT_ADDR_WIDTH = axi.ADDR_WIDTH
@@ -266,7 +270,7 @@ class AddrDataRdVld_to_Axi(BusBridge):
 
         # add extra register on axi
         b = AxiBuff(axi.__class__)
-        b._updateParamsFrom(axi)
+        b._updateHwParamsFrom(axi)
         self.axi_buff = b
         axi(b.m)
         axi = b.s

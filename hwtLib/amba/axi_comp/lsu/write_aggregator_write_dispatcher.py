@@ -10,10 +10,11 @@ from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4 import Axi4_addr, Axi4, Axi4_w, Axi4_b
 from hwtLib.amba.constants import BURST_INCR, PROT_DEFAULT, BYTES_IN_TRANS, \
@@ -33,7 +34,8 @@ class AxiWriteAggregatorWriteDispatcher(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(64)
         self.ID_WIDTH = HwParam(6)
@@ -56,7 +58,8 @@ class AxiWriteAggregatorWriteDispatcher(HwModule):
             # type for a counter of bus words in a single transactions
             self.word_index_t = HBits(WORD_OFFSET_W, signed=False, force_vector=True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.precompute_constants()
 
@@ -81,7 +84,8 @@ class AxiWriteAggregatorWriteDispatcher(HwModule):
             self.m = Axi4()._m()
             self.m.HAS_R = False
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         read_execute = self.read_execute
         m = self.m
 

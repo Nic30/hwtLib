@@ -27,7 +27,7 @@ class Mi32Endpoint(BusEndpoint):
                              hwIOCls=hwIOCls,
                              shouldEnterFn=shouldEnterFn)
 
-    def _impl(self):
+    def hwImpl(self):
         self._parseTemplate()
         bus = self.bus
         bus.ardy(1)

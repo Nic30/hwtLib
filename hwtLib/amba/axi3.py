@@ -1,16 +1,18 @@
 from hwt.constants import DIRECTION
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.hwParam import HwParam
-from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite, Axi3Lite_r, Axi3Lite_b,\
-    IP_Axi3Lite
-from hwtLib.amba.axi_common import AxiMap, Axi_id, Axi_hs, Axi_strb
-from hwtLib.amba.axi4s import Axi4Stream, Axi4StreamAgent
-from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.ip_packager import IpPackager
-from ipCorePackager.component import Component
-from hwtSimApi.hdlSimulator import HdlSimulator
-from hwtLib.amba.constants import BYTES_IN_TRANS, BURST_INCR, CACHE_DEFAULT,\
+from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite, Axi3Lite_r, Axi3Lite_b, \
+    IP_Axi3Lite
+from hwtLib.amba.axi4s import Axi4Stream, Axi4StreamAgent
+from hwtLib.amba.axi_common import AxiMap, Axi_id, Axi_hs, Axi_strb
+from hwtLib.amba.constants import BYTES_IN_TRANS, BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT
+from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwtSimApi.hdlSimulator import HdlSimulator
+from ipCorePackager.component import Component
+
 
 _DEFAULT = object()
 
@@ -25,14 +27,16 @@ class Axi3_addr(Axi3Lite_addr, Axi_id):
     LEN_WIDTH = 4
     LOCK_WIDTH = 2
 
-    def _config(self):
-        Axi3Lite_addr._config(self)
-        Axi_id._config(self, default_id_width=6)
+    @override
+    def hwConfig(self):
+        Axi3Lite_addr.hwConfig(self)
+        Axi_id.hwConfig(self, default_id_width=6)
         self.USER_WIDTH = HwParam(0)
 
-    def _declr(self):
-        Axi3Lite_addr._declr(self)
-        Axi_id._declr(self)
+    @override
+    def hwDeclr(self):
+        Axi3Lite_addr.hwDeclr(self)
+        Axi_id.hwDeclr(self)
         self.burst = HwIOVectSignal(2)
         self.cache = HwIOVectSignal(4)
         self.len = HwIOVectSignal(self.LEN_WIDTH)
@@ -42,6 +46,7 @@ class Axi3_addr(Axi3Lite_addr, Axi_id):
         if self.USER_WIDTH:
             self.user = HwIOVectSignal(self.USER_WIDTH)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3_addrAgent(sim, self)
 
@@ -102,18 +107,21 @@ class Axi3_w(Axi_hs, Axi_strb):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID_WIDTH = HwParam(0)
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.ID_WIDTH:
             self.id = HwIOVectSignal(self.ID_WIDTH)
         self.data = HwIOVectSignal(self.DATA_WIDTH)
-        Axi_strb._declr(self)
+        Axi_strb.hwDeclr(self)
         self.last = HwIOSignal()
-        Axi_hs._declr(self)
+        Axi_hs.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         Axi4Stream._initSimAgent(self, sim)
 
@@ -125,15 +133,18 @@ class Axi3_r(Axi3Lite_r, Axi_id):
 
     .. hwt-autodoc::
     """
-    def _config(self):
-        Axi_id._config(self, default_id_width=6)
-        Axi3Lite_r._config(self)
+    @override
+    def hwConfig(self):
+        Axi_id.hwConfig(self, default_id_width=6)
+        Axi3Lite_r.hwConfig(self)
 
-    def _declr(self):
-        Axi_id._declr(self)
-        Axi3Lite_r._declr(self)
+    @override
+    def hwDeclr(self):
+        Axi_id.hwDeclr(self)
+        Axi3Lite_r.hwDeclr(self)
         self.last = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3_rAgent(sim, self)
 
@@ -146,6 +157,7 @@ class Axi3_rAgent(BaseAxiAgent):
     data contains tuples (id, data, resp, last)
     """
 
+    @override
     def get_data(self):
         hwIO = self.hwIO
 
@@ -156,6 +168,7 @@ class Axi3_rAgent(BaseAxiAgent):
 
         return (_id, data, resp, last)
 
+    @override
     def set_data(self, data):
         hwIO = self.hwIO
 
@@ -177,14 +190,17 @@ class Axi3_b(Axi3Lite_b, Axi_id):
 
     .. hwt-autodoc::
     """
-    def _config(self):
-        Axi_id._config(self)
-        Axi3Lite_b._config(self)
+    @override
+    def hwConfig(self):
+        Axi_id.hwConfig(self)
+        Axi3Lite_b.hwConfig(self)
 
-    def _declr(self):
-        Axi_id._declr(self)
-        Axi3Lite_b._declr(self)
+    @override
+    def hwDeclr(self):
+        Axi_id.hwDeclr(self)
+        Axi3Lite_b.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3_bAgent(sim, self)
 
@@ -197,11 +213,13 @@ class Axi3_bAgent(BaseAxiAgent):
     data contains tuples (id, resp)
     """
 
+    @override
     def get_data(self):
         hwIO = self.hwIO
 
         return hwIO.id.read(), hwIO.resp.read()
 
+    @override
     def set_data(self, data):
         hwIO = self.hwIO
 
@@ -231,13 +249,15 @@ class Axi3(Axi3Lite):
     R_CLS = Axi3_r
     B_CLS = Axi3_b
 
-    def _config(self):
-        Axi3Lite._config(self)
-        Axi_id._config(self, default_id_width=6)
+    @override
+    def hwConfig(self):
+        Axi3Lite.hwConfig(self)
+        Axi_id.hwConfig(self, default_id_width=6)
         self.ADDR_USER_WIDTH = HwParam(0)
         # self.DATA_USER_WIDTH = HwParam(0)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             if self.HAS_R:
                 self.ar = self.AR_CLS()
@@ -252,6 +272,7 @@ class Axi3(Axi3Lite):
             # for d in [self.w, self.r, self.b]:
             #     d.USER_WIDTH = self.DATA_USER_WIDTH
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Axi3
 
@@ -272,6 +293,7 @@ class IP_Axi3(IP_Axi3Lite):
         AxiMap('w', ['id', 'last'], self.map['w'])
         AxiMap('b', ['id'], self.map['b'])
 
+    @override
     def postProcess(self,
                     component: Component,
                     packager: IpPackager,

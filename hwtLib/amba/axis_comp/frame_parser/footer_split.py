@@ -6,13 +6,14 @@ from typing import Tuple, List
 
 from hwt.code import If, SwitchLogic, Concat
 from hwt.code_utils import rename_signal
+from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.pyUtils.arrayQuery import iter_with_last
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit_range
@@ -109,17 +110,19 @@ class Axi4S_footerSplit(Axi4SCompBase):
         Then the rest of data in registers is send on dataOut[1].
 
     :note: The design is pipelined and the data can loaded
-        in to internal registers imediadetely as soon as there is some space.
+        in to internal registers immediately as soon as there is some space.
         There is no inter-frame delay.
 
     .. hwt-autodoc:: _example_Axi4S_footerSplit
     """
 
-    def _config(self):
-        Axi4SCompBase._config(self)
+    @override
+    def hwConfig(self):
+        Axi4SCompBase.hwConfig(self)
         self.FOOTER_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataIn = self.hwIOCls()
@@ -252,7 +255,8 @@ class Axi4S_footerSplit(Axi4SCompBase):
         SwitchLogic(mask_cases, mask_default)
         return set_is_footer
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         USE_KEEP = self.USE_KEEP
         USE_STRB = self.USE_STRB
         FOOTER_WIDTH = self.FOOTER_WIDTH

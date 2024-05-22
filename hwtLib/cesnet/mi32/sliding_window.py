@@ -3,8 +3,9 @@
 
 from hwt.code import If
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import isPow2
 from hwt.hwParam import HwParam
+from hwt.math import isPow2
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.cesnet.mi32.intf import Mi32
 
@@ -25,12 +26,14 @@ class Mi32SlidingWindow(BusBridge):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Mi32._config(self)
+    @override
+    def hwConfig(self):
+        Mi32.hwConfig(self)
         self.M_ADDR_WIDTH = HwParam(self.ADDR_WIDTH + 1)
         self.WINDOW_SIZE = HwParam(4096)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert isPow2(self.WINDOW_SIZE), self.WINDOW_SIZE
         assert self.M_ADDR_WIDTH > self.ADDR_WIDTH, (self.M_ADDR_WIDTH, self.ADDR_WIDTH)
         assert (2 ** self.M_ADDR_WIDTH) >= self.WINDOW_SIZE, (
@@ -44,7 +47,8 @@ class Mi32SlidingWindow(BusBridge):
             self.s = Mi32()
             self.s.ADDR_WIDTH = self.ADDR_WIDTH
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         OFFSET_REG_ADDR = self.WINDOW_SIZE
 
         s, m = self.s, self.m

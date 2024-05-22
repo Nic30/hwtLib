@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If, Switch
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.enum import HEnum
+from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
-from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.enum import HEnum
-from hwt.hdl.types.struct import HStruct
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -45,7 +46,9 @@ class Axi4streamToMem(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(32)
         self.CNTRL_AW = HwParam(5)
@@ -58,7 +61,8 @@ class Axi4streamToMem(HwModule):
                              (uint32_t, "baseAddr")
                              )
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             addClkRstn(self)
             self.axi = Axi4()._m()
@@ -211,7 +215,8 @@ class Axi4streamToMem(HwModule):
             )
         )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         self.regsConventor.bus(self.cntrlBus)
         axi = self.axi

@@ -6,9 +6,10 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
 from hwt.hwIOs.std import HwIODataRdVld, HwIORegCntrl
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import HwIOAxiRDatapump, HwIOAxiWDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -44,7 +45,8 @@ class CLinkedListWriter(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID_WIDTH = HwParam(4)
         # id on interfaces for default transaction
         self.ID = HwParam(3)
@@ -60,7 +62,8 @@ class CLinkedListWriter(HwModule):
         # than recomended burst
         self.TIMEOUT = HwParam(4096)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -328,7 +331,8 @@ class CLinkedListWriter(HwModule):
 
         w.ack.rd(fsm._eq(fsm_t.waitForAck))
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         nextBlockTransition = self._sig("nextBlockTransition")
         baseIndex, nextBaseIndex, nextBaseReady = self.baseAddrLogic(

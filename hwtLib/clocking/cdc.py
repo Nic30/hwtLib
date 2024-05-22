@@ -7,11 +7,12 @@ from hwt.code import If
 from hwt.constraints import set_max_delay, set_async_reg
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIORst, HwIOSignal, HwIOClk
-from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
+from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.mainBases import RtlSignalBase
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.hwModule import HwModule
 
 
 class SignalCdcBuilder():
@@ -109,14 +110,16 @@ class Cdc(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(1)
         self.INIT_VAL = HwParam(0)
         self.IN_FREQ = HwParam(100e6)
         self.OUT_FREQ = HwParam(100e6)
         self.OUT_REG_CNT = HwParam(2)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.OUT_REG_CNT >= 2, self.OUT_REG_CNT
 
         self.dataIn_clk = HwIOClk()
@@ -133,7 +136,8 @@ class Cdc(HwModule):
             with self._associated(rst=self.dataOut_rst):
                 self.dataOut = HwIOSignal(dtype=HBits(self.DATA_WIDTH))._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         in_clk_rst = self.dataIn_clk, self.dataIn_rst
         out_clk_rst = self.dataOut_clk, self.dataOut_rst
 
@@ -159,18 +163,21 @@ class CdcPulseGen(Cdc):
 
     .. hwt-autodoc::
     """
-    def _config(self):
-        Cdc._config(self)
+    @override
+    def hwConfig(self):
+        Cdc.hwConfig(self)
         self.OUT_REG_CNT = 3
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.DATA_WIDTH == 1, self.DATA_WIDTH
-        Cdc._declr(self)
+        Cdc.hwDeclr(self)
         with self._associated(clk=self.dataOut_clk, rst=self.dataOut_rst):
             self.dataOut_en = HwIOSignal()._m()
 
-    def _impl(self):
-        (_, _, _, out_reg1, out_reg2) = Cdc._impl(self)
+    @override
+    def hwImpl(self):
+        (_, _, _, out_reg1, out_reg2) = Cdc.hwImpl(self)
         self.dataOut_en(out_reg1 ^ out_reg2)
 
 

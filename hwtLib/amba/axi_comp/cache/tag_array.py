@@ -4,18 +4,19 @@
 from hwt.code import Or, Concat, If
 from hwt.code_utils import rename_signal
 from hwt.constants import READ, WRITE
-from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, \
-    HwIOBramPort_noClk, HwIODataVld, HwIORdVldSync
-from hwt.hwIOs.hwIOStruct import HwIOStruct, HdlType_to_HwIO
-from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.hwIOStruct import HwIOStruct, HdlType_to_HwIO
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, \
+    HwIOBramPort_noClk, HwIODataVld, HwIORdVldSync
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
-from hwtLib.amba.axi_comp.cache.addrTypeConfig import CacheAddrTypeConfig
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi_common import Axi_id
+from hwtLib.amba.axi_comp.cache.addrTypeConfig import CacheAddrTypeConfig
 from hwtLib.commonHwIO.addr import HwIOAddrRdVld
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.mem.ram import RamSingleClock
@@ -30,13 +31,15 @@ class HwIOAxiCacheTagArrayLookupRes(HwIORdVldSync):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID_WIDTH = HwParam(4)
-        HwIOAxiCacheTagArrayUpdate._config(self)
+        HwIOAxiCacheTagArrayUpdate.hwConfig(self)
         self.TAG_T = HwParam(None)
 
-    def _declr(self):
-        Axi_id._declr(self)
+    @override
+    def hwDeclr(self):
+        Axi_id.hwDeclr(self)
         self.found = HwIOSignal()
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         if self.WAY_CNT > 1:
@@ -44,7 +47,7 @@ class HwIOAxiCacheTagArrayLookupRes(HwIORdVldSync):
         if self.TAG_T is not None:
             self.tags = HObjList(HdlType_to_HwIO().apply(self.TAG_T) for _ in range(self.WAY_CNT))
 
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
 
 class HwIOAxiCacheTagArrayUpdate(HwIODataVld):
@@ -59,11 +62,13 @@ class HwIOAxiCacheTagArrayUpdate(HwIODataVld):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.WAY_CNT = HwParam(4)
         self.ADDR_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         if self.WAY_CNT > 1:
             self.way_en = HwIOVectSignal(self.WAY_CNT)
@@ -89,12 +94,13 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
     .. hwt-autodoc:: _example_AxiCacheTagArray
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.PORT_CNT = HwParam(2)
         self.UPDATE_PORT_CNT = HwParam(1)
         self.ID_WIDTH = HwParam(4)
-        HwIOAxiCacheTagArrayUpdate._config(self)
-        CacheAddrTypeConfig._config(self)
+        HwIOAxiCacheTagArrayUpdate.hwConfig(self)
+        CacheAddrTypeConfig.hwConfig(self)
         self.LOOKUP_LATENCY = 1
         self.MAX_BLOCK_DATA_WIDTH = HwParam(None)
 
@@ -113,7 +119,8 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
             tag_record_t.append((HBits(8 - misalign), None))
         return HStruct(*tag_record_t)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self._compupte_tag_index_offset_widths()
         self.tag_record_t = self.define_tag_record_t()
         addClkRstn(self)
@@ -247,7 +254,8 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
 
         lookupRes.vld(lookup_tmp.vld)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         if self.UPDATE_PORT_CNT == 1:
             update_tmp = self.connect_update_port(
                 self.update[0],

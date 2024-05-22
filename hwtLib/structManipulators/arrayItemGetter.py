@@ -5,9 +5,10 @@ from hwt.code import Concat, Switch
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil, isPow2
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil, isPow2
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -20,7 +21,8 @@ class ArrayItemGetter(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ITEMS = HwParam(32)
         self.ITEM_WIDTH = HwParam(32)
         self.ID = HwParam(0)
@@ -29,7 +31,8 @@ class ArrayItemGetter(HwModule):
         self.ADDR_WIDTH = HwParam(32)
         self.MAX_TRANS_OVERLAP = HwParam(16)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         # addr of start of array
         self.base = HwIOVectSignal(self.ADDR_WIDTH)
@@ -55,7 +58,8 @@ class ArrayItemGetter(HwModule):
             f.DATA_WIDTH = log2ceil(self.ITEMS_IN_DATA_WORD)
             f.DEPTH = self.MAX_TRANS_OVERLAP
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         ITEM_WIDTH = int(self.ITEM_WIDTH)
         DATA_WIDTH = int(self.DATA_WIDTH)

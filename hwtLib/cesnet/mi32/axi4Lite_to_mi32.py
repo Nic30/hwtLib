@@ -18,18 +18,18 @@ class Axi4Lite_to_Mi32(BusBridge):
     .. hwt-autodoc::
     """
 
-    def _config(self) -> None:
-        Mi32._config(self)
+    def hwConfig(self) -> None:
+        Mi32.hwConfig(self)
         self.RW_PRIORITY = HwParam(READ)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         addClkRstn(self)
 
         with self._hwParamsShared():
             self.s = Axi4Lite()
             self.m = Mi32()._m()
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         mi32 = self.m
         axi = self.s
 

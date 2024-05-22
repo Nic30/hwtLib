@@ -9,6 +9,7 @@ from hwtLib.xilinx.ipif.buff import IpifBuff
 from hwtLib.xilinx.ipif.endpoint import IpifEndpoint
 from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC
 from hwtLib.xilinx.ipif.hIOIpif import Ipif
+from hwt.pyUtils.typingFuture import override
 
 
 class IpifBuffWithEndpoint(HwModule):
@@ -16,10 +17,12 @@ class IpifBuffWithEndpoint(HwModule):
         super(IpifBuffWithEndpoint, self).__init__()
         self.STRUCT_TEMPLATE = STRUCT_TEMPLATE
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.bus = Ipif()
@@ -29,7 +32,8 @@ class IpifBuffWithEndpoint(HwModule):
                                       tuple(),
                                       self.ep._mkFieldInterface)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         ep = self.ep
         self.reg.s(self.bus)
@@ -40,6 +44,7 @@ class IpifBuffWithEndpoint(HwModule):
 class IpifBuffTC(IpifEndpointTC):
     FIELD_ADDR = [0x0, 0x4]
 
+    @override
     def mySetUp(self, data_width=32):
         dut = self.dut = IpifBuffWithEndpoint(self.STRUCT_TEMPLATE)
 

@@ -27,6 +27,7 @@ from hwt.synthesizer.typePath import TypePath
 from hwtLib.abstract.addressStepTranslation import AddressStepTranslation
 from ipCorePackager.constants import DIRECTION
 from hwt.hwIO import HwIO
+from hwt.pyUtils.typingFuture import override
 
 
 def TransTmpl_get_min_addr(t: TransTmpl):
@@ -124,10 +125,12 @@ class BusEndpoint(HwModule):
         raise NotImplementedError(
             "Should be overridden in concrete implementation, this is abstract class")
 
-    def _config(self):
-        self._hwIOCls._config(self)
+    @override
+    def hwConfig(self):
+        self._hwIOCls.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         with self._hwParamsShared():

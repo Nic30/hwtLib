@@ -2,11 +2,12 @@ from collections import deque
 from typing import Deque, Tuple
 
 from hwt.hdl.types.bits import HBits
-from hwt.hwIOs.std import HwIOClk
-from hwt.hwIOs.hwIOTristate import HwIOTristateSig
-from hwt.simulator.agentBase import SyncAgentBase
 from hwt.hwIO import HwIO
+from hwt.hwIOs.hwIOTristate import HwIOTristateSig
+from hwt.hwIOs.std import HwIOClk
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.agentBase import SyncAgentBase
 from hwtSimApi.constants import Time
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
@@ -60,18 +61,22 @@ class Mdio(HwIO):
 
     DEFAULT_FREQ = int(2.5e6)
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.FREQ = HwParam(self.DEFAULT_FREQ)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.c = HwIOClk()
         self.c.FREQ = self.FREQ
         with self._associated(clk=self.c):
             self.io = HwIOTristateSig()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = MdioAgent(sim, self)
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_mdio
 
@@ -150,7 +155,7 @@ class MdioAgent(SyncAgentBase):
 
     def rx_bits(self):
         """
-        Recieve bit from io tristate signal on rising edge of c clock
+        Receive bit from io tristate signal on rising edge of c clock
         """
         yield WaitCombStable()
         rx_bits = self.rx_bits_tmp
@@ -220,6 +225,7 @@ class MdioAgent(SyncAgentBase):
 
                 rx_bits.clear()
 
+    @override
     def getMonitors(self):
         self.rx_bits = OnRisingCallbackLoop(
             self.sim, self.hwIO.c, self.rx_bits, lambda: True)

@@ -4,8 +4,9 @@
 from hwt.code import If
 from hwt.hwIOs.std import HwIOSignal, HwIOBramPort_noClk, HwIOClk
 from hwt.hwIOs.utils import propagateClk
-from hwt.serializer.mode import serializeParamsUniq
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.mem.ram import RamSingleClock
 
 
@@ -25,10 +26,12 @@ class FlipRam(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        RamSingleClock._config(self)
+    @override
+    def hwConfig(self):
+        RamSingleClock.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         PORT_CNT = self.PORT_CNT
 
         with self._hwParamsShared():
@@ -49,7 +52,8 @@ class FlipRam(HwModule):
             self.ram0 = RamSingleClock()
             self.ram1 = RamSingleClock()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClk(self)
         PORT_CNT = self.PORT_CNT
 

@@ -25,11 +25,11 @@ class UsbDeviceEpBuffers(HwModule):
     .. hwt-autodoc:: _example_UsbDeviceEpBuffers
     """
 
-    def _config(self) -> None:
+    def hwConfig(self) -> None:
         self.ENDPOINT_META: Tuple[Tuple[Optional[UsbEndpointMeta], Optional[UsbEndpointMeta]]] = HwParam(None)
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         """
         :note: ep.rx = from host, ep.tx = to host
         """
@@ -133,7 +133,7 @@ class UsbDeviceEpBuffers(HwModule):
         # stall if there is no such a endpoint
         self.usb_core_io.tx_stall(~In(usb_endp.data, [i for (i, _, _, _, _) in tx_channels]))
 
-    def _impl(self):
+    def hwImpl(self):
         rx_channels: List[Tuple[int, Axi4Stream, UsbEndpointMeta, Axi4SFifoDrop]] = []
         tx_channels: List[Tuple[int, Axi4Stream, UsbEndpointMeta, Axi4SFifoCopy, HandshakedFifo]] = []
         rx_fifos = HObjList()

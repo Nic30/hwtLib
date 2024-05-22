@@ -5,6 +5,7 @@ import unittest
 
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 from hwtSimApi.constants import CLK_PERIOD
@@ -12,8 +13,9 @@ from hwtSimApi.constants import CLK_PERIOD
 
 class HsJoinWithReference(HsJoinPrioritized):
 
-    def _declr(self):
-        HsJoinPrioritized._declr(self)
+    @override
+    def hwDeclr(self):
+        HsJoinPrioritized.hwDeclr(self)
         addClkRstn(self)
 
 
@@ -21,6 +23,7 @@ class HsJoinPrioritizedTC(SimTestCase):
     randomized = False
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = HsJoinWithReference(HwIODataRdVld)
         cls.dut.DATA_WIDTH = 8
@@ -46,6 +49,7 @@ class HsJoinPrioritizedTC(SimTestCase):
 class HsJoinPrioritized_randomized_TC(HsJoinPrioritizedTC):
     randomized = True
 
+    @override
     def setUp(self):
         super(HsJoinPrioritized_randomized_TC, self).setUp()
         self.randomize(self.dut.dataOut)

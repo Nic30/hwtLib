@@ -9,9 +9,10 @@ from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIOSignal, HwIORdVldSync, HwIOVectSignal
 from hwt.hwIOs.utils import propagateClkRstn
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axis_comp.frame_join import Axi4S_FrameJoin
 from hwtLib.amba.constants import RESP_OKAY
@@ -27,13 +28,15 @@ class TransEndInfo(HwIORdVldSync):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID_WIDTH = HwParam(0)
         self.DATA_WIDTH = HwParam(64)
         self.HAS_PROPAGATE_LAST = HwParam(True)
         self.SHIFT_OPTIONS = HwParam((0,))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.ID_WIDTH:
             self.id = HwIOVectSignal(self.ID_WIDTH)
         # rem is number of bits in last word which is valid - 1,
@@ -43,7 +46,7 @@ class TransEndInfo(HwIORdVldSync):
             self.shift = HwIOVectSignal(log2ceil(len(self.SHIFT_OPTIONS)))
         if self.HAS_PROPAGATE_LAST:
             self.propagateLast = HwIOSignal()
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
 
 @serializeParamsUniq
@@ -70,8 +73,9 @@ class Axi_rDatapump(AxiDatapumpBase):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
-        super()._declr()  # add clk, rst, axi addr channel and req channel
+    @override
+    def hwDeclr(self):
+        super().hwDeclr()  # add clk, rst, axi addr channel and req channel
 
         self.errorRead = HwIOSignal()._m()
         if self.ALIGNAS != 8:
@@ -249,7 +253,8 @@ class Axi_rDatapump(AxiDatapumpBase):
                 }
             ).sync()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         r = self.axi.r
         errorRead = self._reg("errorRead", def_val=0)
         If(r.valid & (r.resp != RESP_OKAY),

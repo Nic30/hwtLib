@@ -12,6 +12,7 @@ from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 
 
 class BinToBcd(HwModule):
@@ -24,10 +25,12 @@ class BinToBcd(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.INPUT_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         assert self.INPUT_WIDTH > 0, self.INPUT_WIDTH
         self.DECIMAL_DIGITS = self.decadic_deciamls_for_bin(self.INPUT_WIDTH)
@@ -40,7 +43,7 @@ class BinToBcd(HwModule):
     def decadic_deciamls_for_bin(bin_width: int):
         return ceil(log10(2 ** bin_width))
 
-    def _impl(self):
+    def hwImpl(self):
         INPUT_WIDTH, DECIMAL_DIGITS, din, dout = \
         self.INPUT_WIDTH, self.DECIMAL_DIGITS, self.din, self.dout
 

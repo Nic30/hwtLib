@@ -14,6 +14,7 @@ from hwt.code import If, Switch
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.commonHwIO.addr_data import HwIOAddrDataRdVld, \
     HwIOAddrDataBitMaskRdVld
 from pyMathBitPrecise.bit_utils import mask
@@ -24,12 +25,14 @@ class AssignToASlice0(HwModule):
     Conversion between vector and bit
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.data_in = HwIOSignal()
         self.data_out = HwIOVectSignal(1)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.data_out[0](self.data_in)
 
 
@@ -38,12 +41,14 @@ class AssignToASlice1(HwModule):
     Vector parts driven by expr
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.data_in = HwIOVectSignal(3)
         self.data_out = HwIOVectSignal(3)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         for i in range(3):
             self.data_out[i](self.data_in[i])
 
@@ -53,13 +58,15 @@ class AssignToASlice2(HwModule):
     Vector parts driven from multi branch statement
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.swap = HwIOSignal()
         self.data_in = HwIOVectSignal(2)
         self.data_out = HwIOVectSignal(3)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         i, o = self.data_in, self.data_out
         If(self.swap,
            o[0](i[1]),
@@ -77,14 +84,16 @@ class AssignToASliceOfReg0(HwModule):
     Register where slices of next signal are set conditionally
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         i = self.data_in = HwIOAddrDataRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 8
         self.data_out = HwIOVectSignal(2 * 8)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         i, o = self.data_in, self.data_out
         r = self._reg("r", self.data_out._dtype, def_val=0)
         i.rd(1)
@@ -101,14 +110,16 @@ class AssignToASliceOfReg1a(HwModule):
     Register where slices of next signal are set conditionally in multiple branches
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         i = self.data_in = HwIOAddrDataRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 16
         self.data_out = HwIOVectSignal(2 * 8)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         i, o = self.data_in, self.data_out
         r = self._reg("r", self.data_out._dtype, def_val=0)
         i.rd(1)
@@ -127,14 +138,16 @@ class AssignToASliceOfReg1b(HwModule):
     Register where slices of next signal are set conditionally in multiple branches, nested
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         i = self.data_in = HwIOAddrDataRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 16
         self.data_out = HwIOVectSignal(2 * 8)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         i, o = self.data_in, self.data_out
         r = self._reg("r", self.data_out._dtype, def_val=0)
         i.rd(1)
@@ -155,14 +168,16 @@ class AssignToASliceOfReg2a(HwModule):
     Register where an overlapping slices of next signal are set conditionally
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         i = self.data_in = HwIOAddrDataBitMaskRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 8
         self.data_out = HwIOVectSignal(2 * 8)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         i, o = self.data_in, self.data_out
         r = self._reg("r", self.data_out._dtype, def_val=0)
         i.rd(1)
@@ -183,14 +198,16 @@ class AssignToASliceOfReg2b(HwModule):
     Register where an overlapping slices of next signal are set conditionally
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         i = self.data_in = HwIOAddrDataBitMaskRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 8
         self.data_out = HwIOVectSignal(2 * 8)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         i, o = self.data_in, self.data_out
         r = self._reg("r", self.data_out._dtype, def_val=0)
         i.rd(1)
@@ -211,14 +228,16 @@ class AssignToASliceOfReg3a(HwModule):
     Something not assigned by index at the end and then whole signal assigned.
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         i = self.data_in = HwIOAddrDataBitMaskRdVld()
         i.ADDR_WIDTH = 2
         i.DATA_WIDTH = 8
         self.data_out = HwIOVectSignal(4 * 8)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         din, o = self.data_in, self.data_out
         r = self._reg("r", self.data_out._dtype, def_val=0)
         Switch(din.addr).add_cases(
@@ -236,7 +255,8 @@ class AssignToASliceOfReg3b(AssignToASliceOfReg3a):
     Something not assigned by index in the middle and then whole signal assigned.
     """
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         din, o = self.data_in, self.data_out
         r = self._reg("r", self.data_out._dtype, def_val=0)
         Switch(din.addr)\
@@ -258,7 +278,8 @@ class AssignToASliceOfReg3c(AssignToASliceOfReg3a):
     Something not assigned by index at the beggining and then whole signal assigned.
     """
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         din, o = self.data_in, self.data_out
         r = self._reg("r", self.data_out._dtype, def_val=0)
         Switch(din.addr).add_cases(
@@ -275,7 +296,8 @@ class AssignToASliceOfReg3d(AssignToASliceOfReg3a):
     Only a small fragment assigned and then whole signal assigned.
     """
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         din, o = self.data_in, self.data_out
         r = self._reg("r", self.data_out._dtype, def_val=0)
         Switch(din.addr)\

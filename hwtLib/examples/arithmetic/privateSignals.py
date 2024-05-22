@@ -6,7 +6,7 @@ from hwt.hwIOs.utils import addClkRstn
 
 class PrivateSignalsOfStructType(HwModule):
 
-    def _declr(self):
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HwIOVectSignal(8)
         self.b = HwIOVectSignal(8)._m()
@@ -14,7 +14,7 @@ class PrivateSignalsOfStructType(HwModule):
         self.c = HwIOVectSignal(8)
         self.d = HwIOVectSignal(8)._m()
 
-    def _impl(self):
+    def hwImpl(self):
         t = self.a._dtype
         tmp_t = \
         HStruct(

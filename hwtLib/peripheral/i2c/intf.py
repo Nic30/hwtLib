@@ -4,6 +4,7 @@ from hwt.hwIO import HwIO
 from ipCorePackager.intfIpMeta import IntfIpMeta
 from hwtSimApi.agents.peripheral.i2c import I2cAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
+from hwt.pyUtils.typingFuture import override
 
 
 class I2c(HwIO):
@@ -15,14 +16,16 @@ class I2c(HwIO):
     .. hwt-autodoc::
     """
 
-
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.scl = HwIOTristateClk()  # serial clk
         self.sda = HwIOTristateSig()  # serial data
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_IIC
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         scl = self.scl
         sda = self.sda

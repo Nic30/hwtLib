@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwModule import HwModule
-from hwt.hdl.types.bits import HBits
+from hwt.pyUtils.typingFuture import override
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.types.ctypes import uint8_t
 
 
 class ExampleRom(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.idx = HwIOSignal(HBits(2))
         self.data = HwIOSignal(HBits(8, signed=False))._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         rom = self._sig(name="rom", dtype=uint8_t[4],
                                     def_val=[3, 10, 12, 99])
 

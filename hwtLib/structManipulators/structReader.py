@@ -7,11 +7,12 @@ from hwt.code import StaticForEach
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.struct import HStruct
-from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal
 from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal
 from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.template_configured import TemplateConfigured
 from hwtLib.amba.axis_comp.frame_parser import Axi4S_frameParser
 from hwtLib.amba.datapump.intf import HwIOAxiRDatapump, AddrSizeHs
@@ -57,9 +58,10 @@ class StructReader(Axi4S_frameParser):
         assert isinstance(structT, HStruct)
         TemplateConfigured.__init__(self, structT, tmpl=tmpl, frames=frames)
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID = HwParam(0)
-        HwIOAxiRDatapump._config(self)
+        HwIOAxiRDatapump.hwConfig(self)
         self.USE_STRB = False
         self.READ_ACK = HwParam(False)
         self.SHARED_READY = HwParam(False)
@@ -85,7 +87,8 @@ class StructReader(Axi4S_frameParser):
 
             self._frames = list(frames)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.dataOut = HwIOStruct(self._structT,
                                   tuple(),
@@ -112,7 +115,8 @@ class StructReader(Axi4S_frameParser):
     def driveReqRem(self, req: AddrSizeHs, MAX_BITS: int):
         return req.rem(ceil((MAX_BITS % self.DATA_WIDTH) / 8))
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         req = self.rDatapump.req
 

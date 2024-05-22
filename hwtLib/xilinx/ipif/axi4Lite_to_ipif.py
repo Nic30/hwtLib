@@ -18,10 +18,10 @@ class Axi4Lite_to_Ipif(BusBridge):
     .. hwt-autodoc::
     """
 
-    def _config(self) -> None:
-        Ipif._config(self)
+    def hwConfig(self) -> None:
+        Ipif.hwConfig(self)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -101,7 +101,7 @@ class Axi4Lite_to_Ipif(BusBridge):
 
         return st
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         ipif = self.m
         axi = self.s
         r = self._reg

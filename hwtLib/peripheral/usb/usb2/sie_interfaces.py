@@ -2,6 +2,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.agents.vldSync import HwIODataVldAgent
 from hwt.hwIOs.std import HwIODataVld, HwIOSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.peripheral.usb.constants import usb_pid_t, usb_frame_number_t, \
     USB_PID
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -12,17 +13,20 @@ class DataErrVldKeepLast(HwIODataVld):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        HwIODataVld._config(self)
+    @override
+    def hwConfig(self):
+        HwIODataVld.hwConfig(self)
         self.USE_KEEP: bool = HwParam(True)
 
-    def _declr(self):
-        HwIODataVld._declr(self)
+    @override
+    def hwDeclr(self):
+        HwIODataVld.hwDeclr(self)
         if self.USE_KEEP:
             self.keep = HwIOSignal(HBits(self.DATA_WIDTH // 8))
         self.error = HwIOSignal()
         self.last = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim:HdlSimulator):
         self._ag = DataErrVldKeepLastAgent(sim, self)
 
@@ -32,6 +36,7 @@ class DataErrVldKeepLastAgent(HwIODataVldAgent):
     A simulation agent for :class:`~.DataErrVldKeepLast` interface.
     """
 
+    @override
     def set_data(self, data):
         i = self.hwIO
         if i.USE_KEEP:
@@ -47,6 +52,7 @@ class DataErrVldKeepLastAgent(HwIODataVldAgent):
         i.error.write(error)
         i.last.write(last)
 
+    @override
     def get_data(self):
         i = self.hwIO
         if i.USE_KEEP:
@@ -73,16 +79,19 @@ class Usb2SieRxOut(HwIODataVld):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         pass
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.pid = HwIOSignal(usb_pid_t)
         self.endp = HwIOSignal(usb_pid_t)
         self.frame_number = HwIOSignal(usb_frame_number_t)
         self.error = HwIOSignal()  # pid error or crc5 error or invalid address or missing/extra data
         self.vld = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim:HdlSimulator):
         self._ag = Usb2SieRxOutAgent(sim, self)
 
@@ -91,6 +100,7 @@ class Usb2SieRxOutAgent(HwIODataVldAgent):
     """
     A simulation agent for :class:`~.Usb2SieRxOut` interface.
     """
+    @override
     def set_data(self, data):
         if data is None:
             data = None, None, None, None
@@ -101,6 +111,7 @@ class Usb2SieRxOutAgent(HwIODataVldAgent):
         i.frame_number.write(frame_number if pid == USB_PID.TOKEN_SOF else None)
         i.error.write(error)
 
+    @override
     def get_data(self):
         i = self.hwIO
 

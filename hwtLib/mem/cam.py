@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
+from hwt.hObjList import HObjList
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.defs import BIT
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
-from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.defs import BIT
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.commonHwIO.addr_data import HwIOAddrDataVldRdVld, HwIOAddrDataRdVld
 from hwtLib.handshaked.streamNode import StreamNode
@@ -28,7 +29,8 @@ class Cam(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.KEY_WIDTH = HwParam(15)
         self.ITEMS = HwParam(32)
         self.USE_VLD_BIT = HwParam(True)
@@ -40,7 +42,8 @@ class Cam(HwModule):
         self.out = o = HwIODataRdVld()._m()
         o.DATA_WIDTH = self.ITEMS
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self._declr_match_io()
 
@@ -81,7 +84,8 @@ class Cam(HwModule):
         match_res.data(Concat(*reversed(out_one_hot)))
         StreamNode([key], [match_res]).sync()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         KEY_WIDTH = self.KEY_WIDTH
         if self.USE_VLD_BIT:
             # +1 bit to validity check
@@ -106,8 +110,9 @@ class CamMultiPort(Cam):
     .. hwt-autodoc:: _example_CamMultiPort
     """
 
-    def _config(self):
-        Cam._config(self)
+    @override
+    def hwConfig(self):
+        Cam.hwConfig(self)
         self.MATCH_PORT_CNT = HwParam(None)
 
     def _declr_match_io(self):

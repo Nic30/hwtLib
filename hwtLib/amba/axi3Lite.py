@@ -1,17 +1,18 @@
 from typing import List
 
 from hwt.constants import DIRECTION, INTF_DIRECTION
-from hwt.hwIOs.std import HwIOVectSignal
-from hwt.serializer.ip_packager import IpPackager
 from hwt.hwIO import HwIO
-from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
+from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.ip_packager import IpPackager
+from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
 from hwtLib.amba.axi_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-from ipCorePackager.component import Component
-from ipCorePackager.intfIpMeta import IntfIpMeta
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
+from ipCorePackager.component import Component
+from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
 #################################################################
@@ -19,13 +20,16 @@ class Axi3Lite_addr(Axi_hs):
     """
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
-        Axi_hs._declr(self)
+        Axi_hs.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3Lite_addrAgent(sim, self)
 
@@ -35,9 +39,11 @@ class Axi3Lite_addrAgent(BaseAxiAgent):
     :ivar ~.data: iterable of addr
     """
 
+    @override
     def get_data(self):
         return self.hwIO.addr.read()
 
+    @override
     def set_data(self, data):
         self.hwIO.addr.write(data)
 
@@ -51,14 +57,17 @@ class Axi3Lite_r(Axi_hs):
     """
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.data = HwIOVectSignal(self.DATA_WIDTH)
         self.resp = HwIOVectSignal(2)
-        Axi_hs._declr(self)
+        Axi_hs.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = AxiLite_rAgent(sim, self)
 
@@ -68,11 +77,13 @@ class AxiLite_rAgent(BaseAxiAgent):
     :ivar ~.data: iterable of tuples (data, resp)
     """
 
+    @override
     def get_data(self):
         hwIO = self.hwIO
 
         return (hwIO.data.read(), hwIO.resp.read())
 
+    @override
     def set_data(self, data):
         hwIO = self.hwIO
         if data is None:
@@ -89,14 +100,17 @@ class Axi3Lite_w(Axi_hs):
     """
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.data = HwIOVectSignal(self.DATA_WIDTH)
         self.strb = HwIOVectSignal(self.DATA_WIDTH // 8)
-        Axi_hs._declr(self)
+        Axi_hs.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3Lite_wAgent(sim, self)
 
@@ -106,10 +120,12 @@ class Axi3Lite_wAgent(BaseAxiAgent):
     :ivar ~.data: iterable of tuples (data, strb)
     """
 
+    @override
     def get_data(self):
         hwIO = self.hwIO
         return (hwIO.data.read(), hwIO.strb.read())
 
+    @override
     def set_data(self, data):
         hwIO = self.hwIO
         if data is None:
@@ -126,10 +142,12 @@ class Axi3Lite_b(Axi_hs):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.resp = HwIOVectSignal(2)
-        Axi_hs._declr(self)
+        Axi_hs.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3Lite_bAgent(sim, self)
 
@@ -139,9 +157,11 @@ class Axi3Lite_bAgent(BaseAxiAgent):
     :ivar ~.data: iterable of resp
     """
 
+    @override
     def get_data(self):
         return self.hwIO.resp.read()
 
+    @override
     def set_data(self, data):
         self.hwIO.resp.write(data)
 
@@ -162,13 +182,15 @@ class Axi3Lite(HwIO):
     B_CLS = Axi3Lite_b
     LEN_WIDTH = 0
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(64)
         self.HAS_R = True
         self.HAS_W = True
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             if self.HAS_R:
                 self.ar = self.AR_CLS()
@@ -179,9 +201,11 @@ class Axi3Lite(HwIO):
                 self.w = self.W_CLS()
                 self.b = self.B_CLS(masterDir=DIRECTION.IN)
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Axi3Lite
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3LiteAgent(sim, self)
 
@@ -239,6 +263,7 @@ class Axi3LiteAgent(AgentBase):
                 self.w.setEnable(en)
                 self.b.setEnable(en)
 
+    @override
     def getDrivers(self):
         if self.hwIO.HAS_W:
             yield from self.aw.getDrivers()
@@ -249,6 +274,7 @@ class Axi3LiteAgent(AgentBase):
             yield from self.ar.getDrivers()
             yield from self.r.getMonitors()
 
+    @override
     def getMonitors(self):
         if self.hwIO.HAS_W:
             yield from self.aw.getMonitors()
@@ -287,6 +313,7 @@ class IP_Axi3Lite(IntfIpMeta):
             'b': AxiMap('b', ['valid', 'ready', 'resp'])
         }
 
+    @override
     def get_quartus_map(self):
         if self.quartus_map is None:
             self.quartus_map = self._toLowerCase(self.map)
@@ -301,6 +328,7 @@ class IP_Axi3Lite(IntfIpMeta):
         else:
             return d.lower()
 
+    @override
     def asQuartusTcl(self, buff: List[str], version: str, component: Component,
                      packager: IpPackager, thisIf: HwIO):
         IntfIpMeta.asQuartusTcl(self, buff, version,
@@ -317,6 +345,7 @@ class IP_Axi3Lite(IntfIpMeta):
             self.quartus_prop(buff, name, "readDataReorderingDepth", 1)
             self.quartus_prop(buff, name, "bridgesToMaster", "")
 
+    @override
     def postProcess(self, component: Component,
                     packager: IpPackager,
                     thisIf: Axi3Lite):

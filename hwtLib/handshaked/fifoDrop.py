@@ -3,11 +3,12 @@ from typing import Optional, Tuple, Union
 from hwt.hwIOs.std import HwIOSignal, HwIORst, HwIORst_n, HwIOClk
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mem.fifoDrop import FifoDrop
+from hwt.pyUtils.typingFuture import override
 
 
 class HandshakedFifoDrop(HandshakedFifo):
     """
-    Fifo for handsahaked interface which allows to discard/commit written data
+    FIFO for handsahaked interface which allows to discard/commit written data
 
     :see: :class:`hwtLib.handshaked.fifo.HandshakedFifo`
         and :class:`hwtLib.mem.fifoDrop.FifoDrop`
@@ -16,15 +17,17 @@ class HandshakedFifoDrop(HandshakedFifo):
     """
     FIFO_CLS = FifoDrop
 
-    def _declr(self):
-        HandshakedFifo._declr(self)
+    @override
+    def hwDeclr(self):
+        HandshakedFifo.hwDeclr(self)
         self.dataIn_discard = HwIOSignal()
         self.dataIn_commit = HwIOSignal()
 
-    def _impl(self, clk_rst: Optional[Tuple[
+    @override
+    def hwImpl(self, clk_rst: Optional[Tuple[
             Tuple[HwIOClk, Union[HwIORst, HwIORst_n]],
             Tuple[HwIOClk, Union[HwIORst, HwIORst_n]]]]=None):
-        super(HandshakedFifoDrop, self)._impl(clk_rst=clk_rst)
+        super(HandshakedFifoDrop, self).hwImpl(clk_rst=clk_rst)
         f = self.fifo
         f.dataIn.commit(self.dataIn_commit)
         f.dataIn.discard(self.dataIn_discard)

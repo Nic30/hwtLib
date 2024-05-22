@@ -7,6 +7,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi_comp.oooOp.outOfOrderCummulativeOp import OutOfOrderCummulativeOp
 from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
 
@@ -30,8 +31,9 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         LOOKUP_OR_SWAP = 1  # lookup and update if key found or swap key, item_valid, value
         LOOKUP = 2  # lookup and update if key found else perfor no state update
 
-    def _config(self):
-        OutOfOrderCummulativeOp._config(self)
+    @override
+    def hwConfig(self):
+        OutOfOrderCummulativeOp.hwConfig(self)
         # state in main memory
         self.MAIN_STATE_T = HStruct(
             (BIT, "item_valid"),
@@ -54,8 +56,9 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             (HBits(2), "operation"),  # :see: :class:`~.OPERATION`
         )
 
-    def _declr(self):
-        OutOfOrderCummulativeOp._declr(self)
+    @override
+    def hwDeclr(self):
+        OutOfOrderCummulativeOp.hwDeclr(self)
         swap_container_type = self.TRANSACTION_STATE_T.field_by_name["original_data"].dtype
         assert swap_container_type is self.MAIN_STATE_T, (swap_container_type, self.MAIN_STATE_T)
 

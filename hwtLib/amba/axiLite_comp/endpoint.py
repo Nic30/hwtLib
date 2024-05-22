@@ -172,7 +172,7 @@ class AxiLiteEndpoint(BusEndpoint):
 
         return awAddr, w_hs
 
-    def _impl(self):
+    def hwImpl(self):
         self._parseTemplate()
         awAddr, w_hs = self.writePart()
         self.readPart(awAddr, w_hs)

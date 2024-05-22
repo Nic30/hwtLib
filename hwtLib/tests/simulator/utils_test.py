@@ -11,6 +11,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import pprintHwIO, pprintAgents
 from hwtLib.abstract.emptyHwModule import EmptyHwModule
 from hwtLib.amba.axi3Lite import Axi3Lite
+from hwt.pyUtils.typingFuture import override
 
 axi_str = """\
 'axi'
@@ -134,7 +135,8 @@ u_ag_str = """<hwt.hwIOs.agents.clk.ClockAgent object at 0x7f2c812d4ef0>
 
 class ExampleWithArrayAxi3Lite(EmptyHwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.axi = HObjList(Axi3Lite() for _ in range(3))
 
@@ -142,6 +144,7 @@ class ExampleWithArrayAxi3Lite(EmptyHwModule):
 class SimulatorUtilsTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = ExampleWithArrayAxi3Lite()
         cls.compileSim(cls.dut)

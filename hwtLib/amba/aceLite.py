@@ -1,4 +1,5 @@
 from hwt.hwIOs.std import HwIOVectSignal
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4Lite import Axi4Lite, Axi4Lite_addr
 from hwtSimApi.hdlSimulator import HdlSimulator
 
@@ -9,12 +10,14 @@ class AceLite_addr(Axi4Lite_addr):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
-        Axi4Lite_addr._declr(self)
+    @override
+    def hwDeclr(self):
+        Axi4Lite_addr.hwDeclr(self)
         self.domain = HwIOVectSignal(2)
         self.snoop = HwIOVectSignal(3)
         self.bar = HwIOVectSignal(2)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()
 
@@ -30,8 +33,10 @@ class AceLite(Axi4Lite):
     AR_CLS = AceLite_addr
     AW_CLS = AceLite_addr
 
+    @override
     def _getIpCoreIntfClass(self):
         raise NotImplementedError()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()

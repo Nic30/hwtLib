@@ -4,8 +4,9 @@
 from hwt.constants import READ
 from hwt.hwIOs.std import HwIOBramPort_noClk
 from hwt.hwIOs.utils import addClkRst
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtSimApi.constants import CLK_PERIOD
 
 
@@ -13,18 +14,21 @@ class BramWire(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRst(self)
         self.din = HwIOBramPort_noClk()
         self.dout = HwIOBramPort_noClk()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.dout(self.din)
 
 
 class BramWireTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = BramWire()
         cls.compileSim(cls.dut)

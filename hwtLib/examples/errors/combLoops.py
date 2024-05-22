@@ -4,13 +4,14 @@
 import unittest
 
 from hwt.code import If
+from hwt.hObjList import HObjList
 from hwt.hdl.statements.statement import HwtSyntaxError
 from hwt.hwIOs.std import HwIOVectSignal, HwIORdVldSync, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.serializer.combLoopAnalyzer.tarjan import StronglyConnectedComponentSearchTarjan
-from hwt.hObjList import HObjList
-from hwt.hwModule import HwModule
 from hwt.synth import synthesised, to_rtl_str
 from hwtLib.handshaked.reg import HandshakedReg
 
@@ -24,11 +25,13 @@ class CntrCombLoop(HwModule):
     A direct combinational loop which is detected  immediately
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.c = HwIOVectSignal(8, signed=False)._m()
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         b = self._sig("b", self.c._dtype, def_val=0)
         If(self.a,
            b(b + 1)
@@ -38,12 +41,14 @@ class CntrCombLoop(HwModule):
 
 class HandshakeWire0(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.dataIn = HwIORdVldSync()
         self.dataOut = HwIORdVldSync()._m()
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         self.dataOut(self.dataIn)
 
 
@@ -52,7 +57,8 @@ class HandshakeWire1(HandshakeWire0):
     HandshakeWire0 with register on rd signal
     """
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         self.dataOut.vld(self.dataIn.vld)
 
         rd = self._reg("rd", def_val=1)
@@ -62,7 +68,8 @@ class HandshakeWire1(HandshakeWire0):
 
 class WrongHandshakeCheckExample0(HandshakeWire0):
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         dataIn, dataOut = self.dataIn, self.dataOut
 
         dataIn.rd(dataIn.vld & dataOut.rd)
@@ -71,7 +78,8 @@ class WrongHandshakeCheckExample0(HandshakeWire0):
 
 class WrongHandshakeCheckExample1(HandshakeWire0):
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         dataIn, dataOut = self.dataIn, self.dataOut
 
         dataIn.rd(dataIn.vld & dataOut.rd)
@@ -84,11 +92,13 @@ class HandshakeRegLoop(HwModule):
         self.loop_connector_cls = loop_connector_cls
         super(HandshakeRegLoop, self).__init__()
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.rd, self.vld = HwIOSignal()._m(), HwIOSignal()._m()
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         r = HandshakedReg(HwIORdVldSync)
         # r.DELAY = 1
         # r.LATENCY = 2 # to break ready signal chain
@@ -112,7 +122,8 @@ class HandshakeRegLoop(HwModule):
 
 class DoubleHandshakeReg(HandshakeWire0):
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         regs = self.regs = HObjList(HandshakedReg(HwIORdVldSync) for _ in range(2))
         regs[0].dataIn(self.dataIn)
         regs[1].dataIn(regs[0].dataOut)

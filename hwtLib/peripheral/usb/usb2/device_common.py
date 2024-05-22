@@ -20,6 +20,7 @@ from hwtLib.peripheral.usb.usb2.device_core import Usb2DeviceCore
 from hwtLib.peripheral.usb.usb2.device_ep_buffers import UsbDeviceEpBuffers
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b
 from hwtLib.types.ctypes import uint16_t, uint8_t
+from hwt.pyUtils.typingFuture import override
 
 
 class Usb2DeviceCommon(HwModule):
@@ -34,10 +35,12 @@ class Usb2DeviceCommon(HwModule):
     :ivar ep_buffers: handles the data multiplexing and replaying on errors,
     """
 
-    def _config(self):
-        Usb2DeviceCore._config(self)
+    @override
+    def hwConfig(self):
+        Usb2DeviceCore.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.phy = Utmi_8b()
         self.usb_rst: HwIOSignal = HwIOSignal()._m()
@@ -319,5 +322,6 @@ class Usb2DeviceCommon(HwModule):
         ep_buffers.usb_core_io.tx_success.data(1)
 
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         raise NotImplementedError("Should be implemented in a specific variant of this abstract component")

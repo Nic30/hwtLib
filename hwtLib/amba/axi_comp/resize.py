@@ -4,11 +4,12 @@
 from typing import Optional
 
 from hwt.code import Concat, Switch
+from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwParam import HwParam
-from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
@@ -27,14 +28,16 @@ class AxiResize(BusBridge):
         self.hwIOCls = hwIOCls
         super(AxiResize, self).__init__(hdlName=hdlName)
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)
-        self.hwIOCls._config(self)
+        self.hwIOCls.hwConfig(self)
         self.OUT_DATA_WIDTH = HwParam(self.DATA_WIDTH)
         self.OUT_ADDR_WIDTH = HwParam(self.ADDR_WIDTH)
         self.MAX_TRANS_OVERLAP = HwParam(4)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.ALIGN_BITS_IN = log2ceil((self.DATA_WIDTH // 8) - 1)
         self.ALIGN_BITS_OUT = log2ceil((self.OUT_DATA_WIDTH // 8) - 1)
@@ -161,7 +164,8 @@ class AxiResize(BusBridge):
 
         m.b(s.b)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         m, s = self.m, self.s
         has_len = hasattr(s.ar, "len")
         DW = self.DATA_WIDTH

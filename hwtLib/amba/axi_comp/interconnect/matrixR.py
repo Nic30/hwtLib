@@ -10,6 +10,7 @@ from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwt.pyUtils.typingFuture import override
 
 
 class AxiInterconnectMatrixR(AxiInterconnectCommon):
@@ -26,8 +27,9 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
     .. hwt-autodoc:: example_AxiInterconnectMatrixR
     """
 
-    def _declr(self):
-        AxiInterconnectCommon._declr(self, has_r=True, has_w=False)
+    @override
+    def hwDeclr(self):
+        AxiInterconnectCommon.hwDeclr(self, has_r=True, has_w=False)
         masters_for_slave = AxiInterconnectMatrixCrossbar._masters_for_slave(
             self.MASTERS, len(self.SLAVES))
 
@@ -66,7 +68,8 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
             c.INPUT_CNT = len(self.SLAVES)
             c.OUTPUTS = self.MASTERS
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         addr_crossbar = self.addr_crossbar
         data_crossbar = self.data_crossbar

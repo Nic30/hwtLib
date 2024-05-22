@@ -1,8 +1,9 @@
-from hwt.hwParam import HwParam
 from hwt.hwIO import HwIO
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIOSignal, HwIORdVldSync
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
@@ -23,6 +24,7 @@ class HwIOInsertAgent(HwIODataRdVldAgent):
         HwIODataRdVldAgent.__init__(self, sim, hwIO)
         self.hasData = bool(hwIO.DATA_WIDTH)
 
+    @override
     def get_data(self):
         i = self.hwIO
         _hash = i.hash.read()
@@ -35,6 +37,7 @@ class HwIOInsertAgent(HwIODataRdVldAgent):
         else:
             return hash, key, item_vld
 
+    @override
     def set_data(self, data):
         i = self.hwIO
 
@@ -61,13 +64,15 @@ class HwIOInsert(HwIORdVldSync):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.HASH_WIDTH = HwParam(8)
         self.KEY_WIDTH = HwParam(8)
         self.DATA_WIDTH = HwParam(0)
 
-    def _declr(self):
-        super(HwIOInsert, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(HwIOInsert, self).hwDeclr()
         self.hash = HwIOVectSignal(self.HASH_WIDTH)
         self.key = HwIOVectSignal(self.KEY_WIDTH)
         if self.DATA_WIDTH:
@@ -75,6 +80,7 @@ class HwIOInsert(HwIORdVldSync):
 
         self.item_vld = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HwIOInsertAgent(sim, self)
 
@@ -88,12 +94,14 @@ class HwIOLookupKeyAgent(HwIODataRdVldAgent):
         HwIODataRdVldAgent.__init__(self, sim, hwIO)
         self.HAS_LOOKUP_ID = bool(hwIO.LOOKUP_ID_WIDTH)
 
+    @override
     def get_data(self):
         hwIO = self.hwIO
         if self.HAS_LOOKUP_ID:
             return hwIO.lookup_id.read(), hwIO.key.read()
         return hwIO.key.read()
 
+    @override
     def set_data(self, data):
         hwIO = self.hwIO
         if self.HAS_LOOKUP_ID:
@@ -108,16 +116,19 @@ class HwIOLookupKey(HwIORdVldSync):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.LOOKUP_ID_WIDTH = HwParam(0)
         self.KEY_WIDTH = HwParam(8)
 
-    def _declr(self):
-        HwIORdVldSync._declr(self)
+    @override
+    def hwDeclr(self):
+        HwIORdVldSync.hwDeclr(self)
         if self.LOOKUP_ID_WIDTH:
             self.lookupId = HwIOVectSignal(self.LOOKUP_ID_WIDTH)
         self.key = HwIOVectSignal(self.KEY_WIDTH)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HwIOLookupKeyAgent(sim, self)
 
@@ -136,6 +147,7 @@ class HwIOLookupResultAgent(HwIODataRdVldAgent):
         self.hasKey = bool(hwIO.LOOKUP_KEY)
         self.hasData = bool(hwIO.DATA_WIDTH)
 
+    @override
     def get_data(self):
         d = []
         append = d.append
@@ -155,6 +167,7 @@ class HwIOLookupResultAgent(HwIODataRdVldAgent):
 
         return tuple(d)
 
+    @override
     def set_data(self, data):
         hwIO = self.hwIO
 
@@ -196,7 +209,8 @@ class HwIOLookupResult(HwIODataRdVld):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.HASH_WIDTH = HwParam(8)
         self.KEY_WIDTH = HwParam(8)
         self.DATA_WIDTH = HwParam(0)
@@ -204,8 +218,9 @@ class HwIOLookupResult(HwIODataRdVld):
         self.LOOKUP_HASH = HwParam(False)
         self.LOOKUP_KEY = HwParam(False)
 
-    def _declr(self):
-        HwIORdVldSync._declr(self)
+    @override
+    def hwDeclr(self):
+        HwIORdVldSync.hwDeclr(self)
         if self.LOOKUP_ID_WIDTH:
             self.lookupId = HwIOVectSignal(self.LOOKUP_ID_WIDTH)
 
@@ -221,6 +236,7 @@ class HwIOLookupResult(HwIODataRdVld):
         self.found = HwIOSignal()
         self.occupied = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HwIOLookupResultAgent(sim, self)
 
@@ -230,7 +246,8 @@ class HwIOHashTable(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ITEMS_CNT = HwParam(32)
         self.KEY_WIDTH = HwParam(16)
         self.DATA_WIDTH = HwParam(8)
@@ -238,7 +255,8 @@ class HwIOHashTable(HwIO):
         self.LOOKUP_HASH = HwParam(False)
         self.LOOKUP_KEY = HwParam(False)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert int(self.KEY_WIDTH) > 0
         assert int(self.DATA_WIDTH) >= 0
         assert int(self.ITEMS_CNT) > 1
@@ -258,6 +276,7 @@ class HwIOHashTable(HwIO):
             self.lookupRes = HwIOLookupResult(masterDir=DIRECTION.IN)
             self.lookupRes.HASH_WIDTH = self.HASH_WIDTH
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HwIOHashTableAgent(sim, self)
 
@@ -270,12 +289,14 @@ class HwIOHashTableAgent(AgentBase):
         hwIO.lookup._initSimAgent(sim)
         hwIO.lookupRes._initSimAgent(sim)
 
+    @override
     def getDrivers(self):
         hwIO = self.hwIO
         yield from hwIO.insert._ag.getDrivers()
         yield from hwIO.lookup._ag.getDrivers()
         yield from hwIO.lookupRes._ag.getMonitors()
 
+    @override
     def getMonitors(self):
         hwIO = self.hwIO
         yield from hwIO.insert._ag.getMonitors()

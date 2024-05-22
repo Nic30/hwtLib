@@ -4,13 +4,14 @@
 from typing import Optional
 
 from hwt.code import FsmBuilder, If, Concat
-from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.hwModule import HwModule
-from hwt.hwParam import HwParam
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -37,12 +38,14 @@ class AxiTester(HwModule):
         self._cntrlCls = cntrlCls
         super(AxiTester, self).__init__(hdlName=hdlName)
 
-    def _config(self):
-        self._axiCls._config(self)
+    @override
+    def hwConfig(self):
+        self._axiCls.hwConfig(self)
         self.CNTRL_DATA_WIDTH = HwParam(32)
         self.CNTRL_ADDR_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.m_axi = self._axiCls()._m()
@@ -107,7 +110,8 @@ class AxiTester(HwModule):
         ep.DATA_WIDTH = self.CNTRL_DATA_WIDTH
         ep.ADDR_WIDTH = self.CNTRL_ADDR_WIDTH
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         self.axi_ep.bus(self.cntrl)
 

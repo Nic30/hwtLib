@@ -6,6 +6,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.xilinx.locallink.hIOLocallink import LocalLink
 from pyMathBitPrecise.bit_utils import mask
@@ -20,7 +21,7 @@ def strbToRem(strbBits, remBits):
 
 class Axi4SToLocalLink(HwModule):
     """
-    Axi 4 stream to LocalLink
+    Axi4Stream to LocalLink
 
     format of user signal:
     user[0]: start of packet
@@ -29,18 +30,21 @@ class Axi4SToLocalLink(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(32)
         self.USER_WIDTH = HwParam(2)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             addClkRstn(self)
             self.dataIn = Axi4Stream()
             self.dataOut = LocalLink()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         assert(int(self.USER_WIDTH) == 2)  # this is how is protocol specified
         In = self.dataIn
         Out = self.dataOut
@@ -113,16 +117,19 @@ class LocalLinkToAxi4S(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi4SToLocalLink._config(self)
+    @override
+    def hwConfig(self):
+        Axi4SToLocalLink.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             addClkRstn(self)
             self.dataIn = LocalLink()
             self.dataOut = Axi4Stream()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         In = self.dataIn
         Out = self.dataOut
 

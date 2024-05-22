@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import And
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.compBase import HandshakedCompBase
-from hwt.hObjList import HObjList
 
 
 class HsSplitCopy(HandshakedCompBase):
@@ -20,18 +21,21 @@ class HsSplitCopy(HandshakedCompBase):
     .. hwt-autodoc:: _example_HsSplitCopy
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.OUTPUTS = HwParam(2)
-        super()._config()
+        super().hwConfig()
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.dataIn = self.hwIOCls()
             self.dataOut = HObjList(
                 self.hwIOCls()._m() for _ in range(int(self.OUTPUTS))
             )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         rd = self.get_ready_signal
         vld = self.get_valid_signal
         data = self.get_data

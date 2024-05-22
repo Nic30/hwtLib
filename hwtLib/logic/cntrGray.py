@@ -5,11 +5,12 @@ from hwt.code import If
 from hwt.constants import Time
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.mainBases import RtlSignalBase
-from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.simulator.simTestCase import SimTestCase
 
 
 def binToGray(sigOrConst) -> RtlSignalBase:
@@ -30,17 +31,20 @@ class GrayCntr(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(4)
         self.INIT_VAL = HwParam(0)  # binary
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.en = HwIOSignal()
 
         self.dataOut = HwIOVectSignal(self.DATA_WIDTH)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, self.INIT_VAL)
 
         self.dataOut(binToGray(binCntr))
@@ -53,6 +57,7 @@ class GrayCntr(HwModule):
 class GrayCntrTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls) -> HwModule:
         cls.dut = GrayCntr()
         cls.compileSim(cls.dut)

@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
 from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgentTC, \
     UlpiUsbAgentTC
@@ -13,18 +14,21 @@ from hwtLib.peripheral.usb.usb2.utmi_usb_agent import UtmiUsbAgent
 
 class UtmiWire(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.host = Utmi_8b()
         self.dev = Utmi_8b()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.dev(self.host)
 
 
 class UtmiAgentTC(UlpiAgentTC):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = UtmiWire()
         cls.compileSim(cls.dut)
@@ -36,10 +40,12 @@ class UtmiAgentTC(UlpiAgentTC):
 class UtmiUsbAgentTC(UlpiUsbAgentTC):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = dut = UtmiWire()
         cls.compileSim(dut)
 
+    @override
     def setUp(self):
         SimTestCase.setUp(self)
         dut = self.dut

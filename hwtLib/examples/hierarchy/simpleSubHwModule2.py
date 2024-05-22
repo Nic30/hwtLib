@@ -5,6 +5,7 @@ from hwt.constants import Time
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.examples.simpleHwModuleAxi4Stream import SimpleHwModuleAxi4Stream
@@ -15,10 +16,12 @@ class SimpleSubHwModule2(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self) -> None:
+    @override
+    def hwConfig(self) -> None:
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.submodule0 = SimpleHwModuleAxi4Stream()
@@ -28,7 +31,8 @@ class SimpleSubHwModule2(HwModule):
         self.a0.DATA_WIDTH = 8
         self.b0.DATA_WIDTH = 8
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         m = self.submodule0
         m.a(self.a0)
@@ -38,6 +42,7 @@ class SimpleSubHwModule2(HwModule):
 class SimpleSubModule2TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = SimpleSubHwModule2()
         cls.compileSim(cls.dut)

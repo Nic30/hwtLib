@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Add
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 
 
 class PidController(HwModule):
@@ -35,7 +36,8 @@ class PidController(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATAIN_WIDTH = HwParam(16)
         self.DATAOUT_WIDTH = HwParam(16)
         self.COEF_WIDTH = HwParam(16)
@@ -48,7 +50,8 @@ class PidController(HwModule):
         a3 = -K_d / T_s
         return [ int(x) for x in [a0, a1, a2, a3]]
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.input = HwIOVectSignal(self.DATAIN_WIDTH, signed=True)
         self.output = HwIOVectSignal(self.DATAIN_WIDTH, signed=True)._m()
@@ -58,7 +61,8 @@ class PidController(HwModule):
             for _ in range(4)
         )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         u = self._reg("u", dtype=self.output._dtype, def_val=0)
         err = self._sig("err", dtype=self.input._dtype)
         err(self.input - self.target)

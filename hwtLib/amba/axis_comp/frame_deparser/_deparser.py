@@ -4,6 +4,7 @@
 from typing import List, Optional, Union, Tuple
 
 from hwt.code import Switch, If, SwitchLogic
+from hwt.hObjList import HObjList
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 from hwt.hdl.transPart import TransPart
@@ -13,14 +14,14 @@ from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.union import HUnion
-from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.hwIOs.hwIOUnion import HwIOUnionSink
+from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil, isPow2
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil, isPow2
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.template_configured import TemplateConfigured, \
     separate_streams, to_primitive_stream_t
@@ -37,8 +38,6 @@ from hwtLib.amba.axis_comp.frame_parser.field_connector import Axi4S_frameParser
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 from pyMathBitPrecise.bit_utils import mask
-
-
 
 
 @serializeParamsUniq
@@ -72,8 +71,9 @@ class Axi4S_frameDeparser(Axi4SCompBase, TemplateConfigured):
         TemplateConfigured.__init__(self, structT, tmpl, frames)
         Axi4SCompBase.__init__(self)
 
-    def _config(self):
-        Axi4SCompBase._config(self)
+    @override
+    def hwConfig(self):
+        Axi4SCompBase.hwConfig(self)
         self.USE_STRB = True
         self.T = HwParam(self._structT)
         self.TRANSACTION_TEMPLATE = HwParam(self._tmpl)
@@ -95,13 +95,14 @@ class Axi4S_frameDeparser(Axi4SCompBase, TemplateConfigured):
             p._fieldsToHwIOs = parent._fieldsToHwIOs
         elif isinstance(t, HStream):
             p = Axi4Stream()
-            p._updateParamsFrom(self)
+            p._updateHwParamsFrom(self)
         else:
             p = HwIODataRdVld()
             p.DATA_WIDTH = structField.dtype.bit_length()
         return p
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         """"
         Parse template and decorate with interfaces
         """
@@ -290,7 +291,7 @@ class Axi4S_frameDeparser(Axi4SCompBase, TemplateConfigured):
             *((s_t, f"frame{i:d}")
               for i, s_t in enumerate(sub_t_flatten))
         )
-        fjoin._updateParamsFrom(
+        fjoin._updateHwParamsFrom(
             self, exclude=({"USE_KEEP", "T"}, {}))
         # has to have keep, because we know that atleast one output will
         # have unaligned start
@@ -479,7 +480,8 @@ class Axi4S_frameDeparser(Axi4SCompBase, TemplateConfigured):
             if self.USE_KEEP:
                 dout.keep(m)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         """
         Iterate over words in template and create stream output mux and fsm.
         Frame specifier can contains unions/streams/padding/unaligned items

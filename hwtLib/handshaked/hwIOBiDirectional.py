@@ -4,6 +4,7 @@ from hwt.constants import DIRECTION
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIOSignal
 from hwtSimApi.hdlSimulator import HdlSimulator
+from hwt.pyUtils.typingFuture import override
 
 
 class HwIORdVldSyncBiDirectionalData(HwIODataRdVld):
@@ -14,12 +15,14 @@ class HwIORdVldSyncBiDirectionalData(HwIODataRdVld):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.din = HwIOVectSignal(self.DATA_WIDTH, masterDir=DIRECTION.IN)
         self.dout = HwIOVectSignal(self.DATA_WIDTH)
         self.vld = HwIOSignal()
         self.rd = HwIOSignal(masterDir=DIRECTION.IN)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HwIORdVldSyncBiDirectionalDataAgent(sim, self)
 
@@ -37,10 +40,12 @@ class HwIORdVldSyncBiDirectionalDataAgent(HwIODataRdVldAgent):
         self.dinData = deque()
         self._isMonitor = False
 
+    @override
     def getMonitors(self):
         self._isMonitor = True
         return HwIODataRdVldAgent.getMonitors(self)
 
+    @override
     def notReset(self):
         nr = HwIODataRdVldAgent.notReset(self)
         if self._isMonitor:
@@ -48,20 +53,24 @@ class HwIORdVldSyncBiDirectionalDataAgent(HwIODataRdVldAgent):
         else:
             return nr
 
+    @override
     def onMonitorReady(self):
         "write din"
         d = self.dinData.popleft()
         self.hwIO.din.write(d)
 
+    @override
     def onDriverWriteAck(self):
         "read din"
         d = self.hwIO.din.read()
         self.dinData.append(d)
 
+    @override
     def get_data(self):
         """extract data from interface"""
         return self.hwIO.dout.read()
 
+    @override
     def set_data(self, data):
         """write data to interface"""
         self.hwIO.dout.write(data)

@@ -5,9 +5,10 @@ from hwt.code import If
 from hwt.hwIOs.std import HwIOSignal, HwIORdVldSync, \
     HwIORegCntrl
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.serializer.mode import serializeOnce
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeOnce
 from hwtLib.mem.atomic.flipReg import FlipRegister
 
 
@@ -22,10 +23,12 @@ class FlipCntr(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(18)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             addClkRstn(self)
             self.doIncr = HwIOSignal()
@@ -49,7 +52,8 @@ class FlipCntr(HwModule):
 
         cntr.second(self.data)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         self.flipHandler()
         self.dataHanldler()

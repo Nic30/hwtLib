@@ -6,19 +6,22 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIOClk
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class SimpleIfStatement(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.c = HwIOSignal()
         self.d = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         If(self.a,
            self.d(self.b),
         ).Elif(self.b,
@@ -32,14 +35,16 @@ class SimpleIfStatement2(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.c = HwIOSignal()
         self.d = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         r = self._reg("reg_d", def_val=0)
 
         If(self.a,
@@ -56,14 +61,16 @@ class SimpleIfStatement2b(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.c = HwIOSignal()
         self.d = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         r = self._reg("reg_d", def_val=0)
 
         If(self.a & self.b,
@@ -80,14 +87,16 @@ class SimpleIfStatement2c(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.c = HwIOSignal()
         self.d = HwIOVectSignal(2)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         r = self._reg("reg_d", HBits(2), def_val=0)
 
         If(self.a & self.b,
@@ -106,7 +115,8 @@ class SimpleIfStatement3(SimpleIfStatement):
     """
     .. hwt-autodoc::
     """
-    def _impl(self):
+    @override
+    def hwImpl(self):
         If(self.a,
            self.d(0),
         ).Elif(self.b,
@@ -120,14 +130,16 @@ class SimpleIfStatementMergable(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()
 
         self.c = HwIOSignal()._m()
         self.d = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         If(self.a,
            self.d(self.b),
         ).Else(
@@ -145,7 +157,8 @@ class SimpleIfStatementMergable1(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()
 
@@ -153,7 +166,8 @@ class SimpleIfStatementMergable1(HwModule):
         self.d = HwIOSignal()._m()
         self.e = HwIOSignal()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         If(self.e,
             If(self.a,
                 self.d(self.b),
@@ -168,7 +182,8 @@ class SimpleIfStatementMergable2(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()
 
@@ -177,7 +192,8 @@ class SimpleIfStatementMergable2(HwModule):
         self.e = HwIOSignal()._m()
         self.f = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         If(self.a,
             self.d(self.b),
             # this two if statements will be merged together
@@ -196,13 +212,15 @@ class SimpleIfStatementPartialOverride(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()
 
         self.c = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         If(self.b,
             self.c(1),
             If(self.a,
@@ -214,7 +232,8 @@ class SimpleIfStatementPartialOverrideNopVal(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.clk = HwIOClk()
         self.a = HwIOSignal()
         self.b = HwIOSignal()
@@ -222,7 +241,8 @@ class SimpleIfStatementPartialOverrideNopVal(HwModule):
 
         self.e = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         d = self._reg("d")
 
         If(self.a,
@@ -240,7 +260,8 @@ class IfStatementPartiallyEnclosed(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.clk = HwIOClk()
         self.a = HwIOSignal()._m()
         self.b = HwIOSignal()._m()
@@ -248,7 +269,8 @@ class IfStatementPartiallyEnclosed(HwModule):
         self.c = HwIOSignal()
         self.d = HwIOSignal()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         a = self._reg("a_reg")
         b = self._reg("b_reg")
 

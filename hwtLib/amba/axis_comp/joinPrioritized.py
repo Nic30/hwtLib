@@ -19,13 +19,13 @@ class Axi4SJoinPrioritized(Axi4SCompBase, HsJoinPrioritized):
     .. hwt-autodoc::
     """
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         addClkRstn(self)
-        HsJoinPrioritized._declr(self)
+        HsJoinPrioritized.hwDeclr(self)
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         join = HsJoinPrioritized(self.HWIO_CLS)
-        join._updateParamsFrom(self)
+        join._updateHwParamsFrom(self)
         join.get_valid_signal = self.get_valid_signal
         join.get_ready_signal = self.get_ready_signal
 

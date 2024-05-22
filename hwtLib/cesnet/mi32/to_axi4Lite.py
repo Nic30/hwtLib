@@ -9,6 +9,7 @@ from hwtLib.cesnet.mi32.intf import Mi32
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.defs import BIT
 from hwt.code import If
+from hwt.pyUtils.typingFuture import override
 
 
 class Mi32_to_Axi4Lite(BusBridge):
@@ -22,17 +23,20 @@ class Mi32_to_Axi4Lite(BusBridge):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi4Lite._config(self)
+    @override
+    def hwConfig(self):
+        Axi4Lite.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         with self._hwParamsShared():
             self.m = Axi4Lite()._m()
             self.s = Mi32()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         mi32 = self.s
         axi = self.m
         w_data = self._reg("w_data", HStruct(

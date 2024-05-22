@@ -6,39 +6,46 @@ import unittest
 from hwt.code import Switch
 from hwt.hdl.operatorDefs import HwtOps
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
+from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceLatch
-from hwt.hwModule import HwModule
 from hwt.synth import synthesised
 
 
 class LatchInSwitchTest(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(4)
         self.b = HwIOVectSignal(4)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         Switch(self.a).add_cases([(i, self.b(i)) for i in range(6)])
 
 
 class DualLatchInSwitchTest(LatchInSwitchTest):
-    def _declr(self):
-        super(DualLatchInSwitchTest, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(DualLatchInSwitchTest, self).hwDeclr()
         self.c = HwIOVectSignal(4)._m()
 
-    def _impl(self):
-        super(DualLatchInSwitchTest, self)._impl()
+    @override
+    def hwImpl(self):
+        super(DualLatchInSwitchTest, self).hwImpl()
         Switch(self.a).add_cases([(i, self.c(i)) for i in range(4)])
 
 
 class BoolToBitTest(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(4)
         self.b = HwIOVectSignal(4)
         self.c = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.c(self.a._eq(self.b))
 
 

@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If
+from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
-from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.amba.axi_comp.cache.utils import CamWithReadPort
 from hwtLib.commonHwIO.index_key_hs import HwIOIndexKeyRdVld, \
@@ -27,19 +28,21 @@ class FifoOutOfOrderRead(HwModule):
 
     Item state control scheme:
 
-    * write_confirm: the item is now allocated in the fifo and ready to be read
+    * write_confirm: the item is now allocated in the FIFO and ready to be read
     * read_execute: the item is locked for updates and is currently being read
-    * read_confirm: the item is entirely readed and it is ready to be deallocated
+    * read_confirm: the item is entirely read and it is ready to be deallocated
 
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ITEMS = HwParam(4)
         self.KEY_WIDTH = HwParam(0)
         self.INIT_DATA: tuple = HwParam(())
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         ITEM_INDEX_WIDTH = log2ceil(self.ITEMS - 1)
 
@@ -59,7 +62,8 @@ class FifoOutOfOrderRead(HwModule):
         if self.INIT_DATA:
             raise NotImplementedError()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         ITEMS = self.ITEMS
 
@@ -139,14 +143,16 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        super(FifoOutOfOrderReadFiltered, self)._config()
+    @override
+    def hwConfig(self):
+        super(FifoOutOfOrderReadFiltered, self).hwConfig()
         self.KEY_WIDTH = 8
         self.HAS_READ_LOOKUP = HwParam(False)
 
-    def _declr(self) -> None:
+    @override
+    def hwDeclr(self) -> None:
         assert self.KEY_WIDTH > 0
-        super(FifoOutOfOrderReadFiltered, self)._declr()
+        super(FifoOutOfOrderReadFiltered, self).hwDeclr()
 
         if self.HAS_READ_LOOKUP:
             # check if item is stored in CAM
@@ -181,8 +187,9 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
         if self.HAS_READ_LOOKUP:
             c.MATCH_PORT_CNT = 2
 
-    def _impl(self):
-        item_valid, item_write_lock, (_, write_ptr), (_, read_ptr) = super(FifoOutOfOrderReadFiltered, self)._impl()
+    @override
+    def hwImpl(self):
+        item_valid, item_write_lock, (_, write_ptr), (_, read_ptr) = super(FifoOutOfOrderReadFiltered, self).hwImpl()
         self.item_valid(item_valid)
         self.item_write_lock(item_write_lock)
 

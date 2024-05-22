@@ -6,10 +6,11 @@ from typing import Optional
 
 from hwt.code import If, Switch
 from hwt.hdl.types.bits import HBits
-from hwt.hwParam import HwParam
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
@@ -23,8 +24,9 @@ class HandshakedStoredBurst(HwModule):
         self.hwIOCls = hwIOCls
         super(HandshakedStoredBurst, self).__init__(hdlName=hdlName)
 
-    def _config(self):
-        self.hwIOCls._config(self)
+    @override
+    def hwConfig(self):
+        self.hwIOCls.hwConfig(self)
         self.HWIO_CLS = HwParam(self.hwIOCls)
         self.REPEAT = HwParam(False)
         self.DATA = HwParam(tuple(ord(c) for c in "Hello world"))
@@ -32,7 +34,8 @@ class HandshakedStoredBurst(HwModule):
     def dataRd(self):
         return self.dataOut.rd
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataOut = self.HWIO_CLS()._m()
@@ -52,7 +55,8 @@ class HandshakedStoredBurst(HwModule):
     def set_data(self, hwIO: HwIODataRdVld, d):
         return [hwIO.data(d), ]
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.DATA_WIDTH = int(self.DATA_WIDTH)
         dout = self.dataOut
         DATA_LEN = len(self.DATA)

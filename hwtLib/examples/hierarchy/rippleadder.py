@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat
+from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 
 
 @serializeParamsUniq
@@ -16,14 +17,16 @@ class FullAdder(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.ci = HwIOSignal()
         self.s = HwIOSignal()._m()
         self.co = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # [note] it is usually better to copy commonly used self properties because it makes code shorter
         a, b, ci = self.a, self.b, self.ci
 
@@ -38,12 +41,14 @@ class RippleAdder0(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         # [possible improvement] you can specify the type directly, this may be more futureproof
         # in this case we could also control if the data type should be signed/unsigned
         self.p_wordlength = HwParam(4)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.ci = HwIOSignal()
         self.a = HwIOVectSignal(self.p_wordlength)
         self.b = HwIOVectSignal(self.p_wordlength)
@@ -56,7 +61,8 @@ class RippleAdder0(HwModule):
         self.fa2 = FullAdder()
         self.fa3 = FullAdder()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # [wrong] HwIOVectSignal is an Interface sub-class, it is ment to be used for IO of the component
         # it works but it has significant limitations, you should use self._sig() wihich handles name collisions
         # and has more confort API for clock/reset/default value specifications
@@ -107,10 +113,12 @@ class RippleAdder1(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.p_wordlength = HwParam(4)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.ci = HwIOSignal()
         self.a = HwIOVectSignal(self.p_wordlength)
         self.b = HwIOVectSignal(self.p_wordlength)
@@ -121,7 +129,8 @@ class RippleAdder1(HwModule):
            FullAdder() for _ in range(self.p_wordlength)
         ])
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         c = self._sig("c", HBits(self.p_wordlength + 1))
 
         c[0](self.ci)
@@ -141,10 +150,12 @@ class RippleAdder2(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.p_wordlength = HwParam(4)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.ci = HwIOSignal()
         # [possible improvement] you can use io = lambda : HwIOVectSignal(self.p_wordlength) as macro
         # so you do not have to repeat same code
@@ -153,7 +164,8 @@ class RippleAdder2(HwModule):
         self.s = HwIOVectSignal(self.p_wordlength)._m()
         self.co = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # [wrong] it is useless to use an extra signal to connect ports,  because it can be connected directly
         c = self._sig("c", HBits(self.p_wordlength + 1))
 
@@ -181,26 +193,29 @@ class RippleAdder3(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.p_wordlength = HwParam(4)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.ci = HwIOSignal()
         self.a = HwIOVectSignal(self.p_wordlength)
         self.b = HwIOVectSignal(self.p_wordlength)
         self.s = HwIOVectSignal(self.p_wordlength)._m()
         self.co = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         carry = self.ci
 
         # [note] HObjList can be restered with or without items, however we need it in adwance because we
         # need registered FullAdder adder instances, because we need it's IO
         fa_list = self.fa = HObjList()
         for a, b in zip(self.a, self.b):
-            # [note] componnets do not have to be declared in _declr(), but it is better
+            # [note] componnets do not have to be declared in hwDeclr(), but it is better
             # because the configuration of component can be still modified
-            # after _declr() in _impl() the configuration of component is locked imediately after registration
+            # after hwDeclr() in hwImpl() the configuration of component is locked imediately after registration
             fa = FullAdder()
             # [note] the component have to be registered in order to spot the IO
             # the registration is done by assining to a property ot his object e.g. self.fa0 = fa

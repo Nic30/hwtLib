@@ -5,13 +5,14 @@ from typing import Tuple
 
 from hwt.code import If
 from hwt.constants import READ, WRITE
+from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
-from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwIOs.hwIOStruct import HwIOStructRdVld
+from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
-from hwt.hdl.types.bits import HBits
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
 from hwtLib.handshaked.builder import HsBuilder
@@ -26,24 +27,29 @@ from pyMathBitPrecise.bit_utils import apply_set_and_clear
 
 class HwIOStructRdVldWithId(HwIOStructRdVld):
 
-    def _config(self):
-        HwIOStructRdVld._config(self)
+    @override
+    def hwConfig(self):
+        HwIOStructRdVld.hwConfig(self)
         self.ID_WIDTH = HwParam(6)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.id = HwIOVectSignal(self.ID_WIDTH)
-        HwIOStructRdVld._declr(self)
+        HwIOStructRdVld.hwDeclr(self)
         
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HwIOStructRdVldWithIdAgent(sim, self)
 
         
 class HwIOStructRdVldWithIdAgent(HwIODataRdVldAgent):
 
+    @override
     def get_data(self):
         i = self.hwIO
         return (i.id.read(), i.data.read())
 
+    @override
     def set_data(self, data):
         i = self.hwIO
         if data is None:
@@ -65,11 +71,13 @@ class ReorderBuffer(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        HwIOStructRdVldWithId._config(self)
+    @override
+    def hwConfig(self):
+        HwIOStructRdVldWithId.hwConfig(self)
         self.T = uint16_t
     
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.T is not None
         addClkRstn(self)
         with self._hwParamsShared():
@@ -83,12 +91,12 @@ class ReorderBuffer(HwModule):
         self.storage_w.DATA_WIDTH = self.T.bit_length()
         
         self.storage_r = RamAsAddrDataRdVld()
-        self.storage_r._updateParamsFrom(self.storage_w)        
+        self.storage_r._updateHwParamsFrom(self.storage_w)        
         self.storage_r.HAS_R = True
         self.storage_r.HAS_W = False
         
         self.storage_ram = RamSingleClock()
-        self.storage_ram._updateParamsFrom(self.storage_w)
+        self.storage_ram._updateHwParamsFrom(self.storage_w)
         self.storage_ram.PORT_CNT = (WRITE, READ) 
 
     def item_occupancy_reg(self) -> Tuple[RtlSignal, RtlSyncSignal, RtlSignal]:
@@ -98,7 +106,8 @@ class ReorderBuffer(HwModule):
         item_occ(apply_set_and_clear(item_occ, item_occ_set, item_occ_clear))
         return item_occ_set, item_occ, item_occ_clear
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.storage_ram.port[0](self.storage_w.ram)
         self.storage_ram.port[1](self.storage_r.ram)
         

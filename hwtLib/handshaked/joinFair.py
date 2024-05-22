@@ -7,6 +7,7 @@ from hwt.hdl.types.defs import BIT
 from hwt.hwIOs.std import HwIODataVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 
@@ -23,12 +24,14 @@ class HsJoinFairShare(HsJoinPrioritized):
     .. hwt-autodoc: _example_HsJoinFairShare
     """
 
-    def _config(self):
-        HsJoinPrioritized._config(self)
+    @override
+    def hwConfig(self):
+        HsJoinPrioritized.hwConfig(self)
         self.EXPORT_SELECTED = HwParam(True)
 
-    def _declr(self):
-        HsJoinPrioritized._declr(self)
+    @override
+    def hwDeclr(self):
+        HsJoinPrioritized.hwDeclr(self)
         addClkRstn(self)
         if self.EXPORT_SELECTED:
             s = self.selectedOneHot = HwIODataVld()._m()
@@ -99,7 +102,8 @@ class HsJoinFairShare(HsJoinPrioritized):
         dataDefault = self.dataConnectionExpr(None, dout)
         SwitchLogic(dataCases, dataDefault)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         if self.EXPORT_SELECTED:
             selectedOneHot = self.selectedOneHot
         else:

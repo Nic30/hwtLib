@@ -3,6 +3,7 @@
 
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class SimpleHwModule(HwModule):
@@ -16,9 +17,10 @@ class SimpleHwModule(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         """
-        _declr() is like header of HwModule.
+        hwDeclr() is like header of HwModule.
         There you have to declare things which should be visible from outside.
         """
         # interfaces "a" and "b" are accessible from outside when declared
@@ -30,9 +32,10 @@ class SimpleHwModule(HwModule):
         # "b" is output and has to be marked as master then
         self.b = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         """
-        _impl() is like body of unit.
+        hwImpl() is like body of unit.
         Logic and connections are specified i`qn this function.
         """
 

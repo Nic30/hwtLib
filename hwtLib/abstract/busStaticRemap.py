@@ -1,8 +1,9 @@
 from hwt.code import SwitchLogic, Concat
-from hwt.hwParam import HwParam
-from hwt.hwModule import HwModule
-from hwt.math import inRange, isPow2
 from hwt.hdl.types.bits import HBits
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import inRange, isPow2
+from hwt.pyUtils.typingFuture import override
 
 
 class BusStaticRemap(HwModule):
@@ -14,7 +15,8 @@ class BusStaticRemap(HwModule):
     :ivar ~.s: slave interface of second HwIO class where master slave be connected
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.MEM_MAP = HwParam([])
 
     def _normalize_mem_map(self, mem_map):
@@ -67,7 +69,8 @@ class BusStaticRemap(HwModule):
             cases.append((en_sig, sig_out(addr_drive)))
         SwitchLogic(cases, default=sig_out(sig_in))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.m = self.hwIOCls()._m()
             self.s = self.hwIOCls()

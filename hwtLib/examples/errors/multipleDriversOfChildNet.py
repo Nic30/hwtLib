@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hwModule import HwModule
 from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class ExampleChild(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.c = HwIODataRdVld()
         self.d = HwIODataRdVld()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.d(self.c)
 
 
 class MultipleDriversOfChildNet(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIODataRdVld()
         self.b = HwIODataRdVld()._m()
 
         self.ch = ExampleChild()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # interface directions in collision
         self.ch.d(self.a)
         self.ch.c.data(1)
@@ -30,7 +35,8 @@ class MultipleDriversOfChildNet(HwModule):
 
 
 class MultipleDriversOfChildNet2(MultipleDriversOfChildNet):
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.ch.c(self.a)
         self.b(self.ch.d)
         # another colliding driver for b.vld

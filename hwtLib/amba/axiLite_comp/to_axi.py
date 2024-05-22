@@ -3,9 +3,10 @@
 
 from typing import Optional
 
-from hwt.serializer.mode import serializeParamsUniq
 from hwt.hwIO import HwIO
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -13,7 +14,7 @@ from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     BYTES_IN_TRANS, QOS_DEFAULT
 
 
-def interface_not_present_on_other(a: HwIO, b: HwIO):
+def HwIO_notPresentOnOther(a: HwIO, b: HwIO):
     """
     :return: set of interfaces which does not have an equivalent on "b"
     """
@@ -38,25 +39,28 @@ class AxiLite_to_Axi(BusBridge):
         self.hwIOCls = hwIOCls
         super(AxiLite_to_Axi, self).__init__(hdlName=hdlName)
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)
-        self.hwIOCls._config(self)
+        self.hwIOCls.hwConfig(self)
         self.DEFAULT_ID = HwParam(0)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.s = Axi4Lite()
             self.m = self.hwIOCls()._m()
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         axiFull = self.m
         axiLite = self.s
 
         def connect_what_is_same_lite_to_full(src, dst):
-            dst(src, exclude=interface_not_present_on_other(dst, src))
+            dst(src, exclude=HwIO_notPresentOnOther(dst, src))
 
         def connect_what_is_same_full_to_lite(src, dst):
-            dst(src, exclude=interface_not_present_on_other(src, dst))
+            dst(src, exclude=HwIO_notPresentOnOther(src, dst))
 
         def a_defaults(a: Axi4_addr):
             a.id(self.DEFAULT_ID)

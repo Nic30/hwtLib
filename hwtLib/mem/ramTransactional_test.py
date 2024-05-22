@@ -6,6 +6,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.agents.tuleWithCallback import TupleWithCallback
 from hwt.hwIOs.utils import propagateClkRstn
 from hwt.pyUtils.arrayQuery import flatten
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.ramTransactional import RamTransactional
 from hwtLib.mem.sim.segmentedArrayProxy import SegmentedArrayProxy
@@ -19,12 +20,14 @@ class RamTransactionalWrap(RamTransactional):
     the handshaked channels more readable in simulation.
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         RamTransactional._declr_io(self)
         with self._hwParamsShared():
             self.core = RamTransactional()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         c = self.core
         c.r(self.r)
         c.w(self.w)
@@ -44,6 +47,7 @@ class TupleWithCallback_WriteAddr(TupleWithCallback):
 
         return t
 
+    @override
     def onDone(self):
         _, addr, doFlush = self
         if doFlush:
@@ -67,6 +71,7 @@ class TupleWithCallback_ReadAddr(TupleWithCallback):
 
         return t
 
+    @override
     def onDone(self):
         _, addr = self
         orig_data = self.mem[addr]
@@ -78,6 +83,7 @@ class RamTransactional_2wTC(SimTestCase):
     BURST_LEN = 2
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = dut = RamTransactionalWrap()
         dut.R_ID_WIDTH = 2
@@ -89,6 +95,7 @@ class RamTransactional_2wTC(SimTestCase):
         cls.ITEMS = 2 ** dut.ADDR_WIDTH
         cls.compileSim(dut)
 
+    @override
     def setUp(self):
         SimTestCase.setUp(self)
         m = self.rtl_simulator.model

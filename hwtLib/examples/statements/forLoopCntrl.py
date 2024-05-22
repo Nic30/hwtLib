@@ -5,9 +5,10 @@ from hwt.code import If
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIORdVldSync
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import log2ceil
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 
 
 class StaticForLoopCntrl(HwModule):
@@ -15,10 +16,12 @@ class StaticForLoopCntrl(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ITERATIONS = HwParam(15)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         self.cntrl = HwIORdVldSync()
@@ -28,7 +31,8 @@ class StaticForLoopCntrl(HwModule):
         self.body = HwIORdVldSync()._m()
         self.bodyBreak = HwIOSignal()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         ITERATIONS = int(self.ITERATIONS)
         """
         Iterates from ITERATIONS -1 to 0 body is enabled by bodyVld and if bodyRd

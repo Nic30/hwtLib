@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
@@ -20,10 +21,12 @@ class Axi4LiteMi32Bridges(HwModule):
     :class:`hwt.hwModule.HwModule` with AxiLiteEndpoint + AxiLiteReg + AxiLite2Mi32 + Mi32_2AxiLite
     """
 
-    def _config(self):
-        Mi32._config(self)
+    @override
+    def hwConfig(self):
+        Mi32.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.s = Axi4Lite()
@@ -31,7 +34,8 @@ class Axi4LiteMi32Bridges(HwModule):
             self.toAxi = Mi32_to_Axi4Lite()
             self.m = Axi4Lite()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         toMi32 = self.toMi32
         toAxi = self.toAxi
@@ -44,6 +48,7 @@ class Axi4LiteMi32Bridges(HwModule):
 
 class Mi32Axi4LiteBrigesTC(SimTestCase):
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = Axi4LiteMi32Bridges()
         cls.compileSim(dut)
@@ -53,6 +58,7 @@ class Mi32Axi4LiteBrigesTC(SimTestCase):
         for i in [dut.m, dut.s]:
             axi_randomize_per_channel(self, i)
 
+    @override
     def setUp(self):
         SimTestCase.setUp(self)
         dut = self.dut

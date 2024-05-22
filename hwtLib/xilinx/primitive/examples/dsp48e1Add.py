@@ -6,13 +6,14 @@ from typing import List
 
 from hwt.code import Concat, Or, If
 from hwt.code_utils import rename_signal
+from hwt.hObjList import HObjList
+from hwt.hdl.const import HConst
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.std import HwIORdVldSync, HwIOVectSignal, HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
-from hwt.hdl.const import HConst
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import fitTo
@@ -23,12 +24,14 @@ from hwtSimApi.hdlSimulator import HdlSimulator
 from pyMathBitPrecise.bit_utils import apply_set_and_clear
 
 
-class Dsp48e1AluInputAG(HwIODataRdVldAgent):
+class Dsp48e1AluInputAgent(HwIODataRdVldAgent):
 
+    @override
     def get_data(self):
         i = self.hwIO
         return (i.a.read(), i.b.read())
 
+    @override
     def set_data(self, data):
         i = self.hwIO
         if data is None:
@@ -42,18 +45,21 @@ class Dsp48e1AluInputAG(HwIODataRdVldAgent):
 
 class Dsp48e1AluInput(HwIORdVldSync):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(48)
         self.REG_IN = HwParam(True)
         self.REG_OUT = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(self.DATA_WIDTH)
         self.b = HwIOVectSignal(self.DATA_WIDTH)
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim:HdlSimulator):
-        self._ag = Dsp48e1AluInputAG(sim, self)
+        self._ag = Dsp48e1AluInputAgent(sim, self)
 
 
 def generate_handshake_pipe_cntrl(parent: HwModule, n: int, name_prefix: str, in_valid: RtlSignal, out_ready: RtlSignal):
@@ -96,12 +102,14 @@ def generate_handshake_pipe_cntrl(parent: HwModule, n: int, name_prefix: str, in
 
 class Dsp48e1Add(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(48)
         self.REG_IN = HwParam(False)
         self.REG_OUT = HwParam(False)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.data_in = Dsp48e1AluInput()
@@ -131,7 +139,8 @@ class Dsp48e1Add(HwModule):
             out = r
         return out
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         REG_IN = self.REG_IN
         REQUIRES_CASCADE = self.REG_OUT and self.DATA_WIDTH > 48
 

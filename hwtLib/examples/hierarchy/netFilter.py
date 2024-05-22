@@ -2,29 +2,33 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
-from hwtLib.abstract.emptyHwModule import EmptyHwModule
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwtLib.abstract.emptyHwModule import EmptyHwModule
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 
 
 class HeadFieldExtractor(EmptyHwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.din = Axi4Stream()
         self.dout = Axi4Stream()._m()
         self.headers = Axi4Stream()._m()
 
 
 class PatternMatch(EmptyHwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.din = Axi4Stream()
         self.match = Axi4Stream()._m()
 
 
 class Filter(EmptyHwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.headers = Axi4Stream()
         self.patternMatch = Axi4Stream()
 
@@ -34,7 +38,8 @@ class Filter(EmptyHwModule):
 
 
 class Exporter(EmptyHwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.din = Axi4Stream()
         self.dout = Axi4Stream()._m()
 
@@ -47,10 +52,12 @@ class NetFilter(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.din = Axi4Stream()
@@ -62,7 +69,8 @@ class NetFilter(HwModule):
             self.filter = Filter()
             self.exporter = Exporter()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         s = self
         propagateClkRstn(s)
         Axi4SBuilder(self, s.hfe.dout).split_copy_to(s.patternMatch.din,

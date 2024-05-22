@@ -5,10 +5,11 @@ from typing import Union
 
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.utils import HwIO_pack, \
     HwIO_connectPacked
-from hwt.hwParam import HwParam
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.avalon.mm import AvalonMM
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -24,12 +25,14 @@ class AvalonMmBuff(BusBridge):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        AvalonMM._config(self)
+    @override
+    def hwConfig(self):
+        AvalonMM.hwConfig(self)
         self.ADDR_BUFF_DEPTH = HwParam(4)
         self.DATA_BUFF_DEPTH = HwParam(4)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -54,7 +57,8 @@ class AvalonMmBuff(BusBridge):
 
         return b
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         s: AvalonMM = self.s
         m: AvalonMM = self.m
 
@@ -89,7 +93,7 @@ class AvalonMmBuff(BusBridge):
         ).sync()
 
         m_tmp = AvalonMM()
-        m_tmp._updateParamsFrom(m)
+        m_tmp._updateHwParamsFrom(m)
         self.m_tmp = m_tmp
         non_addr_signals = [
             m_tmp.readData,

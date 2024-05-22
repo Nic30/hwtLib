@@ -7,6 +7,7 @@ import unittest
 
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
 from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ULPI_TX_CMD
@@ -18,12 +19,14 @@ from pyMathBitPrecise.bit_utils import mask
 
 class UlpiWire(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.host = Ulpi()
         self.dev = Ulpi()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.dev(self.host)
 
 
@@ -42,6 +45,7 @@ class UlpiAgentBaseTC(SimTestCase):
 class UlpiAgentTC(UlpiAgentBaseTC):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = dut = UlpiWire()
         cls.compileSim(dut)
@@ -122,10 +126,12 @@ class UlpiAgentTC(UlpiAgentBaseTC):
 class UlpiUsbAgentTC(UlpiAgentBaseTC):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = dut = UlpiWire()
         cls.compileSim(dut)
 
+    @override
     def setUp(self):
         SimTestCase.setUp(self)
         dut = self.dut

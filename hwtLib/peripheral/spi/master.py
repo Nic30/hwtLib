@@ -5,8 +5,9 @@ from hwt.code import If, Concat
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.handshaked.hwIOBiDirectional import HwIORdVldSyncBiDirectionalData, \
     HwIORdVldSyncBiDirectionalDataAgent
@@ -16,12 +17,14 @@ from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class SpiCntrlDataAgent(HwIORdVldSyncBiDirectionalDataAgent):
+    @override
     def get_data(self):
         """extract data from interface"""
         hwIO = self.hwIO
 
         return hwIO.slave.read(), hwIO.dout.read(), hwIO.last.read()
 
+    @override
     def set_data(self, data):
         """write data to interface"""
         hwIO = self.hwIO
@@ -43,11 +46,13 @@ class SpiCntrlData(HwIORdVldSyncBiDirectionalData):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.slave = HwIOVectSignal(1)
-        HwIORdVldSyncBiDirectionalData._declr(self)
+        HwIORdVldSyncBiDirectionalData.hwDeclr(self)
         self.last = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = SpiCntrlDataAgent(sim, self)
 
@@ -68,15 +73,17 @@ class SpiMaster(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.SPI_FREQ_PESCALER = HwParam(32)
         self.SS_WAIT_CLK_TICKS = HwParam(4)
         self.HAS_TX = HwParam(True)
         self.HAS_RX = HwParam(True)
         self.SPI_DATA_WIDTH = HwParam(1)
-        Spi._config(self)
+        Spi.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         self.spi = Spi()._m()
@@ -161,7 +168,8 @@ class SpiMaster(HwModule):
 
         return (wrEn, rdEn, initWaitDone, endOfWord)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         d = self.data
         slaveSelectWaitRequired = self._reg("slaveSelectWaitRequired", def_val=1)
         endOfWordDelayed = self._reg("endOfWordDelayed", def_val=0)

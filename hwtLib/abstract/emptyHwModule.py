@@ -35,6 +35,6 @@ class EmptyHwModule(HwModule):
     """
     _def_val = None
 
-    def _impl(self):
+    def hwImpl(self):
         for cHwIO in self._hwIOs:
             connect_to_const(self._def_val, cHwIO)

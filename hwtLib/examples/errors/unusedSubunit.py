@@ -3,31 +3,37 @@
 
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class ExampleChild(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.c = HwIOSignal()
         self.d = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.d(self.c)
 
 
 class UnusedSubunit(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()._m()
 
         self.child = ExampleChild()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # self.child left unconnected -> error
         self.b(self.a)
 
 
 class UnusedSubunit2(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()._m()
 
@@ -35,7 +41,8 @@ class UnusedSubunit2(HwModule):
         self.child1 = ExampleChild()
         self.child2 = ExampleChild()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # chain of children is left unconnected -> error
         self.b(self.a)
 

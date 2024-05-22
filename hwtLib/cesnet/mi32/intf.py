@@ -1,14 +1,15 @@
 from hwt.constants import READ, WRITE, READ_WRITE
+from hwt.hwIO import HwIO
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.agents.vldSync import HwIODataVldAgent
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
-from hwt.simulator.agentBase import SyncAgentBase
-from hwt.hwIO import HwIO
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.agentBase import SyncAgentBase
 from hwtLib.avalon.mm import AvalonMmAddrAgent
+from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
-from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class Mi32(HwIO):
@@ -27,11 +28,13 @@ class Mi32(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(32)
         self.ADDR_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         self.rd = HwIOSignal()
         self.wr = HwIOSignal()
@@ -54,6 +57,7 @@ class Mi32(HwIO):
         """
         return 8
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Mi32Agent(sim, self)
 
@@ -88,11 +92,13 @@ class Mi32Agent(SyncAgentBase):
 
     r_data = property(r_data_get, r_data_set)
 
+    @override
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
         yield from self.dataAg.getMonitors()
         yield from self.addrAg.getDrivers()
 
+    @override
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor
         yield from self.dataAg.getDrivers()
@@ -110,13 +116,16 @@ class Mi32AddrAgent(HwIODataRdVldAgent):
     """
 
     @classmethod
+    @override
     def get_ready_signal(cls, hwIO):
         return hwIO.ardy
 
     @classmethod
+    @override
     def get_valid_signal(cls, hwIO):
         return (hwIO.rd, hwIO.wr)
 
+    @override
     def get_valid(self):
         r = self._vld[0].read()
         w = self._vld[1].read()
@@ -126,9 +135,11 @@ class Mi32AddrAgent(HwIODataRdVldAgent):
 
         return r
 
+    @override
     def set_valid(self, val):
         AvalonMmAddrAgent.set_valid(self, val)
 
+    @override
     def get_data(self):
         hwIO = self.hwIO
         address = hwIO.addr.read()
@@ -149,6 +160,7 @@ class Mi32AddrAgent(HwIODataRdVldAgent):
 
         return (rw, address, wdata, byteEnable)
 
+    @override
     def set_data(self, data):
         hwIO = self.hwIO
         if data is None:
@@ -182,11 +194,14 @@ class Mi32AddrAgent(HwIODataRdVldAgent):
 class Mi32DataAgent(HwIODataVldAgent):
 
     @classmethod
+    @override
     def get_valid_signal(cls, hwIO: Mi32):
         return hwIO.drdy
 
+    @override
     def get_data(self):
         return self.hwIO.drd.read()
 
+    @override
     def set_data(self, data):
         self.hwIO.drd.write(data)

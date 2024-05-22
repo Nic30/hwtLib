@@ -5,23 +5,26 @@ from hwt.code import If
 from hwt.constants import DIRECTION
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.xilinx.ipif.hIOIpif import Ipif
 
 
 class IpifBuff(BusBridge):
     """
-    Register or fifo for IPIF interface, used to break critical paths
+    Register or FIFO for IPIF interface, used to break critical paths
     and buffer transactions
 
     .. hwt-autodoc::
     """
-    def _config(self):
-        Ipif._config(self)
+    @override
+    def hwConfig(self):
+        Ipif.hwConfig(self)
         self.ADDR_BUFF_DEPTH = HwParam(1)
         self.DATA_BUFF_DEPTH = HwParam(1)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.ADDR_BUFF_DEPTH != 1 or self.DATA_BUFF_DEPTH != 1:
             raise NotImplementedError()
 
@@ -36,7 +39,8 @@ class IpifBuff(BusBridge):
         r(hwIOFrom)
         hwIOTo(r)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         din = self.s
         dout = self.m
         for hwIO in din._hwIOs:

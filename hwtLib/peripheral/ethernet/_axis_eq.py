@@ -10,6 +10,7 @@ from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.pyUtils.typingFuture import override
 
 
 class Axi4S_eq(HwModule):
@@ -19,19 +20,21 @@ class Axi4S_eq(HwModule):
     .. hwt-autodoc::
     """
 
-
-    def _config(self):
-        Axi4Stream._config(self)
+    @override
+    def hwConfig(self):
+        Axi4Stream.hwConfig(self)
         self.VAL = HwParam(HBits(64).from_py(0))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataIn = Axi4Stream()
         self.dataOut = HwIODataRdVld()._m()
         self.dataOut.DATA_WIDTH = 1
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         V = self.VAL
         VAL_W = self.VAL._dtype.bit_length()
         D_W = self.DATA_WIDTH

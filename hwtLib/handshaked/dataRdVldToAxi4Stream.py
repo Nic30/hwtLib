@@ -22,12 +22,12 @@ class DataRdVldToAxi4Stream(HandshakedCompBase):
     .. hwt-autodoc:: _example_HandshakedToAxi4Stream
     """
 
-    def _config(self) -> None:
+    def hwConfig(self) -> None:
         self.IN_TIMEOUT = HwParam(None)
         self.MAX_FRAME_WORDS = HwParam(None)
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         assert self.IN_TIMEOUT or self.MAX_FRAME_WORDS, "Need to have some specification how to resolve frame end"
         addClkRstn(self)
 
@@ -45,7 +45,7 @@ class DataRdVldToAxi4Stream(HandshakedCompBase):
         r.dataIn(self.dataIn)
         return timeout_cntr, TIME_MAX, last, r.dataOut
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         din = self.dataIn
         dout = self.dataOut
 

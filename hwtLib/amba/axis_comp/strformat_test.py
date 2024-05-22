@@ -4,9 +4,10 @@
 import unittest
 
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4s import Axi4Stream, axi4s_recieve_bytes, axi4s_send_bytes
 from hwtLib.amba.axis_comp.strformat_fn import axiS_strFormat
 from hwtLib.types.ctypes import uint8_t
@@ -15,15 +16,18 @@ from hwtSimApi.constants import CLK_PERIOD
 
 class _example_Axi4S_strFormat_no_args(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.out = Axi4Stream()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         o = axiS_strFormat(self, "f0", self.DATA_WIDTH, "test 1234")
         self.out(o)
         propagateClkRstn(self)
@@ -31,11 +35,13 @@ class _example_Axi4S_strFormat_no_args(HwModule):
 
 class _example_Axi4S_strFormat_args_numbers(_example_Axi4S_strFormat_no_args):
 
-    def _config(self):
-        _example_Axi4S_strFormat_no_args._config(self)
+    @override
+    def hwConfig(self):
+        _example_Axi4S_strFormat_no_args.hwConfig(self)
         self.FORMAT = HwParam("0b{0:08b}, 0o{0:04o}, {0:03d}, 0x{0:02x}, 0x{0:02X}")
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         n = self._sig("n", dtype=uint8_t)
         n(13)
         o = axiS_strFormat(
@@ -48,11 +54,13 @@ class _example_Axi4S_strFormat_args_numbers(_example_Axi4S_strFormat_no_args):
 
 class _example_Axi4S_strFormat_kwargs_numbers(_example_Axi4S_strFormat_no_args):
 
-    def _config(self):
-        _example_Axi4S_strFormat_no_args._config(self)
+    @override
+    def hwConfig(self):
+        _example_Axi4S_strFormat_no_args.hwConfig(self)
         self.FORMAT = "0b{arg0:08b}, 0o{arg0:04o}, {arg0:03d}, 0x{arg0:02x}, 0x{arg0:02X}"
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         n = self._sig("n", dtype=uint8_t)
         n(13)
         o = axiS_strFormat(
@@ -65,16 +73,19 @@ class _example_Axi4S_strFormat_kwargs_numbers(_example_Axi4S_strFormat_no_args):
 
 class _example_Axi4S_strFormat_1x_str(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.out = Axi4Stream()._m()
             self.str0 = Axi4Stream()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         o = axiS_strFormat(self, "f0", self.DATA_WIDTH, "str0:{0:s}", self.str0)
         self.out(o)
         propagateClkRstn(self)
@@ -82,13 +93,15 @@ class _example_Axi4S_strFormat_1x_str(HwModule):
 
 class _example_Axi4S_strFormat_3x_str(_example_Axi4S_strFormat_1x_str):
 
-    def _declr(self):
-        super(_example_Axi4S_strFormat_3x_str, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(_example_Axi4S_strFormat_3x_str, self).hwDeclr()
         with self._hwParamsShared():
             self.str1 = Axi4Stream()
             self.str2 = Axi4Stream()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         o = axiS_strFormat(self, "f0", self.DATA_WIDTH, "{0:s}{1:s}xyz{str2:s}",
                            self.str0, self.str1, str2=self.str2)
         self.out(o)
@@ -97,6 +110,7 @@ class _example_Axi4S_strFormat_3x_str(_example_Axi4S_strFormat_1x_str):
 
 class Axi4S_strFormat_TC(SimTestCase):
 
+    @override
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)

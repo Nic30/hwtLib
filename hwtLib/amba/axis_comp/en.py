@@ -4,6 +4,7 @@
 from hwt.code import If
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.handshaked.streamNode import StreamNode
@@ -18,14 +19,16 @@ class Axi4S_en(Axi4SCompBase):
 
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.en = HwIOSignal()
         with self._hwParamsShared():
             self.dataIn = Axi4Stream()
             self.dataOut = Axi4Stream()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         din = self.dataIn
         dout = self.dataOut
 

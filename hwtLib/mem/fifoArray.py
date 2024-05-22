@@ -4,11 +4,12 @@
 from hwt.code import If
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import HBits
-from hwt.hwParam import HwParam
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIORdVldSync
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.commonHwIO.addr_data_bidir import HwIOAddrInDataOutRdVld, HwIOAddrInDataOutRdVldAgent
 from hwtLib.handshaked.hwIOBiDirectional import HwIORdVldSyncBiDirectionalData, \
     HwIORdVldSyncBiDirectionalDataAgent
@@ -31,18 +32,21 @@ class FifoArrayInsertInterface(HwIORdVldSyncBiDirectionalData):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         self.append = HwIOSignal()
         self.data = HwIOVectSignal(self.DATA_WIDTH)
         # an address where the item was stored
         self.addr_ret = HwIOVectSignal(self.ADDR_WIDTH, masterDir=DIRECTION.IN)
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = FifoArrayInsertInterfaceAgent(sim, self)
 
@@ -52,18 +56,22 @@ class FifoArrayInsertInterfaceAgent(HwIORdVldSyncBiDirectionalDataAgent):
     Simulation agent for :class:`.FifoArrayInsertInterface` interface
     """
 
+    @override
     def onMonitorReady(self):
         a = self.dinData.popleft()
         self.hwIO.addr_ret.write(a)
 
+    @override
     def onDriverWriteAck(self):
         a = self.hwIO.addr_ret.read()
         self.dinData.append(a)
 
+    @override
     def get_data(self):
         i = self.hwIO
         return (i.addr.read(), i.append.read(), i.data.read())
 
+    @override
     def set_data(self, data):
         if data is None:
             a, ap, d = (None, None, None)
@@ -84,11 +92,13 @@ class FifoArrayPopInterface(HwIOAddrInDataOutRdVld):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
-        super(FifoArrayPopInterface, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(FifoArrayPopInterface, self).hwDeclr()
         self.last = HwIOSignal()
         self.addr_next = HwIOVectSignal(self.ADDR_WIDTH)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = FifoArrayPopInterfaceAgent(sim, self)
 
@@ -98,6 +108,7 @@ class FifoArrayPopInterfaceAgent(HwIOAddrInDataOutRdVldAgent):
     Simulation agent for :class:`.FifoArrayPopInterfaceAgent` interface
     """
 
+    @override
     def set_data(self, data):
         i = self.hwIO
         if data is None:
@@ -109,6 +120,7 @@ class FifoArrayPopInterfaceAgent(HwIOAddrInDataOutRdVldAgent):
         i.last.write(last)
         i.addr_next.write(an)
 
+    @override
     def get_data(self):
         i = self.hwIO
         return (i.data.read(), i.last.read(), i.addr_next.read())
@@ -143,11 +155,13 @@ class FifoArray(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ITEMS = HwParam(4)
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.ITEMS > 1, self.ITEMS
         self.addr_t = HBits(log2ceil(self.ITEMS - 1), signed=False)
         self.value_t = HBits(self.DATA_WIDTH)
@@ -160,7 +174,8 @@ class FifoArray(HwModule):
             i.ADDR_WIDTH = self.addr_t.bit_length()
             i.DATA_WIDTH = self.value_t.bit_length()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         addr_t = self.addr_t
         value_t = self.value_t
         item_mask_t = HBits(self.ITEMS)

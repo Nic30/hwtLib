@@ -1,5 +1,6 @@
 from hwt.hwIO import HwIO
 from hwt.hwIOs.std import HwIOClk, HwIOVectSignal, HwIOSignal
+from hwt.pyUtils.typingFuture import override
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
@@ -9,7 +10,8 @@ class MiiRxChannel(HwIO):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.d = HwIOVectSignal(4)
         self.dv = HwIOSignal()
         self.er = HwIOSignal()
@@ -20,7 +22,8 @@ class MiiTxChannel(HwIO):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.d = HwIOVectSignal(4)
         self.en = HwIOSignal()
         self.er = HwIOSignal()
@@ -35,7 +38,8 @@ class Mii(HwIO):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.rx_clk = HwIOClk(masterDir=DIRECTION.IN)
         with self._associated(clk=self.rx_clk):
             self.rx = MiiRxChannel(masterDir=DIRECTION.IN)
@@ -44,6 +48,7 @@ class Mii(HwIO):
         with self._associated(clk=self.tx_clk):
             self.tx = MiiTxChannel()
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Mii
 

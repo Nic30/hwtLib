@@ -11,6 +11,7 @@ from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.triggers import WaitCombStable, WaitCombRead, WaitWriteOnly
 from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
+from hwt.pyUtils.typingFuture import override
 
 
 # https://www.xilinx.com/support/documentation/ip_documentation/axi_lite_ipif/v2_0/pg155-axi-lite-ipif.pdf
@@ -28,11 +29,13 @@ class Ipif(HwIO):
     READ = 1
     WRITE = 0
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         # chip select
         self.bus2ip_cs = HwIOSignal()
 
@@ -67,6 +70,7 @@ class Ipif(HwIO):
         """
         return 8
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = IpifAgent(sim, self)
 
@@ -76,12 +80,14 @@ class IpifWithCE(Ipif):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        super(IpifWithCE, self)._config()
+    @override
+    def hwConfig(self):
+        super(IpifWithCE, self).hwConfig()
         self.REG_COUNT = HwParam(1)
 
-    def _declr(self):
-        super()._declr()
+    @override
+    def hwDeclr(self):
+        super().hwDeclr()
         ce_t = HBits(self.REG_COUNT)
         # read chip enable bus
         self.bus2ip_rdce = HwIOSignal(dtype=ce_t)
@@ -163,6 +169,7 @@ class IpifAgent(SyncAgentBase):
         hwIO.bus2ip_data.write(wdata)
         hwIO.bus2ip_be.write(wmask)
 
+    @override
     def monitor(self):
         hwIO = self.hwIO
 
@@ -264,6 +271,7 @@ class IpifAgent(SyncAgentBase):
 
         self._monitor_st = st
 
+    @override
     def driver(self):
         hwIO = self.hwIO
         actual = self.actual

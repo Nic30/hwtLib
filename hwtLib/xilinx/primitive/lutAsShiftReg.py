@@ -22,12 +22,12 @@ class LutAsShiftReg(HwModule):
     5. we can not merge memories of individual data bits
     """
 
-    def _config(self) -> None:
+    def hwConfig(self) -> None:
         self.DATA_WIDTH = HwParam(1)
         self.ITEMS = HwParam(16)
         self.INIT = HwParam(None)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         self.clk = HwIOClk()
         self.d_in = HwIODataVld()
         self.d_in.DATA_WIDTH = self.DATA_WIDTH
@@ -35,7 +35,7 @@ class LutAsShiftReg(HwModule):
         self.d_out_addr = HwIOVectSignal(log2ceil(self.ITEMS))
         self.d_out = HwIOSignal(HBits(self.DATA_WIDTH))._m()
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         out = []
         for i in range(self.DATA_WIDTH):
             mem = self._sig(f"mem{i:d}", HBits(self.ITEMS), def_val=self.INIT)

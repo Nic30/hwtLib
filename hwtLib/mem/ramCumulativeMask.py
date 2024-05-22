@@ -11,6 +11,7 @@ from hwt.hwIOs.std import HwIOBramPort_noClk, HwIORdVldSync, HwIOVectSignal, \
     HwIOSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.pyUtils.arrayQuery import iter_with_last
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.mem.ram import RamSingleClock
@@ -30,12 +31,13 @@ class BramPort_withReadMask_withoutClk(HwIOBramPort_noClk):
     :ivar dout_mask: Read port contains this signal which contains
         the cumulative validity mask for the data.
     :note: en is related to a address, and write data, the read data
-        may be available in nect clock cycle depending on read latency of the RAM
+        may be available in next clock cycle depending on read latency of the RAM
 
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.HAS_R or self.HAS_W, "has to have at least read or write part"
 
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
@@ -87,12 +89,14 @@ class RamCumulativeMask(RamSingleClock):
     """
     PORT_CLS = BramPort_withReadMask_withoutClk
 
-    def _config(self):
-        super(RamCumulativeMask, self)._config()
+    @override
+    def hwConfig(self):
+        super(RamCumulativeMask, self).hwConfig()
         self.HAS_BE = True
         self.PORT_CNT = (WRITE, READ)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.HAS_BE
         assert len(self.PORT_CNT) >= 2, "Requres at least 1 WRITE and 1 READ port"
         assert self.PORT_CNT == (
@@ -109,7 +113,8 @@ class RamCumulativeMask(RamSingleClock):
             ram = self.ram = RamSingleClock()
             ram.DATA_WIDTH = self.DATA_WIDTH + self.MASK_PADDING_W + self.MASK_W
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         w = self.port[0]
         ram_w = self.ram.port[0]
 

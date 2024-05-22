@@ -5,23 +5,27 @@ from hwt.code import If
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRst
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 
 
 class Cntr(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(2)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRst(self)
         self.en = HwIOSignal()
         self.val = HwIOVectSignal(self.DATA_WIDTH)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         reg = self._reg("counter", HBits(self.DATA_WIDTH), 0)
 
         # if there is no assignment into reg, value is kept

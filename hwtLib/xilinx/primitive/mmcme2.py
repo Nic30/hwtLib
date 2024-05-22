@@ -4,10 +4,11 @@
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT, BOOL, STR
 from hwt.hwIOs.std import HwIOSignal
-from hwt.serializer.mode import serializeExclude
-from hwt.serializer.verilog import VerilogSerializer
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeExclude
+from hwt.serializer.verilog import VerilogSerializer
 from hwtLib.xilinx.platform import XilinxVivadoPlatform
 from ipCorePackager.constants import INTF_DIRECTION
 
@@ -20,7 +21,8 @@ class MMCME2_ADV(HwModule):
     https://www.xilinx.com/support/documentation/user_guides/ug472_7Series_Clocking.pdf
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.BANDWIDTH = HwParam("OPTIMIZED")
         self.CLKFBOUT_MULT_F = HwParam(5.0)
         self.CLKFBOUT_PHASE = HwParam(0.0)
@@ -145,7 +147,8 @@ class MMCME2_ADV(HwModule):
         else:
             assert v._dtype == BIT, (name, "must be of type ", BIT, " or compatible, is:", v)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.CLKFBIN = HwIOSignal()
         self.CLKFBOUT = HwIOSignal()._m()
         self.CLKFBOUTB = HwIOSignal()._m()
@@ -274,7 +277,8 @@ class MMCME2_ADV(HwModule):
 
         assert isinstance(self._target_platform, XilinxVivadoPlatform), (self._target_platform, "This component is a hardblock of Xilinx devices only")
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         for hwIO in self._hwIOs:
             if hwIO._direction == INTF_DIRECTION.SLAVE:
                 hwIO(None)

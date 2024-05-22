@@ -3,6 +3,7 @@
 
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 
 
@@ -12,16 +13,19 @@ class SimpleHwModuleAxi4Stream(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.a = Axi4Stream()
             self.b = Axi4Stream()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 

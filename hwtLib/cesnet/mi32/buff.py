@@ -6,6 +6,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIORdVldSync
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.cesnet.mi32.intf import Mi32
 from hwtLib.handshaked.builder import HsBuilder
@@ -18,16 +19,18 @@ class Mi32AddrHs(HwIORdVldSync):
 
     .. hwt-autodoc::
     """
-    def _config(self):
-        Mi32._config(self)
+    @override
+    def hwConfig(self):
+        Mi32.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         self.read = HwIOSignal()
         self.write = HwIOSignal()
         self.be = HwIOVectSignal(self.DATA_WIDTH // 8)
         self.dwr = HwIOVectSignal(self.DATA_WIDTH)
-        super(Mi32AddrHs, self)._declr()
+        super(Mi32AddrHs, self).hwDeclr()
 
 
 class Mi32Buff(BusBridge):
@@ -37,12 +40,14 @@ class Mi32Buff(BusBridge):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Mi32._config(self)
+    @override
+    def hwConfig(self):
+        Mi32.hwConfig(self)
         self.ADDR_BUFF_DEPTH = HwParam(1)
         self.DATA_BUFF_DEPTH = HwParam(1)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.s = Mi32()
@@ -50,7 +55,7 @@ class Mi32Buff(BusBridge):
 
     def _Mi32_addr_to_Mi32AddrHs(self, mi32: Mi32, tmp_name):
         tmp = Mi32AddrHs()
-        tmp._updateParamsFrom(mi32)
+        tmp._updateHwParamsFrom(mi32)
         setattr(self, tmp_name, tmp)
         tmp(mi32, exclude={
             tmp.vld, tmp.rd, tmp.read, tmp.write,
@@ -71,7 +76,8 @@ class Mi32Buff(BusBridge):
             mi32ahs.rd(mi32.ardy),
         ]
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         m = self._Mi32_addr_to_Mi32AddrHs(self.s, "addr_tmp")
         m = HsBuilder(self, m).buff(items=self.ADDR_BUFF_DEPTH).end
         self._connect_Mi32AddrHs_to_Mi32(m, self.m)
@@ -96,4 +102,4 @@ if __name__ == "__main__":
     from hwt.synth import to_rtl_str
 
     m = Mi32Buff()
-    print(to_rtl_str(n))
+    print(to_rtl_str(m))

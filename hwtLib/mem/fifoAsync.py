@@ -23,12 +23,12 @@ class FifoAsync(Fifo):
     .. hwt-autodoc:: _example_FifoAsync
     """
 
-    def _config(self):
-        Fifo._config(self)
+    def hwConfig(self):
+        Fifo.hwConfig(self)
         self.IN_FREQ = HwParam(int(100e6))
         self.OUT_FREQ = HwParam(int(100e6))
 
-    def _declr(self):
+    def hwDeclr(self):
         assert int(self.DEPTH) > 0, "FifoAsync is disabled in this case, do not use it entirely"
         assert isPow2(self.DEPTH), f"DEPTH has to be power of 2, is {self.DEPTH:d}"
         # pow 2 because of gray counter counters
@@ -78,7 +78,7 @@ class FifoAsync(Fifo):
         set_max_delay(reg_bin, cdc_builder.path[1], cdc_builder.META_PERIOD_NS)
         return reg_bin, reg_gray, reg_gray_out_clk
 
-    def _impl(self):
+    def hwImpl(self):
         AW = self.AW
         din = self.dataIn
         dout = self.dataOut

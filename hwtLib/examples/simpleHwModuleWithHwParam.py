@@ -3,9 +3,10 @@
 
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 
 
 class SimpleHwModuleWithHwParam(HwModule):
@@ -15,12 +16,14 @@ class SimpleHwModuleWithHwParam(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         # declaration of parameter DATA_WIDTH with default value 8
         # type of parameter is determined from used value
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         # first parameter of HBits HDL type constructor is width, second optional is signed flag
         dt = HBits(self.DATA_WIDTH)
         # dt is now type vector with width specified by parameter DATA_WIDTH
@@ -29,13 +32,15 @@ class SimpleHwModuleWithHwParam(HwModule):
         # you can also use shortcut VectorSignal(width)
         self.b = HwIOSignal(dtype=dt)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b(self.a)
 
 
 class SimpleHwModuleWithParamTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = SimpleHwModuleWithHwParam()
         dut.DATA_WIDTH = 32

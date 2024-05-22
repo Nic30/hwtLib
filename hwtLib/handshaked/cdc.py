@@ -3,12 +3,13 @@
 
 from hwt.code import If
 from hwt.constraints import set_max_delay
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIOSignal, HwIODataRdVld
 from hwt.hwIOs.utils import addClkRst
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.clocking.cdc import CdcPulseGen
 from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
 from hwtLib.handshaked.compBase import HandshakedCompBase
@@ -20,13 +21,15 @@ class HandshakeFSM(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRst(self)
         self.ack = HwIOSignal()
         self.vld = HwIOSignal()
         self.rd = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         rd = self._reg("rd", def_val=1)
         If(rd,
            rd(~self.vld)
@@ -47,14 +50,16 @@ class HandshakedCdc(HandshakedCompBase):
     .. hwt-autodoc:: example_HandshakedCdc
     """
 
-    def _config(self):
-        HandshakedCompBase._config(self)
+    @override
+    def hwConfig(self):
+        HandshakedCompBase.hwConfig(self)
         self.DATA_RESET_VAL = HwParam(None)
         self.IN_FREQ = HwParam(int(100e6))
         self.OUT_FREQ = HwParam(int(100e6))
 
-    def _declr(self):
-        VldSyncedCdc._declr(self)
+    @override
+    def hwDeclr(self):
+        VldSyncedCdc.hwDeclr(self)
 
         ipg = self.in_ack_pulse_gen = CdcPulseGen()
         ipg.IN_FREQ = self.OUT_FREQ
@@ -108,7 +113,8 @@ class HandshakedCdc(HandshakedCompBase):
 
         return regs
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         vld, rd = self.get_valid_signal, self.get_ready_signal
         din = self.dataIn
         dout = self.dataOut

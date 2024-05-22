@@ -4,8 +4,9 @@
 from hwt.constants import Time
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.builder import HsBuilder
 
 
@@ -16,13 +17,15 @@ class HandshakedBuilderSimple(HwModule):
 
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         # declare interfaces
         addClkRstn(self)
         self.a = HwIODataRdVld()
         self.b = HwIODataRdVld()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # instantiate builder
         b = HsBuilder(self, self.a)
 
@@ -59,6 +62,7 @@ class HandshakedBuilderSimple(HwModule):
 class HandshakedBuilderSimpleTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         # SimTestCase.setUpClass calls this method
         # and will build a simulator of this component

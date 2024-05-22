@@ -2,9 +2,10 @@
 
 from math import ceil
 
-from hwt.hwParam import HwParam
 from hwt.hwIO import HwIO
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.triggers import WaitTimeslotEnd, Edge
@@ -90,7 +91,7 @@ class HwIOHd44780(HwIO):
     @staticmethod
     def CMD_ENTRY_MODE_SET(incr_decr: int, shift_en: int):
         """
-        speciies how the cursor should be modified after char write
+        specifies how the cursor should be modified after char write
         """
         return 0b00000100 | (incr_decr << 1) | (shift_en)
 
@@ -125,18 +126,21 @@ class HwIOHd44780(HwIO):
         assert addr & mask(7) == addr, addr
         return 0b10000000 | addr
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.FREQ = int(270e3)
         self.DATA_WIDTH = HwParam(8)
         self.ROWS = HwParam(2)
         self.COLS = HwParam(16)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.en = HwIOSignal()
         self.rs = HwIOSignal()  # register select
         self.rw = HwIOSignal()
         self.d = HwIOVectSignal(self.DATA_WIDTH)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HD44780InterfaceAgent(sim, self)
 
@@ -169,6 +173,7 @@ class HD44780InterfaceAgent(AgentBase):
     def get_str(self):
         return "\n".join(["".join(line) for line in self.screen])
 
+    @override
     def monitor(self):
         i = self.hwIO
         while True:

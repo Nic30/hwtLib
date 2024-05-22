@@ -1,11 +1,12 @@
 from math import ceil
 
 from hwt.constants import DIRECTION
-from hwt.hwParam import HwParam
 from hwt.hwIO import HwIO
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIORdVldSync
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -19,14 +20,16 @@ class AddrSizeHs(HwIODataRdVld):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID_WIDTH = HwParam(4)
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(64)
         self.MAX_LEN = HwParam(4096 // 8 - 1)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.ID_WIDTH:
             self.id = HwIOVectSignal(self.ID_WIDTH)
 
@@ -38,14 +41,16 @@ class AddrSizeHs(HwIODataRdVld):
         # rem is number of bytes in last word which are valid - 1
         self.rem = HwIOVectSignal(log2ceil(self.DATA_WIDTH // 8))
 
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = AddrSizeHsAgent(sim, self)
 
 
 class AddrSizeHsAgent(HwIODataRdVldAgent):
 
+    @override
     def get_data(self):
         hwIO = self.hwIO
 
@@ -65,6 +70,7 @@ class AddrSizeHsAgent(HwIODataRdVldAgent):
             else:
                 return (addr, rem)
 
+    @override
     def set_data(self, data):
         hwIO = self.hwIO
 
@@ -100,20 +106,23 @@ class HwIOAxiRDatapump(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID_WIDTH = HwParam(0)
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(64)
         self.MAX_BYTES = HwParam(4096)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             # user requests
             self.req = AddrSizeHs()
             self.req.MAX_LEN = max(ceil(self.MAX_BYTES / (self.DATA_WIDTH // 8)) - 1, 0)
             self.r = Axi4Stream(masterDir=DIRECTION.IN)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HwIOAxiRDatapumpAgent(sim, self)
 
@@ -148,10 +157,12 @@ class HwIOAxiRDatapumpAgent(AgentBase):
         hwIO.r._initSimAgent(sim)
         self.r = hwIO.r._ag
 
+    @override
     def getDrivers(self):
         yield from self.req.getDrivers()
         yield from self.r.getMonitors()
 
+    @override
     def getMonitors(self):
         yield from self.req.getMonitors()
         yield from self.r.getDrivers()
@@ -164,10 +175,12 @@ class HwIOAxiWDatapump(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        AddrSizeHs._config(self)
+    @override
+    def hwConfig(self):
+        AddrSizeHs.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             # user requests
             self.req = AddrSizeHs()
@@ -183,6 +196,7 @@ class HwIOAxiWDatapump(HwIO):
 
         self.ack = ack
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HwIOAxiWDatapumpAgent(sim, self)
 
@@ -220,11 +234,13 @@ class HwIOAxiWDatapumpAgent(AgentBase):
         hwIO.ack._initSimAgent(sim)
         self.ack = hwIO.ack._ag
 
+    @override
     def getDrivers(self):
         yield from self.req.getDrivers()
         yield from self.w.getDrivers()
         yield from self.ack.getMonitors()
 
+    @override
     def getMonitors(self):
         yield from self.req.getMonitors()
         yield from self.w.getMonitors()

@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from hwt.constants import Time
+from hwt.hObjList import HObjList
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
-from hwt.hObjList import HObjList
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synth import synthesised
@@ -19,18 +20,21 @@ class ListOfHwIOsSample3(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.SIZE = 3
-        Axi4Lite._config(self)
+        Axi4Lite.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             S = self.SIZE
             self.a = HObjList(Axi4Lite() for _ in range(S))
             self.b = HObjList(Axi4Lite() for _ in range(S))._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # directly connect arrays, note that we are not using array items
         # and thats why they are not created
         self.b(self.a)
@@ -44,13 +48,15 @@ class ListOfHwIOsSample3b(ListOfHwIOsSample3):
     .. hwt-autodoc::
     """
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         for i in range(int(self.SIZE)):
             self.b[i](self.a[i])
 
 
 class ListOfHwIOsSample3TC(SimTestCase):
 
+    @override
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)

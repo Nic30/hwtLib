@@ -8,9 +8,10 @@ from hwt.hdl.types.enum import HEnum
 from hwt.hwIOs.agents.rdSync import HwIODataRdAgent
 from hwt.hwIOs.std import HwIOSignal, HwIODataRd, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import log2ceil
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.peripheral.i2c.intf import I2c
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -32,25 +33,29 @@ class I2cBitCntrlCmd(HwIODataRd):
     .. hwt-autodoc::
     """
 
-
-    def _config(self):
+    @override
+    def hwConfig(self):
         pass
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.din = HwIOSignal()
         self.cmd = HwIOVectSignal(log2ceil(5))
         self.rd = HwIOSignal(masterDir=DIRECTION.IN)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = I2cBitCntrlCmdAgent(sim, self)
 
 
 class I2cBitCntrlCmdAgent(HwIODataRdAgent):
 
+    @override
     def get_data(self):
         """extract data from interface"""
         return (self.hwIO.cmd.read(), self.hwIO.din.read())
 
+    @override
     def set_data(self, data):
         """write data to interface"""
         if data is None:
@@ -101,10 +106,12 @@ class I2cMasterBitCtrl(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.CLK_CNTR_WIDTH = HwParam(16)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.clk_cnt_initVal = HwIOVectSignal(16)
         self.i2c = I2c()._m()
@@ -219,7 +226,8 @@ class I2cMasterBitCtrl(HwModule):
 
         return al
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         cmd = self.cntrl.cmd
         cmd_ack = self.cntrl.rd
 

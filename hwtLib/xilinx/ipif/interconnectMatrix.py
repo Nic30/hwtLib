@@ -18,18 +18,18 @@ class IpifInterconnectMatrix(BusInterconnect):
     .. hwt-autodoc:: _example_IpifInterconnectMatrix
     """
 
-    def _config(self) -> None:
-        super(IpifInterconnectMatrix, self)._config()
-        Ipif._config(self)
+    def hwConfig(self) -> None:
+        super(IpifInterconnectMatrix, self).hwConfig()
+        Ipif.hwConfig(self)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         self._normalize_config()
         addClkRstn(self)
 
         slavePorts = HObjList()
         for _ in self.MASTERS:
             s = Ipif()
-            s._updateParamsFrom(self)
+            s._updateHwParamsFrom(self)
             slavePorts.append(s)
 
         self.s = slavePorts
@@ -43,7 +43,7 @@ class IpifInterconnectMatrix(BusInterconnect):
 
         self.m = masterPorts
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         if len(self.MASTERS) > 1:
             raise NotImplementedError()
 

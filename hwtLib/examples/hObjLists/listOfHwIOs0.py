@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.constants import Time
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIODataVld
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 
 
 class ListOfHwIOsSample0(HwModule):
@@ -19,18 +20,21 @@ class ListOfHwIOsSample0(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
         self.LEN = 3
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             L = self.LEN
             self.a = HObjList(HwIODataVld() for _ in range(L))
             self.b = HObjList(HwIODataVld() for _ in range(L))._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # directly connect arrays, note that we are not using array items
         # and thats why they are not created
         self.b(self.a)
@@ -44,11 +48,13 @@ class ListOfHwIOsSample0SliceOnly(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
         self.LEN = 3
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.a = HObjList(HwIODataVld() for _ in range(self.LEN))
@@ -56,7 +62,8 @@ class ListOfHwIOsSample0SliceOnly(HwModule):
             self.b1 = HwIODataVld()._m()
             self.b2 = HwIODataVld()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b0(self.a[0])
         self.b1(self.a[1])
         self.b2(self.a[2])
@@ -70,11 +77,13 @@ class ListOfHwIOsSample0ConcatOnly(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
         self.LEN = 3
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.a0 = HwIODataVld()
@@ -82,7 +91,8 @@ class ListOfHwIOsSample0ConcatOnly(HwModule):
             self.a2 = HwIODataVld()
             self.b = HObjList(HwIODataVld() for _ in range(self.LEN))._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.b[0](self.a0)
         self.b[1](self.a1)
         self.b[2](self.a2)
@@ -90,6 +100,7 @@ class ListOfHwIOsSample0ConcatOnly(HwModule):
 
 class ListOfHwIOsSample0TC(SimTestCase):
 
+    @override
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)

@@ -22,19 +22,19 @@ class Mi32InterconnectMatrix(BusInterconnect):
     .. hwt-autodoc:: _example_Mi32InterconnectMatrix
     """
 
-    def _config(self) -> None:
-        super(Mi32InterconnectMatrix, self)._config()
-        Mi32._config(self)
+    def hwConfig(self) -> None:
+        super(Mi32InterconnectMatrix, self).hwConfig()
+        Mi32.hwConfig(self)
         self.MAX_TRANS_OVERLAP = HwParam(4)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         self._normalize_config()
         addClkRstn(self)
 
         slavePorts = HObjList()
         for _ in self.MASTERS:
             s = Mi32()
-            s._updateParamsFrom(self)
+            s._updateHwParamsFrom(self)
             slavePorts.append(s)
 
         self.s = slavePorts
@@ -55,7 +55,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
         f.DEPTH = self.MAX_TRANS_OVERLAP
         f.DATA_WIDTH = log2ceil(len(self.SLAVES))
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         if len(self.MASTERS) > 1:
             raise NotImplementedError()
         assert self.SLAVES
@@ -64,7 +64,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
         b = Mi32Buff()
         b.ADDR_BUFF_DEPTH = 1
         b.DATA_BUFF_DEPTH = 1
-        b._updateParamsFrom(self)
+        b._updateHwParamsFrom(self)
         self.s_0_buff = b
         b.s(m)
         m = b.m

@@ -5,9 +5,10 @@ import unittest
 
 from hwt.constants import Time
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4s import Axi4Stream
 
 
@@ -16,18 +17,21 @@ class SimpleHwModule2withNonDirectIntConnection(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         with self._hwParamsShared():
             self.a = Axi4Stream()
             self.c = Axi4Stream()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # we have to register interface on this unit first before use
         with self._hwParamsShared():
             self.b = Axi4Stream()
@@ -40,6 +44,7 @@ class SimpleHwModule2withNonDirectIntConnection(HwModule):
 class Simple2withNonDirectIntConnectionTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = SimpleHwModule2withNonDirectIntConnection()
         cls.compileSim(cls.dut)

@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
+from hwt.hdl.const import HConst
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
-from hwt.hdl.const import HConst
-from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.mainBases import RtlMemoryBase
-from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.types.net.ethernet import Eth2Header_t
@@ -38,12 +39,14 @@ class Axi4SPingResponder(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(32)
         self.IS_BIGENDIAN = HwParam(True)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         self.myIp = HwIOSignal(dtype=ipv4_t)
@@ -125,7 +128,8 @@ class Axi4SPingResponder(HwModule):
                  header.seqNo
                  )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # tmp registers
         sendingReply = self._reg("sendingReply", def_val=0)
         resp = self._reg("resp", echoFrame_t)

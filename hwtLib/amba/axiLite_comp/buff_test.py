@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.hdl.types.struct import HStructField
 from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.hwIOs.utils import propagateClkRstn
 from hwt.hwModule import HwModule
-from hwt.hdl.types.struct import HStructField
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
@@ -22,8 +23,9 @@ class AxiLiteEpWithReg(HwModule):
                              hwIOCls=hwIOCls,
                              shouldEnterFn=shouldEnterFn)
 
-    def _config(self):
-        BusEndpoint._config(self)
+    @override
+    def hwConfig(self):
+        BusEndpoint.hwConfig(self)
 
     def _mkFieldInterface(self, structHwIO: HwIOStruct, field: HStructField):
         return BusEndpoint._mkFieldInterface(self, structHwIO, field)
@@ -32,12 +34,14 @@ class AxiLiteEpWithReg(HwModule):
     def _defaultShouldEnterFn(root, field_path):
         return BusEndpoint._defaultShouldEnterFn(root, field_path)
 
-    def _declr(self):
-        BusEndpoint._declr(self)
+    @override
+    def hwDeclr(self):
+        BusEndpoint.hwDeclr(self)
         with self._hwParamsShared():
             self.ep = AxiLiteEndpoint(self.STRUCT_TEMPLATE)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         self.decoded(self.ep.decoded)
         m = AxiBuilder(self, self.bus).buff(addr_items=1, data_items=1).end
@@ -45,6 +49,7 @@ class AxiLiteEpWithReg(HwModule):
 
 
 class AxiRegTC(AxiLiteEndpointTC):
+    @override
     def mySetUp(self, data_width=32):
         dut = self.dut = AxiLiteEpWithReg(self.STRUCT_TEMPLATE)
 

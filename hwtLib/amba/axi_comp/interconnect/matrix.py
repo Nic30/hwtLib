@@ -4,9 +4,10 @@
 from typing import Union, Set, List, Tuple
 
 from hwt.constants import READ, READ_WRITE, WRITE
-from hwt.hwIOs.utils import propagateClkRstn
 from hwt.hObjList import HObjList
+from hwt.hwIOs.utils import propagateClkRstn
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busInterconnect import BusInterconnectUtils, \
     BusInterconnect
 from hwtLib.amba.axi4 import Axi4
@@ -35,8 +36,9 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
     .. hwt-autodoc:: example_AxiInterconnectMatrix
     """
 
-    def _config(self):
-        AxiInterconnectCommon._config(self)
+    @override
+    def hwConfig(self):
+        AxiInterconnectCommon.hwConfig(self)
         self.AW_AND_W_WORD_TOGETHER = HwParam(True)
 
     def configure_sub_interconnect(self,
@@ -88,13 +90,14 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
         return sub_interconnect_connetions
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         BusInterconnect._normalize_config(self)
         self.connection_groups_r = BusInterconnectUtils._extract_separable_groups(
             self.MASTERS, self.SLAVES, READ)
         self.connection_groups_w = BusInterconnectUtils._extract_separable_groups(
             self.MASTERS, self.SLAVES, WRITE)
-        super(AxiInterconnectMatrix, self)._declr()
+        super(AxiInterconnectMatrix, self).hwDeclr()
 
         # instantiate sub interconnects for each independent master-slave connection
         # subgraph (r, w separately)
@@ -142,7 +145,8 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
             s.HAS_W = s_i in slaves_with_write_ch
             assert s.HAS_R or s.HAS_W, s_i
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         for sub_interconnect, m_or_s, i, sub_i in self.sub_interconnect_connections:
             is_r = isinstance(sub_interconnect, AxiInterconnectMatrixR)

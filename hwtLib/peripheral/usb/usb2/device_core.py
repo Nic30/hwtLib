@@ -11,11 +11,12 @@ from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIODataVld, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
+from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.mainBases import RtlSignalBase
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.hwModule import HwModule
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.peripheral.usb.constants import usb_addr_t, USB_PID, USB_VER, \
     usb_endp_t, usb_pid_t, USB_LINE_STATE
@@ -39,7 +40,7 @@ class Usb2DeviceCore(HwModule):
     :see: https://www.beyondlogic.org/usbnutshell/usb4.shtml
 
     :ivar ~.phy: An interface to USB PHY which is connected to host
-    :ivar ~.ep: And interface to USB endpont buffers of this device
+    :ivar ~.ep: And interface to USB endpoint buffers of this device
     :ivar ~.usb_rst: output of USB reset detector
     :ivar ~.usb_speed: An interface which holds the index of the USB version
         to note which speed was negotiated.
@@ -54,12 +55,14 @@ class Usb2DeviceCore(HwModule):
     .. hwt-autodoc:: _example_Usb2DeviceCore
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DESCRIPTORS: UsbDescriptorBundle = HwParam(None)
         self.CLK_FREQ = HwParam(int(60e6))
         self.PRE_NEGOTIATED_TO: Optional[USB_VER] = HwParam(None)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert isinstance(self.DESCRIPTORS, UsbDescriptorBundle), self.DESCRIPTORS
         self.ENDPOINT_CONFIG = self.DESCRIPTORS.get_endpoint_meta()
         addClkRstn(self)
@@ -453,7 +456,8 @@ class Usb2DeviceCore(HwModule):
         chirp_en = st._eq(st_t.SEND_CHIRP_K)
         return chirp_en
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         phy = self.phy
         ep = self.ep
         sie_rx = self.sie_rx

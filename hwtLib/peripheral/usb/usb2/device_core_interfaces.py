@@ -1,6 +1,7 @@
-from hwt.hwIOs.std import HwIODataVld, HwIOSignal
 from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIODataVld, HwIOSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.peripheral.usb.constants import usb_endp_t
 from hwtLib.peripheral.usb.descriptors.std import USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE
@@ -19,24 +20,26 @@ class UsbEndpointInterface(HwIO):
     :ivar ep: endpoint number
     :ivar stall: 1 if endpoint is dissabled or request is not supported
     :ivar rx: data from host to device(function)
-    :attention: if error(rx.user=1) appears during the transfer the frame has to be discardded in te endpoint buffer
+    :attention: if error(rx.user=1) appears during the transfer the frame has to be discarded in the endpoint buffer
         the error flag is latched until end of packet
     :ivar tx: data from device(function) to host
     :ivar tx_success: tells the endpoint buffer that previously send packet was successfully transfered
-        and the packet can be deallocated (if tx_sucess.vld & ~tx_sucess.data it means that the packet needs to be retransmited)
-    :note: for Isochronous endponts tx_sucess always returns success because isochronous transfers do not support
+        and the packet can be deallocated (if tx_sucess.vld & ~tx_sucess.data it means that the packet needs to be re-transmited)
+    :note: for Isochronous endpoints tx_sucess always returns success because isochronous transfers do not support
         retransmission
 
     .. hwt-autodoc::
     """
     USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.HAS_RX = HwParam(True)
         self.HAS_TX = HwParam(True)
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.endp = HwIODataVld()
         self.endp.DATA_WIDTH = usb_endp_t.bit_length()
 

@@ -3,27 +3,31 @@
 
 from hwt.constants import READ, WRITE
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.cesnet.mi32.intf import Mi32
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Mi32Wire(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.m = Mi32()._m()
         self.s = Mi32()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.m(self.s)
 
 
 class Mi32AgentTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = Mi32Wire()
         cls.compileSim(dut)

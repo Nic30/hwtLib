@@ -8,12 +8,13 @@ import unittest
 from hwt.hwIOs.std import HwIORst_n, HwIOClk
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.store_manager import SaveToFilesFlat, SaveToSingleFiles
 from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.serializer.xdc.serializer import XdcSerializer
 from hwt.synth import to_rtl
-from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.amba.axi4s_fullduplex import Axi4StreamFullDuplex
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.mem.fifoAsync import FifoAsync
 
 
@@ -27,13 +28,15 @@ class Axi4StreamFullDuplexCdc(HwModule):
     (2x async FIFO with same params, hdl component shared)
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DEPTH = HwParam(0)
         self.IN_FREQ = HwParam(int(100e6))
         self.OUT_FREQ = HwParam(int(100e6))
-        Axi4StreamFullDuplex._config(self)
+        Axi4StreamFullDuplex.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.dataIn_clk = HwIOClk()
         self.dataIn_clk.FREQ = self.IN_FREQ
         self.dataOut_clk = HwIOClk()
@@ -50,7 +53,8 @@ class Axi4StreamFullDuplexCdc(HwModule):
                 with self._associated(rst=self.dataOut_rst_n):
                     self.dataOut = Axi4StreamFullDuplex()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         tx = Axi4SBuilder(self, self.dataIn.tx).buff_cdc(
             self.dataOut_clk, self.dataOut_rst_n, self.DEPTH).end
         self.dataOut.tx(tx)

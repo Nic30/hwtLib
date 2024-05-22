@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtLib.abstract.emptyHwModule import EmptyHwModule
+from hwt.pyUtils.typingFuture import override
 from hwt.synth import to_rtl_str
+from hwtLib.abstract.emptyHwModule import EmptyHwModule
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.peripheral.spi.intf import Spi
 
 
 class EmptyHwModuleWithSpi(EmptyHwModule):
-    def _declr(self):
+
+    @override
+    def hwDeclr(self):
         self.spi = Spi()
 
 

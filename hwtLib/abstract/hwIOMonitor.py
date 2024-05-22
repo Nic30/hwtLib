@@ -1,10 +1,11 @@
 from typing import Union, Type
 
+from hwt.hdl.types.structValBase import HStructConstBase
 from hwt.hwIO import HwIO
 from hwt.hwIOs.std import HwIODataVld, HwIOSignal
 from hwt.hwModule import HwModule
-from hwt.hdl.types.structValBase import HStructConstBase
 from hwt.mainBases import RtlSignalBase
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
 
@@ -30,7 +31,8 @@ class HwIOMonitor(HwIO):
 
         return HwIOBoundedMonitor
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         """
         Copy config from template interface
         """
@@ -38,7 +40,8 @@ class HwIOMonitor(HwIO):
         for p in tmpl._hwParams:
             setattr(self, p._name, p.get_value())
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         """
         Create interfaces same as on template interface,
         but make them always input
@@ -54,10 +57,12 @@ class HwIOMonitorDataVld(HwIODataVld):
         self._templateHwIO = templateHwIO
         super(HwIOMonitorDataVld, self).__init__()
 
-    def _config(self):
-        HwIOMonitor._config(self)
+    @override
+    def hwConfig(self):
+        HwIOMonitor.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.data = HwIOMonitor(self._templateHwIO)
         self.vld = HwIOSignal()
 
@@ -136,5 +141,6 @@ class HwIOMonitorReg(HwModule):
         self.hwIOCls = hwIOCls
         HwModule.__init__(self)
 
-    def _config(self):
-        HwModule._config(self)
+    @override
+    def hwConfig(self):
+        HwModule.hwConfig(self)

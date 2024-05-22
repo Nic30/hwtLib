@@ -7,9 +7,10 @@ from hwt.constants import Time
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.vectorUtils import iterBits
 from pyMathBitPrecise.bit_utils import get_bit
 
@@ -22,16 +23,19 @@ class Lfsr(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.POLY_WIDTH = HwParam(8)
         self.POLY = HwParam(0x88)
         self.INIT = HwParam(1)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.dataOut = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         accumulator = self._reg("accumulator",
                                 HBits(self.POLY_WIDTH),
                                 def_val=self.INIT)
@@ -50,6 +54,7 @@ class Lfsr(HwModule):
 class LfsrTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = Lfsr()
         cls.compileSim(cls.dut)

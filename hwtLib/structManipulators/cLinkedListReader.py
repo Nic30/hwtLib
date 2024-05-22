@@ -12,6 +12,7 @@ from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.pyUtils.typingFuture import override
 
 
 class CLinkedListReader(HwModule):
@@ -32,7 +33,8 @@ class CLinkedListReader(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID_WIDTH = HwParam(4)
         self.ID = HwParam(3)
         # id of packet where last item is next addr
@@ -45,7 +47,8 @@ class CLinkedListReader(HwModule):
         self.DATA_WIDTH = HwParam(64)
         self.PTR_WIDTH = HwParam(16)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -75,7 +78,8 @@ class CLinkedListReader(HwModule):
     def addrAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         r, s = self._reg, self._sig
         req = self.rDatapump.req

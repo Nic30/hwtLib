@@ -4,10 +4,11 @@
 from typing import Type
 
 from hwt.hwIOs.std import HwIOClk, HwIORst_n, HwIODataVld
-from hwt.synthesizer.interfaceLevel.utils import HwIO_pack, \
-    HwIO_connectPacked
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.interfaceLevel.utils import HwIO_pack, \
+    HwIO_connectPacked
 from hwtLib.clocking.cdc import SignalCdcBuilder
 
 
@@ -32,22 +33,26 @@ class VldSyncedCdc(HwModule):
         HwModule.__init__(self)
 
     @classmethod
+    @override
     def get_valid_signal(cls, hwIO):
         return hwIO.vld
 
+    @override
     def get_data(self, hwIO):
         vld = self.get_valid_signal(hwIO)
         return [hwIO for hwIO in hwIO._hwIOs if hwIO is not vld]
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)
-        self.hwIOCls._config(self)
+        self.hwIOCls.hwConfig(self)
         self.DATA_RESET_VAL = HwParam(None)
         self.IN_FREQ = HwParam(int(100e6))
         self.OUT_FREQ = HwParam(int(100e6))
         self.IGNORE_DATA_LOSE = HwParam(False)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         I_CLS = self.hwIOCls
 
         self.dataIn_clk = HwIOClk()
@@ -66,7 +71,8 @@ class VldSyncedCdc(HwModule):
             with self._associated(self.dataOut_clk, self.dataOut_rst_n):
                 self.dataOut = I_CLS()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         if not self.IGNORE_DATA_LOSE:
             assert self.IN_FREQ <= self.OUT_FREQ
         in_clk_rst_n = self.dataIn_clk, self.dataIn_rst_n

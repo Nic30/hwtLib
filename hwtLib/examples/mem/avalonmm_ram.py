@@ -17,10 +17,10 @@ class AvalonMmBRam(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self) -> None:
-        AvalonMM._config(self)
+    def hwConfig(self) -> None:
+        AvalonMM.hwConfig(self)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         addClkRstn(self)
 
         with self._hwParamsShared():
@@ -28,7 +28,7 @@ class AvalonMmBRam(HwModule):
             self.ram = RamSingleClock()
             self.ram.ADDR_WIDTH = self.ADDR_WIDTH - log2ceil(self.DATA_WIDTH // 8 - 1)
 
-    def _impl(self) -> None:
+    def hwImpl(self) -> None:
         ram = self.ram
         al = AvalonMmBuilder(self, self.s).to_axi(Axi4Lite).end
         with self._hwParamsShared():

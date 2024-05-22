@@ -8,6 +8,7 @@ from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
+from hwt.pyUtils.typingFuture import override
 
 
 class HsSplitSelect(HandshakedCompBase):
@@ -19,11 +20,13 @@ class HsSplitSelect(HandshakedCompBase):
 
     .. hwt-autodoc:: _example_HsSplitSelect
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.OUTPUTS = HwParam(3)
-        super()._config()
+        super().hwConfig()
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         outputs = int(self.OUTPUTS)
@@ -41,7 +44,8 @@ class HsSplitSelect(HandshakedCompBase):
     def _select_consume_en(self):
         return True
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         In = self.dataIn
         rd = self.get_ready_signal
 

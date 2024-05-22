@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.amba.axi_comp.interconnect.base import AxiInterconnectBase
 from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -23,15 +24,17 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DRIVER_CNT = HwParam(2)
         self.MAX_TRANS_OVERLAP = HwParam(16)
-        HwIOAxiRDatapump._config(self)
+        HwIOAxiRDatapump.hwConfig(self)
 
     def getDpHwIO(self, unit):
         return unit.rDatapump
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.drivers = HObjList(
@@ -45,7 +48,8 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
         f.DEPTH = self.MAX_TRANS_OVERLAP
         f.DATA_WIDTH = self.DRIVER_INDEX_WIDTH
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         assert int(self.DRIVER_CNT) > 1, "It makes no sense to use interconnect in this case"
         propagateClkRstn(self)
         self.reqHandler(self.rDatapump.req, self.orderInfoFifo.dataIn)

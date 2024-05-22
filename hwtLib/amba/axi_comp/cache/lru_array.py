@@ -4,14 +4,15 @@
 from hwt.code import If, Or, Concat
 from hwt.code_utils import rename_signal
 from hwt.constants import WRITE, READ
-from hwt.hwIOs.std import HwIOVectSignal, HwIODataRdVld, HwIORdVldSync
-from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.std import HwIOVectSignal, HwIODataRdVld, HwIORdVldSync
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import flatten, grouper
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi_comp.cache.addrTypeConfig import CacheAddrTypeConfig
 from hwtLib.amba.axi_comp.cache.pseudo_lru import PseudoLru
 from hwtLib.commonHwIO.addr import HwIOAddrRdVld
@@ -23,18 +24,20 @@ from hwtLib.mem.ramXor import RamXorSingleClock
 # extract variant with id
 class HwIOIndexWayRdVld(HwIORdVldSync):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID_WIDTH = HwParam(0)
         self.INDEX_WIDTH = HwParam(10)
         self.WAY_CNT = HwParam(4)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.ID_WIDTH:
             self.id = HwIOVectSignal(self.ID_WIDTH)
         self.index = HwIOVectSignal(self.INDEX_WIDTH)
         if self.WAY_CNT > 1:
             self.way = HwIOVectSignal(log2ceil(self.WAY_CNT - 1))
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
 
 class AxiCacheLruArray(CacheAddrTypeConfig):
@@ -50,8 +53,9 @@ class AxiCacheLruArray(CacheAddrTypeConfig):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        CacheAddrTypeConfig._config(self)
+    @override
+    def hwConfig(self):
+        CacheAddrTypeConfig.hwConfig(self)
         self.INCR_PORT_CNT = HwParam(2)
         self.WAY_CNT = HwParam(4)
 
@@ -60,7 +64,8 @@ class AxiCacheLruArray(CacheAddrTypeConfig):
         self._compupte_tag_index_offset_widths()
         self.LRU_WIDTH = PseudoLru.lru_reg_width(self.WAY_CNT)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self._compute_constants()
         addClkRstn(self)
         # used to initialize the LRU data (in the case of cache reset)
@@ -100,7 +105,8 @@ class AxiCacheLruArray(CacheAddrTypeConfig):
                 incr_val_oh = incr_val_oh | (succ_write_oh & en_mask)
         return incr_val_oh
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         m = self.lru_mem
         victim_req_r, victim_req_w = m.port[:2]
 

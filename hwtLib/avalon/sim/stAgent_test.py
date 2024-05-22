@@ -4,20 +4,23 @@
 import unittest
 
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.avalon.st import AvalonST
 from hwtSimApi.constants import CLK_PERIOD
 
 
 class AvalonStWire(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.dataIn = AvalonST()
         self.dataOut = AvalonST()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.dataOut(self.dataIn)
 
 
@@ -25,6 +28,7 @@ class AvalonStAgentTC(SimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = dut = AvalonStWire()
         cls.compileSim(dut)

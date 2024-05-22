@@ -9,7 +9,9 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.amba.axis_comp.frame_deparser import Axi4S_frameDeparser
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crc import Crc
@@ -17,7 +19,6 @@ from hwtLib.logic.crcPoly import CRC_16_USB
 from hwtLib.peripheral.usb.constants import usb_pid_t, USB_PID
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b_tx
 from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecifiedError
-from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 
 
 class Usb2SieDeviceTxInput(Axi4Stream):
@@ -27,16 +28,19 @@ class Usb2SieDeviceTxInput(Axi4Stream):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi4Stream._config(self)
+    @override
+    def hwConfig(self):
+        Axi4Stream.hwConfig(self)
         self.USE_KEEP = True
         self.DATA_WIDTH = 8
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.pid = HwIOSignal(usb_pid_t)
         self.chirp = HwIOSignal()
-        Axi4Stream._declr(self)
+        Axi4Stream.hwDeclr(self)
 
+    @override
     def _getIpCoreIntfClass(self):
         raise IntfIpMetaNotSpecifiedError()
 
@@ -57,7 +61,8 @@ class Usb2SieDeviceTx(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.enable = HwIOSignal()
 
@@ -78,7 +83,8 @@ class Usb2SieDeviceTx(HwModule):
         )
         tx.data(axis.data)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         deparser_hs = Axi4S_frameDeparser(
             HStruct(
                 (HBits(8), "pid"),

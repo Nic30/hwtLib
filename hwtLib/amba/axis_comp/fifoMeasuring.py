@@ -5,9 +5,10 @@ from hwt.code import If, Concat, SwitchLogic
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil, isPow2
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil, isPow2
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.amba.axis_comp.fifo import Axi4SFifo
@@ -18,14 +19,15 @@ from pyMathBitPrecise.bit_utils import mask
 
 class Axi4S_fifoMeasuring(HwModule):
     """
-    Fifo which are counting sizes of frames and sends it over
+    FIFO which are counting sizes of frames and sends it over
     dedicated handshaked interface "sizes"
 
     .. hwt-autodoc:: _example_Axi4S_fifoMeasuring
     """
 
-    def _config(self):
-        Axi4Stream._config(self)
+    @override
+    def hwConfig(self):
+        Axi4Stream.hwConfig(self)
         self.SIZES_BUFF_DEPTH = HwParam(16)
         self.MAX_LEN = HwParam((2048 // 8) - 1)
         self.EXPORT_ALIGNMENT_ERROR = HwParam(False)
@@ -33,7 +35,8 @@ class Axi4S_fifoMeasuring(HwModule):
     def getAlignBitsCnt(self):
         return log2ceil(self.DATA_WIDTH // 8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataIn = Axi4Stream()
@@ -58,7 +61,8 @@ class Axi4S_fifoMeasuring(HwModule):
 
         assert isPow2(self.DATA_WIDTH)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         dIn = Axi4SBuilder(self, self.dataIn).buff().end
 

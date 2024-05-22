@@ -26,7 +26,7 @@ class BramPortEndpoint(BusEndpoint):
         BusEndpoint.__init__(self, structTemplate,
                              hwIOCls=hwIOCls, shouldEnterFn=shouldEnterFn)
 
-    def _impl(self):
+    def hwImpl(self):
         self._parseTemplate()
         bus = self.bus
 

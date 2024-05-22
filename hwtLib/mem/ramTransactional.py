@@ -39,7 +39,7 @@ class RamTransactional(HwModule):
 
     """
 
-    def _config(self):
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(8)  # address has the granularity of the item
         self.DATA_WIDTH = HwParam(8)
         self.WORD_WIDTH = HwParam(16)
@@ -64,7 +64,7 @@ class RamTransactional(HwModule):
             for i in (self.w, self.flush_data):
                 i.PRIV_T = self.W_PRIV_T
 
-    def _declr(self):
+    def hwDeclr(self):
         self._declr_io()
         d = self.data_array = RamSingleClock()
         d.MAX_BLOCK_DATA_WIDTH = self.MAX_BLOCK_DATA_WIDTH
@@ -79,8 +79,8 @@ class RamTransactional(HwModule):
         data_arr_r_port, data_arr_w_port = self.data_array.port
         data_arr_r_to_hs = RamAsAddrDataRdVld()
         data_arr_w_to_hs = RamAsAddrDataRdVld()
-        data_arr_r_to_hs._updateParamsFrom(data_arr_r_port)
-        data_arr_w_to_hs._updateParamsFrom(data_arr_w_port)
+        data_arr_r_to_hs._updateHwParamsFrom(data_arr_r_port)
+        data_arr_w_to_hs._updateHwParamsFrom(data_arr_w_port)
         self.data_arr_r_to_hs = data_arr_r_to_hs
         self.data_arr_w_to_hs = data_arr_w_to_hs
 
@@ -337,7 +337,7 @@ class RamTransactional(HwModule):
         da_w.mask(w.data.strb)
         da_w.data(w.data.data)
 
-    def _impl(self):
+    def hwImpl(self):
         r_index = self._reg("r_index",
             HStruct(
                 (HBits(self.ADDR_WIDTH), "item_index"),

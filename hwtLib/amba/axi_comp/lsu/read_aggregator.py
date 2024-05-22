@@ -6,10 +6,11 @@ from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIODataVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4 import Axi4, Axi4_r
 from hwtLib.amba.axi_comp.lsu.write_aggregator_write_dispatcher import AxiWriteAggregatorWriteDispatcher
 from hwtLib.amba.axis_comp.fifoCopy import Axi4SFifoCopy, Axi4SRegCopy
@@ -37,11 +38,13 @@ class AxiReadAggregator(HwModule):
     .. hwt-autodoc:: _example_AxiReadAggregator
     """
 
-    def _config(self):
-        Axi4._config(self)
+    @override
+    def hwConfig(self):
+        Axi4.hwConfig(self)
         self.CACHE_LINE_SIZE = HwParam(64)  # [B]
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         AxiWriteAggregatorWriteDispatcher.precompute_constants(self)
         addClkRstn(self)
         with self._hwParamsShared():
@@ -98,7 +101,7 @@ class AxiReadAggregator(HwModule):
         addr_cam = self.addr_cam
         addr_cam_out = addr_cam.out[0] #HsBuilder(self, addr_cam.out).buff(1).end
         addr_cam_out_reg = HandshakedReg(addr_cam_out.__class__)
-        addr_cam_out_reg._updateParamsFrom(addr_cam_out)
+        addr_cam_out_reg._updateHwParamsFrom(addr_cam_out)
         self.addr_cam_out_reg = addr_cam_out_reg
         addr_cam_out_reg.dataIn(addr_cam_out, exclude=[addr_cam_out.data])
         addr_cam_out_reg.dataIn.data(addr_cam_out.data & item_vld)
@@ -214,7 +217,8 @@ class AxiReadAggregator(HwModule):
         data_copy_override.data(s_ar_tmp.dataOut.id)
 
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         ITEMS = self.addr_cam.ITEMS
         item_vld = self._reg("item_vld", HBits(ITEMS), def_val=0)
         waiting_transaction_id = self._sig("waiting_transaction_id", self.s.ar.id._dtype[ITEMS])

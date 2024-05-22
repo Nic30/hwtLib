@@ -3,6 +3,7 @@
 
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ULPI_TX_CMD
 from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgentTC
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b
@@ -11,13 +12,15 @@ from hwtLib.peripheral.usb.usb2.utmi_to_ulpi import Utmi_to_Ulpi
 
 class Utmi_to_UlpiWrap(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.host = Ulpi()
         self.dev = Utmi_8b()._m()
         self.core = Utmi_to_Ulpi()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         c = self.core
         c.ulpi(self.host)
         self.dev(c.utmi)
@@ -27,6 +30,7 @@ class Utmi_to_UlpiWrap(HwModule):
 class Utmi_to_UlpiTC(UlpiAgentTC):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = Utmi_to_UlpiWrap()
         cls.compileSim(cls.dut)

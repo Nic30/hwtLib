@@ -4,6 +4,7 @@
 from hwt.hwIOs.std import HwIOClk, HwIORst_n
 from hwt.hwParam import HwParam
 from hwt.math import isPow2
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 
@@ -17,8 +18,9 @@ class AxiBuffCdc(AxiBuff):
     .. hwt-autodoc:: _example_AxiBuffCdc
     """
 
-    def _config(self):
-        AxiBuff._config(self)
+    @override
+    def hwConfig(self):
+        AxiBuff.hwConfig(self)
         self.ADDR_BUFF_DEPTH += 1
         self.DATA_BUFF_DEPTH += 1
         self.M_FREQ = HwParam(int(102e6))
@@ -42,11 +44,13 @@ class AxiBuffCdc(AxiBuff):
         assert self.DATA_BUFF_DEPTH == 1 or isPow2(self.DATA_BUFF_DEPTH - 1), (
             self.DATA_BUFF_DEPTH, "size 2**n + 1 for output reg")
 
-    def _declr(self):
-        super(AxiBuffCdc, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(AxiBuffCdc, self).hwDeclr()
         self._setup_clk_rst_n()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         ADDR_DEPTH = self.ADDR_BUFF_DEPTH
         DATA_DEPTH = self.DATA_BUFF_DEPTH
         for name, m, s, depth in [("ar", self.s.ar, self.m.ar, ADDR_DEPTH),

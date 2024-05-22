@@ -8,6 +8,7 @@ from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
@@ -18,19 +19,22 @@ class UartTx(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.FREQ = HwParam(int(100e6))
         # number of bits per second
         self.BAUD = HwParam(115200)
         # self.PARITY = HwParam(None)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.dataIn = HwIODataRdVld()
         self.dataIn.DATA_WIDTH = 8
         self.txd = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         r = self._reg
 

@@ -6,6 +6,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.peripheral.spi.master import SpiMaster
 from hwtLib.tests.serialization.assignToCastAndSlices import AssignToASlice0, \
@@ -17,12 +18,14 @@ from hwtLib.tests.serialization.assignToCastAndSlices import AssignToASlice0, \
 
 class TernaryInConcatExample(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(32)
         self.b = HwIOVectSignal(32)
         self.c = HwIOVectSignal(32)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         a = self.a
         b = self.b
         self.c(

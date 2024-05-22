@@ -4,10 +4,11 @@
 import unittest
 
 from hwt.code import Switch, If
-from hwt.hwIOs.std import HwIOSignal
-from hwt.hwModule import HwModule
 from hwt.hdl.statements.switchContainer import SwitchContainer
 from hwt.hdl.types.defs import BIT
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwt.synth import synthesised
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.tests.types.hConst_test import hBit
@@ -15,11 +16,13 @@ from hwtLib.tests.types.hConst_test import hBit
 
 class If_solvable_comb_loop(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.c = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         b = self.b = self._sig("b")
 
         return If(self.a,
@@ -32,13 +35,15 @@ class If_solvable_comb_loop(HwModule):
 
 class If_solvable_comb_loop_nested(If_solvable_comb_loop):
 
-    def _declr(self):
-        super(If_solvable_comb_loop_nested, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(If_solvable_comb_loop_nested, self).hwDeclr()
         self.d = HwIOSignal()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         If(self.d,
-           super(If_solvable_comb_loop_nested, self)._impl()
+           super(If_solvable_comb_loop_nested, self).hwImpl()
         )
 
 

@@ -20,12 +20,12 @@ class Axi4StaticRemap(BusStaticRemap):
         self.hwIOCls = hwIOCls
         super(Axi4StaticRemap, self).__init__(hdlName=hdlName)
 
-    def _config(self):
+    def hwConfig(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)
-        BusStaticRemap._config(self)
-        self.hwIOCls._config(self)
+        BusStaticRemap.hwConfig(self)
+        self.hwIOCls.hwConfig(self)
 
-    def _impl(self):
+    def hwImpl(self):
         # for each remaped region substitute the address offset
         self.m(self.s, exclude={self.s.ar.addr, self.s.aw.addr})
         MM = self.MEM_MAP

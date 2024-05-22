@@ -6,8 +6,9 @@ from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
 from hwt.hwIOs.utils import propagateClkRst, addClkRst
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ULPI_TX_CMD, ULPI_REG, \
     ulpi_reg_function_control_t, ulpi_reg_function_control_t_reset_default, \
     ulpi_reg_otg_control_t, ulpi_reg_otg_control_t_reset_defaults, \
@@ -30,7 +31,8 @@ class Utmi_to_Ulpi(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRst(self)
         # PHY is a master for UTMI/ULPI style interface
         self.utmi = Utmi_8b()._m()
@@ -80,7 +82,8 @@ class Utmi_to_Ulpi(HwModule):
             utmi_interrupt_q.IdGnd(ulpi_data[6])
         ]
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         ulpi: Ulpi = self.ulpi
         utmi: Utmi_8b = self.utmi
 

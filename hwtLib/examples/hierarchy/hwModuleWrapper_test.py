@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIODataVld
 from hwt.hwIOs.utils import addClkRstn
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.synth import to_rtl_str
 from hwtLib.amba.axi4s import Axi4Stream
-from hwtLib.examples.hierarchy.hwModuleWrapper import HwModuleWrapper
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
+from hwtLib.examples.hierarchy.hwModuleWrapper import HwModuleWrapper
 
 
 class HwIOArrayExample(HwModule):
@@ -17,11 +18,13 @@ class HwIOArrayExample(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HObjList(Axi4Stream() for _ in range(2))
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         for intf in self.a:
             intf.ready(1)
 
@@ -31,14 +34,17 @@ class HwModuleWithParams(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.din = HwIODataVld()
         self.dout = HwIODataVld()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.dout(self.din)
 
 

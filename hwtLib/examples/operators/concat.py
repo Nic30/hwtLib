@@ -4,11 +4,12 @@
 from math import ceil
 
 from hwt.code import Concat, If, Switch
+from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIOBramPort_noClk
 from hwt.hwIOs.utils import addClkRstn
-from hwt.hObjList import HObjList
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.types.net.arp import arp_ipv4_t
 
 
@@ -17,7 +18,8 @@ class SimpleConcat(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a0 = HwIOSignal()
         self.a1 = HwIOSignal()
         self.a2 = HwIOSignal()
@@ -25,7 +27,8 @@ class SimpleConcat(HwModule):
 
         self.a_out = HwIOVectSignal(4)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.a_out(Concat(self.a3, self.a2, self.a1, self.a0))
 
 
@@ -34,7 +37,8 @@ class ConcatAssign(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a0 = HwIOSignal()._m()
         self.a1 = HwIOSignal()._m()
         self.a2 = HwIOSignal()._m()
@@ -42,7 +46,8 @@ class ConcatAssign(HwModule):
 
         self.a_in = HwIOVectSignal(4)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # verilog like {a3, a2, a1, a0} = a_in
         Concat(self.a3, self.a2, self.a1, self.a0)(self.a_in)
 
@@ -52,11 +57,13 @@ class ConcatIndexAssignMix0(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HObjList([HwIOVectSignal(2), HwIOVectSignal(2)])
         self.b = HObjList([HwIOSignal()._m() for _ in range(4)])
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         a = Concat(*reversed(self.a))
         for i, b in enumerate(self.b):
             b(a[i])
@@ -67,11 +74,13 @@ class ConcatIndexAssignMix1(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HObjList([HwIOSignal() for _ in range(4)])
         self.b = HObjList([HwIOVectSignal(2)._m(), HwIOVectSignal(2)._m()])
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         b = Concat(*reversed(self.b))
         for i, a in enumerate(self.a):
             b[i](a)
@@ -82,11 +91,13 @@ class ConcatIndexAssignMix2(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HObjList([HwIOVectSignal(2), HwIOVectSignal(4), HwIOVectSignal(2)])
         self.b = HObjList([HwIOVectSignal(4)._m(), HwIOVectSignal(4)._m()])
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         b = Concat(*reversed(self.b))
         a0, a1, a2 = self.a
         b[:6](a2)
@@ -99,12 +110,14 @@ class ConcatIndexAssignMix3(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.port = HwIOBramPort_noClk()
         self.port.DATA_WIDTH = 24
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         port = self.port
         d = self._reg("d", arp_ipv4_t, def_val={f.name: i for i, f in enumerate(arp_ipv4_t.fields)})
         d_flat = d._reinterpret_cast(HBits(d._dtype.bit_length()))

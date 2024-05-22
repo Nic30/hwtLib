@@ -2,14 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 
 
 class InconsistentIntfDirection(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = Axi4Stream()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # missing drivers of self.a
         pass
 

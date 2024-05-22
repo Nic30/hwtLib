@@ -14,6 +14,7 @@ from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.structManipulators.structReader import StructReader
+from hwt.pyUtils.typingFuture import override
 
 SKIP = 1
 PROPAGATE = 0
@@ -36,15 +37,17 @@ class StructWriter(StructReader):
     .. hwt-autodoc:: _example_StructWriter
     """
 
-    def _config(self):
-        StructReader._config(self)
+    @override
+    def hwConfig(self):
+        StructReader.hwConfig(self)
         self.MAX_OVERLAP = HwParam(2)
         self.WRITE_ACK = HwParam(False)
 
     def _createInterfaceForField(self, parent, structField):
         return Axi4S_frameDeparser._mkFieldHwIO(self, parent, structField)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.parseTemplate()
         self.dataIn = HwIOStruct(self._structT, tuple(),
@@ -66,7 +69,8 @@ class StructWriter(StructReader):
                 frames=self._frames
             )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         req = self.wDatapump.req
         w = self.wDatapump.w
         ack = self.wDatapump.ack

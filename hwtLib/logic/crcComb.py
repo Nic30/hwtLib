@@ -17,6 +17,7 @@ from hwtLib.logic.crcPoly import CRC_5_USB
 from hwtLib.logic.crcUtils import parsePolyStr
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_bits_in_bytes, \
     bit_list_reversed_endianity
+from hwt.pyUtils.typingFuture import override
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -41,7 +42,8 @@ class CrcComb(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(7 + 4)
         self.IN_IS_BIGENDIAN = HwParam(False)
         self.setConfig(CRC_5_USB)
@@ -58,7 +60,8 @@ class CrcComb(HwModule):
         self.XOROUT = word_t.from_py(crcConfigCls.XOROUT)
         self.INIT = word_t.from_py(crcConfigCls.INIT)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataIn = HwIOVectSignal(self.DATA_WIDTH)
@@ -153,7 +156,8 @@ class CrcComb(HwModule):
         assert len(outBits) == len(stateBits)
         return outBits
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         DW = int(self.DATA_WIDTH)
         polyBits, PW = self.parsePoly(self.POLY, self.POLY_WIDTH)
         XOROUT = int(self.XOROUT)

@@ -3,10 +3,11 @@
 
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.struct import HStruct
-from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.hwIOs.std import HwIOSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.types.ctypes import uint8_t
 
 
@@ -31,14 +32,16 @@ class ExampleTCmp(HwModule):
         self.t = t
         super(ExampleTCmp, self).__init__()
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HdlType_to_HwIO().apply(self.t)
         self.b = HdlType_to_HwIO().apply(self.t)
 
         self.a_eq_b_out = HwIOSignal()._m()
         self.a_ne_b_out = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         a, b = self.a, self.b
         self.a_eq_b = a._eq(b)
         self.a_ne_b = a != b
@@ -54,8 +57,9 @@ class HwIOStruct_operatorTC(SimTestCase):
 
         class _ExampleTCmp(ExampleTCmp):
 
-            def _impl(self):
-                a, b = super(_ExampleTCmp, self)._impl()
+            @override
+            def hwImpl(self):
+                a, b = super(_ExampleTCmp, self).hwImpl()
                 assert self.a_eq_b is a.a0._eq(b.a0)
                 assert self.a_ne_b is (a.a0 != b.a0), self.a_ne_b
 
@@ -65,9 +69,9 @@ class HwIOStruct_operatorTC(SimTestCase):
     def test_eq_simple2x(self):
 
         class _ExampleTCmp(ExampleTCmp):
-
-            def _impl(self):
-                a, b = super(_ExampleTCmp, self)._impl()
+            @override
+            def hwImpl(self):
+                a, b = super(_ExampleTCmp, self).hwImpl()
                 assert self.a_eq_b is a.a0._eq(b.a0) & a.a1._eq(b.a1)
                 assert self.a_ne_b is ((a.a0 != b.a0) | (a.a1 != b.a1)), self.a_ne_b
 
@@ -77,9 +81,9 @@ class HwIOStruct_operatorTC(SimTestCase):
     def test_eq_simpleNested(self):
 
         class _ExampleTCmp(ExampleTCmp):
-
-            def _impl(self):
-                a, b = super(_ExampleTCmp, self)._impl()
+            @override
+            def hwImpl(self):
+                a, b = super(_ExampleTCmp, self).hwImpl()
                 assert self.a_eq_b is a.a0._eq(b.a0) & a.a1._eq(b.a1)
                 assert self.a_ne_b is ((a.a0.a0 != b.a0.a0) | (a.a0.a1 != b.a0.a1) | (a.a1 != b.a1)), self.a_ne_b
 

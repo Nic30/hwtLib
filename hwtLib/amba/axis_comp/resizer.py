@@ -10,6 +10,7 @@ from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.amba.axis_comp.reg import Axi4SReg
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.pyUtils.typingFuture import override
 
 
 class Axi4S_resizer(Axi4SCompBase):
@@ -31,12 +32,14 @@ class Axi4S_resizer(Axi4SCompBase):
     .. hwt-schematic:: _example_Axi4S_resizer_downscale
     """
 
-    def _config(self):
-        Axi4SCompBase._config(self)
+    @override
+    def hwConfig(self):
+        Axi4SCompBase.hwConfig(self)
         self.OUT_DATA_WIDTH = HwParam(64)
         self.USE_STRB = True
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.USE_STRB
         addClkRstn(self)
 
@@ -139,7 +142,7 @@ class Axi4S_resizer(Axi4SCompBase):
 
         # instantiate Axi4SReg, Axi4SBuilder is not used to avoid dependencies
         inReg = Axi4SReg(self.hwIOCls)
-        inReg._updateParamsFrom(self.dataIn)
+        inReg._updateHwParamsFrom(self.dataIn)
         self.inReg = inReg
         inReg.clk(self.clk)
         inReg.rst_n(self.rst_n)
@@ -190,7 +193,8 @@ class Axi4S_resizer(Axi4SCompBase):
            )
         )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         IN_DW = int(self.DATA_WIDTH)
         OUT_DW = int(self.OUT_DATA_WIDTH)
 

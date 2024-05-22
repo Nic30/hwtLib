@@ -5,20 +5,23 @@ import unittest
 
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.splitCopy import HsSplitCopy
 from hwtSimApi.constants import CLK_PERIOD
 
 
 class HsSplitCopyWithReference(HsSplitCopy):
-    def _declr(self):
-        HsSplitCopy._declr(self)
+    @override
+    def hwDeclr(self):
+        HsSplitCopy.hwDeclr(self)
         addClkRstn(self)
 
 
 class HsSplitCopyTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = HsSplitCopyWithReference(HwIODataRdVld)
         cls.dut.DATA_WIDTH = 4
@@ -38,6 +41,7 @@ class HsSplitCopyTC(SimTestCase):
 
 
 class HsSplitCopy_randomized_TC(HsSplitCopyTC):
+    @override
     def setUp(self):
         super(HsSplitCopy_randomized_TC, self).setUp()
         self.randomize(self.dut.dataIn)

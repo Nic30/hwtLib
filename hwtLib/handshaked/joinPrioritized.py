@@ -4,6 +4,7 @@
 from hwt.code import And, Or, SwitchLogic
 from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
@@ -17,11 +18,13 @@ class HsJoinPrioritized(HandshakedCompBase):
     .. hwt-autodoc:: _example_HsJoinPrioritized
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.INPUTS = HwParam(2)
-        super()._config()
+        super().hwConfig()
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.dataIn = HObjList(
                 self.hwIOCls() for _ in range(int(self.INPUTS))
@@ -44,7 +47,8 @@ class HsJoinPrioritized(HandshakedCompBase):
 
         return dataConnectExpr
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         rd = self.get_ready_signal
         vld = self.get_valid_signal
         dout = self.dataOut

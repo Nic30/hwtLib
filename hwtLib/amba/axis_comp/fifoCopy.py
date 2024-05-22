@@ -8,6 +8,7 @@ from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIOSignal, HwIORst_n, HwIORst, HwIOClk, HwIOVectSignal
 from hwt.hwIOs.utils import propagateClkRstn
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.utils import HwIO_pack, \
     HwIO_connectPacked
@@ -26,12 +27,14 @@ class Axi4SRegCopy(Axi4SCompBase, HandshakedFifo):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         Axi4SFifoCopy._declr_io(self)
         with self._hwParamsShared():
             self.reg = Axi4SReg(self.hwIOCls)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         reg = self.reg
         copy_en = self.dataOut_copy_frame & self.dataOut.valid
         non_data_signals = [reg.dataIn.ready, reg.dataIn.valid]
@@ -78,15 +81,17 @@ class Axi4SFifoCopy(Axi4SCompBase, HandshakedFifo):
         if self.ID_WIDTH > 0:
             self.dataOut_replacement_id = HwIOVectSignal(self.ID_WIDTH)
 
-    def _declr(self)->None:
+    @override
+    def hwDeclr(self)->None:
         assert self.DEPTH > 1 ,\
             "Fifo is too small, fifo pointers would not work correctly, use register(s) instead"
-        HandshakedFifo._declr(self)
+        HandshakedFifo.hwDeclr(self)
 
-    def _impl(self, clk_rst: Optional[Tuple[
+    @override
+    def hwImpl(self, clk_rst: Optional[Tuple[
             Tuple[HwIOClk, Union[HwIORst, HwIORst_n]],
             Tuple[HwIOClk, Union[HwIORst, HwIORst_n]]]]=None):
-        HandshakedFifo._impl(self, clk_rst=clk_rst)
+        HandshakedFifo.hwImpl(self, clk_rst=clk_rst)
 
     def _connect_fifo_in(self):
         rd = self.get_ready_signal

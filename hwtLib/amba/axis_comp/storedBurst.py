@@ -8,9 +8,10 @@ from hwt.code import If, Switch
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hwIOs.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import grouper
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.arrayQuery import grouper
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4s import Axi4Stream
 from pyMathBitPrecise.bit_utils import mask, byte_list_to_be_int
@@ -26,15 +27,17 @@ class Axi4SStoredBurst(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi4Stream._config(self)
+    @override
+    def hwConfig(self):
+        Axi4Stream.hwConfig(self)
         self.REPEAT: bool = HwParam(False)
         self.DATA: Union[bytes, Tuple[Union[int, HBitsConst, None], ...]] = HwParam("Hello world!!!!!".encode())
 
     def dataRd(self):
         return self.dataOut.ready
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataOut: Axi4Stream = Axi4Stream()._m()
@@ -51,7 +54,8 @@ class Axi4SStoredBurst(HwModule):
                        wordIndex(wordIndex + 1)
                    )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         dout = self.dataOut
         all_mask = mask(self.DATA_WIDTH // 8)
         DATA = self.DATA

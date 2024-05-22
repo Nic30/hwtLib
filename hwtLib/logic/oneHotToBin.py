@@ -6,11 +6,12 @@ from typing import Union, List
 from hwt.code import If, Or
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIODataVld, HwIOVectSignal
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits
 
 
@@ -22,15 +23,18 @@ class OneHotToBin(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ONE_HOT_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.oneHot = HwIOVectSignal(self.ONE_HOT_WIDTH)
         self.bin = HwIODataVld()._m()
         self.bin.DATA_WIDTH = log2ceil(self.ONE_HOT_WIDTH)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.bin.data(oneHotToBin(self, self.oneHot))
         self.bin.vld(Or(*[bit for bit in iterBits(self.oneHot)]))
 

@@ -1,6 +1,7 @@
 from hwt.hwIO import HwIO
 from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIOSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite_r
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -18,19 +19,22 @@ class HwIOAxiWriteAggregatorWriteTmp(Axi4Stream):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi4Stream._config(self)
+    @override
+    def hwConfig(self):
+        Axi4Stream.hwConfig(self)
         self.USE_STRB = True
         self.ADDR_WIDTH = HwParam(32)
         self.ITEMS = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
-        Axi4Stream._declr(self)
+        Axi4Stream.hwDeclr(self)
         self.colides_with_last_addr = HwIOSignal()
         self.cam_lookup = HwIOVectSignal(self.ITEMS)
         self.mask_byte_unaligned = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()
 
@@ -42,15 +46,18 @@ class HwIOAxiWriteAggregatorRead(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = Axi3Lite_addr()
         self.r_data_available = HwIODataRdVld()
         self.r_data_available.DATA_WIDTH = 1
         self.r = Axi3Lite_r()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()

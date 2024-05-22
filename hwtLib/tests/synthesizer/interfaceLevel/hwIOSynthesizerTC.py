@@ -22,12 +22,12 @@ D = DIRECTION
 def createTwoAxiDuplexStreams():
     i = Axi4StreamFullDuplex()
     i._name = 'i'
-    i._loadDeclarations()
+    i._loadHwDeclarations()
     i._setDirectionsLikeIn(INTF_DIRECTION.MASTER)
 
     i2 = Axi4StreamFullDuplex()
     i2._name = 'i2'
-    i2._loadDeclarations()
+    i2._loadHwDeclarations()
     i2._setDirectionsLikeIn(INTF_DIRECTION.SLAVE)
     ns = NameScope(None, "", False)
     n = RtlNetlist()
@@ -43,7 +43,7 @@ class HwIOSynthesizerTC(BaseSynthesizerTC):
         """
         from hwtLib.examples.simpleHwModuleAxi4Stream import SimpleHwModuleAxi4Stream
         dut = SimpleHwModuleAxi4Stream()
-        dut._loadDeclarations()
+        dut._loadHwDeclarations()
         m = self.assertIsM
         s = self.assertIsS
 
@@ -87,7 +87,7 @@ class HwIOSynthesizerTC(BaseSynthesizerTC):
     def test_SimpleHwModule2(self):
         from hwtLib.examples.simpleHwModuleAxi4Stream import SimpleHwModuleAxi4Stream
         dut = SimpleHwModuleAxi4Stream()
-        dut._loadDeclarations()
+        dut._loadHwDeclarations()
 
         def ex(i): return self.assertTrue(i._isExtern)
 
@@ -146,7 +146,7 @@ class HwIOSynthesizerTC(BaseSynthesizerTC):
 
     def test_EmptyHwModule(self):
         class Em(EmptyHwModule):
-            def _declr(self):
+            def hwDeclr(self):
                 self.a = HwIOSignal()
                 self.b = HwIOSignal()._m()
 
@@ -161,7 +161,7 @@ class HwIOSynthesizerTC(BaseSynthesizerTC):
 
     def test_EmptyHwModuleWithCompositePort(self):
         class Dummy(EmptyHwModule):
-            def _declr(self):
+            def hwDeclr(self):
                 self.a = Axi4()
                 self.b = Axi4()._m()
 
@@ -189,7 +189,7 @@ class HwIOSynthesizerTC(BaseSynthesizerTC):
         def m(i): return self.assertEqual(i._direction, INTF_DIRECTION.MASTER)
 
         i = Axi4StreamFullDuplex()
-        i._loadDeclarations()
+        i._loadHwDeclarations()
         self.assertRaises(Exception, i._reverseDirection)
         i._setDirectionsLikeIn(INTF_DIRECTION.MASTER)
 

@@ -37,7 +37,7 @@ class AxiBuilder(AbstractComponentBuilder):
 
         m = hwModuleCls(self.getHwIOCls())
         if update_params:
-            m._updateParamsFrom(self.end)
+            m._updateHwParamsFrom(self.end)
         if set_params_fn is not None:
             set_params_fn(m)
 

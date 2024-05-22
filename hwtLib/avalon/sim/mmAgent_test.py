@@ -5,8 +5,9 @@ import unittest
 
 from hwt.constants import READ, WRITE
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY
 from hwtLib.avalon.sim.ram import AvalonMmSimRam
 from hwtSimApi.constants import CLK_PERIOD
@@ -15,18 +16,21 @@ from pyMathBitPrecise.bit_utils import mask
 
 class AvalonMmWire(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.s = AvalonMM()
         self.m = AvalonMM()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.m(self.s)
 
 
 class AvalonMmAgentTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = AvalonMmWire()
         cls.compileSim(cls.dut)

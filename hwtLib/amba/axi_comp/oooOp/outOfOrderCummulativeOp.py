@@ -28,6 +28,7 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.types.ctypes import uint32_t, uint8_t
 from pyMathBitPrecise.bit_utils import mask
+from hwt.pyUtils.typingFuture import override
 
 
 class OutOfOrderCummulativeOp(HwModule):
@@ -63,15 +64,14 @@ class OutOfOrderCummulativeOp(HwModule):
 
     :ivar MAIN_STATE_T: a type of the state in main memory which is being updated by this component
     :note: If MAIN_STATE_T.bit_length() is smaller than DATA_WIDTH each item is allocated in
-        a signle bus word separately in order to avoid alignment logic
+        a single bus word separately in order to avoid alignment logic
     :ivar TRANSACTION_STATE_T: a type of the transaction state, used to store additional data
         for transaction and can be used to modify the behavior of the pipeline
     :note: provides axi aw and first w word in same clock cycle only
-    
-    
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         # number of items in main array is resolved from ADDR_WIDTH and size of STATE_T
         # number of concurent thread is resolved as 2**ID_WIDTH
         self.MAIN_STATE_T: Optional[HdlType] = HwParam(uint32_t)
@@ -81,7 +81,7 @@ class OutOfOrderCummulativeOp(HwModule):
                 WRITE_TO_WRITE_ACK_LATENCY=1,
                 WRITE_ACK_TO_READ_DATA_LATENCY=1)
         )
-        Axi4._config(self)
+        Axi4.hwConfig(self)
 
     def _init_constants(self):
         MAIN_STATE_T = self.MAIN_STATE_T
@@ -91,7 +91,8 @@ class OutOfOrderCummulativeOp(HwModule):
         self.MAIN_STATE_ITEMS_CNT = (2 ** self.MAIN_STATE_INDEX_WIDTH)
         self.BUS_WORD_CNT = ceil(self.MAIN_STATE_T.bit_length() / self.DATA_WIDTH)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self._init_constants()
 
@@ -152,7 +153,7 @@ class OutOfOrderCummulativeOp(HwModule):
         assert din.addr._dtype.bit_length() == self.ADDR_WIDTH - self.ADDR_OFFSET_W, (
             din.addr._dtype.bit_length(), self.ADDR_WIDTH, self.ADDR_OFFSET_W)
         dataIn_reg = HandshakedReg(din.__class__)
-        dataIn_reg._updateParamsFrom(din)
+        dataIn_reg._updateHwParamsFrom(din)
         self.dataIn_reg = dataIn_reg
         StreamNode(
             [din],
@@ -560,7 +561,8 @@ class OutOfOrderCummulativeOp(HwModule):
             else:
                 raise NotImplementedError("Unknown stage of pipeline")
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.ar_dispatch()
         self.main_pipeline()
         propagateClkRstn(self)

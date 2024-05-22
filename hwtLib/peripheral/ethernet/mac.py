@@ -22,6 +22,7 @@ from hwtLib.peripheral.ethernet._axis_eq import Axi4S_eq
 from hwtLib.peripheral.ethernet.constants import ETH_BITRATE
 from hwtLib.peripheral.ethernet.vldsynced_data_err_last import VldSyncedDataErrLast
 from hwtLib.types.net.ethernet import eth_mac_t, eth_addr_parse
+from hwt.pyUtils.typingFuture import override
 
 
 CRC32_RESIDUE = 0x2144df1c
@@ -47,15 +48,15 @@ class EthernetMac(HwModule):
         But the signals are accessible. Inherit from this class and
         add control bus, statistics, address space of of your choice.
         Same applies to a MAC address filter.
-    :note: This component Ehternet MAC implementation is efficient for
+    :note: This component Ethernet MAC implementation is efficient for
         bandwidths where it is not required to send multiple packets in same clk tick.
         (usually 10M - 10G but depends on frequency and data width)
 
     .. hwt-autodoc::
     """
 
-
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.FREQ = HwParam(int(100e6))
         self.BITRATE = HwParam(ETH_BITRATE.M_100M)
         self.DATA_WIDTH = HwParam(8)
@@ -65,7 +66,8 @@ class EthernetMac(HwModule):
         # number of fifo items (size[B] = *DATA_WIDTH/8)
         self.RX_FIFO_DEPTH = HwParam(2048)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.USE_STRB = self.DATA_WIDTH > 8
         with self._hwParamsShared():
@@ -83,7 +85,7 @@ class EthernetMac(HwModule):
         def_mac = eth_addr_parse(self.DEFAULT_MAC_ADDR)
         def_mac = int.from_bytes(def_mac, 'little')
         mac_eq = Axi4S_eq()
-        mac_eq._updateParamsFrom(self)
+        mac_eq._updateHwParamsFrom(self)
         mac_eq.VAL = eth_mac_t.from_py(def_mac)
         self.rx_mac_filter = mac_eq
         return mac_eq.dataIn, mac_eq.dataOut
@@ -263,7 +265,8 @@ class EthernetMac(HwModule):
 
         self.phy_tx(ff.dataOut)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         if self.HAS_RX:
             self._rx_logic()
         if self.HAS_TX:

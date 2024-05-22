@@ -5,11 +5,12 @@ import unittest
 
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal
-from hwt.synthesizer.exceptions import TypeConversionErr
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.synth import to_rtl_str
+from hwt.synthesizer.exceptions import TypeConversionErr
 from hwt.synthesizer.rtlLevel.exceptions import \
     SignalDriverErr
-from hwt.synth import to_rtl_str
 from hwtLib.examples.errors.accessingSubunitInternalIntf import \
     AccessingSubunitInternalIntf
 from hwtLib.examples.errors.inconsistentIntfDirection import \
@@ -23,11 +24,13 @@ from hwtLib.types.ctypes import uint8_t
 
 class ExampleRomWithTooLargeArrayInit(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.idx = HwIOSignal(HBits(2))
         self.data = HwIOSignal(HBits(8, signed=False))._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
 
         lut = self._sig(name="rom", dtype=uint8_t[1],
                                     def_val=[3, 10, 12, 99])

@@ -5,6 +5,7 @@ import unittest
 
 from hwt.constants import Time, NOP
 from hwt.hwIOs.utils import addClkRstn
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.simpleHwModuleAxi4Stream import SimpleHwModuleAxi4Stream
 from pyMathBitPrecise.bit_utils import mask
@@ -15,14 +16,16 @@ class SynchronizedSimpleHwModuleAxi4Stream(SimpleHwModuleAxi4Stream):
     :class:`hwt.hwModule.HwModule` with reference clk added
     """
 
-    def _declr(self):
-        SimpleHwModuleAxi4Stream._declr(self)
+    @override
+    def hwDeclr(self):
+        SimpleHwModuleAxi4Stream.hwDeclr(self)
         addClkRstn(self)
 
 
 class SimpleModuleAxi4Stream_TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = SynchronizedSimpleHwModuleAxi4Stream()
         cls.compileSim(cls.dut)

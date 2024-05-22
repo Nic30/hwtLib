@@ -1,5 +1,6 @@
-from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIOClk
 from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIOClk
+from hwt.pyUtils.typingFuture import override
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
@@ -9,7 +10,8 @@ class GmiiTxChannel(HwIO):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.d = HwIOVectSignal(8)
         self.en = HwIOSignal()
         self.er = HwIOSignal()
@@ -20,7 +22,8 @@ class GmiiRxChannel(HwIO):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.d = HwIOVectSignal(8)
         self.dv = HwIOSignal()
         self.er = HwIOSignal()
@@ -35,7 +38,8 @@ class Gmii(HwIO):
         only single TX clock provided from MAC to PHY
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.rx_clk = HwIOClk(masterDir=DIRECTION.IN)
         with self._associated(clk=self.rx_clk):
             self.rx = GmiiRxChannel(masterDir=DIRECTION.IN)
@@ -43,6 +47,7 @@ class Gmii(HwIO):
         with self._associated(clk=self.tx_clk):
             self.tx = GmiiTxChannel()
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Gmii
 

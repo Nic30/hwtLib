@@ -4,6 +4,7 @@
 from typing import Tuple, Optional, Union
 
 from hwt.hwIOs.std import HwIOSignal, HwIORst_n, HwIORst, HwIOClk
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.utils import HwIO_pack
 from hwtLib.amba.axis_comp.base import Axi4SCompBase
@@ -14,8 +15,8 @@ from hwtLib.handshaked.fifoDrop import HandshakedFifoDrop
 @serializeParamsUniq
 class Axi4SFifoDrop(Axi4SCompBase, HandshakedFifoDrop):
     """
-    Synchronous fifo for axi-stream interface with frame drop functionality
-    and speculative buffering. Also known as a speculative fifo.
+    Synchronous FIFO for axi-stream interface with frame drop functionality
+    and speculative buffering. Also known as a speculative FIFO.
 
     :note: DEPTH > axis.MAX_FRAME_LEN
 
@@ -23,14 +24,17 @@ class Axi4SFifoDrop(Axi4SCompBase, HandshakedFifoDrop):
 
     .. hwt-autodoc:: _example_Axi4SFifoDrop
     """
-    def _declr(self):
-        HandshakedFifo._declr(self)
+
+    @override
+    def hwDeclr(self):
+        HandshakedFifo.hwDeclr(self)
         self.dataIn_discard = HwIOSignal()
 
-    def _impl(self, clk_rst: Optional[Tuple[
+    @override
+    def hwImpl(self, clk_rst: Optional[Tuple[
             Tuple[HwIOClk, Union[HwIORst, HwIORst_n]],
             Tuple[HwIOClk, Union[HwIORst, HwIORst_n]]]]=None):
-        super(HandshakedFifoDrop, self)._impl(clk_rst=clk_rst)
+        super(HandshakedFifoDrop, self).hwImpl(clk_rst=clk_rst)
 
     def _connect_fifo_in(self):
         rd = self.get_ready_signal

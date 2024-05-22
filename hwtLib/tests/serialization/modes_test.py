@@ -3,18 +3,21 @@
 
 from hwt.code import Concat
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeExclude, serializeOnce, \
     serializeParamsUniq
-from hwt.hwParam import HwParam
-from hwt.hwModule import HwModule
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
 class SimpleHwModule(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.a(1)
 
 
@@ -30,13 +33,15 @@ class OnceHwModule(SimpleHwModule):
 
 @serializeParamsUniq
 class ParamsUniqHwModule(SimpleHwModule):
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.A = HwParam(0)
         self.B = HwParam(1)
 
 
 class ExampleA(HwModule):
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(7)._m()
         self.m0 = ExcludedHwModule()
         self.m1 = ExcludedHwModule()
@@ -48,7 +53,8 @@ class ExampleA(HwModule):
         self.m7 = ParamsUniqHwModule()
         self.m7.B = 12
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.a(Concat(*[getattr(self, f"m{i:d}").a for i in range(7)]))
 
 

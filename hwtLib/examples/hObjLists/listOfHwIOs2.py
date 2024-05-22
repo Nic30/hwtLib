@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.constants import Time
-from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hObjList import HObjList
+from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4s import Axi4Stream
 
 
@@ -14,16 +15,19 @@ class SimpleSubHwModule1(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.c = Axi4Stream()
             self.d = Axi4Stream()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.d(self.c)
 
 
@@ -36,11 +40,13 @@ class ListOfHwIOsSample2(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         LEN = 2
         with self._hwParamsShared():
@@ -51,7 +57,8 @@ class ListOfHwIOsSample2(HwModule):
             self.m1 = SimpleSubHwModule1()
             # self.u2 = SimpleSubHwModule1()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.m0.c(self.a[0])
         self.m1.c(self.a[1])
         # u2in = u2.c(a[2])
@@ -64,6 +71,7 @@ class ListOfHwIOsSample2(HwModule):
 class ListOfHwIOsSample2TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = ListOfHwIOsSample2()
         cls.compileSim(cls.dut)

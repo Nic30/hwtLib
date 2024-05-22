@@ -1,6 +1,7 @@
-from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from ipCorePackager.constants import DIRECTION
 
 
@@ -12,10 +13,12 @@ class MIG_CMD():
 
 class MigUserPortWDF(HwIO):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         # DDR data to write
         self.data = HwIOVectSignal(self.DATA_WIDTH)
         # DDR write burst end
@@ -30,10 +33,12 @@ class MigUserPortWDF(HwIO):
 
 class MigUserPortRD(HwIO):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         # DDR read dataslv_array_2d_t
         self.data = HwIOVectSignal(self.DATA_WIDTH)
         # DDR read burst end
@@ -50,11 +55,13 @@ class MigUserPort(HwIO):
     p. 122
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
         self.ADDR_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         IN = DIRECTION.IN
         # Calibration complete
         self.calib_complete = HwIOSignal(masterDir=IN)

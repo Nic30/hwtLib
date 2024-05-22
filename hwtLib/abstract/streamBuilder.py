@@ -58,7 +58,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         m = hwModuleCls(self.getHwIOCls())
         if update_params:
-            m._updateParamsFrom(self.end)
+            m._updateHwParamsFrom(self.end)
         if set_params_fn is not None:
             set_params_fn(m)
 
@@ -111,7 +111,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         m = joinCls(self._getHwIOCls(configAs))
         if extraConfigFn is not None:
             extraConfigFn(m)
-        m._updateParamsFrom(configAs)
+        m._updateHwParamsFrom(configAs)
         m.INPUTS = len(srcHwIOs)
 
         setattr(self.parent, self._findSuitableName(name + "_join"), m)

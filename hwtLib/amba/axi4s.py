@@ -6,8 +6,9 @@ from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.utils import HConst_from_words
 from hwt.hwIOs.agents.rdVldSync import UniversalRdVldSyncAgent
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
-from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.hwParam import HwParam
+from hwt.pyUtils.arrayQuery import iter_with_last
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axi_common import Axi_user, Axi_id, Axi_hs, Axi_strb
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
@@ -53,18 +54,20 @@ class Axi4Stream(Axi_hs, Axi_id, Axi_user, Axi_strb):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.IS_BIGENDIAN:bool = HwParam(False)
         self.USE_STRB:bool = HwParam(False)
         self.USE_KEEP:bool = HwParam(False)
 
-        Axi_id._config(self)
+        Axi_id.hwConfig(self)
         self.DEST_WIDTH:int = HwParam(0)
         self.DATA_WIDTH:int = HwParam(64)
-        Axi_user._config(self)
+        Axi_user.hwConfig(self)
 
-    def _declr(self):
-        Axi_id._declr(self)
+    @override
+    def hwDeclr(self):
+        Axi_id.hwDeclr(self)
 
         if self.DEST_WIDTH:
             self.dest = HwIOVectSignal(self.DEST_WIDTH)
@@ -72,19 +75,21 @@ class Axi4Stream(Axi_hs, Axi_id, Axi_user, Axi_strb):
         self.data = HwIOVectSignal(self.DATA_WIDTH)
 
         if self.USE_STRB:
-            Axi_strb._declr(self)
+            Axi_strb.hwDeclr(self)
 
         if self.USE_KEEP:
             self.keep = HwIOVectSignal(self.DATA_WIDTH // 8)
 
-        Axi_user._declr(self)
+        Axi_user.hwDeclr(self)
         self.last = HwIOSignal()
 
-        super(Axi4Stream, self)._declr()
+        super(Axi4Stream, self).hwDeclr()
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_AXI4Stream
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi4StreamAgent(sim, self)
 

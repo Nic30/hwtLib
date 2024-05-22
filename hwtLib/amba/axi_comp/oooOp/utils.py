@@ -2,11 +2,12 @@ from typing import NamedTuple, Optional, List, Union
 
 from hwt.code import If
 from hwt.hdl.types.bits import HBits
-from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
-from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIORdVldSync
-from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
 from hwt.hwIO import HwIO
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
+from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIORdVldSync
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -109,19 +110,22 @@ class HwIOOutOfOrderCummulativeOp(HwIODataRdVld):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.TRANSACTION_STATE_T = HwParam(uint8_t)
         self.MAIN_STATE_T = HwParam(uint8_t)
         self.MAIN_STATE_INDEX_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr = HwIOVectSignal(self.MAIN_STATE_INDEX_WIDTH)
         if self.MAIN_STATE_T is not None:
             self.data = HdlType_to_HwIO().apply(self.MAIN_STATE_T)
         if self.TRANSACTION_STATE_T is not None:
             self.transaction_state = HdlType_to_HwIO().apply(self.TRANSACTION_STATE_T)
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim:HdlSimulator):
         self._ag = HwIOOutOfOrderCummulativeOpAgent(sim, self)
 
@@ -146,16 +150,19 @@ class HwIOOutOfOrderCummulativeOpAgent(HwIODataRdVldAgent):
             m_st._initSimAgent(sim)
             self.m_st_is_primitive = not isinstance(m_st, HwIO)
 
+    @override
     def getDrivers(self):
         yield from HwIODataRdVldAgent.getDrivers(self)
         if self.hwIO.TRANSACTION_STATE_T is not None:
             yield from self.hwIO.transaction_state._ag.getDrivers()
 
+    @override
     def getMonitors(self):
         yield from HwIODataRdVldAgent.getMonitors(self)
         if self.hwIO.TRANSACTION_STATE_T is not None:
             yield from self.hwIO.transaction_state._ag.getMonitors()
 
+    @override
     def get_data(self):
         i = self.hwIO
 
@@ -179,6 +186,7 @@ class HwIOOutOfOrderCummulativeOpAgent(HwIODataRdVldAgent):
         else:
             return i.addr.read()
 
+    @override
     def set_data(self, d):
         i = self.hwIO
 

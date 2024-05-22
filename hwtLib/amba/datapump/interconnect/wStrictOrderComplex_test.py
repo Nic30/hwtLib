@@ -4,10 +4,11 @@
 import unittest
 
 from hwt.constants import Time
-from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hObjList import HObjList
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b, Axi4_addr, Axi4
 from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
@@ -19,10 +20,12 @@ from pyMathBitPrecise.bit_utils import mask
 
 class WStrictOrderInterconnecComplex(HwModule):
 
-    def _config(self):
-        WStrictOrderInterconnect._config(self)
+    @override
+    def hwConfig(self):
+        WStrictOrderInterconnect.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dp = Axi_wDatapump(axiCls=Axi4)
@@ -37,7 +40,8 @@ class WStrictOrderInterconnecComplex(HwModule):
             for d in self.drivers:
                 d.ID_WIDTH = self.ic.ID_WIDTH
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         dp = self.dp
         ic = self.ic
@@ -54,6 +58,7 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
     LEN_MAX_VAL = 255
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = WStrictOrderInterconnecComplex()
         dut.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4

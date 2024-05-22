@@ -4,10 +4,11 @@
 from hwt.code import Concat, If
 from hwt.hdl.types.defs import BIT
 from hwt.hwIOs.std import HwIOVectSignal
-from hwt.math import log2ceil, isPow2
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil, isPow2
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from pyMathBitPrecise.bit_utils import mask
 
 
@@ -18,10 +19,12 @@ class _CountLeading(HwModule):
     Count leading zeros/ones in bit vector
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(2)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert isPow2(self.DATA_WIDTH), self.DATA_WIDTH
         self.data_in = HwIOVectSignal(self.DATA_WIDTH)
         self.data_out = HwIOVectSignal(log2ceil(self.DATA_WIDTH + 1))._m()
@@ -70,7 +73,8 @@ class _CountLeading(HwModule):
            data_out(Concat(BIT.from_py(0), half_count))
         )
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         raise NotImplementedError("This is an abstract method and should be overridden")
 
 
@@ -81,7 +85,8 @@ class CountLeadingZeros(_CountLeading):
     .. hwt-autodoc::
     """
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.count_leading(self.data_in, self.data_out, 0)
 
 
@@ -92,7 +97,8 @@ class CountLeadingOnes(_CountLeading):
     .. hwt-autodoc::
     """
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.count_leading(self.data_in, self.data_out, 1)
 
 

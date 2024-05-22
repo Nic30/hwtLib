@@ -5,9 +5,10 @@ from hwt.code import Concat, If
 from hwt.hwIOs.std import HwIODataRdVld, HwIOBramPort_noClk, \
     HwIOSignal
 from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
-from hwt.math import log2ceil
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.ramAsAddrDataRdVld import RamAsAddrDataRdVld
@@ -36,7 +37,8 @@ class MMU_2pageLvl(HwModule):
 
     .. hwt-autodoc::
     """
-    def _config(self):
+    @override
+    def hwConfig(self):
         # width of id signal for bus
         self.ID_WIDTH = HwParam(1)
         self.ADDR_WIDTH = HwParam(32)
@@ -48,7 +50,8 @@ class MMU_2pageLvl(HwModule):
 
         self.MAX_OVERLAP = HwParam(16)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.PAGE_OFFSET_WIDTH = log2ceil(self.PAGE_SIZE)
         self.LVL1_PAGE_TABLE_INDX_WIDTH = log2ceil(self.LVL1_PAGE_TABLE_ITEMS)
         self.LVL2_PAGE_TABLE_INDX_WIDTH = self.ADDR_WIDTH - self.LVL1_PAGE_TABLE_INDX_WIDTH - self.PAGE_OFFSET_WIDTH
@@ -160,7 +163,8 @@ class MMU_2pageLvl(HwModule):
 
         return segfaultFlag
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
 
         segfaultFlag = self.segfaultChecker()

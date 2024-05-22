@@ -7,6 +7,7 @@ from hwt.code import If
 from hwt.hwIOs.std import HwIORdVldSync, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi4Lite import Axi4Lite, Axi4Lite_addr
@@ -15,20 +16,23 @@ from hwtLib.amba.constants import PROT_DEFAULT
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 
+
 class HandshakedIdAndLen(HwIORdVldSync):
     """
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ID_WIDTH = HwParam(4)
         self.LEN_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.ID_WIDTH > 0:
             self.id = HwIOVectSignal(self.ID_WIDTH)
         self.len = HwIOVectSignal(self.LEN_WIDTH)
-        super(HandshakedIdAndLen, self)._declr()
+        super(HandshakedIdAndLen, self).hwDeclr()
 
 
 class Axi_to_AxiLite(BusBridge):
@@ -49,11 +53,13 @@ class Axi_to_AxiLite(BusBridge):
         self.hwIOCls = hwIOCls
         super(Axi_to_AxiLite, self).__init__(hdlName=hdlName)
 
-    def _config(self):
-        self.hwIOCls._config(self)
+    @override
+    def hwConfig(self):
+        self.hwIOCls.hwConfig(self)
         self.MAX_TRANS_OVERLAP = HwParam(4)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.s = self.hwIOCls()
@@ -182,7 +188,8 @@ class Axi_to_AxiLite(BusBridge):
             already_connected.add(outp.last)
         outp(inp, exclude=already_connected)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         m, s = self.in_reg.m, self.out_reg.s
         w_fifo, r_fifo = self.w_req_fifo, self.r_req_fifo
         propagateClkRstn(self)

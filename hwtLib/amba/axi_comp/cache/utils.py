@@ -3,6 +3,7 @@ from math import ceil
 from hwt.code import Concat
 from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.commonHwIO.addr_data import HwIOAddrData
 from hwtLib.mem.cam import CamMultiPort
 from pyMathBitPrecise.bit_utils import apply_set_and_clear
@@ -45,18 +46,21 @@ class CamWithReadPort(CamMultiPort):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        CamMultiPort._config(self)
+    @override
+    def hwConfig(self):
+        CamMultiPort.hwConfig(self)
         self.USE_VLD_BIT = False
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert not self.USE_VLD_BIT
-        CamMultiPort._declr(self)
+        CamMultiPort.hwDeclr(self)
         r = self.read = HwIOAddrData()
         r.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
         r.DATA_WIDTH = self.KEY_WIDTH
 
-    def _impl(self):
-        CamMultiPort._impl(self)
+    @override
+    def hwImpl(self):
+        CamMultiPort.hwImpl(self)
         self.read.data(self._mem[self.read.addr])
 

@@ -5,10 +5,11 @@ from hwt.hdl.operatorDefs import HwtOps
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import log2ceil
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.peripheral.ethernet.constants import ETH
 from hwtLib.peripheral.ethernet.rmii import Rmii
@@ -35,11 +36,13 @@ class RmiiAdapter(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.FREQ = HwParam(None)
         self.ASYNC_BUFF_DEPTH = HwParam(None)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.eth = Rmii()._m()
 
@@ -225,7 +228,8 @@ class RmiiAdapter(HwModule):
         rx.last(~din_vld)
         rx.vld(reg1_vld | st._eq(st_t.error))
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         assert self.clk.FREQ >= self.eth.ref_clk.FREQ, (
                 self.clk.FREQ, self.eth.ref_clk.FREQ,
                 "Has to have same or faster frequency "

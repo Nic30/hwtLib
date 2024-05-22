@@ -10,6 +10,7 @@ from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 
 
 class BcdToBin(HwModule):
@@ -23,10 +24,12 @@ class BcdToBin(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.BCD_DIGITS = HwParam(3)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         BCD_DIGITS = self.BCD_DIGITS
         bcd = self.din = HwIODataRdVld()  # BCD data to convert
@@ -34,7 +37,8 @@ class BcdToBin(HwModule):
         bin_ = self.dout = HwIODataRdVld()._m()
         bin_.DATA_WIDTH = log2ceil(10 ** BCD_DIGITS - 1)  # Converted output. Retained until next conversion
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         st_t = HEnum("state_t", ["IDLE", "LOAD_SR", "CONVERTING", "DONE"])
         st = self._reg("st", st_t, def_val=st_t.IDLE)
         sr_shift = st.next._eq(st_t.CONVERTING)

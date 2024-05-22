@@ -41,7 +41,7 @@ class HwModuleWrapper(HwModule):
 
         ei = self._ctx.hwIOs
         for hwIO in self._hwIOs:
-            self._loadInterface(hwIO, True)
+            self._loadHwIODeclarations(hwIO, True)
             assert hwIO._isExtern
             hwIO._signalsForHwIO(self._ctx, ei,
                                    self._store_manager.name_scope,
@@ -62,7 +62,7 @@ class HwModuleWrapper(HwModule):
             else:
                 baseHwIO(wrapHwIO)
 
-    def _impl(self):
+    def hwImpl(self):
         self.baseModule = self._baseModule
         origToWrapInfMap = self._copyParamsAndInterfaces()
         self._connectBaseModuleToThisWrap(origToWrapInfMap)

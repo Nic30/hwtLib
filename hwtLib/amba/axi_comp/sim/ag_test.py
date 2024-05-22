@@ -4,6 +4,7 @@
 from hwt.constants import Time
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
@@ -15,16 +16,19 @@ class AxiTestJunction(HwModule):
         self.axiCls = axiCls
         HwModule.__init__(self)
 
-    def _config(self) -> None:
-        self.axiCls._config(self)
+    @override
+    def hwConfig(self) -> None:
+        self.axiCls.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.s = self.axiCls()
             self.m = self.axiCls()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.m(self.s)
 
 
@@ -33,6 +37,7 @@ class Axi_ag_TC(SimTestCase):
     Simple test of axi3/4 interfaces and agents for them
     """
 
+    @override
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)

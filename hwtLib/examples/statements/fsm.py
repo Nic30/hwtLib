@@ -7,19 +7,22 @@ from hwt.hdl.types.enum import HEnum
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class FsmExample(HwModule):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.dout = HwIOVectSignal(3)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # :note: stT member names are colliding with port names and thus
         #     they will be renamed in HDL
         stT = HEnum("st_t", ["a", "b", "aAndB"])
@@ -54,7 +57,8 @@ class HadrcodedFsmExample(FsmExample):
     """
     .. hwt-autodoc::
     """
-    def _impl(self):
+    @override
+    def hwImpl(self):
         a = self.a
         b = self.b
         out = self.dout

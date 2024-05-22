@@ -22,6 +22,7 @@ from hwtLib.mem.cuckooHashTable_intf import HwIOCuckooInsert, HwIOCuckooInsertRe
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import HwIOLookupKey, HwIOLookupResult, \
     HwIOHashTable
+from hwt.pyUtils.typingFuture import override
 
 
 ORIGIN_TYPE = HEnum("ORIGIN_TYPE", ["INSERT", "LOOKUP", "DELETE"])
@@ -54,7 +55,8 @@ class CuckooHashTable(HashTableCore):
     def __init__(self):
         HwModule.__init__(self)
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.TABLE_SIZE = HwParam(32)
         self.DATA_WIDTH = HwParam(32)
         self.KEY_WIDTH = HwParam(8)
@@ -81,7 +83,8 @@ class CuckooHashTable(HashTableCore):
 
         self.clean = HwIORdVldSync()
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self._declr_outer_io()
         self.tables = HObjList(
             HwIOHashTable()._m()
@@ -93,7 +96,7 @@ class CuckooHashTable(HashTableCore):
         share the configuration with the table engines
         """
         for t in tables:
-            t._updateParamsFrom(self)
+            t._updateHwParamsFrom(self)
             t.ITEMS_CNT = self.TABLE_SIZE // self.TABLE_CNT
             t.LOOKUP_HASH = True
             t.LOOKUP_KEY = True
@@ -325,7 +328,8 @@ class CuckooHashTable(HashTableCore):
         #   res.pop(None),
         #)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
 
         # stash is storage for item which is going to be swapped with actual

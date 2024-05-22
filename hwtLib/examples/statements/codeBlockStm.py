@@ -5,16 +5,19 @@ from hwt.code import If, CodeBlock
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class BlockStm_complete_override0(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.c = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # results in c = b
         CodeBlock(
             self.c(self.a),
@@ -24,7 +27,8 @@ class BlockStm_complete_override0(HwModule):
 
 class BlockStm_complete_override1(BlockStm_complete_override0):
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # results in
         # c = a
         # if b:
@@ -39,7 +43,8 @@ class BlockStm_complete_override1(BlockStm_complete_override0):
 
 class BlockStm_complete_override2(BlockStm_complete_override0):
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # results in c = a
         CodeBlock(
             If(self.b,
@@ -50,11 +55,13 @@ class BlockStm_complete_override2(BlockStm_complete_override0):
 
 class BlockStm_nop_val_optimized_out(BlockStm_complete_override0):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
-        BlockStm_complete_override0._declr(self)
+        BlockStm_complete_override0.hwDeclr(self)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         r = self._reg("r")
         CodeBlock(
             If(self.b,
@@ -65,11 +72,13 @@ class BlockStm_nop_val_optimized_out(BlockStm_complete_override0):
 
 class BlockStm_nop_val(BlockStm_nop_val_optimized_out):
 
-    def _declr(self):
-        BlockStm_nop_val_optimized_out._declr(self)
+    @override
+    def hwDeclr(self):
+        BlockStm_nop_val_optimized_out.hwDeclr(self)
         self.c1 = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         r = self._reg("r")
         CodeBlock(
             If(self.b,

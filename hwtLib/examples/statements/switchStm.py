@@ -4,6 +4,7 @@
 from hwt.code import Switch
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class SwitchStmHwModule(HwModule):
@@ -12,14 +13,16 @@ class SwitchStmHwModule(HwModule):
 
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.sel = HwIOVectSignal(3)
         self.out = HwIOSignal()._m()
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.c = HwIOSignal()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         Switch(self.sel)\
         .Case(0,
             self.out(self.a)

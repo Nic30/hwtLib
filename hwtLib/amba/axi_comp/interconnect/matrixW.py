@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import propagateClkRstn
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
@@ -17,6 +18,7 @@ from hwtLib.handshaked.fifo import HandshakedFifo
 
 class AxiInterconnectMatrixCrossbarB(AxiInterconnectMatrixCrossbar):
 
+    @override
     def get_last(self, hwIO):
         return 1
 
@@ -29,12 +31,14 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
     .. hwt-autodoc:: example_AxiInterconnectMatrixW
     """
 
-    def _config(self):
-        AxiInterconnectCommon._config(self)
+    @override
+    def hwConfig(self):
+        AxiInterconnectCommon.hwConfig(self)
         self.AW_AND_W_WORD_TOGETHER = HwParam(True)
 
-    def _declr(self):
-        AxiInterconnectCommon._declr(self, has_r=False, has_w=True)
+    @override
+    def hwDeclr(self):
+        AxiInterconnectCommon.hwDeclr(self, has_r=False, has_w=True)
         masters_for_slave = AxiInterconnectMatrixCrossbar._masters_for_slave(
             self.MASTERS, len(self.SLAVES))
 
@@ -95,7 +99,8 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
             c.INPUT_CNT = len(self.SLAVES)
             c.OUTPUTS = self.MASTERS
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         addr_crossbar = self.addr_crossbar
         data_crossbar = self.data_crossbar

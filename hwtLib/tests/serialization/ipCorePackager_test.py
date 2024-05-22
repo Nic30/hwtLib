@@ -12,6 +12,7 @@ from hwt.hwIOs.std import HwIOBramPort, HwIODataRdVld
 from hwt.hwIOs.std_ip_defs import IP_Handshake
 from hwt.hwIOs.utils import addClkRst
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwt.synth import serializeAsIpcore
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
@@ -25,13 +26,15 @@ from hwtLib.types.ctypes import uint64_t
 
 class Handshaked_withIP(HwIODataRdVld):
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Handshake
 
 
 class IpCoreIntfTest(HwModule):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRst(self)
 
         self.ram0 = HwIOBramPort()
@@ -48,7 +51,8 @@ class IpCoreIntfTest(HwModule):
         for i in [self.axi3s1, self.axi3m1]:
             i.ADDR_USER_WIDTH = 10
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         r0 = self._reg("r0", def_val=0)
         self.uart.tx(self.uart.rx)
         self.ram1(self.ram0)
@@ -69,10 +73,12 @@ class IpCoreIntfTest(HwModule):
 
 class IpCorePackagerTC(unittest.TestCase):
 
+    @override
     def setUp(self):
         # Create a temporary directory
         self.test_dir = tempfile.mkdtemp()
 
+    @override
     def tearDown(self):
         # Remove the directory after the test
         shutil.rmtree(self.test_dir)

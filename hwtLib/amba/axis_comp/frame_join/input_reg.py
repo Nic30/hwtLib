@@ -1,16 +1,17 @@
 from hwt.code import If
 from hwt.code_utils import rename_signal
+from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIO import HwIO
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hObjList import HObjList
-from hwt.hwIO import HwIO
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.arrayQuery import iter_with_last
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.amba.axi4s import Axi4Stream
 from pyMathBitPrecise.bit_utils import mask
 
@@ -20,10 +21,12 @@ class UnalignedJoinRegIntf(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        Axi4Stream._config(self)
+    @override
+    def hwConfig(self):
+        Axi4Stream.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.data = HwIOVectSignal(self.DATA_WIDTH)
         self.keep = HwIOVectSignal(self.DATA_WIDTH // 8)
         if self.USE_STRB:
@@ -40,12 +43,14 @@ class FrameJoinInputReg(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.REG_CNT = HwParam(2)
-        Axi4Stream._config(self)
+        Axi4Stream.hwConfig(self)
         self.USE_KEEP = True
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.USE_KEEP
         addClkRstn(self)
         with self._hwParamsShared():
@@ -64,7 +69,8 @@ class FrameJoinInputReg(HwModule):
             raise NotImplementedError("It is not clear how id/user/dest"
                                       " should be managed between the frames")
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         mask_t = HBits(self.DATA_WIDTH // 8, force_vector=True)
         data_fieds = [
             (HBits(self.DATA_WIDTH), "data"),

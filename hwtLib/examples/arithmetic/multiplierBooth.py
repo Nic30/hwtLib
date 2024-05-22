@@ -7,18 +7,21 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import log2ceil
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class TwoOperandsHsAgent(HwIODataRdVldAgent):
 
+    @override
     def get_data(self):
         i = self.hwIO
         return i.a.read(), i.b.read()
 
+    @override
     def set_data(self, data):
         if data is None:
             a = None
@@ -32,11 +35,13 @@ class TwoOperandsHsAgent(HwIODataRdVldAgent):
 
 class TwoOperandsHs(HwIODataRdVld):
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOVectSignal(self.DATA_WIDTH)
         self.b = HwIOVectSignal(self.DATA_WIDTH)
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim:HdlSimulator):
         self._ag = TwoOperandsHsAgent(sim, self)
 
@@ -57,11 +62,13 @@ class MultiplierBooth(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self) -> None:
+    @override
+    def hwConfig(self) -> None:
         self.DATA_WIDTH = HwParam(4)
         self.RESULT_WIDTH = HwParam(None)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.RESULT_WIDTH is None:
             self.RESULT_WIDTH = 2 * self.DATA_WIDTH
         addClkRstn(self)
@@ -70,7 +77,8 @@ class MultiplierBooth(HwModule):
         self.dataOut = HwIODataRdVld()._m()
         self.dataOut.DATA_WIDTH = self.RESULT_WIDTH
 
-    def _impl(self) -> None:
+    @override
+    def hwImpl(self) -> None:
         start = self._sig("start")
         part_res_t = HBits(self.DATA_WIDTH)
         # High-order n bits of product

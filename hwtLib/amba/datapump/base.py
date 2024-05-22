@@ -3,12 +3,14 @@ from typing import Union, List
 from hwt.code import If, Switch
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.defs import BIT
 from hwt.hwIOs.std import HwIORdVldSync
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import log2ceil, isPow2
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil, isPow2
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import fitTo, fitTo_t
 from hwtLib.amba.axi3 import Axi3_addr, Axi3
 from hwtLib.amba.axi3Lite import Axi3Lite_addr
@@ -19,7 +21,6 @@ from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, \
 from hwtLib.amba.datapump.intf import AddrSizeHs
 from hwtLib.handshaked.streamNode import StreamNode
 from pyMathBitPrecise.bit_utils import mask, align_with_known_width
-from hwt.hdl.types.defs import BIT
 
 
 class AxiDatapumpBase(HwModule):
@@ -29,7 +30,7 @@ class AxiDatapumpBase(HwModule):
         as a stream of chunks, if CHUNK_WIDTH==DATA_WIDTH it means that the transaction size % DATA_WIDTH == 0)
     :ivar ~.MAX_CHUNKS: maximum number of chunks in a transaction
     :ivar ~.ALIGNAS: specifies alignment requirement for a data type t (in bits),
-        same functionailty as C++11 alignas specifier, used to discard alignment logic
+        same functionality as C++11 alignas specifier, used to discard alignment logic
     :ivar ~.driver: interface which is used to drive this datapump
         (AxiRDatapumpIntf or AxiWDatapumpIntf)
     """
@@ -38,7 +39,8 @@ class AxiDatapumpBase(HwModule):
         self._axiCls = axiCls
         super().__init__()
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.MAX_TRANS_OVERLAP = HwParam(16)
         self.ALIGNAS = HwParam(64 // 8)
         self.CHUNK_WIDTH = HwParam(64)
@@ -57,7 +59,8 @@ class AxiDatapumpBase(HwModule):
         self.USE_STRB = HwParam(True)
         self.AXI_CLS = HwParam(self._axiCls)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         assert self.ALIGNAS % 8 == 0 and self.ALIGNAS > 0 and self.ALIGNAS <= self.DATA_WIDTH
         assert isPow2(self.ALIGNAS), self.ALIGNAS

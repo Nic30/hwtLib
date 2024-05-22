@@ -1,5 +1,6 @@
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi3Lite import Axi3Lite_bAgent
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi_common import Axi_hs
@@ -112,8 +113,9 @@ class Ace_addr(Axi4_addr):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
-        Axi4_addr._declr(self)
+    @override
+    def hwDeclr(self):
+        Axi4_addr.hwDeclr(self)
         self.domain = HwIOVectSignal(2)
         self.region = HwIOVectSignal(4)
         self.snoop = HwIOVectSignal(3)
@@ -125,14 +127,16 @@ class AceSnoop_addr(Axi_hs):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.SNOOP_ADDR_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr = HwIOVectSignal(self.SNOOP_ADDR_WIDTH)
         self.snoop = HwIOVectSignal(4)
         self.prot = HwIOVectSignal(3)
-        Axi_hs._declr(self)
+        Axi_hs.hwDeclr(self)
 
 
 class AceSnoop_resp(Axi_hs):
@@ -140,10 +144,12 @@ class AceSnoop_resp(Axi_hs):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.resp = HwIOVectSignal(4)
-        Axi_hs._declr(self)
+        Axi_hs.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3Lite_bAgent(sim, self)
 
@@ -153,13 +159,15 @@ class AceSnoop_data(Axi_hs):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.SNOOP_DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.data = HwIOVectSignal(self.SNOOP_DATA_WIDTH)
         self.last = HwIOSignal()
-        Axi_hs._declr(self)
+        Axi_hs.hwDeclr(self)
 
 
 class Ace(Axi4):
@@ -178,20 +186,24 @@ class Ace(Axi4):
     AW_CLS = Ace_addr
     AR_CLS = Ace_addr
 
-    def _config(self):
-        Axi4._config(self)
+    @override
+    def hwConfig(self):
+        Axi4.hwConfig(self)
         self.SNOOP_ADDR_WIDTH = HwParam(32)
         self.SNOOP_DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
-        super(Ace, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(Ace, self).hwDeclr()
         with self._hwParamsShared():
             self.ac = AceSnoop_addr(masterDir=DIRECTION.IN)
             self.cr = AceSnoop_resp()
             self.cd = AceSnoop_data()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()
 
+    @override
     def _getIpCoreIntfClass(self):
         raise NotImplementedError()

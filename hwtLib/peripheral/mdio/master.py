@@ -3,14 +3,15 @@ from math import ceil
 from hwt.code import FsmBuilder, Concat, If, In
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
+from hwt.hwIO import HwIO
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.std import HwIOVectSignal, HwIORdVldSync, \
     HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import log2ceil
-from hwt.hwIO import HwIO
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.peripheral.mdio.intf import Mdio
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -21,7 +22,8 @@ class MdioAddr(HwIO):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.phy = HwIOVectSignal(5)
         self.reg = HwIOVectSignal(5)
 
@@ -33,12 +35,14 @@ class MdioReq(HwIORdVldSync):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.opcode = HwIOVectSignal(Mdio.OP_W)  # R/W
         self.addr = MdioAddr()
         self.wdata = HwIOVectSignal(Mdio.D_W)
-        HwIORdVldSync._declr(self)
+        HwIORdVldSync.hwDeclr(self)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = MdioReqAgent(sim, self)
 
@@ -47,6 +51,7 @@ class MdioReqAgent(HwIODataRdVldAgent):
     """
     Simulation agent for :class:`.MdioReq` interface
     """
+    @override
     def set_data(self, data):
         i = self.hwIO
         if data is None:
@@ -61,6 +66,7 @@ class MdioReqAgent(HwIODataRdVldAgent):
             i.addr.reg.write(regaddr)
             i.wdata.write(wdata)
 
+    @override
     def get_data(self):
         i = self.hwIO
         return (i.opcode.read(),
@@ -92,11 +98,13 @@ class MdioMaster(HwModule):
     """
 
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.FREQ = HwParam(int(100e6))
         self.MDIO_FREQ = HwParam(int(2.5e6))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.md = Mdio()._m()
         self.rdata = HwIODataRdVld()._m()
@@ -131,7 +139,8 @@ class MdioMaster(HwModule):
 
         return preamble_last, addr_block_last, turnarround_last_en, data_last
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         # timers and other registers
         CLK_HALF_PERIOD_DIV = ceil(self.clk.FREQ / (self.MDIO_FREQ * 2))
         mdio_clk = self._reg("mdio_clk", def_val=0)

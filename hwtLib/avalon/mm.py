@@ -1,15 +1,17 @@
 from collections import deque
 
 from hwt.constants import DIRECTION, READ, WRITE, NOP, READ_WRITE
+from hwt.hwIO import HwIO
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.agents.vldSync import HwIODataVldAgent
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
-from hwt.math import log2ceil
-from hwt.simulator.agentBase import SyncAgentBase
-from hwt.hwIO import HwIO
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.agentBase import SyncAgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from pyMathBitPrecise.bit_utils import mask
+
 
 RESP_OKAY = 0b00
 # RESP_RESERVED = 0b01
@@ -28,12 +30,14 @@ class AvalonMM(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(32)
         self.MAX_BURST = HwParam(0)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         # self.debugAccess = HwIOSignal()
         IN = DIRECTION.IN
 
@@ -71,6 +75,7 @@ class AvalonMM(HwIO):
         """
         return 8
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = AvalonMmAgent(sim, self)
 
@@ -84,20 +89,25 @@ class AvalonMmDataRAgent(HwIODataVldAgent):
     """
 
     @classmethod
+    @override
     def get_valid_signal(cls, hwIO):
         return hwIO.readDataValid
 
+    @override
     def get_valid(self):
         return self._vld.read()
 
+    @override
     def set_valid(self, val):
         self._vld.write(val)
 
+    @override
     def get_data(self):
         """extract data from interface"""
         hwIO = self.hwIO
         return (hwIO.readData.read(), hwIO.response.read())
 
+    @override
     def set_data(self, data):
         """write data to interface"""
         hwIO = self.hwIO
@@ -124,21 +134,26 @@ class AvalonMmAddrAgent(HwIODataRdVldAgent):
         self.BE_ALL = mask(hwIO.readData._dtype.bit_length() // 8)
 
     @classmethod
+    @override
     def get_ready_signal(cls, hwIO: AvalonMM):
         return hwIO.waitRequest
 
+    @override
     def get_ready(self):
         rd = self._rd.read()
         rd.val = int(not rd.val)
         return rd
 
+    @override
     def set_ready(self, val: int):
         self._rd.write(int(not val))
 
     @classmethod
+    @override
     def get_valid_signal(cls, hwIO: AvalonMM):
         return (hwIO.read, hwIO.write)
 
+    @override
     def get_valid(self):
         r = self._vld[0].read()
         w = self._vld[1].read()
@@ -148,6 +163,7 @@ class AvalonMmAddrAgent(HwIODataRdVldAgent):
 
         return r
 
+    @override
     def set_valid(self, val: int):
         if self.actualData is None or self.actualData is NOP:
             r = 0
@@ -167,6 +183,7 @@ class AvalonMmAddrAgent(HwIODataRdVldAgent):
         self._vld[0].write(r)
         self._vld[1].write(w)
 
+    @override
     def get_data(self):
         hwIO = self.hwIO
         address = hwIO.address.read()
@@ -195,6 +212,7 @@ class AvalonMmAddrAgent(HwIODataRdVldAgent):
                 "is not ready on interface")
         return (rw, address, burstCount, wdata, byteEnable)
 
+    @override
     def set_data(self, data):
         hwIO = self.hwIO
         if data is None:
@@ -229,12 +247,15 @@ class AvalonMmAddrAgent(HwIODataRdVldAgent):
 class AvalonMmWRespAgent(HwIODataVldAgent):
 
     @classmethod
+    @override
     def get_valid_signal(cls, hwIO):
         return hwIO.writeResponseValid
 
+    @override
     def get_data(self):
         return self.hwIO.response.read()
 
+    @override
     def set_data(self, data):
         self.hwIO.response.write(data)
 
@@ -278,23 +299,27 @@ class AvalonMmAgent(SyncAgentBase):
 
     rData = property(rData_get, rData_set)
 
+    @override
     def setEnable_asDriver(self, en: bool):
         self._enabled = en
         self.addrAg.setEnable(en)
         # self.wRespAg.setEnable(en)
 
+    @override
     def setEnable_asMonitor(self, en: bool):
         self._enabled = en
         self.addrAg.setEnable(en)
         self.wRespAg.setEnable(en)
         self.rData.setEnable(en)
 
+    @override
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
         yield from self.rDataAg.getMonitors()
         yield from self.addrAg.getDrivers()
         yield from self.wRespAg.getMonitors()
 
+    @override
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor
         yield from self.rDataAg.getDrivers()

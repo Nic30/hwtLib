@@ -4,6 +4,7 @@
 from hwt.code import If
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class VldMaskConflictsResolving(HwModule):
@@ -13,12 +14,14 @@ class VldMaskConflictsResolving(HwModule):
 
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.a = HwIOSignal()
         self.b = HwIOSignal()
         self.c = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         a = self.a
         b = self.b
         c = self.c

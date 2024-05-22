@@ -18,11 +18,11 @@ def mkLutRamCls(DATA_WIDTH):
 
     class RAMnX1S(HwModule):
 
-        def _config(self):
+        def hwConfig(self):
             self.INIT = HwParam(HBits(DATA_WIDTH).from_py(0))
             self.IS_WCLK_INVERTED = HwParam(BIT.from_py(0))
 
-        def _declr(self):
+        def hwDeclr(self):
             self.a0 = HwIOSignal()
             self.a1 = HwIOSignal()
             self.a2 = HwIOSignal()
@@ -35,7 +35,7 @@ def mkLutRamCls(DATA_WIDTH):
             self.o = HwIOSignal()._m()  # out
             self.we = HwIOSignal()
 
-        def _impl(self):
+        def hwImpl(self):
             s = self._sig
             wclk_in = s("wclk_in")
             mem = self._ctx.sig("mem", HBits(DATA_WIDTH),

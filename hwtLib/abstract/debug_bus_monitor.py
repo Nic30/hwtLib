@@ -4,16 +4,17 @@ from typing import List, Tuple, Optional, Union, Dict
 
 from hwt.code import If
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import HBits
-from hwt.hwIOs.hwIO_map import HwIOObjMap, HTypeFromHwIOObjMap
-from hwt.hwIOs.hwIOStruct import HwIO_to_HdlType
-from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hObjList import HObjList
+from hwt.hdl.types.bits import HBits
 from hwt.hwIO import HwIO
-from hwt.mainBases import HwIOBase
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hwIOs.hwIOStruct import HwIO_to_HdlType
+from hwt.hwIOs.hwIO_map import HwIOObjMap, HTypeFromHwIOObjMap
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.mainBases import HwIOBase
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.hwIOMonitor import monitor_of, connect_HwIOMonitor, \
     connect_to_HwIOMonitor, HwIOMonitorDataVldCdc
 
@@ -90,8 +91,9 @@ class DebugBusMonitor(HwModule):
         self.visual_containers: Dict[Union[HwModule, HwIO]] = {}
         super(DebugBusMonitor, self).__init__()
 
-    def _config(self):
-        self._bus_cls._config(self)
+    @override
+    def hwConfig(self):
+        self._bus_cls.hwConfig(self)
         self.monitored_data: List[DebugBusMonitorDataRecord] = []
         self.ADD_META_MEMORY: bool = HwParam(True)
 
@@ -119,7 +121,8 @@ class DebugBusMonitor(HwModule):
         self.monitored_data.append(d)
         return d
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.s = self._bus_cls()
@@ -130,7 +133,8 @@ class DebugBusMonitor(HwModule):
         ])
         self.io_instantiated = True
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         if self.ADD_META_MEMORY:
             meta_memory, meta_memory_size, name_content_size = \
                 self.build_meta_memory(self.monitored_data)

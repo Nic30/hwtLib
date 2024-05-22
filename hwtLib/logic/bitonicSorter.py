@@ -3,11 +3,12 @@
 
 from hwt.code import If
 from hwt.constants import Time
-from hwt.hwIOs.std import HwIOVectSignal
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hwParam import HwParam
-from hwt.hwModule import HwModule
 from hwt.hObjList import HObjList
+from hwt.hwIOs.std import HwIOVectSignal
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 
 
 class BitonicSorter(HwModule):
@@ -24,12 +25,14 @@ class BitonicSorter(HwModule):
         HwModule.__init__(self)
         self.cmpFn = cmpFn
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ITEMS = HwParam(2)
         self.DATA_WIDTH = HwParam(64)
         self.SIGNED = HwParam(False)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         w = self.DATA_WIDTH
         sig = bool(self.SIGNED)
 
@@ -82,7 +85,8 @@ class BitonicSorter(HwModule):
             )
         return _x
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         outs = self.bitonic_sort(self.cmpFn, self.inputs)
         for o, otmp in zip(self.outputs, outs):
             o(otmp)
@@ -92,6 +96,7 @@ class BitonicSorterTC(SimTestCase):
     SIM_TIME = 40 * Time.ns
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = BitonicSorter()
         cls.compileSim(cls.dut)

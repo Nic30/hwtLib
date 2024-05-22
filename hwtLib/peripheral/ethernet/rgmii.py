@@ -1,6 +1,7 @@
-from hwt.hwIOs.std import HwIOClk, HwIOVectSignal, HwIOSignal
 from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIOClk, HwIOVectSignal, HwIOSignal
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
@@ -13,10 +14,12 @@ class RgmiiChannel(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.FREQ = HwParam(int(125e6))
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.clk = HwIOClk()
         self.clk.FREQ = self.FREQ
         with self._associated(clk=self.clk):
@@ -37,14 +40,17 @@ class Rgmii(HwIO):
     """
 
 
-    def _config(self):
-        RgmiiChannel._config(self)
+    @override
+    def hwConfig(self):
+        RgmiiChannel.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         with self._hwParamsShared():
             self.rx = RgmiiChannel(masterDir=DIRECTION.IN)
             self.tx = RgmiiChannel()
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Rgmii
 

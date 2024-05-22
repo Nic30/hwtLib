@@ -14,13 +14,13 @@ class AxiInterconnectCommon(BusInterconnect):
         self.hwIOCls = hwIOCls
         super(AxiInterconnectCommon, self).__init__(hdlName=hdlName)
 
-    def _config(self):
-        super(AxiInterconnectCommon, self)._config()
+    def hwConfig(self):
+        super(AxiInterconnectCommon, self).hwConfig()
         self.HWIO_CLS = HwParam(self.hwIOCls)
         self.MAX_TRANS_OVERLAP = HwParam(16)
-        self.hwIOCls._config(self)
+        self.hwIOCls.hwConfig(self)
 
-    def _declr(self, has_r=True, has_w=True):
+    def hwDeclr(self, has_r=True, has_w=True):
         addClkRstn(self)
         AXI = self.hwIOCls
         with self._hwParamsShared():

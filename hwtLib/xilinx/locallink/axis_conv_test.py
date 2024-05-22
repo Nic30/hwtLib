@@ -7,6 +7,7 @@ from hwt.constants import Time
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.xilinx.locallink.axis_conv import LocalLinkToAxi4S, Axi4SToLocalLink
@@ -15,12 +16,14 @@ from pyMathBitPrecise.bit_utils import mask
 
 class LocalLink_Axi4SConvTest(HwModule):
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
         self.USER_WIDTH = HwParam(2)
         self.USE_STRB = HwParam(True)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataIn = Axi4Stream()
@@ -28,7 +31,8 @@ class LocalLink_Axi4SConvTest(HwModule):
             self.conv1 = LocalLinkToAxi4S()
             self.dataOut = Axi4Stream()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
         self.conv0.dataIn(self.dataIn)
         self.conv1.dataIn(self.conv0.dataOut)
@@ -38,6 +42,7 @@ class LocalLink_Axi4SConvTest(HwModule):
 class Axi4S_localLinkConvTC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         cls.dut = LocalLink_Axi4SConvTest()
         cls.compileSim(cls.dut)

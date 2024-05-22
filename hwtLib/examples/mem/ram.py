@@ -5,6 +5,7 @@ from hwt.code import If
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOClk, HwIOVectSignal
 from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 
 
 class SimpleAsyncRam(HwModule):
@@ -13,14 +14,16 @@ class SimpleAsyncRam(HwModule):
 
     .. hwt-autodoc::
     """
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr_in = HwIOVectSignal(2)
         self.din = HwIOVectSignal(8)
 
         self.addr_out = HwIOVectSignal(2)
         self.dout = HwIOVectSignal(8)._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self._ram = ram = self._sig("ram_data", HBits(8)[4])
         self.dout(ram[self.addr_out])
         ram[self.addr_in](self.din)
@@ -30,11 +33,13 @@ class SimpleSyncRam(SimpleAsyncRam):
     """
     .. hwt-autodoc::
     """
-    def _declr(self):
-        super()._declr()
+    @override
+    def hwDeclr(self):
+        super().hwDeclr()
         self.clk = HwIOClk()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self._ram = ram = self._sig("ram_data", HBits(8)[4])
 
         If(self.clk._onRisingEdge(),

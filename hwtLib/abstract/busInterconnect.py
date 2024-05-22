@@ -162,7 +162,7 @@ class BusInterconnect(HwModule):
     :ivar ~.s: HObjList of slave interfaces
     """
 
-    def _config(self):
+    def hwConfig(self):
         self.SLAVES = HwParam(tuple())
         self.MASTERS = HwParam(tuple())
         self._config_normalized = False

@@ -1,5 +1,6 @@
 from hwt.hwIO import HwIO
 from hwt.hwIOs.std import HwIOSignal
+from hwt.pyUtils.typingFuture import override
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
@@ -11,10 +12,12 @@ class Uart(HwIO):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.rx = HwIOSignal(masterDir=DIRECTION.IN)
         self.tx = HwIOSignal()
 
+    @override
     def _getIpCoreIntfClass(self):
         return IP_Uart
 

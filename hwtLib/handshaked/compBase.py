@@ -21,9 +21,9 @@ class HandshakedCompBase(HwModule):
         self.hwIOCls = hshwIO
         HwModule.__init__(self, hdlName=hdlName)
 
-    def _config(self):
+    def hwConfig(self):
         self.HWIO_CLS = HwParam(self.hwIOCls)
-        self.hwIOCls._config(self)
+        self.hwIOCls.hwConfig(self)
 
     @classmethod
     def get_valid_signal(cls, hwIO: HwIORdVldSync) -> HwIOSignal:

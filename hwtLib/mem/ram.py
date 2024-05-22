@@ -3,13 +3,15 @@
 
 from hwt.code import If, Concat
 from hwt.constants import READ_WRITE, WRITE, READ
+from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOBramPort, HwIOClk, HwIOBramPort_noClk
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+
 
 @serializeParamsUniq
 class RamSingleClock(HwModule):
@@ -31,7 +33,8 @@ class RamSingleClock(HwModule):
     """
     PORT_CLS = HwIOBramPort_noClk
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(10)
         self.DATA_WIDTH = HwParam(64)
         self.PORT_CNT = HwParam(1)
@@ -70,7 +73,7 @@ class RamSingleClock(HwModule):
             DW = self.DATA_WIDTH
             while DW > 0:
                 c = self.__class__()
-                c._updateParamsFrom(self, exclude=({"DATA_WIDTH"}, {}))
+                c._updateHwParamsFrom(self, exclude=({"DATA_WIDTH"}, {}))
                 c.DATA_WIDTH = min(DW, MAX_DW)
                 if self.INIT_DATA is not None:
                     raise NotImplementedError()
@@ -78,7 +81,8 @@ class RamSingleClock(HwModule):
                 DW -= MAX_DW
         self.children = children
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.clk = HwIOClk()
         self._declr_ports()
         self._declr_children()
@@ -168,7 +172,8 @@ class RamSingleClock(HwModule):
         for c in self.children:
             c.clk(clk)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         if self.children:
             self.delegate_to_children()
         else:
@@ -192,15 +197,18 @@ class RamMultiClock(HwModule):
     """
     PORT_CLS = HwIOBramPort
 
-    def _config(self):
-        RamSingleClock._config(self)
+    @override
+    def hwConfig(self):
+        RamSingleClock.hwConfig(self)
         self.PORT_CNT = 2
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         RamSingleClock._declr_ports(self)
         RamSingleClock._declr_children(self)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         if self.children:
             self.delegate_to_children()
         else:

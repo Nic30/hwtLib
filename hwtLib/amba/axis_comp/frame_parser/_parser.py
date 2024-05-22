@@ -36,6 +36,7 @@ from hwtLib.amba.axis_comp.frame_parser.field_connector import Axi4S_frameParser
 from hwtLib.amba.axis_comp.frame_parser.footer_split import Axi4S_footerSplit
 from hwtLib.amba.axis_comp.frame_parser.word_factory import WordFactory
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.pyUtils.typingFuture import override
 
 
 def is_non_const_stream(t: HdlType):
@@ -114,8 +115,9 @@ class Axi4S_frameParser(Axi4SCompBase, TemplateConfigured):
         TemplateConfigured.__init__(self, structT, tmpl, frames)
         Axi4SCompBase.__init__(self)
 
-    def _config(self):
-        self.hwIOCls._config(self)
+    @override
+    def hwConfig(self):
+        self.hwIOCls.hwConfig(self)
         self.T = HwParam(self._structT)
         self.TRANSACTION_TEMPLATE = HwParam(self._tmpl)
         self.FRAME_TEMPLATES = HwParam(None if self._frames is None else tuple(self._frames))
@@ -149,7 +151,7 @@ class Axi4S_frameParser(Axi4SCompBase, TemplateConfigured):
                 raise NotImplementedError("SHARED_READY=True and HStream field", structField)
             else:
                 i = Axi4Stream()
-                i._updateParamsFrom(self)
+                i._updateHwParamsFrom(self)
                 return i
         else:
             if self.SHARED_READY:
@@ -159,7 +161,8 @@ class Axi4S_frameParser(Axi4SCompBase, TemplateConfigured):
             i.DATA_WIDTH = structField.dtype.bit_length()
             return i
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         if self.ID_WIDTH:
             raise NotImplementedError(self.ID_WIDTH)
         if self.DEST_WIDTH:
@@ -345,7 +348,7 @@ class Axi4S_frameParser(Axi4SCompBase, TemplateConfigured):
                     assert self.USE_KEEP or self.USE_STRB, "keep or strb signal on Axi4Stream is required to mark 0 length packets"
 
                 fs = Axi4S_footerSplit()
-                fs._updateParamsFrom(self)
+                fs._updateHwParamsFrom(self)
                 fs.FOOTER_WIDTH = cm1.t.bit_length()
                 self.footer_split = fs
 
@@ -369,7 +372,7 @@ class Axi4S_frameParser(Axi4SCompBase, TemplateConfigured):
                     if suffix_offsets != [0, ]:
                         # add aligment logic
                         align = Axi4S_FrameJoin()
-                        align._updateParamsFrom(
+                        align._updateHwParamsFrom(
                             self,
                             exclude=({"T"}, {}))
                         align.USE_KEEP = True
@@ -460,7 +463,8 @@ class Axi4S_frameParser(Axi4SCompBase, TemplateConfigured):
 
         propagateClkRstn(self)
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         """
         Output data signals are directly connected to input in most of the cases,
         exceptions are:

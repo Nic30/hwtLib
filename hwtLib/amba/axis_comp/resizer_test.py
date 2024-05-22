@@ -3,11 +3,12 @@
 
 import unittest
 
-from hwt.doc_markers import internal
 from hwt.constants import Time
+from hwt.doc_markers import internal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.amba.axis_comp.resizer import Axi4S_resizer
@@ -27,6 +28,7 @@ def it(dw, *items):
 class Axi4S_resizer_upscale_TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = Axi4S_resizer()
         dut.USE_STRB = True
@@ -95,6 +97,7 @@ class Axi4S_resizer_upscale_TC(SimTestCase):
 class Axi4S_resizer_downscale_TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = Axi4S_resizer()
         dut.DATA_WIDTH = cls.DW_IN = 64
@@ -151,17 +154,20 @@ class Axi4S_resizer_downscale_TC(SimTestCase):
 
 class TestComp_Axi4S_resizer_downAndUp(Axi4S_resizer):
 
-    def _config(self):
-        Axi4S_resizer._config(self)
+    @override
+    def hwConfig(self):
+        Axi4S_resizer.hwConfig(self)
         self.INTERNAL_SIZE = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataIn = Axi4Stream()
             self.dataOut = Axi4Stream()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         self.dataOut(
             Axi4SBuilder(self, self.dataIn)
             .resize(self.INTERNAL_SIZE)
@@ -171,11 +177,13 @@ class TestComp_Axi4S_resizer_downAndUp(Axi4S_resizer):
 class Axi4S_resizer_downAndUp_TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = TestComp_Axi4S_resizer_downAndUp()
         dut.DATA_WIDTH = cls.DW = 64
         cls.compileSim(dut)
 
+    @override
     def setUp(self):
         super(Axi4S_resizer_downAndUp_TC, self).setUp()
         self.randomize(self.dut.dataIn)
@@ -198,12 +206,14 @@ class Axi4S_resizer_downAndUp_TC(SimTestCase):
 class Axi4S_resizer_upAndDown_TC(SimTestCase):
 
     @classmethod
+    @override
     def setUpClass(cls):
         dut = cls.dut = TestComp_Axi4S_resizer_downAndUp()
         dut.DATA_WIDTH = cls.DW = 32
         dut.INTERNAL_SIZE = 64
         cls.compileSim(dut)
 
+    @override
     def setUp(self):
         super(Axi4S_resizer_upAndDown_TC, self).setUp()
         self.randomize(self.dut.dataIn)

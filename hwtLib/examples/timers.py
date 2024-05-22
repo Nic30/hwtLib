@@ -4,9 +4,10 @@
 from hwt.constants import Time
 from hwt.hwIOs.std import HwIOSignal, HwIORdVldSync, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
-from hwt.hwModule import HwModule
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
@@ -15,7 +16,8 @@ class TimerInfoTest(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         self.tick1 = HwIOSignal()._m()
@@ -29,7 +31,8 @@ class TimerInfoTest(HwModule):
 
         self.tick384 = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         tick1, tick2, tick16, tick17, tick34, tick256, tick384 = \
             ClkBuilder(self, self.clk)\
             .timers([1, 2, 16, 17, 34, 256, 384])
@@ -49,7 +52,8 @@ class TimerTestHwModule(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
 
         self.tick1 = HwIORdVldSync()._m()
@@ -64,7 +68,8 @@ class TimerTestHwModule(HwModule):
         self.tick384 = HwIORdVldSync()._m()
         self.core = TimerInfoTest()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         propagateClkRstn(self)
 
         for hwIO in self._hwIOs:
@@ -77,7 +82,8 @@ class DynamicCounterInstancesExample(HwModule):
     .. hwt-autodoc::
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         self.period = HwIOVectSignal(10)
         self.en = HwIOSignal()
@@ -86,7 +92,8 @@ class DynamicCounterInstancesExample(HwModule):
         self.cntr0 = HwIOSignal()._m()
         self.cntr1 = HwIOSignal()._m()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         b = ClkBuilder(self, self.clk)
         self.cntr0(b.timerDynamic(self.period, self.en))
         self.cntr1(b.timerDynamic(self.period, self.en, rstSig=self.rstCntr))
@@ -94,6 +101,7 @@ class DynamicCounterInstancesExample(HwModule):
 
 class TimerTC(SimTestCase):
 
+    @override
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)

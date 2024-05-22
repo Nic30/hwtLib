@@ -14,6 +14,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.commonHwIO.addr_data import HwIOAddrDataRdVld
 from hwtSimApi.hdlSimulator import HdlSimulator
+from hwt.pyUtils.typingFuture import override
 
 
 class HwIORamRdVldR(HwIO):
@@ -23,16 +24,19 @@ class HwIORamRdVldR(HwIO):
     .. hwt-autodoc::
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(8)
         self.DATA_WIDTH = HwParam(8)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         a = self.addr = HwIODataRdVld()
         a.DATA_WIDTH = self.ADDR_WIDTH
         with self._hwParamsShared():
             self.data = HwIODataRdVld(masterDir=DIRECTION.IN)
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = UniversalCompositeAgent(sim, self)
 
@@ -45,10 +49,12 @@ class RamAsAddrDataRdVld(HwModule):
     .. hwt-autodoc::
     """
 
-    def _config(self):
-        HwIOBramPort_noClk._config(self)
+    @override
+    def hwConfig(self):
+        HwIOBramPort_noClk.hwConfig(self)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert self.HAS_R or self.HAS_W
         addClkRstn(self)
         with self._hwParamsShared():
@@ -96,7 +102,8 @@ class RamAsAddrDataRdVld(HwModule):
 
         return rEn, readData
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         ram = self.ram
         if self.HAS_R:
             r = self.r

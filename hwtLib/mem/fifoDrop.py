@@ -7,6 +7,7 @@ from hwt.hwIOs.agents.fifo import HwIOFifoWriterAgent
 from hwt.hwIOs.std import HwIOFifoWriter, HwIOFifoReader, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.mem.fifo import Fifo
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -16,7 +17,7 @@ from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecifiedError
 class FifoWriterDropable(HwIOFifoWriter):
     """
     FIFO write port interface witch commit and discard signal
-    used to drop data chunks already written in fifo
+    used to drop data chunks already written in FIFO
 
     :note: commit and discard behaves as another data signal
         it is valid if en=1
@@ -24,24 +25,28 @@ class FifoWriterDropable(HwIOFifoWriter):
     :ivar ~.commit: if 1 all the written data are made available to reader,
         including current data word
     :ivar ~.discard: if 1 all written data which were not commited are discarded
-        includeing current data word
+        including current data word
 
     .. hwt-autodoc::
     """
-    def _declr(self):
-        super(FifoWriterDropable, self)._declr()
+    @override
+    def hwDeclr(self):
+        super(FifoWriterDropable, self).hwDeclr()
         self.commit = HwIOSignal()
         self.discard = HwIOSignal()
 
+    @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = FifoWriterDropableAgent(sim, self)
 
+    @override
     def _getIpCoreIntfClass(self):
         raise IntfIpMetaNotSpecifiedError()
 
 
 class FifoWriterDropableAgent(HwIOFifoWriterAgent):
 
+    @override
     def set_data(self, d):
         i = self.hwIO
         if d is None:
@@ -52,6 +57,7 @@ class FifoWriterDropableAgent(HwIOFifoWriterAgent):
         i.discard.write(discard)
         i.data.write(d)
 
+    @override
     def get_data(self):
         i = self.hwIO
         return (
@@ -76,7 +82,8 @@ class FifoDrop(Fifo):
     .. hwt-autodoc:: _example_FifoDrop
     """
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         assert int(self.DEPTH) > 0,\
             "Fifo is disabled in this case, do not use it entirely"
         addClkRstn(self)
@@ -86,7 +93,8 @@ class FifoDrop(Fifo):
 
         self._declr_size_and_space()
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         DEPTH = self.DEPTH
 
         index_t = HBits(log2ceil(DEPTH), signed=False)
