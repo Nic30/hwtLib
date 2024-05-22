@@ -3,15 +3,15 @@
 
 from hwt.code import If
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VectSignal, HandshakeSync
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwParam import HwParam
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIORdVldSync
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.common_nonstd_interfaces.addr_data_hs_bidir import AddrInDataOutHs, AddrInDataOutHsAgent
-from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
-    HandshakedBiDirectionalAgent
+from hwtLib.commonHwIO.addr_data_bidir import HwIOAddrInDataOutRdVld, HwIOAddrInDataOutRdVldAgent
+from hwtLib.handshaked.hwIOBiDirectional import HwIORdVldSyncBiDirectionalData, \
+    HwIORdVldSyncBiDirectionalDataAgent
 from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -19,7 +19,7 @@ from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
 
 
-class FifoArrayInsertInterface(HandshakedBiDirectional):
+class FifoArrayInsertInterface(HwIORdVldSyncBiDirectionalData):
     """
 
     :ivar ~.append: if append = 1 the item is appended to last list item specified using "addr"
@@ -32,36 +32,36 @@ class FifoArrayInsertInterface(HandshakedBiDirectional):
     """
 
     def _config(self):
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(32)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(32)
 
     def _declr(self):
-        self.addr = VectSignal(self.ADDR_WIDTH)
-        self.append = Signal()
-        self.data = VectSignal(self.DATA_WIDTH)
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
+        self.append = HwIOSignal()
+        self.data = HwIOVectSignal(self.DATA_WIDTH)
         # an address where the item was stored
-        self.addr_ret = VectSignal(self.ADDR_WIDTH, masterDir=DIRECTION.IN)
-        HandshakeSync._declr(self)
+        self.addr_ret = HwIOVectSignal(self.ADDR_WIDTH, masterDir=DIRECTION.IN)
+        HwIORdVldSync._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = FifoArrayInsertInterfaceAgent(sim, self)
 
 
-class FifoArrayInsertInterfaceAgent(HandshakedBiDirectionalAgent):
+class FifoArrayInsertInterfaceAgent(HwIORdVldSyncBiDirectionalDataAgent):
     """
     Simulation agent for :class:`.FifoArrayInsertInterface` interface
     """
 
     def onMonitorReady(self):
         a = self.dinData.popleft()
-        self.intf.addr_ret.write(a)
+        self.hwIO.addr_ret.write(a)
 
     def onDriverWriteAck(self):
-        a = self.intf.addr_ret.read()
+        a = self.hwIO.addr_ret.read()
         self.dinData.append(a)
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         return (i.addr.read(), i.append.read(), i.data.read())
 
     def set_data(self, data):
@@ -69,11 +69,11 @@ class FifoArrayInsertInterfaceAgent(HandshakedBiDirectionalAgent):
             a, ap, d = (None, None, None)
         else:
             a, ap, d = data
-        i = self.intf
+        i = self.hwIO
         return (i.addr.write(a), i.append.write(ap), i.data.write(d))
 
 
-class FifoArrayPopInterface(AddrInDataOutHs):
+class FifoArrayPopInterface(HwIOAddrInDataOutRdVld):
     """
     :ivar ~.addr: the address of the list head to read from:
     :ivar ~.data: the return data which was read
@@ -86,20 +86,20 @@ class FifoArrayPopInterface(AddrInDataOutHs):
 
     def _declr(self):
         super(FifoArrayPopInterface, self)._declr()
-        self.last = Signal()
-        self.addr_next = VectSignal(self.ADDR_WIDTH)
+        self.last = HwIOSignal()
+        self.addr_next = HwIOVectSignal(self.ADDR_WIDTH)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = FifoArrayPopInterfaceAgent(sim, self)
 
 
-class FifoArrayPopInterfaceAgent(AddrInDataOutHsAgent):
+class FifoArrayPopInterfaceAgent(HwIOAddrInDataOutRdVldAgent):
     """
     Simulation agent for :class:`.FifoArrayPopInterfaceAgent` interface
     """
 
     def set_data(self, data):
-        i = self.intf
+        i = self.hwIO
         if data is None:
             d, last, an = (None, None, None)
         else:
@@ -110,11 +110,11 @@ class FifoArrayPopInterfaceAgent(AddrInDataOutHsAgent):
         i.addr_next.write(an)
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         return (i.data.read(), i.last.read(), i.addr_next.read())
 
 
-class FifoArray(Unit):
+class FifoArray(HwModule):
     """
     This component is an array of list nodes, which can be used to emulate multiple FIFOs.
     The memory is shared and the number of lists stored in this array is limited only by memory.
@@ -144,13 +144,13 @@ class FifoArray(Unit):
     """
 
     def _config(self):
-        self.ITEMS = Param(4)
-        self.DATA_WIDTH = Param(8)
+        self.ITEMS = HwParam(4)
+        self.DATA_WIDTH = HwParam(8)
 
     def _declr(self):
         assert self.ITEMS > 1, self.ITEMS
-        self.addr_t = Bits(log2ceil(self.ITEMS - 1), signed=False)
-        self.value_t = Bits(self.DATA_WIDTH)
+        self.addr_t = HBits(log2ceil(self.ITEMS - 1), signed=False)
+        self.value_t = HBits(self.DATA_WIDTH)
 
         addClkRstn(self)
         self.insert = FifoArrayInsertInterface()
@@ -163,7 +163,7 @@ class FifoArray(Unit):
     def _impl(self):
         addr_t = self.addr_t
         value_t = self.value_t
-        item_mask_t = Bits(self.ITEMS)
+        item_mask_t = HBits(self.ITEMS)
 
         # bitmap used to quickly detect position of an empty node
         item_valid = self._reg("item_valid", item_mask_t, def_val=0)
@@ -210,6 +210,7 @@ class FifoArray(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = FifoArray()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = FifoArray()
+    print(to_rtl_str(m))

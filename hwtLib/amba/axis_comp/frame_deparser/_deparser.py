@@ -8,31 +8,31 @@ from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.union import HUnion
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.unionIntf import UnionSink
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOUnion import HwIOUnionSink
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil, isPow2
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.template_configured import TemplateConfigured, \
     separate_streams, to_primitive_stream_t
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.amba.axis_comp.frame_deparser.strb_keep_stash import StrbKeepStash, \
     reduce_conditional_StrbKeepStashes
 from hwtLib.amba.axis_comp.frame_deparser.utils import _get_only_stream, \
     connect_optional_with_best_effort_axis_mask_propagation, \
     drill_down_in_HStruct_fields
-from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
-from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserFieldConnector, \
+from hwtLib.amba.axis_comp.frame_join import Axi4S_FrameJoin
+from hwtLib.amba.axis_comp.frame_parser.field_connector import Axi4S_frameParserFieldConnector, \
     get_byte_order_modifier
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
@@ -42,7 +42,7 @@ from pyMathBitPrecise.bit_utils import mask
 
 
 @serializeParamsUniq
-class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
+class Axi4S_frameDeparser(Axi4SCompBase, TemplateConfigured):
     """
     Assemble fields into frame on axi stream interface,
     frame description can be HType instance (HStruct, HUnion, ...)
@@ -54,9 +54,9 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
     :note: names in the picture are just illustrative
 
 
-    .. figure:: ./_static/AxiS_frameDeparser.png
+    .. figure:: ./_static/Axi4S_frameDeparser.png
 
-    .. hwt-autodoc:: _example_AxiS_frameDeparser
+    .. hwt-autodoc:: _example_Axi4S_frameDeparser
     """
 
     def __init__(self,
@@ -70,34 +70,34 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         """
         self._tmpRegsForSelect = {}
         TemplateConfigured.__init__(self, structT, tmpl, frames)
-        AxiSCompBase.__init__(self)
+        Axi4SCompBase.__init__(self)
 
     def _config(self):
-        AxiSCompBase._config(self)
+        Axi4SCompBase._config(self)
         self.USE_STRB = True
-        self.T = Param(self._structT)
-        self.TRANSACTION_TEMPLATE = Param(self._tmpl)
-        self.FRAME_TEMPLATES = Param(None
+        self.T = HwParam(self._structT)
+        self.TRANSACTION_TEMPLATE = HwParam(self._tmpl)
+        self.FRAME_TEMPLATES = HwParam(None
                                      if self._frames is None
                                      else tuple(self._frames))
 
-    def _mkFieldIntf(self, parent: StructIntf, structField: HStructField):
+    def _mkFieldHwIO(self, parent: HwIOStruct, structField: HStructField):
         """
         Instantiate interface for all members of input type
         """
         t = structField.dtype
         path = parent._field_path / structField.name
         if isinstance(t, HUnion):
-            p = UnionSink(t, path, parent._instantiateFieldFn)
-            p._fieldsToInterfaces = parent._fieldsToInterfaces
+            p = HwIOUnionSink(t, path, parent._instantiateFieldFn)
+            p._fieldsToHwIOs = parent._fieldsToHwIOs
         elif isinstance(t, HStruct):
-            p = StructIntf(t, path, parent._instantiateFieldFn)
-            p._fieldsToInterfaces = parent._fieldsToInterfaces
+            p = HwIOStruct(t, path, parent._instantiateFieldFn)
+            p._fieldsToHwIOs = parent._fieldsToHwIOs
         elif isinstance(t, HStream):
-            p = AxiStream()
+            p = Axi4Stream()
             p._updateParamsFrom(self)
         else:
-            p = Handshaked()
+            p = HwIODataRdVld()
             p.DATA_WIDTH = structField.dtype.bit_length()
         return p
 
@@ -120,24 +120,24 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             self.sub_t = [s_t, ]
 
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataOut = self.intfCls()._m()
+        with self._hwParamsShared():
+            self.dataOut = self.hwIOCls()._m()
 
         if isinstance(self._structT, HStruct):
-            intfCls = StructIntf
+            hwIO = HwIOStruct
         elif isinstance(self._structT, HUnion):
-            intfCls = UnionSink
+            hwIO = HwIOUnionSink
         else:
             raise TypeError(self._structT)
 
-        self.dataIn = intfCls(self._structT, tuple(), self._mkFieldIntf)
+        self.dataIn = hwIO(self._structT, tuple(), self._mkFieldHwIO)
 
     def connectPartsOfWord(self, wordData_out: RtlSignal,
                            tPart: Union[TransPart,
                                         ChoicesOfFrameParts],
-                           inPorts_out: List[Union[Handshaked,
+                           inPorts_out: List[Union[HwIODataRdVld,
                                                    StreamNode]],
-                           lastInPorts_out: List[Union[Handshaked,
+                           lastInPorts_out: List[Union[HwIODataRdVld,
                                                        StreamNode]])\
             ->Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
         """
@@ -150,16 +150,16 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         :return: tuple (strb, keep) if strb/keep driven by input stream, else (None, None)
         """
 
-        tToIntf = self.dataIn._fieldsToInterfaces
+        tToHwIOs = self.dataIn._fieldsToHwIOs
 
         if isinstance(tPart, ChoicesOfFrameParts):
             # connect parts of union to output signal
             high, low = tPart.getBusWordBitRange()
-            parentIntf = tToIntf[tPart.origin.parent.getFieldPath()]
+            parentHwIO = tToHwIOs[tPart.origin.parent.getFieldPath()]
 
-            if parentIntf not in self._tmpRegsForSelect.keys():
-                sel = HsBuilder(self, parentIntf._select).buff().end
-                self._tmpRegsForSelect[parentIntf] = sel
+            if parentHwIO not in self._tmpRegsForSelect.keys():
+                sel = HsBuilder(self, parentHwIO._select).buff().end
+                self._tmpRegsForSelect[parentHwIO] = sel
 
             inPortGroups = ExclusiveStreamGroups()
             lastInPortsGroups = ExclusiveStreamGroups()
@@ -170,10 +170,10 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             sk_stashes = []
             # for all choices in union
             for choice in tPart:
-                tmp = self._sig("union_tmp_", Bits(w), nop_val=None)
-                intfOfChoice = tToIntf[choice.tmpl.getFieldPath()]
+                tmp = self._sig("union_tmp_", HBits(w), nop_val=None)
+                intfOfChoice = tToHwIOs[choice.tmpl.getFieldPath()]
                 _, _isSelected, isSelectValid = \
-                    AxiS_frameParserFieldConnector.choiceIsSelected(self, intfOfChoice)
+                    Axi4S_frameParserFieldConnector.choiceIsSelected(self, intfOfChoice)
                 unionChoices.append((_isSelected, wordData_out[high:low](tmp)))
 
                 isSelected = _isSelected & isSelectValid
@@ -227,14 +227,14 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             if tPart.isPadding:
                 wordData_out[high:low](None)
             else:
-                intf = tToIntf[tPart.tmpl.getFieldPath()]
+                hwIO = tToHwIOs[tPart.tmpl.getFieldPath()]
                 fhigh, flow = tPart.getFieldBitRange()
                 wordData_out[high:low](
-                    self.byteOrderCare(intf.data)[fhigh:flow])
-                inPorts_out.append(intf)
+                    self.byteOrderCare(hwIO.data)[fhigh:flow])
+                inPorts_out.append(hwIO)
 
                 if tPart.isLastPart():
-                    lastInPorts_out.append(intf)
+                    lastInPorts_out.append(hwIO)
 
             w = tPart.bit_length()
             strb = int(not tPart.isPadding)
@@ -242,8 +242,8 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         return ((w, strb), (w, keep))
 
     def handshakeLogicForWord(self,
-                              inPorts: List[Union[Handshaked, StreamNode]],
-                              lastInPorts: List[Union[Handshaked, StreamNode]],
+                              inPorts: List[Union[HwIODataRdVld, StreamNode]],
+                              lastInPorts: List[Union[HwIODataRdVld, StreamNode]],
                               en: Union[bool, RtlSignal]):
         if lastInPorts:
             # instantiate rd logic of input streams
@@ -261,7 +261,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         For the cases where output frames contains the streams which does
         not have start aligned to a frame word boundary, we have to build
         rest of the frame in child FrameForge and then instantiate
-        AxiS_FrameJoin which will join such a unaligned frames together.
+        Axi4S_FrameJoin which will join such a unaligned frames together.
         """
         Cls = self.__class__
         assert len(self.sub_t) > 1, "We need to delegate to children only " \
@@ -279,12 +279,12 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
 
             children.append(c)
 
-        with self._paramsShared(
+        with self._hwParamsShared(
                 exclude=({"USE_KEEP", "USE_STRB",
                           "T", "TRANSACTION_TEMPLATE", "FRAME_TEMPLATES"}, {})):
             self.children = children
 
-        fjoin = AxiS_FrameJoin()
+        fjoin = Axi4S_FrameJoin()
         sub_t_flatten = [to_primitive_stream_t(s_t) for s_t in self.sub_t]
         fjoin.T = HStruct(
             *((s_t, f"frame{i:d}")
@@ -350,7 +350,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         if multipleWords:
             # multiple word frame
             wordCntr_inversed = self._reg("wordCntr_inversed",
-                                          Bits(log2ceil(maxWordIndex + 1),
+                                          HBits(log2ceil(maxWordIndex + 1),
                                                False),
                                           def_val=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
@@ -390,7 +390,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
 
             inStreamLast = True
             for p in inPorts:
-                if isinstance(p, AxiStream):
+                if isinstance(p, Axi4Stream):
                     inStreamLast = p.last & inStreamLast
 
             if multipleWords:
@@ -493,19 +493,19 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             if s_t is None:
                 self._create_frame_build_logic()
             else:
-                if not isinstance(s_t.element_t, Bits):
+                if not isinstance(s_t.element_t, HBits):
                     raise NotImplementedError(s_t)
                 # no special care required because the stream
                 # is already in correct format
                 din = self.dataIn
-                while not isinstance(din, AxiStream):
+                while not isinstance(din, Axi4Stream):
                     # dril down in HdlType to find a stream
-                    assert len(din._interfaces) == 1
-                    din = din._interfaces[0]
+                    assert len(din._hwIOs) == 1
+                    din = din._hwIOs[0]
                 self.dataOut(din)
 
 
-def _example_AxiS_frameDeparser():
+def _example_Axi4S_frameDeparser():
     from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t, uint32_t
 
     # t = HStruct(
@@ -531,13 +531,13 @@ def _example_AxiS_frameDeparser():
         (HStruct((uint8_t, None), (uint8_t, "data")), "u1"),
     )
 
-    u = AxiS_frameDeparser(t)
-    u.DATA_WIDTH = 16
-    return u
+    m = Axi4S_frameDeparser(t)
+    m.DATA_WIDTH = 16
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiS_frameDeparser()
-    print(to_rtl_str(u))
-    # print(u._frames)
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4S_frameDeparser()
+    print(to_rtl_str(m))
+    # print(m._frames)

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtLib.peripheral.displays.segment7 import Segment7
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
+from hwtLib.peripheral.displays.segment7 import Segment7
 
 
 class Segment7TC(BaseSerializationTC):

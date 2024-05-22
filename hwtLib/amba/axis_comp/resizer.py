@@ -2,49 +2,49 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, Switch
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.amba.axis_comp.reg import AxiSReg
+from hwt.hwParam import HwParam
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
+from hwtLib.amba.axis_comp.reg import Axi4SReg
 from hwtLib.handshaked.streamNode import StreamNode
 
 
-class AxiS_resizer(AxiSCompBase):
+class Axi4S_resizer(Axi4SCompBase):
     """
-    Change data with of AxiStream interface
+    Change data with of Axi4Stream interface
 
     :attention: start of frame is expected to be aligned on first word
     :attention: strb can be not fully set only in last word
     :attention: in upscale mode id and other signals which are not dependent on data width
         are propagated only from last word
 
-    :note: interface is configurable and schematic is example with AxiStream
+    :note: interface is configurable and schematic is example with Axi4Stream
 
     :note: first schematic is for upsize mode, second one is for downsize mode
 
-    .. hwt-params: _example_AxiS_resizer_upscale
-    .. hwt-interfaces: _example_AxiS_resizer_upscale
-    .. hwt-schematic:: _example_AxiS_resizer_upscale
-    .. hwt-schematic:: _example_AxiS_resizer_downscale
+    .. hwt-params: _example_Axi4S_resizer_upscale
+    .. hwt-interfaces: _example_Axi4S_resizer_upscale
+    .. hwt-schematic:: _example_Axi4S_resizer_upscale
+    .. hwt-schematic:: _example_Axi4S_resizer_downscale
     """
 
     def _config(self):
-        AxiSCompBase._config(self)
-        self.OUT_DATA_WIDTH = Param(64)
+        Axi4SCompBase._config(self)
+        self.OUT_DATA_WIDTH = HwParam(64)
         self.USE_STRB = True
 
     def _declr(self):
         assert self.USE_STRB
         addClkRstn(self)
 
-        with self._paramsShared():
-            self.dataIn = AxiStream()
+        with self._hwParamsShared():
+            self.dataIn = Axi4Stream()
 
-        with self._paramsShared(exclude=({"DATA_WIDTH"}, set())):
-            o = self.dataOut = AxiStream()._m()
+        with self._hwParamsShared(exclude=({"DATA_WIDTH"}, set())):
+            o = self.dataOut = Axi4Stream()._m()
             o.DATA_WIDTH = self.OUT_DATA_WIDTH
 
     def nextAreNotValidLogic(self, inStrb, actualItemIndx, ITEMS, ITEM_DW):
@@ -75,7 +75,7 @@ class AxiS_resizer(AxiSCompBase):
         dataOut = self.dataOut
         dOut = self.getDataWidthDependent(dataOut)
 
-        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), def_val=0)
+        itemCntr = self._reg("itemCntr", HBits(log2ceil(ITEMS + 1)), def_val=0)
         hs = StreamNode([self.dataIn], [dataOut]).ack()
         isLastItem = (itemCntr._eq(ITEMS - 1) | self.dataIn.last)
 
@@ -137,8 +137,8 @@ class AxiS_resizer(AxiSCompBase):
             raise NotImplementedError()
         dOut = self.getDataWidthDependent(self.dataOut)
 
-        # instantiate AxiSReg, AxiSBuilder is not used to avoid dependencies
-        inReg = AxiSReg(self.intfCls)
+        # instantiate Axi4SReg, Axi4SBuilder is not used to avoid dependencies
+        inReg = Axi4SReg(self.hwIOCls)
         inReg._updateParamsFrom(self.dataIn)
         self.inReg = inReg
         inReg.clk(self.clk)
@@ -149,7 +149,7 @@ class AxiS_resizer(AxiSCompBase):
         dIn = self.getDataWidthDependent(dataIn)
 
         ITEMS = IN_DW // OUT_DW
-        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), def_val=0)
+        itemCntr = self._reg("itemCntr", HBits(log2ceil(ITEMS + 1)), def_val=0)
 
         hs = StreamNode([dataIn], [self.dataOut]).ack()
         isLastItem = itemCntr._eq(ITEMS - 1)
@@ -203,29 +203,29 @@ class AxiS_resizer(AxiSCompBase):
                 "Input and output width are same, this instance is useless")
 
 
-def _example_AxiS_resizer_upscale():
-    from hwtLib.amba.axis import AxiStream
+def _example_Axi4S_resizer_upscale():
+    from hwtLib.amba.axi4s import Axi4Stream
 
-    u = AxiS_resizer(AxiStream)
-    u.ID_WIDTH = 3
-    u.DATA_WIDTH = 32
-    u.OUT_DATA_WIDTH = 64
+    m = Axi4S_resizer(Axi4Stream)
+    m.ID_WIDTH = 3
+    m.DATA_WIDTH = 32
+    m.OUT_DATA_WIDTH = 64
 
-    return u
+    return m
 
 
-def _example_AxiS_resizer_downscale():
-    from hwtLib.amba.axis import AxiStream
+def _example_Axi4S_resizer_downscale():
+    from hwtLib.amba.axi4s import Axi4Stream
 
-    u = AxiS_resizer(AxiStream)
-    u.ID_WIDTH = 3
-    u.DATA_WIDTH = 64
-    u.OUT_DATA_WIDTH = 32
+    m = Axi4S_resizer(Axi4Stream)
+    m.ID_WIDTH = 3
+    m.DATA_WIDTH = 64
+    m.OUT_DATA_WIDTH = 32
 
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiS_resizer_downscale()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4S_resizer_downscale()
+    print(to_rtl_str(m))

@@ -2,24 +2,24 @@
 # -*- coding: utf-8 -*-
 
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
-from hwtLib.examples.hdlComments import SimpleComentedUnit, \
-    SimpleComentedUnit3, SimpleComentedUnit2
+from hwtLib.examples.hdlComments import SimpleComentedHwModule, \
+    SimpleComentedHwModule3, SimpleComentedHwModule2
 
 
 class HdlCommentsTC(BaseSerializationTC):
     __FILE__ = __file__
 
-    def test_SimpleComentedUnit(self):
+    def test_SimpleComentedHwModule(self):
         self.assert_serializes_as_file(
-            SimpleComentedUnit(), "SimpleComentedUnit.vhd")
+            SimpleComentedHwModule(), "SimpleComentedHwModule.vhd")
 
-    def test_SimpleComentedUnit2(self):
+    def test_SimpleComentedHwModule2(self):
         self.assert_serializes_as_file(
-            SimpleComentedUnit2(), "SimpleComentedUnit2.vhd")
+            SimpleComentedHwModule2(), "SimpleComentedHwModule2.vhd")
 
-    def test_SimpleComentedUnit3(self):
+    def test_SimpleComentedHwModule3(self):
         self.assert_serializes_as_file(
-            SimpleComentedUnit3(), "SimpleComentedUnit3.vhd")
+            SimpleComentedHwModule3(), "SimpleComentedHwModule3.vhd")
 
 
 if __name__ == '__main__':

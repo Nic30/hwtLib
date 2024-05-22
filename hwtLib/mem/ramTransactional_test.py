@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hdlConvertorAst.to.hdlUtils import iter_with_last
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.agents.tuleWithCallback import TupleWithCallback
-from hwt.interfaces.utils import propagateClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.agents.tuleWithCallback import TupleWithCallback
+from hwt.hwIOs.utils import propagateClkRstn
 from hwt.pyUtils.arrayQuery import flatten
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.ramTransactional import RamTransactional
@@ -21,7 +21,7 @@ class RamTransactionalWrap(RamTransactional):
 
     def _declr(self):
         RamTransactional._declr_io(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.core = RamTransactional()
 
     def _impl(self):
@@ -79,55 +79,55 @@ class RamTransactional_2wTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = RamTransactionalWrap()
-        u.R_ID_WIDTH = 2
-        u.W_PRIV_T = Bits(2)
-        u.DATA_WIDTH = 16
-        u.ADDR_WIDTH = 3
-        u.WORD_WIDTH = cls.BURST_LEN * u.DATA_WIDTH
-        u.MAX_BLOCK_DATA_WIDTH = 8
-        cls.ITEMS = 2 ** u.ADDR_WIDTH
-        cls.compileSim(u)
+        cls.dut = dut = RamTransactionalWrap()
+        dut.R_ID_WIDTH = 2
+        dut.W_PRIV_T = HBits(2)
+        dut.DATA_WIDTH = 16
+        dut.ADDR_WIDTH = 3
+        dut.WORD_WIDTH = cls.BURST_LEN * dut.DATA_WIDTH
+        dut.MAX_BLOCK_DATA_WIDTH = 8
+        cls.ITEMS = 2 ** dut.ADDR_WIDTH
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
         m = self.rtl_simulator.model
-        u = self.u
+        dut = self.dut
 
         self.DATA = SegmentedArrayProxy([
                 getattr(m.core_inst.data_array_inst, f"children_{i:d}_inst").io.ram_memory
-                for i in range(len(u.core.data_array.children))
+                for i in range(len(dut.core.data_array.children))
             ],
             words_per_item=self.BURST_LEN
         )
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.runSim(20 * CLK_PERIOD)
         self.assertEqual(len(self.DATA), self.ITEMS)
         ae = self.assertEmpty
-        ae(u.r.addr._ag.data)
-        ae(u.r.data._ag.data)
-        ae(u.w.addr._ag.data)
-        ae(u.w.data._ag.data)
-        ae(u.flush_data.addr._ag.data)
-        ae(u.flush_data.data._ag.data)
+        ae(dut.r.addr._ag.data)
+        ae(dut.r.data._ag.data)
+        ae(dut.w.addr._ag.data)
+        ae(dut.w.data._ag.data)
+        ae(dut.flush_data.addr._ag.data)
+        ae(dut.flush_data.data._ag.data)
 
     def make_item_from_index(self, i:int, MAGIC:int):
         BURST_LEN = self.BURST_LEN
         v = 0
         for w_i in range(BURST_LEN):
-            v |= (i * BURST_LEN) + MAGIC + w_i << (w_i * self.u.DATA_WIDTH)
+            v |= (i * BURST_LEN) + MAGIC + w_i << (w_i * self.dut.DATA_WIDTH)
         return v
 
     def test_read(self, TEST_LEN=10, MAGIC=5):
-        u = self.u
+        dut = self.dut
         BURST_LEN = self.BURST_LEN
 
         for i in range(min(TEST_LEN, self.ITEMS)):
             self.DATA[i] = self.make_item_from_index(i, MAGIC)
 
-        u.r.addr._ag.data.extend(
+        dut.r.addr._ag.data.extend(
             # (id, addr)
             [(0, i % self.ITEMS) for i in range(TEST_LEN)])
 
@@ -141,29 +141,29 @@ class RamTransactional_2wTC(SimTestCase):
             ] for i in range(TEST_LEN)],
             level=1))
 
-        self.assertValSequenceEqual(u.r.data._ag.data, r_expected)
+        self.assertValSequenceEqual(dut.r.data._ag.data, r_expected)
 
         ae = self.assertEmpty
-        ae(u.r.addr._ag.data)
-        ae(u.w.addr._ag.data)
-        ae(u.w.data._ag.data)
-        ae(u.flush_data.addr._ag.data)
-        ae(u.flush_data.data._ag.data)
+        ae(dut.r.addr._ag.data)
+        ae(dut.w.addr._ag.data)
+        ae(dut.w.data._ag.data)
+        ae(dut.flush_data.addr._ag.data)
+        ae(dut.flush_data.data._ag.data)
 
     def test_write(self, TEST_LEN=8, MAGIC=5):
-        u = self.u
+        dut = self.dut
         BURST_LEN = self.BURST_LEN
-        MASK_ALL = mask(u.DATA_WIDTH // 8)
+        MASK_ALL = mask(dut.DATA_WIDTH // 8)
         # (data, strb, last)
         wrData = [
             (i + MAGIC, MASK_ALL, int((i + 1) % BURST_LEN == 0))
             for i in range(TEST_LEN * BURST_LEN)
         ]
-        u.w.addr._ag.data.extend(
+        dut.w.addr._ag.data.extend(
             # (id, addr, flush)
             [(0, i % self.ITEMS, 0) for i in range(TEST_LEN)]
         )
-        u.w.data._ag.data.extend(wrData)
+        dut.w.data._ag.data.extend(wrData)
 
         self.runSim((TEST_LEN * BURST_LEN + 20) * CLK_PERIOD)
 
@@ -172,9 +172,9 @@ class RamTransactional_2wTC(SimTestCase):
 
         self.check_memory_content(BURST_LEN, TEST_LEN, self.ITEMS, make_item, 0)
         ae = self.assertEmpty
-        ae(u.r.addr._ag.data)
-        ae(u.flush_data.addr._ag.data)
-        ae(u.flush_data.data._ag.data)
+        ae(dut.r.addr._ag.data)
+        ae(dut.flush_data.addr._ag.data)
+        ae(dut.flush_data.data._ag.data)
 
     def check_memory_content(self, BURST_LEN, TEST_LEN, ITEMS, make_item, START_OFFSET):
 
@@ -209,12 +209,12 @@ class RamTransactional_2wTC(SimTestCase):
         self.test_write(2 * self.ITEMS, MAGIC)
 
     def test_flush(self, TEST_LEN=20, MAGIC=5):
-        u = self.u
+        dut = self.dut
         BURST_LEN = self.BURST_LEN
-        MASK_ALL = mask(u.DATA_WIDTH // 8)
+        MASK_ALL = mask(dut.DATA_WIDTH // 8)
 
-        wrData = u.w.data._ag.data
-        wrAddr = u.w.addr._ag.data
+        wrData = dut.w.data._ag.data
+        wrAddr = dut.w.addr._ag.data
         f_addr_expected = []
         f_data_expected = []
         # prefill the memory for later flushes
@@ -238,8 +238,8 @@ class RamTransactional_2wTC(SimTestCase):
                 wrData.append(d)
 
                 # (data, strb, last)
-                _d = orig_item >> (u.DATA_WIDTH * word_i)
-                orig_d = (int(_d) & mask(u.DATA_WIDTH), MASK_ALL, last)
+                _d = orig_item >> (dut.DATA_WIDTH * word_i)
+                orig_d = (int(_d) & mask(dut.DATA_WIDTH), MASK_ALL, last)
                 f_data_expected.append(orig_d)
 
             # (id, addr, flush)
@@ -255,19 +255,19 @@ class RamTransactional_2wTC(SimTestCase):
             return self.make_item_from_index(offset + i, MAGIC)
 
         self.check_memory_content(BURST_LEN, TEST_LEN, self.ITEMS, make_item2, TEST_LEN % self.ITEMS)
-        self.assertValSequenceEqual(u.flush_data.addr._ag.data, f_addr_expected)
-        self.assertValSequenceEqual(u.flush_data.data._ag.data, f_data_expected)
+        self.assertValSequenceEqual(dut.flush_data.addr._ag.data, f_addr_expected)
+        self.assertValSequenceEqual(dut.flush_data.data._ag.data, f_data_expected)
 
         ae = self.assertEmpty
-        ae(u.r.addr._ag.data)
+        ae(dut.r.addr._ag.data)
 
     def test_read_write_flush(self, TEST_LEN=50):
-        u = self.u
+        dut = self.dut
         BURST_LEN = self.BURST_LEN
-        MASK_ALL = mask(u.DATA_WIDTH // 8)
+        MASK_ALL = mask(dut.DATA_WIDTH // 8)
 
         def rand_data():
-            return [self._rand.getrandbits(u.DATA_WIDTH) for _ in range(BURST_LEN)]
+            return [self._rand.getrandbits(dut.DATA_WIDTH) for _ in range(BURST_LEN)]
         # cntr = [0]
         # def rand_data():
         #     d = [cntr[0] + i for i in range(BURST_LEN)]
@@ -275,7 +275,7 @@ class RamTransactional_2wTC(SimTestCase):
         #     return d
 
         def make_item(data):
-            return int_list_to_int(data, u.DATA_WIDTH)
+            return int_list_to_int(data, dut.DATA_WIDTH)
 
         def data_to_trans(data):
             return [
@@ -297,15 +297,15 @@ class RamTransactional_2wTC(SimTestCase):
             mem[i] = d
             self.DATA[i] = make_item(d)
 
-        wrData = u.w.data._ag.data
-        wrAddr = u.w.addr._ag.data
-        rAddr = u.r.addr._ag.data
+        wrData = dut.w.data._ag.data
+        wrAddr = dut.w.addr._ag.data
+        rAddr = dut.r.addr._ag.data
         f_addr_expected = []
         f_data_expected = []
         r_data_expected = []
         for _ in range(TEST_LEN):
             wr = self._rand.getrandbits(1)
-            addr = self._rand.getrandbits(u.ADDR_WIDTH)
+            addr = self._rand.getrandbits(dut.ADDR_WIDTH)
             if wr:
                 doFlush = self._rand.getrandbits(1)
                 # print("a:", addr, doFlush)
@@ -322,9 +322,9 @@ class RamTransactional_2wTC(SimTestCase):
 
         self.runSim((TEST_LEN * BURST_LEN + 20) * CLK_PERIOD)
         ae = self.assertValSequenceEqual
-        ae(u.flush_data.addr._ag.data, f_addr_expected)
-        ae(u.flush_data.data._ag.data, f_data_expected)
-        ae(u.r.data._ag.data, r_data_expected)
+        ae(dut.flush_data.addr._ag.data, f_addr_expected)
+        ae(dut.flush_data.data._ag.data, f_data_expected)
+        ae(dut.r.data._ag.data, r_data_expected)
 
 
 class RamTransactional_1wTC(RamTransactional_2wTC):

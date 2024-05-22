@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.interfaces.std import Signal
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwModule import HwModule
 
 
-class VldMaskConflictsResolving(Unit):
+class VldMaskConflictsResolving(HwModule):
     """
     Example how invalid value of condition does not matter
     if it has no effect on result
@@ -14,9 +14,9 @@ class VldMaskConflictsResolving(Unit):
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()
-        self.c = Signal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()._m()
 
     def _impl(self):
         a = self.a
@@ -39,6 +39,7 @@ class VldMaskConflictsResolving(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = VldMaskConflictsResolving()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = VldMaskConflictsResolving()
+    print(to_rtl_str(m))

@@ -2,35 +2,35 @@
 # -*- coding: utf-8 -*-
 
 from math import ceil
+from typing import List
 
 from hwt.code import Concat, Or, If
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import HandshakeSync, VectSignal, Handshaked
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.code_utils import rename_signal
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.std import HwIORdVldSync, HwIOVectSignal, HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
+from hwt.hdl.const import HConst
+from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.xilinx.primitive.dsp48e1 import DSP48E1
 from hwtLib.xilinx.primitive.dsp48e1_constants import ALU_MODE, CARRYIN_SEL, \
     get_inmode, MUL_A_SEL, MUL_B_SEL, get_opmode, X_SEL, Y_SEL, Z_SEL
 from hwtSimApi.hdlSimulator import HdlSimulator
 from pyMathBitPrecise.bit_utils import apply_set_and_clear
-from hwt.code_utils import rename_signal
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from typing import List
-from hwt.synthesizer.vectorUtils import fitTo
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.hdl.value import HValue
 
 
-class Dsp48e1AluInputAG(HandshakedAgent):
+class Dsp48e1AluInputAG(HwIODataRdVldAgent):
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         return (i.a.read(), i.b.read())
 
     def set_data(self, data):
-        i = self.intf
+        i = self.hwIO
         if data is None:
             a = None
             b = None
@@ -40,23 +40,23 @@ class Dsp48e1AluInputAG(HandshakedAgent):
         i.b.write(b)
 
 
-class Dsp48e1AluInput(HandshakeSync):
+class Dsp48e1AluInput(HwIORdVldSync):
 
     def _config(self):
-        self.DATA_WIDTH = Param(48)
-        self.REG_IN = Param(True)
-        self.REG_OUT = Param(True)
+        self.DATA_WIDTH = HwParam(48)
+        self.REG_IN = HwParam(True)
+        self.REG_OUT = HwParam(True)
 
     def _declr(self):
-        self.a = VectSignal(self.DATA_WIDTH)
-        self.b = VectSignal(self.DATA_WIDTH)
-        HandshakeSync._declr(self)
+        self.a = HwIOVectSignal(self.DATA_WIDTH)
+        self.b = HwIOVectSignal(self.DATA_WIDTH)
+        HwIORdVldSync._declr(self)
 
     def _initSimAgent(self, sim:HdlSimulator):
         self._ag = Dsp48e1AluInputAG(sim, self)
 
 
-def generate_handshake_pipe_cntrl(parent: Unit, n: int, name_prefix: str, in_valid: RtlSignal, out_ready: RtlSignal):
+def generate_handshake_pipe_cntrl(parent: HwModule, n: int, name_prefix: str, in_valid: RtlSignal, out_ready: RtlSignal):
     """
     An utility that construct a pipe of registers to store the validity status of a register in the pipeline.
     These registers are connected in pipeline and synchronized by handshake logic.
@@ -94,18 +94,18 @@ def generate_handshake_pipe_cntrl(parent: Unit, n: int, name_prefix: str, in_val
     return clock_enables, valids, in_ready, out_valid
 
 
-class Dsp48e1Add(Unit):
+class Dsp48e1Add(HwModule):
 
     def _config(self):
-        self.DATA_WIDTH = Param(48)
-        self.REG_IN = Param(False)
-        self.REG_OUT = Param(False)
+        self.DATA_WIDTH = HwParam(48)
+        self.REG_IN = HwParam(False)
+        self.REG_OUT = HwParam(False)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.data_in = Dsp48e1AluInput()
-            self.data_out = Handshaked()._m()
+            self.data_out = HwIODataRdVld()._m()
 
     def set_mode(self, dsp):
         dsp.INMODE(get_inmode(dsp.AREG, dsp.USE_DPORT, MUL_A_SEL.A2, MUL_B_SEL.B2))
@@ -117,7 +117,7 @@ class Dsp48e1Add(Unit):
         Generate a register pipeline which can be used to dealy a value, the length of pipeline
         is derived from number of clock_enable signals
         """
-        if isinstance(sig_in, (int, HValue)):
+        if isinstance(sig_in, (int, HConst)):
             return sig_in
 
         if name_prefix is None:
@@ -329,10 +329,11 @@ class Dsp48e1Add(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Dsp48e1Add()
-    u.REG_IN = True
-    u.REG_OUT = False
-    u.DATA_WIDTH = 48
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = Dsp48e1Add()
+    m.REG_IN = True
+    m.REG_OUT = False
+    m.DATA_WIDTH = 48
+    print(to_rtl_str(m))
 

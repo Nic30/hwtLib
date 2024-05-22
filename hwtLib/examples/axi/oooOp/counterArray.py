@@ -26,11 +26,12 @@ class OooOpExampleCounterArray(OutOfOrderCummulativeOp):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    # u = _example_OutOfOrderCummulativeOp()
-    u = OooOpExampleCounterArray()
-    u.ID_WIDTH = 2
-    u.ADDR_WIDTH = 2 + 3
-    u.DATA_WIDTH = u.MAIN_STATE_T.bit_length()
+    from hwt.synth import to_rtl_str
+    
+    # m = _example_OutOfOrderCummulativeOp()
+    m = OooOpExampleCounterArray()
+    m.ID_WIDTH = 2
+    m.ADDR_WIDTH = 2 + 3
+    m.DATA_WIDTH = m.MAIN_STATE_T.bit_length()
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

@@ -12,19 +12,19 @@ class PrivateSignalsOfStructTypeTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = PrivateSignalsOfStructType()
-        cls.compileSim(cls.u)
+        cls.dut = PrivateSignalsOfStructType()
+        cls.compileSim(cls.dut)
 
     def test_pass_data(self):
-        u = self.u
-        u.a._ag.data.extend(range(30))
-        u.c._ag.data.extend(range(30))
+        dut = self.dut
+        dut.a._ag.data.extend(range(30))
+        dut.c._ag.data.extend(range(30))
 
         self.runSim(30 * CLK_PERIOD)
 
         eq = self.assertValSequenceEqual
-        eq(u.b._ag.data, list(range(30 - 1)))
-        eq(u.d._ag.data, list(range(6, -1, -1)) + list(range(30 - 6 - 2)))
+        eq(dut.b._ag.data, list(range(30 - 1)))
+        eq(dut.d._ag.data, list(range(6, -1, -1)) + list(range(30 - 6 - 2)))
 
 
 if __name__ == "__main__":

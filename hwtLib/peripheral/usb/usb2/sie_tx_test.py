@@ -15,48 +15,48 @@ class Usb2SieDeviceTxTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = Usb2SieDeviceTx()
-        cls.compileSim(cls.u)
+        cls.dut = Usb2SieDeviceTx()
+        cls.compileSim(cls.dut)
         # dummy instance of agent to just parse/deparse packets
         cls.usb = UtmiUsbHostProcAgent([], [])
 
     def test_handshake(self):
-        u: Usb2SieDeviceTx = self.u
-        u.enable._ag.data.append(1)
+        dut: Usb2SieDeviceTx = self.dut
+        dut.enable._ag.data.append(1)
 
         pid = USB_PID.HS_ACK
         chirp = 0
         data = None
         keep = 0
         last = 1
-        u.tx_cmd._ag.data.append((pid, chirp, data, keep, last))
+        dut.tx_cmd._ag.data.append((pid, chirp, data, keep, last))
 
         self.runSim(10 * CLK_PERIOD)
         ref = [list(self.usb.deparse_packet(UsbPacketHandshake(USB_PID.HS_ACK))), ]
-        self.assertValSequenceEqual(u.tx._ag.data, ref)
+        self.assertValSequenceEqual(dut.tx._ag.data, ref)
 
     def test_data(self, packets=[[1, 2, 3, 4], [],
                                 [5, 6, 7, 8], [9, 10],
                                 [], [11], [12, 13, 14, 15], [16, 17, 18],
                                 [20, 21]
                                 ]):
-        u: Usb2SieDeviceTx = self.u
-        u.enable._ag.data.append(1)
+        dut: Usb2SieDeviceTx = self.dut
+        dut.enable._ag.data.append(1)
 
         ref = []
-        tx_cmd = u.tx_cmd._ag.data
+        tx_cmd = dut.tx_cmd._ag.data
         pid = USB_PID.DATA_0
         chirp = 0
         for p in packets:
             if p:
                 keep = 1
                 for last, data in iter_with_last(p):
-                    u.tx_cmd._ag.data.append((pid, chirp, data, keep, last))
+                    dut.tx_cmd._ag.data.append((pid, chirp, data, keep, last))
             else:
                 last = 1
                 data = None
                 keep = 0
-                u.tx_cmd._ag.data.append((pid, chirp, data, keep, last))
+                dut.tx_cmd._ag.data.append((pid, chirp, data, keep, last))
 
             _p = self.usb.deparse_packet(UsbPacketData(pid, p))
             ref.append(list(_p))
@@ -74,7 +74,7 @@ class Usb2SieDeviceTxTC(SimTestCase):
 
 
         self.runSim((len(tx_cmd) + 4 * len(packets) + 20) * CLK_PERIOD)
-        self.assertValSequenceEqual(u.tx._ag.data, ref)
+        self.assertValSequenceEqual(dut.tx._ag.data, ref)
 
 
 if __name__ == '__main__':

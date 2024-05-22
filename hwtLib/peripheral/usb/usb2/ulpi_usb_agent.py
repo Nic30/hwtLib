@@ -50,8 +50,8 @@ class UlpiUsbAgent(UlpiAgent):
     with device host logic and USB stack
     """
 
-    def __init__(self, sim:HdlSimulator, intf:Ulpi, allowNoReset=False):
-        UlpiAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim:HdlSimulator, hwIO:Ulpi, allowNoReset=False):
+        UlpiAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
         self.descriptors = None
         self.usb_driver = None
         self.usb_driver_proc = None

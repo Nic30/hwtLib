@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
+from hwt.hwModule import HwModule
+from hwtLib.amba.axi4s import Axi4Stream
 
 
-class InconsistentIntfDirection(Unit):
+class InconsistentIntfDirection(HwModule):
     def _declr(self):
-        self.a = AxiStream()._m()
+        self.a = Axi4Stream()._m()
 
     def _impl(self):
         # missing drivers of self.a
@@ -15,7 +15,8 @@ class InconsistentIntfDirection(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = InconsistentIntfDirection()
+    from hwt.synth import to_rtl_str
+    
+    m = InconsistentIntfDirection()
     # expecting hwt.synthesizer.exceptions.IntfLvlConfErr
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

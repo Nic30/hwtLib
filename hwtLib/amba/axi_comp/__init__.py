@@ -1,5 +1,5 @@
 """
-Generic Axi3/4 componets
+Generic Axi3/4 components
 
-:note: majority  of componets can be also configured to use Axi3/4Lite interface instead
+:note: majority  of components can be also configured to use Axi3/4Lite HwIO instead
 """

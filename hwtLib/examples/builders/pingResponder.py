@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
-from hwt.hdl.value import HValue
-from hwt.interfaces.std import Signal
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.rtlLevel.mainBases import RtlMemoryBase
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwt.hdl.const import HConst
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
+from hwt.mainBases import RtlMemoryBase
+from hwt.hwModule import HwModule
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.types.net.ethernet import Eth2Header_t
 from hwtLib.types.net.icmp import ICMP_echo_header_t, ICMP_TYPE
 from hwtLib.types.net.ip import IPv4Header_t, ipv4_t
@@ -26,7 +26,7 @@ echoFrame_t = HStruct(
 
 
 # https://github.com/hamsternz/FPGA_Webserver/tree/master/hdl/icmp
-class PingResponder(Unit):
+class Axi4SPingResponder(HwModule):
     """
     Listen for echo request on rx axi stream interface and respond
     with echo response on tx interface
@@ -39,20 +39,20 @@ class PingResponder(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(32)
-        self.IS_BIGENDIAN = Param(True)
-        self.USE_STRB = Param(True)
+        self.DATA_WIDTH = HwParam(32)
+        self.IS_BIGENDIAN = HwParam(True)
+        self.USE_STRB = HwParam(True)
 
     def _declr(self):
         addClkRstn(self)
 
-        self.myIp = Signal(dtype=ipv4_t)
+        self.myIp = HwIOSignal(dtype=ipv4_t)
 
-        with self._paramsShared(exclude=({"USE_STRB"}, set())):
-            self.rx = AxiStream()
+        with self._hwParamsShared(exclude=({"USE_STRB"}, set())):
+            self.rx = Axi4Stream()
 
-        with self._paramsShared():
-            self.tx = AxiStream()._m()
+        with self._hwParamsShared():
+            self.tx = Axi4Stream()._m()
 
     def req_load(self, parsed, regs, freeze):
         """
@@ -71,10 +71,10 @@ class PingResponder(Unit):
             In = getattr(parsed, name)
             reg = getattr(regs, name)
 
-            if isinstance(In, StructIntf):
+            if isinstance(In, HwIOStruct):
                 self.req_load(In, reg, freeze)
-            elif isinstance(reg, HValue) or \
-                    (isinstance(reg, Signal) and not isinstance(reg._sig, RtlMemoryBase)):
+            elif isinstance(reg, HConst) or \
+                    (isinstance(reg, HwIOSignal) and not isinstance(reg._sig, RtlMemoryBase)):
                 # we have an exact value to use, ignore this intput
                 In.rd(1)
                 continue
@@ -96,7 +96,7 @@ class PingResponder(Unit):
 
         t = resp._dtype
 
-        if isinstance(t, Bits):
+        if isinstance(t, HBits):
             deparserIn.data(resp)
             deparserIn.vld(sendingReply)
         else:
@@ -137,7 +137,7 @@ class PingResponder(Unit):
         resp.icmp.checksum._sig = self.icmp_checksum(resp.icmp)
 
         # parse input frame
-        parsed = AxiSBuilder(self, self.rx).parse(echoFrame_t)
+        parsed = Axi4SBuilder(self, self.rx).parse(echoFrame_t)
         self.req_load(parsed, resp, sendingReply)
 
         t = parsed.icmp.type
@@ -150,9 +150,9 @@ class PingResponder(Unit):
             out.IS_BIGENDIAN = self.IS_BIGENDIAN
 
         # create output frame
-        txBuilder, deparserIn = AxiSBuilder.deparse(self,
+        txBuilder, deparserIn = Axi4SBuilder.deparse(self,
                                                echoFrame_t,
-                                               AxiStream,
+                                               Axi4Stream,
                                                setup_frame_deparser)
 
         self.connect_resp(resp, deparserIn, sendingReply)
@@ -168,7 +168,8 @@ class PingResponder(Unit):
 
 
 if __name__ == "__main__":  # alias python main function
-    from hwt.synthesizer.utils import to_rtl_str
-    u = PingResponder()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = Axi4SPingResponder()
+    print(to_rtl_str(m))
 

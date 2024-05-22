@@ -8,12 +8,12 @@
 
 from hwt.code import If, Concat
 from hwt.hdl.types.defs import BIT
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.interfaces.utils import addClkRst, propagateClkRst
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRst, propagateClkRst
+from hwt.hwModule import HwModule
 
 
-class DReg(Unit):
+class DReg(HwModule):
     """
     Basic d flip flop
 
@@ -25,8 +25,8 @@ class DReg(Unit):
     def _declr(self):
         addClkRst(self)
 
-        self.din = Signal()
-        self.dout = Signal()._m()
+        self.din = HwIOSignal()
+        self.dout = HwIOSignal()._m()
 
     def _impl(self):
         internReg = self._reg("internReg", BIT, def_val=False)
@@ -35,7 +35,7 @@ class DReg(Unit):
         self.dout(internReg)
 
 
-class DoubleDReg(Unit):
+class DoubleDReg(HwModule):
     """
     :attention: using DReg unit instance is pointless because it can be instantiated
         by _reg in this unit
@@ -71,7 +71,7 @@ class AsyncResetReg(DReg):
         self.dout(internReg)
 
 
-class DDR_Reg(Unit):
+class DDR_Reg(HwModule):
     """
     Double Data Rate register
 
@@ -80,8 +80,8 @@ class DDR_Reg(Unit):
     def _declr(self):
         addClkRst(self)
 
-        self.din = Signal(dtype=BIT)
-        self.dout = VectSignal(2)._m()
+        self.din = HwIOSignal(dtype=BIT)
+        self.dout = HwIOVectSignal(2)._m()
 
     def _impl(self):
         din = self.din
@@ -120,14 +120,14 @@ class RegWhereNextIsOnlyOutput(DReg):
         self.dout(r.next)
 
 
-class LatchReg(Unit):
+class LatchReg(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.din = Signal()
-        self.dout = Signal()._m()
-        self.en = Signal()
+        self.din = HwIOSignal()
+        self.dout = HwIOSignal()._m()
+        self.en = HwIOSignal()
 
     def _impl(self):
         # dout is latched because write into it is conditional
@@ -137,7 +137,7 @@ class LatchReg(Unit):
         )
 
 
-class DReg_asyncRst(Unit):
+class DReg_asyncRst(HwModule):
     """
     .. hwt-autodoc::
     """
@@ -158,6 +158,7 @@ class DReg_asyncRst(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = OptimizedOutReg()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = OptimizedOutReg()
+    print(to_rtl_str(m))

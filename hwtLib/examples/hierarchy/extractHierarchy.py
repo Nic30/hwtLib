@@ -5,24 +5,24 @@ from collections import deque
 from itertools import chain
 from typing import Union, Optional, Sequence, Dict, Deque, List
 
-from hwt.hdl.operator import Operator
+from hwt.hdl.const import HConst
+from hwt.hdl.operator import HOperatorNode
 from hwt.hdl.operatorDefs import EVENT_OPS
 from hwt.hdl.portItem import HdlPortItem
 from hwt.hdl.statements.statement import HdlStatement
-from hwt.hdl.value import HValue
-from hwt.interfaces.std import Clk, Rst, Rst_n, Signal
-from hwt.pyUtils.uniqList import UniqList
+from hwt.hwIOs.std import HwIOClk, HwIORst, HwIORst_n, HwIOSignal
+from hwt.pyUtils.setList import SetList
+from hwt.hwModule import HwModule
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
-from hwt.synthesizer.rtlLevel.signalUtils.exceptions import SignalDriverErr
-from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.rtlLevel.exceptions import SignalDriverErr
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 
 
-def consumeExpr(e: Union[RtlSignal, HValue],
-                inputs:UniqList[RtlSignal],
-                seenObjs: UniqList[Union[RtlSignal, Operator]]):
+def consumeExpr(e: Union[RtlSignal, HConst],
+                inputs:SetList[RtlSignal],
+                seenObjs: SetList[Union[RtlSignal, HOperatorNode]]):
     """
     To make output code readable we must extract also expressions used in statements if they are private
     to selected statements.
@@ -30,7 +30,7 @@ def consumeExpr(e: Union[RtlSignal, HValue],
     :note: Walk from endpoint to a driver. For every signal on path if all its endpoints are
         in seenObjs, add this to seenObjs and continue search on its drivers. 
     """
-    if isinstance(e, HValue):
+    if isinstance(e, HConst):
         return
 
     try:
@@ -45,8 +45,8 @@ def consumeExpr(e: Union[RtlSignal, HValue],
         inputs.append(e)
         return
     else:
-        assert isinstance(d, Operator), d
-        d: Operator
+        assert isinstance(d, HOperatorNode), d
+        d: HOperatorNode
         if d.operator in EVENT_OPS:
             c = d.operands[0]
             seenObjs.extend((d, e, c))
@@ -64,16 +64,16 @@ def consumeExpr(e: Union[RtlSignal, HValue],
                 consumeExpr(d, inputs, seenObjs)
 
 
-class ExtractedUnit(Unit):
+class ExtractedHwModule(HwModule):
     """
     An unit which will extract selected circuit from parent on instantiation.
     """
 
-    def __init__(self, externInputs: UniqList[RtlSignal],
-                  externObjsToExtract: UniqList[Union[RtlSignal, Operator]],
-                  externOutputs: UniqList[RtlSignal],
+    def __init__(self, externInputs: SetList[RtlSignal],
+                  externObjsToExtract: SetList[Union[RtlSignal, HOperatorNode]],
+                  externOutputs: SetList[RtlSignal],
                   hdl_name_override:Optional[str]=None):
-        Unit.__init__(self, hdl_name_override=hdl_name_override)
+        HwModule.__init__(self, hdl_name_override=hdl_name_override)
         self._externInputs = externInputs
         self._externObjsToExtract = externObjsToExtract
         self._externOutputs = externOutputs
@@ -82,15 +82,15 @@ class ExtractedUnit(Unit):
         ioMap = self._ioMap = {}
         for i in self._externInputs:
             i: RtlSignal
-            intf = getattr(i, "_interface", None)
+            hwIO = getattr(i, "_hwIO", None)
             iCloned = None
-            if intf is not None:
-                if isinstance(intf, (Clk, Rst, Rst_n)):
-                    iCloned = intf.__class__()
-                    iCloned._updateParamsFrom(intf)
+            if hwIO is not None:
+                if isinstance(hwIO, (HwIOClk, HwIORst, HwIORst_n)):
+                    iCloned = hwIO.__class__()
+                    iCloned._updateParamsFrom(hwIO)
 
             if iCloned is None:
-                iCloned = Signal(i._dtype)
+                iCloned = HwIOSignal(i._dtype)
             name = AbstractComponentBuilder(self, None, "")._findSuitableName(i.name, firstWithoutCntrSuffix=True)
             setattr(self, name, iCloned)
             assert i not in ioMap
@@ -98,7 +98,7 @@ class ExtractedUnit(Unit):
         
         for o in self._externOutputs:
             o: RtlSignal
-            oCloned = Signal(o._dtype)._m()
+            oCloned = HwIOSignal(o._dtype)._m()
             name = AbstractComponentBuilder(self, None, "")._findSuitableName(o.name, firstWithoutCntrSuffix=True)
             setattr(self, name, oCloned)
             assert o not in ioMap
@@ -108,7 +108,7 @@ class ExtractedUnit(Unit):
                                translation: Dict[RtlSignal, RtlSignal],
                                interOuts: Dict[RtlSignal, RtlSignal],
                                outerIoMap: Dict[RtlSignal, RtlSignal],
-                               toTranslate: Deque[Union[Operator, HdlStatement, HdlPortItem]],
+                               toTranslate: Deque[Union[HOperatorNode, HdlStatement, HdlPortItem]],
                                ):
         priv = self._externObjsToExtract
 
@@ -130,7 +130,7 @@ class ExtractedUnit(Unit):
                     raise NotImplementedError(ep)
             
                 else:
-                    assert isinstance(ep, Operator), ep
+                    assert isinstance(ep, HOperatorNode), ep
                     if ep in priv:
                         assert o not in ep.perands, (o, ep)
                         assert ep.result.ctx is self._ctx, ep
@@ -140,7 +140,7 @@ class ExtractedUnit(Unit):
         
         toDrop = []
         for k, v in o._usedOps.items():
-            if isinstance(v, HValue):
+            if isinstance(v, HConst):
                 continue
             v: RtlSignal
             if v.ctx is self._ctx:
@@ -166,7 +166,7 @@ class ExtractedUnit(Unit):
                                      outerIoMap: Dict[RtlSignal, RtlSignal]):
         # BFS move or copy circuit to this unit from parent
         priv = self._externObjsToExtract
-        toTranslate: Deque[Union[Operator, HdlStatement, HdlPortItem]] = deque()
+        toTranslate: Deque[Union[HOperatorNode, HdlStatement, HdlPortItem]] = deque()
         for i in self._externInputs:
             i: RtlSignal
             toTranslate.extend(ep for ep in i.endpoints if ep in priv)
@@ -184,7 +184,7 @@ class ExtractedUnit(Unit):
                 ctx = self._parent._ctx
                 assert stm in ctx.statements
 
-                newInputs: Optional[List[Union[RtlSignal, HValue]]] = []
+                newInputs: Optional[List[Union[RtlSignal, HConst]]] = []
                 for i in stm._inputs:
                     _i = translation.get(i, None)
                     if _i is None:
@@ -216,7 +216,7 @@ class ExtractedUnit(Unit):
                 translation[stm] = stm
                 stm._clean_signal_meta()
 
-            elif isinstance(obj, Operator):
+            elif isinstance(obj, HOperatorNode):
                 shouldCopy = obj not in priv or obj.operator in EVENT_OPS
                 if shouldCopy:
                     newOps = []
@@ -231,7 +231,7 @@ class ExtractedUnit(Unit):
                                 assert _op.ctx is self._ctx
                                 newOps.append(_op)
                         else:
-                            assert isinstance(op, HValue), op
+                            assert isinstance(op, HConst), op
                             newOps.append(op)
     
                     if newOps is None:
@@ -289,7 +289,7 @@ class ExtractedUnit(Unit):
         translation = {i: self._ioMap[i]._sig for i in self._externInputs}
         interOuts = {i: self._ioMap[i]._sig for i in self._externOutputs}
         self._cleanAsSubunit()
-        super(ExtractedUnit, self)._signalsForSubUnitEntity(self._parent._ctx, "sig_" + self._name)
+        super(ExtractedHwModule, self)._signalsForSubHwModuleEntity(self._parent._ctx, "sig_" + self._name)
         
         outerIo = {i: self._ioMap[i]._sig for i in chain(self._externInputs, self._externOutputs)}
         self._moveOrCopyCircuitFromParent(translation, interOuts, outerIo)
@@ -299,17 +299,17 @@ class ExtractedUnit(Unit):
             self._ioMap[i](i)
         self._outerIo = outerIo
         
-    def _signalsForSubUnitEntity(self, context: RtlNetlist, prefix: str):
+    def _signalsForSubHwModuleEntity(self, context: RtlNetlist, prefix: str):
         assert context is self._parent._ctx, self
         assert prefix == "sig_" + self._name, (prefix, self._name) 
         for i in chain(self._externInputs, self._externOutputs):
             self._ioMap[i]._sig = self._outerIo[i]
     
 
-def extractNetlistPartToSubunit(
-                        inputs: UniqList[RtlSignal],
-                        outputs: UniqList[RtlSignal],
-                        priv: UniqList[Union[RtlSignal, Operator]]) -> ExtractedUnit:
+def extractNetlistPartToSubmodule(
+                        inputs: SetList[RtlSignal],
+                        outputs: SetList[RtlSignal],
+                        priv: SetList[Union[RtlSignal, HOperatorNode]]) -> ExtractedHwModule:
     """
     :attention: extraction is executed on unit instantiation
     :attention: each object in priv must be reachable from inputs
@@ -331,14 +331,14 @@ def extractNetlistPartToSubunit(
     for i in inputs:
         priv.discard(i)
     
-    return ExtractedUnit(inputs, priv, outputs)        
+    return ExtractedHwModule(inputs, priv, outputs)        
 
         
-def extractRegsToSubunit(regs: Sequence[RtlSyncSignal]) -> ExtractedUnit:
+def extractRegsToSubmodule(regs: Sequence[RtlSyncSignal]) -> ExtractedHwModule:
     # resolve IO
-    inputs: UniqList[RtlSignal] = UniqList()
-    outputs: UniqList[RtlSignal] = UniqList()
-    priv: UniqList[Union[RtlSignal, Operator]] = UniqList()
+    inputs: SetList[RtlSignal] = SetList()
+    outputs: SetList[RtlSignal] = SetList()
+    priv: SetList[Union[RtlSignal, HOperatorNode]] = SetList()
     
     for r in regs:
         dffStm = r.singleDriver()._cut_off_drivers_of(r)
@@ -350,5 +350,5 @@ def extractRegsToSubunit(regs: Sequence[RtlSyncSignal]) -> ExtractedUnit:
                 consumeExpr(i, inputs, priv)
             outputs.extend(stm._outputs)
     
-    return extractNetlistPartToSubunit(inputs, outputs, priv)
+    return extractNetlistPartToSubmodule(inputs, outputs, priv)
     

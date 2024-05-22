@@ -1,9 +1,9 @@
-from hwt.interfaces.agents.vldSynced import VldSyncedAgent
+from hwt.hwIOs.agents.vldSync import HwIODataVldAgent
+from hwt.hwIOs.std import HwIOSignal, HwIODataVld, HwIOVectSignal
 from hwtSimApi.hdlSimulator import HdlSimulator
-from hwt.interfaces.std import Signal, VldSynced, VectSignal
 
 
-class VldSyncedDataErrLast(VldSynced):
+class VldSyncedDataErrLast(HwIODataVld):
     """
     Interface with data, vld, err, last signal
 
@@ -11,31 +11,31 @@ class VldSyncedDataErrLast(VldSynced):
     """
 
     def _declr(self):
-        VldSynced._declr(self)
+        HwIODataVld._declr(self)
         if self.DATA_WIDTH > 8:
-            self.mask = VectSignal(self.DATA_WIDTH // 8)
-        self.err = Signal()
-        self.last = Signal()
+            self.mask = HwIOVectSignal(self.DATA_WIDTH // 8)
+        self.err = HwIOSignal()
+        self.last = HwIOSignal()
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = VldSyncedDataErrLastAgent(sim, self)
 
 
-class VldSyncedDataErrLastAgent(VldSyncedAgent):
+class VldSyncedDataErrLastAgent(HwIODataVldAgent):
 
-    def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
-        VldSyncedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
-        self.has_mask = hasattr(intf, "mask")
+    def __init__(self, sim: HdlSimulator, hwIO, allowNoReset=False):
+        HwIODataVldAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
+        self.has_mask = hasattr(hwIO, "mask")
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         if self.has_mask:
             return (i.data.read(), i.mask.read(), i.err.read(), i.last.read())
         else:
             return (i.data.read(), i.err.read(), i.last.read())
 
     def set_data(self, data):
-        i = self.intf
+        i = self.hwIO
         if self.has_mask:
             if data is None:
                 data = (None, None, None, None)

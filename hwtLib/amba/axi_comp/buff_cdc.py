@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Clk, Rst_n
+from hwt.hwIOs.std import HwIOClk, HwIORst_n
+from hwt.hwParam import HwParam
 from hwt.math import isPow2
-from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_comp.buff import AxiBuff
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 
 
 class AxiBuffCdc(AxiBuff):
@@ -21,8 +21,8 @@ class AxiBuffCdc(AxiBuff):
         AxiBuff._config(self)
         self.ADDR_BUFF_DEPTH += 1
         self.DATA_BUFF_DEPTH += 1
-        self.M_FREQ = Param(int(102e6))
-        self.S_FREQ = Param(int(102e6))
+        self.M_FREQ = HwParam(int(102e6))
+        self.S_FREQ = HwParam(int(102e6))
 
     def _setup_clk_rst_n(self):
         self.clk.FREQ = self.M_FREQ
@@ -30,10 +30,10 @@ class AxiBuffCdc(AxiBuff):
 
         self.s._make_association(clk=self.clk, rst=self.rst_n)
 
-        self.m_clk = Clk()
+        self.m_clk = HwIOClk()
         self.m_clk.FREQ = self.S_FREQ
 
-        self.m_rst_n = Rst_n()
+        self.m_rst_n = HwIORst_n()
         self.m_rst_n._make_association(clk=self.m_clk)
 
         self.m._make_association(clk=self.m_clk, rst=self.m_rst_n)
@@ -52,7 +52,7 @@ class AxiBuffCdc(AxiBuff):
         for name, m, s, depth in [("ar", self.s.ar, self.m.ar, ADDR_DEPTH),
                                   ("aw", self.s.aw, self.m.aw, ADDR_DEPTH),
                                   ("w",  self.s.w,  self.m.w, DATA_DEPTH)]:
-            i = AxiSBuilder(self, m, name).buff_cdc(
+            i = Axi4SBuilder(self, m, name).buff_cdc(
                 items=depth,
                 clk=self.m_clk,
                 rst=self.m_rst_n,
@@ -61,7 +61,7 @@ class AxiBuffCdc(AxiBuff):
 
         for name, m, s, depth in [("r", self.m.r, self.s.r, DATA_DEPTH),
                                   ("b", self.m.b, self.s.b, ADDR_DEPTH)]:
-            i = AxiSBuilder(self, m, name).buff_cdc(
+            i = Axi4SBuilder(self, m, name).buff_cdc(
                 items=depth,
                 clk=self.clk,
                 rst=self.rst_n,
@@ -71,11 +71,11 @@ class AxiBuffCdc(AxiBuff):
 
 def _example_AxiBuffCdc():
     from hwtLib.amba.axi4 import Axi4
-    u = AxiBuffCdc(Axi4)
-    return u
+    m = AxiBuffCdc(Axi4)
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiBuffCdc()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_AxiBuffCdc()
+    print(to_rtl_str(m))

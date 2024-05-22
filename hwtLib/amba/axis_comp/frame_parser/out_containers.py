@@ -2,11 +2,11 @@ from typing import List, Union, Optional
 
 from hwt.code import If, And, Or
 from hwt.hdl.types.defs import BIT
-from hwt.interfaces.std import Handshaked, VldSynced
+from hwt.hwIOs.std import HwIODataRdVld, HwIODataVld
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
+from hwt.hwModule import HwModule
+from hwtLib.amba.axi4s import Axi4Stream
 
 
 class InNodeInfo():
@@ -14,7 +14,7 @@ class InNodeInfo():
     Interface has to be ready and handshaked logic should be constructed
     """
 
-    def __init__(self, inInterface: Handshaked, en: RtlSignal):
+    def __init__(self, inInterface: HwIODataRdVld, en: RtlSignal):
         self.inInterface = inInterface
         self.en = en
 
@@ -44,8 +44,8 @@ class OutNodeInfo():
     :ivar ~.exvlusiveEn: enable signal of union member
     """
 
-    def __init__(self, parent: Unit,
-                 outInterface: Union[Handshaked, VldSynced],
+    def __init__(self, parent: HwModule,
+                 outInterface: Union[HwIODataRdVld, HwIODataVld],
                  en: RtlSignal,
                  exclusiveEn: Optional[RtlSignal]):
         self.parent = parent
@@ -121,8 +121,8 @@ class OutStreamNodeGroup():
 
 
 class OutStreamNodeInfo(OutNodeInfo):
-    def __init__(self, parent: Unit,
-                 outInterface: AxiStream,
+    def __init__(self, parent: HwModule,
+                 outInterface: Axi4Stream,
                  en: RtlSignal,
                  exclusiveEn: Optional[RtlSignal],
                  streamGroup: OutStreamNodeGroup
@@ -210,11 +210,11 @@ class ListOfOutNodeInfos(list):
 
 class ExclusieveListOfHsNodes(list):
     """
-    @ivar selectorIntf: selector for this node
+    @ivar selectorHwIO: selector for this node
     """
 
     def __init__(self, selectorIntf):
-        self.selectorIntf = selectorIntf
+        self.selectorHwIO = selectorIntf
 
     def append(self, selectorVal, item):
         return list.append(self, (selectorVal, item))
@@ -222,11 +222,11 @@ class ExclusieveListOfHsNodes(list):
     def ack(self) -> RtlSignal:
         ack = BIT.from_py(1)
         if self:
-            acks = [x[1].ack() & self.selectorIntf.data._eq(x[0])
+            acks = [x[1].ack() & self.selectorHwIO.data._eq(x[0])
                     for x in self]
             ack = Or(*acks)
 
-        return ack & self.selectorIntf.vld
+        return ack & self.selectorHwIO.vld
 
     def sync(self, allNodes: List[OutNodeInfo], en: RtlSignal, din_vld: RtlSignal) -> None:
         nodesWithoutMe = list(where(allNodes, lambda x: x is not self))

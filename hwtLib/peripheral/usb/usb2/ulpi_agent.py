@@ -23,8 +23,8 @@ class UlpiAgent(SyncAgentBase):
         and the stp works as handshake ready_n, if stp is set to 1 the transmission of whole packet is interrupted.
     """
 
-    def __init__(self, sim:HdlSimulator, intf: Ulpi, allowNoReset=False):
-        super(UlpiAgent, self).__init__(sim, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim:HdlSimulator, hwIO: Ulpi, allowNoReset=False):
+        super(UlpiAgent, self).__init__(sim, hwIO, allowNoReset=allowNoReset)
         self.link_to_phy_packets = deque()
         self.phy_to_link_packets = deque()
 
@@ -116,7 +116,7 @@ class UlpiAgent(SyncAgentBase):
             raise NotImplementedError(alt_int)
 
     def data_read(self):
-        return self.intf.data.o._sigInside.read()
+        return self.hwIO.data.o._sigInside.read()
 
     def driver(self):
         """
@@ -136,8 +136,8 @@ class UlpiAgent(SyncAgentBase):
 
         """
         yield WaitWriteOnly()
-        intf = self.intf
-        intf.dir._sigInside.write(self.dir)
+        hwIO = self.hwIO
+        hwIO.dir._sigInside.write(self.dir)
 
         yield WaitCombRead()
         en = self.notReset() and self._enabled
@@ -147,16 +147,16 @@ class UlpiAgent(SyncAgentBase):
         if self.in_turnarround:
             # entirely skip the turnaround cycle
             yield WaitWriteOnly()
-            # print("%d: %r PHY: turnaround ->%s" % (self.sim.now, intf, "PHY" if self.dir == Ulpi.DIR.PHY else "LINK"))
+            # print("%d: %r PHY: turnaround ->%s" % (self.sim.now, hwIO, "PHY" if self.dir == Ulpi.DIR.PHY else "LINK"))
             self.in_turnarround = False
-            intf.data.i._sigInside.write(None)
+            hwIO.data.i._sigInside.write(None)
             if self.dir == Ulpi.DIR.PHY:
                 # nxt=1 in turnarround means thatat the next RX_CMD contains RxActive
-                intf.nxt._sigInside.write(int(bool(self.phy_to_link_packets)))
+                hwIO.nxt._sigInside.write(int(bool(self.phy_to_link_packets)))
 
             yield WaitCombRead()
-            t = int(intf.data.t._sigInside.read())
-            assert t == 0, (self.sim.now, intf, t, "data signal has to be in high-impedance state during turnaround")
+            t = int(hwIO.data.t._sigInside.read())
+            assert t == 0, (self.sim.now, hwIO, t, "data signal has to be in high-impedance state during turnaround")
             return
 
         if self.dir == Ulpi.DIR.PHY:
@@ -175,16 +175,16 @@ class UlpiAgent(SyncAgentBase):
                 d = to_link_pkt.popleft()
             self.RxEvent_RxActive = int(bool(to_link_pkt))
 
-            intf.data.i._sigInside.write(d)
-            intf.nxt._sigInside.write(int(
+            hwIO.data.i._sigInside.write(d)
+            hwIO.nxt._sigInside.write(int(
                 self._enabled and
                 to_link_pkt is not None
             ))
 
             yield WaitCombRead()
-            t = int(intf.data.t._sigInside.read())
-            assert t == 0, (self.sim.now, intf, t, "link must not write data when PHY is the master of this bus")
-            stp = int(intf.stp._sigInside.read())
+            t = int(hwIO.data.t._sigInside.read())
+            assert t == 0, (self.sim.now, hwIO, t, "link must not write data when PHY is the master of this bus")
+            stp = int(hwIO.stp._sigInside.read())
             if stp != 0:
                 raise NotImplementedError()
 
@@ -197,28 +197,28 @@ class UlpiAgent(SyncAgentBase):
         else:
             # TX to PHY
             yield WaitWriteOnly()
-            intf.nxt._sigInside.write(int(self._enabled))
+            hwIO.nxt._sigInside.write(int(self._enabled))
 
             yield WaitCombRead()
             try:
-                t = int(intf.data.t._sigInside.read())
+                t = int(hwIO.data.t._sigInside.read())
             except ValidityError:
-                raise AssertionError(self.sim.now, intf.data.t._getFullName(),
+                raise AssertionError(self.sim.now, hwIO.data.t._getFullName(),
                                      "in invalid state (this would result in burned IO)")
 
-            assert t == mask(8), (self.sim.now, intf, t,
+            assert t == mask(8), (self.sim.now, hwIO, t,
                                   "link must write the data when it is the master of this bus")
 
             try:
-                stp = int(intf.stp._sigInside.read())
+                stp = int(hwIO.stp._sigInside.read())
             except ValueError:
                 raise AssertionError(
-                    (self.sim.now, intf._getFullName(), "stp signal in invalid state"
+                    (self.sim.now, hwIO._getFullName(), "stp signal in invalid state"
                      "(this would cause desynchronization)"))
             try:
                 d = int(self.data_read())
             except ValidityError:
-                raise AssertionError(self.sim.now, intf.data.t._getFullName(), "invalid data from LINK")
+                raise AssertionError(self.sim.now, hwIO.data.t._getFullName(), "invalid data from LINK")
 
             p = self.actual_link_to_phy_packet
             if stp or (p is None and d == ULPI_TX_CMD.NOOP):
@@ -261,7 +261,7 @@ class UlpiAgent(SyncAgentBase):
             * stp
 
         """
-        intf = self.intf
+        hwIO = self.hwIO
         yield WaitCombRead()
         en = self.notReset() and self._enabled
         if not en:
@@ -269,24 +269,24 @@ class UlpiAgent(SyncAgentBase):
 
         yield WaitWriteOnly()
         yield WaitCombRead()
-        direction = int(intf.dir._sigInside.read())
+        direction = int(hwIO.dir._sigInside.read())
         if direction != self.dir:
             self.in_turnarround = True
             self.dir = direction
 
         yield WaitWriteOnly()
         if self.in_turnarround:
-            # print("%d: %r LINK: turnaround ->%s" % (self.sim.now, intf, "PHY" if self.dir == Ulpi.DIR.PHY else "LINK"))
+            # print("%d: %r LINK: turnaround ->%s" % (self.sim.now, hwIO, "PHY" if self.dir == Ulpi.DIR.PHY else "LINK"))
             # check if it was in the middle of recieving of the packet (end of rx packet)
             if direction == Ulpi.DIR.LINK:  # the direction is now reversed than it was
                 p = self.actual_phy_to_link_packet
                 if p is not None:
-                    assert p, (self.sim.now, intf, "The packet needs to have at least PID and other members of header")
+                    assert p, (self.sim.now, hwIO, "The packet needs to have at least PID and other members of header")
                     self.on_phy_to_link_packet(p)
                     self.actual_phy_to_link_packet = None
             # entirely skip the turnaround cycle
-            intf.data.o._sigInside.write(None)
-            intf.data.t._sigInside.write(0)
+            hwIO.data.o._sigInside.write(None)
+            hwIO.data.t._sigInside.write(0)
             self.in_turnarround = False
             return
 
@@ -303,12 +303,12 @@ class UlpiAgent(SyncAgentBase):
                 m = 0
                 d = None
 
-            intf.stp._sigInside.write(stp)
-            intf.data.t._sigInside.write(m)
-            intf.data.o._sigInside.write(d)
+            hwIO.stp._sigInside.write(stp)
+            hwIO.data.t._sigInside.write(m)
+            hwIO.data.o._sigInside.write(d)
 
         yield WaitCombRead()
-        nxt = int(intf.nxt._sigInside.read())
+        nxt = int(hwIO.nxt._sigInside.read())
         if direction == Ulpi.DIR.LINK:
             # tx/write
             if nxt:
@@ -322,11 +322,11 @@ class UlpiAgent(SyncAgentBase):
             assert direction == Ulpi.DIR.PHY
             # rx/read
             try:
-                data = int(intf.data.i._sigInside.read())
+                data = int(hwIO.data.i._sigInside.read())
             except ValueError:
                 raise AssertionError(
                     ("%r: data signal for interface %r is in invalid state") %
-                    (self.sim.now, intf))
+                    (self.sim.now, hwIO))
             if nxt:
                 # rx data
                 p = self.actual_phy_to_link_packet

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import And, Or, SwitchLogic
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
@@ -18,15 +18,15 @@ class HsJoinPrioritized(HandshakedCompBase):
     """
 
     def _config(self):
-        self.INPUTS = Param(2)
+        self.INPUTS = HwParam(2)
         super()._config()
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.dataIn = HObjList(
-                self.intfCls() for _ in range(int(self.INPUTS))
+                self.hwIOCls() for _ in range(int(self.INPUTS))
             )
-            self.dataOut = self.intfCls()._m()
+            self.dataOut = self.hwIOCls()._m()
 
     def dataConnectionExpr(self, dIn, dOut):
         """Create connection between input and output interface"""
@@ -68,12 +68,14 @@ class HsJoinPrioritized(HandshakedCompBase):
 
 
 def _example_HsJoinPrioritized():
-    from hwt.interfaces.std import Handshaked
-    u = HsJoinPrioritized(Handshaked)
-    return u
+    from hwt.hwIOs.std import HwIODataRdVld
+    
+    m = HsJoinPrioritized(HwIODataRdVld)
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HsJoinPrioritized()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_HsJoinPrioritized()
+    print(to_rtl_str(m))

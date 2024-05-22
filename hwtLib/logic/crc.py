@@ -5,25 +5,25 @@ from typing import List
 
 from hwt.code import If, Concat, Switch
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import VldSynced, VectSignal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.defs import BIT
+from hwt.hwIOs.std import HwIODataVld, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.common_nonstd_interfaces.data_mask_last_hs import DataMaskLastHs
+from hwtLib.commonHwIO.data_mask_last_hs import HwIODataMaskLastRdVld
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_endianity, \
     mask
-from hwt.hdl.types.defs import BIT
 
 
 # http://www.rightxlight.co.jp/technical/crc-verilog-hdl
 # http://outputlogic.com/my-stuff/parallel_crc_generator_whitepaper.pdf
 # https://is.muni.cz/th/b7glm/crc.pdf
-class Crc(Unit):
+class Crc(HwModule):
     """
     Crc generator for any crc,
     polynome can be string in usual format or integer ("x^3+x+1" or 0b1011)
@@ -36,18 +36,18 @@ class Crc(Unit):
     def _config(self):
         CrcComb._config(self)
         self.setConfig(CRC_32)
-        self.LATENCY = Param(1)
+        self.LATENCY = HwParam(1)
         self.DATA_WIDTH = 32
-        self.MASK_GRANULARITY = Param(None)
+        self.MASK_GRANULARITY = HwParam(None)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             if self.MASK_GRANULARITY is None:
-                self.dataIn = VldSynced()
+                self.dataIn = HwIODataVld()
             else:
-                self.dataIn = DataMaskLastHs()
-            self.dataOut = VectSignal(self.POLY_WIDTH)._m()
+                self.dataIn = HwIODataMaskLastRdVld()
+            self.dataOut = HwIOVectSignal(self.POLY_WIDTH)._m()
 
     def setConfig(self, crcConfigCls):
         """
@@ -93,7 +93,7 @@ class Crc(Unit):
             rst = self.rst_n
 
         state = self._reg("c",
-                          Bits(self.POLY_WIDTH),
+                          HBits(self.POLY_WIDTH),
                           self.INIT,
                           rst=rst)
         state_in_bits = list(iterBits(state))
@@ -154,14 +154,15 @@ class Crc(Unit):
 
 
 def _example_Crc():
-    u = Crc()
-    u.MASK_GRANULARITY = 8
-    u.setConfig(CRC_32)
-    u.DATA_WIDTH = 16
-    return u
+    m = Crc()
+    m.MASK_GRANULARITY = 8
+    m.setConfig(CRC_32)
+    m.DATA_WIDTH = 16
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_Crc()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_Crc()
+    print(to_rtl_str(m))

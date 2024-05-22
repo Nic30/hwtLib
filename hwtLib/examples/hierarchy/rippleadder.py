@@ -2,26 +2,26 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VectSignal
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 
 
 @serializeParamsUniq
-class FullAdder(Unit):
+class FullAdder(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()
-        self.ci = Signal()
-        self.s = Signal()._m()
-        self.co = Signal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.ci = HwIOSignal()
+        self.s = HwIOSignal()._m()
+        self.co = HwIOSignal()._m()
 
     def _impl(self):
         # [note] it is usually better to copy commonly used self properties because it makes code shorter
@@ -33,7 +33,7 @@ class FullAdder(Unit):
 
 # [wrong] the class is missing serializeParamsUniq decorator,
 # this means taht it will be serialized as a new module/entity for each instance, but it is not required
-class RippleAdder0(Unit):
+class RippleAdder0(HwModule):
     """
     .. hwt-autodoc::
     """
@@ -41,14 +41,14 @@ class RippleAdder0(Unit):
     def _config(self):
         # [possible improvement] you can specify the type directly, this may be more futureproof
         # in this case we could also control if the data type should be signed/unsigned
-        self.p_wordlength = Param(4)
+        self.p_wordlength = HwParam(4)
 
     def _declr(self):
-        self.ci = Signal()
-        self.a = VectSignal(self.p_wordlength)
-        self.b = VectSignal(self.p_wordlength)
-        self.s = VectSignal(self.p_wordlength)._m()
-        self.co = Signal()._m()
+        self.ci = HwIOSignal()
+        self.a = HwIOVectSignal(self.p_wordlength)
+        self.b = HwIOVectSignal(self.p_wordlength)
+        self.s = HwIOVectSignal(self.p_wordlength)._m()
+        self.co = HwIOSignal()._m()
 
         # [wrong] manually instantiated child components (it is better to use HObjList)
         self.fa0 = FullAdder()
@@ -57,10 +57,10 @@ class RippleAdder0(Unit):
         self.fa3 = FullAdder()
 
     def _impl(self):
-        # [wrong] VectSignal is an Interface sub-class, it is ment to be used for IO of the component
+        # [wrong] HwIOVectSignal is an Interface sub-class, it is ment to be used for IO of the component
         # it works but it has significant limitations, you should use self._sig() wihich handles name collisions
         # and has more confort API for clock/reset/default value specifications
-        self.c = VectSignal(self.p_wordlength + 1)
+        self.c = HwIOVectSignal(self.p_wordlength + 1)
         self.c[0](self.ci)
         self.co(self.c[self.p_wordlength])
 
@@ -102,27 +102,27 @@ class RippleAdder0(Unit):
 
 
 @serializeParamsUniq
-class RippleAdder1(Unit):
+class RippleAdder1(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.p_wordlength = Param(4)
+        self.p_wordlength = HwParam(4)
 
     def _declr(self):
-        self.ci = Signal()
-        self.a = VectSignal(self.p_wordlength)
-        self.b = VectSignal(self.p_wordlength)
-        self.s = VectSignal(self.p_wordlength)._m()
-        self.co = Signal()._m()
+        self.ci = HwIOSignal()
+        self.a = HwIOVectSignal(self.p_wordlength)
+        self.b = HwIOVectSignal(self.p_wordlength)
+        self.s = HwIOVectSignal(self.p_wordlength)._m()
+        self.co = HwIOSignal()._m()
 
         self.fa = HObjList([
            FullAdder() for _ in range(self.p_wordlength)
         ])
 
     def _impl(self):
-        c = self._sig("c", Bits(self.p_wordlength + 1))
+        c = self._sig("c", HBits(self.p_wordlength + 1))
 
         c[0](self.ci)
         for bitidx, fa in enumerate(self.fa):
@@ -136,26 +136,26 @@ class RippleAdder1(Unit):
 
 
 @serializeParamsUniq
-class RippleAdder2(Unit):
+class RippleAdder2(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.p_wordlength = Param(4)
+        self.p_wordlength = HwParam(4)
 
     def _declr(self):
-        self.ci = Signal()
-        # [possible improvement] you can use io = lambda : VectSignal(self.p_wordlength) as macro
+        self.ci = HwIOSignal()
+        # [possible improvement] you can use io = lambda : HwIOVectSignal(self.p_wordlength) as macro
         # so you do not have to repeat same code
-        self.a = VectSignal(self.p_wordlength)
-        self.b = VectSignal(self.p_wordlength)
-        self.s = VectSignal(self.p_wordlength)._m()
-        self.co = Signal()._m()
+        self.a = HwIOVectSignal(self.p_wordlength)
+        self.b = HwIOVectSignal(self.p_wordlength)
+        self.s = HwIOVectSignal(self.p_wordlength)._m()
+        self.co = HwIOSignal()._m()
 
     def _impl(self):
         # [wrong] it is useless to use an extra signal to connect ports,  because it can be connected directly
-        c = self._sig("c", Bits(self.p_wordlength + 1))
+        c = self._sig("c", HBits(self.p_wordlength + 1))
 
         lci = [FullAdder()  for _ in range(self.p_wordlength)]
         self.fa = HObjList(lci)
@@ -176,20 +176,20 @@ class RippleAdder2(Unit):
 
 
 @serializeParamsUniq
-class RippleAdder3(Unit):
+class RippleAdder3(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.p_wordlength = Param(4)
+        self.p_wordlength = HwParam(4)
 
     def _declr(self):
-        self.ci = Signal()
-        self.a = VectSignal(self.p_wordlength)
-        self.b = VectSignal(self.p_wordlength)
-        self.s = VectSignal(self.p_wordlength)._m()
-        self.co = Signal()._m()
+        self.ci = HwIOSignal()
+        self.a = HwIOVectSignal(self.p_wordlength)
+        self.b = HwIOVectSignal(self.p_wordlength)
+        self.s = HwIOVectSignal(self.p_wordlength)._m()
+        self.co = HwIOSignal()._m()
 
     def _impl(self):
         carry = self.ci
@@ -217,12 +217,12 @@ class RippleAdder3(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u1 = RippleAdder1()
-    u2 = RippleAdder2()
-    u3 = RippleAdder3()
+    from hwt.synth import to_rtl_str
+    m1 = RippleAdder1()
+    m2 = RippleAdder2()
+    m3 = RippleAdder3()
     from hwt.serializer.verilog import VerilogSerializer
 
-    print(to_rtl_str(u1, serializer_cls=VerilogSerializer))
-    print(to_rtl_str(u2, serializer_cls=VerilogSerializer))
-    print(to_rtl_str(u3, serializer_cls=VerilogSerializer))
+    print(to_rtl_str(m1, serializer_cls=VerilogSerializer))
+    print(to_rtl_str(m2, serializer_cls=VerilogSerializer))
+    print(to_rtl_str(m3, serializer_cls=VerilogSerializer))

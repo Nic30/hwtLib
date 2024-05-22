@@ -1,13 +1,13 @@
 from typing import Union, Optional, List
 
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOUnion import HwIOUnionSource
+from hwt.hwModule import HwModule
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.unionIntf import UnionSource
-from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi3Lite import Axi3Lite
@@ -15,9 +15,9 @@ from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.datapump.r import Axi_rDatapump
 from hwtLib.amba.datapump.utils import connectDp
+from hwtLib.amba.datapump.w import Axi_wDatapump
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.structManipulators.structWriter import StructWriter
-from hwtLib.amba.datapump.w import Axi_wDatapump
 
 
 class AxiVirtualDma(AbstractComponentBuilder):
@@ -31,7 +31,7 @@ class AxiVirtualDma(AbstractComponentBuilder):
     * It propagates read/write/aligmnent and input errors as a hwt InHwExceptions
 
     :ivar alignas: specifies alignment requirement for a data type t (in bits),
-        same functionailty as C++11 alignas specifier, used to discard alignment logic
+        same functionality as C++11 alignas specifier, used to discard alignment logic
     """
 
     def __init__(self,
@@ -47,14 +47,14 @@ class AxiVirtualDma(AbstractComponentBuilder):
         p = axi
         while p._parent is not None:
             p = p._parent
-        assert isinstance(p, Unit), p
+        assert isinstance(p, HwModule), p
         AbstractComponentBuilder.__init__(self, p, axi, 'AxiVirtualDma')
 
     def read(self,
              t: HdlType,
              tmpl: Optional[TransTmpl]=None,
              frames: Optional[List[FrameTmpl]]=None,
-             transaction_id=0) -> Union[UnionSource, StructIntf, Handshaked]:
+             transaction_id=0) -> Union[HwIOUnionSource, HwIOStruct, HwIODataRdVld]:
         """
         :param ~.t: instance of HStruct which specifies data format to download
         :param ~.tmpl: instance of TransTmpl for this t
@@ -94,7 +94,7 @@ class AxiVirtualDma(AbstractComponentBuilder):
         connectDp(self.parent, r, dp, self.end)
         return r.get, r.dataOut
 
-    # def read_to_reg(self, t: HdlType, dst: Union[RtlSyncSignal, StructIntf],
+    # def read_to_reg(self, t: HdlType, dst: Union[RtlSyncSignal, HwIOStruct],
     #                ready: RtlSignal, id_=0,
     #                tmpl: Optional[TransTmpl]=None,
     #                frames: Optional[List[FrameTmpl]]=None
@@ -118,7 +118,7 @@ class AxiVirtualDma(AbstractComponentBuilder):
     #    return addr, rData
     #
     # def read_out_of_order_to_reg(self, t: HdlType, allocate, receive, deallocate,
-    #                             dst: Union[RtlSyncSignal, StructIntf], ready: RtlSignal,
+    #                             dst: Union[RtlSyncSignal, HwIOStruct], ready: RtlSignal,
     #                             tmpl: Optional[TransTmpl]=None,
     #                             frames: Optional[List[FrameTmpl]]=None,
     #                             ):

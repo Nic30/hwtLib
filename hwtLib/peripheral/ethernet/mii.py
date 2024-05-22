@@ -1,34 +1,34 @@
-from hwt.synthesizer.interface import Interface
-from hwt.interfaces.std import Clk, VectSignal, Signal
+from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIOClk, HwIOVectSignal, HwIOSignal
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
-class MiiRxChannel(Interface):
+class MiiRxChannel(HwIO):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.d = VectSignal(4)
-        self.dv = Signal()
-        self.er = Signal()
+        self.d = HwIOVectSignal(4)
+        self.dv = HwIOSignal()
+        self.er = HwIOSignal()
 
 
-class MiiTxChannel(Interface):
+class MiiTxChannel(HwIO):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.d = VectSignal(4)
-        self.en = Signal()
-        self.er = Signal()
+        self.d = HwIOVectSignal(4)
+        self.en = HwIOSignal()
+        self.er = HwIOSignal()
 
 
-class Mii(Interface):
+class Mii(HwIO):
     """
-    Media Independent Interface
+    Media Independent HwIO
 
     PHY-MAC interface for <=100BASE Ethernet
 
@@ -36,11 +36,11 @@ class Mii(Interface):
     """
 
     def _declr(self):
-        self.rx_clk = Clk(masterDir=DIRECTION.IN)
+        self.rx_clk = HwIOClk(masterDir=DIRECTION.IN)
         with self._associated(clk=self.rx_clk):
             self.rx = MiiRxChannel(masterDir=DIRECTION.IN)
 
-        self.tx_clk = Clk(masterDir=DIRECTION.IN)
+        self.tx_clk = HwIOClk(masterDir=DIRECTION.IN)
         with self._associated(clk=self.tx_clk):
             self.tx = MiiTxChannel()
 

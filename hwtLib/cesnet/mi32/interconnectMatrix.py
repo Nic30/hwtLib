@@ -3,11 +3,11 @@
 from hwt.code import Switch, If, Or, SwitchLogic
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.cesnet.mi32.buff import Mi32Buff
 from hwtLib.cesnet.mi32.intf import Mi32
@@ -25,7 +25,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
     def _config(self) -> None:
         super(Mi32InterconnectMatrix, self)._config()
         Mi32._config(self)
-        self.MAX_TRANS_OVERLAP = Param(4)
+        self.MAX_TRANS_OVERLAP = HwParam(4)
 
     def _declr(self) -> None:
         self._normalize_config()
@@ -51,7 +51,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
         # fifo which keeps index of slave for master read transaction
         # so the interconnect can delivery the read data to master
         # which asked for it
-        f = self.r_data_order = HandshakedFifo(Handshaked)
+        f = self.r_data_order = HandshakedFifo(HwIODataRdVld)
         f.DEPTH = self.MAX_TRANS_OVERLAP
         f.DATA_WIDTH = log2ceil(len(self.SLAVES))
 
@@ -130,18 +130,19 @@ class Mi32InterconnectMatrix(BusInterconnect):
 
 def _example_Mi32InterconnectMatrix():
     AUTO = AUTO_ADDR
-    u = Mi32InterconnectMatrix()
-    u.MASTERS = (({0, 1, 2, 3}), )
-    u.SLAVES = (
+    m = Mi32InterconnectMatrix()
+    m.MASTERS = (({0, 1, 2, 3}), )
+    m.SLAVES = (
         (0x0000, 0x100),
         (0x0100, 0x100),
         (AUTO,   0x100),
         (0x1000, 0x1000),
     )
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_Mi32InterconnectMatrix()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_Mi32InterconnectMatrix()
+    print(to_rtl_str(m))

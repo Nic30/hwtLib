@@ -7,7 +7,7 @@ from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpPipelineConfig
-from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.examples.axi.oooOp.counterHashTable import OooOpExampleCounterHashTable
 from hwtLib.examples.axi.oooOp.testUtils import OutOfOrderCummulativeOp_dump_pipeline, \
     OutOfOrderCummulativeOp_dump_pipeline_html
@@ -42,57 +42,57 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = OooOpExampleCounterHashTable()
-        u.ID_WIDTH = 2
-        u.ADDR_WIDTH = u.ID_WIDTH + 3
-        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+        dut = cls.dut = OooOpExampleCounterHashTable()
+        dut.ID_WIDTH = 2
+        dut.ADDR_WIDTH = dut.ID_WIDTH + 3
+        dut.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=1,
                 WRITE_ACK_TO_READ_DATA_LATENCY=4
         )
-        cls.compileSim(u)
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
-        u = self.u
-        self.m = AxiSimRam(axi=u.m)
+        dut = self.dut
+        self.m = Axi4SimRam(axi=dut.m)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
 
         self.runSim(10 * CLK_PERIOD)
-        self.assertEmpty(u.dataOut._ag.data)
-        self.assertEmpty(u.m.aw._ag.data)
-        self.assertEmpty(u.m.w._ag.data)
-        self.assertEmpty(u.m.ar._ag.data)
+        self.assertEmpty(dut.dataOut._ag.data)
+        self.assertEmpty(dut.m.aw._ag.data)
+        self.assertEmpty(dut.m.w._ag.data)
+        self.assertEmpty(dut.m.ar._ag.data)
 
     def _test_incr(self, inputs, randomize=False, mem_init={}):
-        u = self.u
-        ADDR_ITEM_STEP = 2 ** u.ADDR_OFFSET_W
-        for i in range(2 ** u.ADDR_WIDTH // ADDR_ITEM_STEP):
+        dut = self.dut
+        ADDR_ITEM_STEP = 2 ** dut.ADDR_OFFSET_W
+        for i in range(2 ** dut.ADDR_WIDTH // ADDR_ITEM_STEP):
             v = mem_init.get(i, 0)
             if v != 0:
                 item_valid, key, value = v
-                v = u.MAIN_STATE_T.from_py({"item_valid": item_valid, "key": key, "value": value})
-                v = v._reinterpret_cast(u.m.w.data._dtype)
+                v = dut.MAIN_STATE_T.from_py({"item_valid": item_valid, "key": key, "value": value})
+                v = v._reinterpret_cast(dut.m.w.data._dtype)
             self.m.data[i] = v
 
-        u.dataIn._ag.data.extend(inputs)
+        dut.dataIn._ag.data.extend(inputs)
 
         t = (40 + len(inputs) * 3) * CLK_PERIOD
         if randomize:
-            axi_randomize_per_channel(self, u.m)
-            self.randomize(u.dataIn)
-            self.randomize(u.dataOut)
+            axi_randomize_per_channel(self, dut.m)
+            self.randomize(dut.dataIn)
+            self.randomize(dut.dataOut)
             t = int(t * 8)
 
         states = []
-        self.procs.append(OutOfOrderCummulativeOp_dump_pipeline(self, u, self.rtl_simulator.model, states))
+        self.procs.append(OutOfOrderCummulativeOp_dump_pipeline(self, dut, self.rtl_simulator.model, states))
         self.runSim(t)
         with open(f"tmp/{self.getTestName()}_pipeline.html", "w") as f:
-            OutOfOrderCummulativeOp_dump_pipeline_html(f, u, states)
+            OutOfOrderCummulativeOp_dump_pipeline_html(f, dut, states)
 
         # check if pipeline registers are empty
-        for i in range(u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK):
+        for i in range(dut.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK):
             valid = getattr(self.rtl_simulator.model.io, f"st{i:d}_valid")
             self.assertValEqual(valid.read(), 0, i)
 
@@ -102,11 +102,11 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
         self.assertValEqual(ooo_fifo.read_wait.read(), 1)
 
         # check if all transactions on AXI are finished
-        self.assertEmpty(u.m.b._ag.data)
-        self.assertEmpty(u.m.r._ag.data)
+        self.assertEmpty(dut.m.b._ag.data)
+        self.assertEmpty(dut.m.r._ag.data)
 
         # check output data itself
-        dout = u.dataOut._ag.data
+        dout = dut.dataOut._ag.data
         mem = copy(mem_init)
         for in_i, (_in, _out) in enumerate(zip(inputs, dout)):
             (
@@ -189,8 +189,8 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
         self.assertEqual(len(dout), len(inputs))
         # for i in sorted(set(inputs)):
         #    self.assertValEqual(self.m.data[i], inputs.count(i), i)
-        for i in range(2 ** u.ADDR_WIDTH // ADDR_ITEM_STEP):
-            v = self.m.getStruct(i * ADDR_ITEM_STEP, u.MAIN_STATE_T)
+        for i in range(2 ** dut.ADDR_WIDTH // ADDR_ITEM_STEP):
+            v = self.m.getStruct(i * ADDR_ITEM_STEP, dut.MAIN_STATE_T)
             ref_v = mem.get(i, None)
             if ref_v is None or not ref_v[0]:
                 aeq(v.item_valid, 0)
@@ -203,7 +203,7 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
         self._test_incr([(0, TState(0, None, OP.LOOKUP)), ])
 
     def test_r_100x_not_found(self):
-        index_pool = list(range(2 ** self.u.ID_WIDTH))
+        index_pool = list(range(2 ** self.dut.ID_WIDTH))
         self._test_incr([
                 (self._rand.choice(index_pool), TState(0, None, OP.LOOKUP))
                 for _ in range(100)
@@ -214,7 +214,7 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
         self._test_incr([(1, TState(99, None, OP.LOOKUP)), ], mem_init={1: MState(99, 20)})
 
     def test_r_100x_lookup_found(self):
-        item_pool = [(i, MState(i + 1, 20 + i)) for i in range(2 ** self.u.ID_WIDTH)]
+        item_pool = [(i, MState(i + 1, 20 + i)) for i in range(2 ** self.dut.ID_WIDTH)]
 
         self._test_incr(
             [(i, TState(v[1], None, OP.LOOKUP)) for i, v in [
@@ -242,7 +242,7 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
 
     def test_100x_lookup_found_not_found_mix(self, randomize=False):
         N = 100
-        max_id = 2 ** self.u.ID_WIDTH
+        max_id = 2 ** self.dut.ID_WIDTH
         item_pool = [(i % max_id, MState(i + 1, 20 + i)) for i in range(max_id * 2)]
 
         self._test_incr(
@@ -303,7 +303,7 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
 
     def test_no_comb_loops(self):
         s = CombLoopAnalyzer()
-        s.visit_Unit(self.u)
+        s.visit_HwModule(self.dut)
         comb_loops = freeze_set_of_sets(s.report())
         # for loop in comb_loops:
         #     print(10 * "-")
@@ -317,28 +317,28 @@ class OooOpExampleCounterHashTable_16threads_TC(OooOpExampleCounterHashTable_4th
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = OooOpExampleCounterHashTable()
-        u.ID_WIDTH = 4
-        u.ADDR_WIDTH = u.ID_WIDTH + 3
-        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+        dut = cls.dut = OooOpExampleCounterHashTable()
+        dut.ID_WIDTH = 4
+        dut.ADDR_WIDTH = dut.ID_WIDTH + 3
+        dut.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=1,
                 WRITE_ACK_TO_READ_DATA_LATENCY=16
         )
-        cls.compileSim(u)
+        cls.compileSim(dut)
 
 
 class OooOpExampleCounterHashTable_16threads_2WtoB_TC(OooOpExampleCounterHashTable_4threads_TC):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = OooOpExampleCounterHashTable()
-        u.ID_WIDTH = 4
-        u.ADDR_WIDTH = u.ID_WIDTH + 3
-        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+        dut = cls.dut = OooOpExampleCounterHashTable()
+        dut.ID_WIDTH = 4
+        dut.ADDR_WIDTH = dut.ID_WIDTH + 3
+        dut.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=2,
                 WRITE_ACK_TO_READ_DATA_LATENCY=16
         )
-        cls.compileSim(u)
+        cls.compileSim(dut)
 
 
 OooOpExampleCounterHashTable_TCs = [

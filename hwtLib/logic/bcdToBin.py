@@ -3,16 +3,16 @@
 
 from hwt.code import Switch, If, Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 
 
-class BcdToBin(Unit):
+class BcdToBin(HwModule):
     """
     Convert a BCD number to binary encoding
     This uses the double-dabble algorithm in reverse. The conversion of a BCD
@@ -24,14 +24,14 @@ class BcdToBin(Unit):
     """
 
     def _config(self):
-        self.BCD_DIGITS = Param(3)
+        self.BCD_DIGITS = HwParam(3)
 
     def _declr(self):
         addClkRstn(self)
         BCD_DIGITS = self.BCD_DIGITS
-        bcd = self.din = Handshaked()  # BCD data to convert
+        bcd = self.din = HwIODataRdVld()  # BCD data to convert
         bcd.DATA_WIDTH = 4 * BCD_DIGITS
-        bin_ = self.dout = Handshaked()._m()
+        bin_ = self.dout = HwIODataRdVld()._m()
         bin_.DATA_WIDTH = log2ceil(10 ** BCD_DIGITS - 1)  # Converted output. Retained until next conversion
 
     def _impl(self):
@@ -46,7 +46,7 @@ class BcdToBin(Unit):
         next_bcd = rename_signal(self, bcd_sr >> 1, "next_bcd")
 
         MAX_COUNT = binary_sr._dtype.bit_length()
-        bit_count = self._reg("bit_count", Bits(log2ceil(MAX_COUNT), signed=False), def_val=MAX_COUNT)
+        bit_count = self._reg("bit_count", HBits(log2ceil(MAX_COUNT), signed=False), def_val=MAX_COUNT)
         If(sr_shift,
            bit_count(bit_count - 1),
         ).Else(
@@ -97,6 +97,7 @@ class BcdToBin(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = BcdToBin()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = BcdToBin()
+    print(to_rtl_str(m))

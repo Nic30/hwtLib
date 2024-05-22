@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
+from hwt.constants import Time
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtLib.handshaked.builder import HsBuilder
 
 
-class HandshakedBuilderSimple(Unit):
+class HandshakedBuilderSimple(HwModule):
     """
     Simple example of HsBuilder which can build components
-    for Handshaked interfaces
+    for HwIODataRdVld interfaces
 
     .. hwt-autodoc::
     """
     def _declr(self):
         # declare interfaces
         addClkRstn(self)
-        self.a = Handshaked()
-        self.b = Handshaked()._m()
+        self.a = HwIODataRdVld()
+        self.b = HwIODataRdVld()._m()
 
     def _impl(self):
         # instantiate builder
@@ -62,24 +62,24 @@ class HandshakedBuilderSimpleTC(SimTestCase):
     def setUpClass(cls):
         # SimTestCase.setUpClass calls this method
         # and will build a simulator of this component
-        cls.u = HandshakedBuilderSimple()
-        cls.compileSim(cls.u)
+        cls.dut = HandshakedBuilderSimple()
+        cls.compileSim(cls.dut)
 
     def test_passData(self):
         # now in setUpClass call the simulator was build
         #     in setU       call the simulator was initialized
-        #                   and signals in .u are replaced
+        #                   and signals in .dut are replaced
         #                   with proxies for simulator
-        u = self.u
+        dut = self.dut
         # add data on input of agent for "a" interface
-        u.a._ag.data.extend([1, 2, 3, 4])
+        dut.a._ag.data.extend([1, 2, 3, 4])
 
         self.runSim(200 * Time.ns)
 
         # check if data was recieved on "b" interface
-        self.assertValSequenceEqual(u.b._ag.data, [1, 2, 3, 4])
+        self.assertValSequenceEqual(dut.b._ag.data, [1, 2, 3, 4])
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(HandshakedBuilderSimple()))

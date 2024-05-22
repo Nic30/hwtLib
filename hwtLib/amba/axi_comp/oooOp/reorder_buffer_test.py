@@ -11,26 +11,26 @@ class ReorderBufferTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = ReorderBuffer()
-        cls.u.ID_WIDTH = 4
-        cls.u.T = uint8_t        
-        cls.compileSim(cls.u)
+        cls.dut = ReorderBuffer()
+        cls.dut.ID_WIDTH = 4
+        cls.dut.T = uint8_t        
+        cls.compileSim(cls.dut)
         
     def test_reverse(self):
-        u = self.u
-        no_ids = 2 ** u.ID_WIDTH
+        dut = self.dut
+        no_ids = 2 ** dut.ID_WIDTH
         in_req = [(no_ids - i - 1, i) for i in range(no_ids)]
-        u.dataIn._ag.data.extend(in_req + in_req)
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        dut.dataIn._ag.data.extend(in_req + in_req)
+        self.randomize(dut.dataIn)
+        self.randomize(dut.dataOut)
         self.runSim(no_ids * 8 * CLK_PERIOD + 20 * CLK_PERIOD)
         in_req.sort(key=lambda x: x[0])
-        self.assertValSequenceEqual(u.dataOut._ag.data, list(map(lambda x: x[1], in_req + in_req)))
+        self.assertValSequenceEqual(dut.dataOut._ag.data, list(map(lambda x: x[1], in_req + in_req)))
 
     def test_sequence(self):
-        u = self.u
+        dut = self.dut
         reps = 2
-        no_ids = 2 ** u.ID_WIDTH
+        no_ids = 2 ** dut.ID_WIDTH
         
         seq = [0, 6, 3, 13, 10, 5, 14, 7, 15, 11, 9, 8, 4, 2, 1, 12]
         in_req = []
@@ -41,9 +41,9 @@ class ReorderBufferTC(SimTestCase):
         for i in range(reps):
             in_data = in_data + in_req
             
-        u.dataIn._ag.data.extend(in_data)
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        dut.dataIn._ag.data.extend(in_data)
+        self.randomize(dut.dataIn)
+        self.randomize(dut.dataOut)
         self.runSim(len(in_data) * 4 * CLK_PERIOD + 20 * CLK_PERIOD)
         in_req.sort(key=lambda x: x[0])
         
@@ -51,7 +51,7 @@ class ReorderBufferTC(SimTestCase):
         for i in range(reps):
             out_data = out_data + in_req
                         
-        self.assertValSequenceEqual(u.dataOut._ag.data, list(map(lambda x: x[1], out_data)))
+        self.assertValSequenceEqual(dut.dataOut._ag.data, list(map(lambda x: x[1], out_data)))
 
 
 if __name__ == "__main__":

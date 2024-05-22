@@ -26,44 +26,44 @@ class BinToBcdTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = BinToBcd()
-        cls.u.INPUT_WIDTH = 8
-        cls.compileSim(cls.u)
+        cls.dut = BinToBcd()
+        cls.dut.INPUT_WIDTH = 8
+        cls.compileSim(cls.dut)
 
     def test_0to127(self):
-        u = self.u
+        dut = self.dut
 
         N = 128
-        u.din._ag.data.extend(range(N))
+        dut.din._ag.data.extend(range(N))
         self.runSim(CLK_PERIOD * 11 * N)
 
-        res = u.dout._ag.data
+        res = dut.dout._ag.data
         self.assertEqual(len(res), N)
         for i, d in enumerate(res):
             self.assertEqual(bcd_to_str(int(d), 3), f"{i:d}")
 
     def test_128to255(self):
-        u = self.u
-        u.din._ag.data.extend(range(128, 256))
+        dut = self.dut
+        dut.din._ag.data.extend(range(128, 256))
         N = 256 - 128
 
         self.runSim(CLK_PERIOD * 11 * N)
 
-        res = u.dout._ag.data
+        res = dut.dout._ag.data
         self.assertEqual(len(res), N)
         for i, d in enumerate(res):
             i += 128
             self.assertEqual(bcd_to_str(int(d), 3), f"{i:d}")
 
     def test_r_96to150(self):
-        u = self.u
-        u.din._ag.data.extend(range(96, 150))
+        dut = self.dut
+        dut.din._ag.data.extend(range(96, 150))
         N = 150 - 96
-        self.randomize(u.din)
-        self.randomize(u.dout)
+        self.randomize(dut.din)
+        self.randomize(dut.dout)
         self.runSim(CLK_PERIOD * 20 * N)
 
-        res = u.dout._ag.data
+        res = dut.dout._ag.data
         self.assertEqual(len(res), N)
         for i, d in enumerate(res):
             i += 96

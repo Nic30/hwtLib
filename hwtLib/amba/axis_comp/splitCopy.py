@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.handshaked.splitCopy import HsSplitCopy
 
 
-class AxiSSplitCopy(AxiSCompBase, HsSplitCopy):
+class Axi4SSplitCopy(Axi4SCompBase, HsSplitCopy):
     """
-    Stream duplicator for AxiStream interfaces
+    Stream duplicator for Axi4Stream interfaces
 
     :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 
@@ -17,7 +17,7 @@ class AxiSSplitCopy(AxiSCompBase, HsSplitCopy):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AxiSSplitCopy()
+    from hwt.synth import to_rtl_str
+    m = Axi4SSplitCopy()
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

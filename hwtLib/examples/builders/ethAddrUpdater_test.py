@@ -6,7 +6,7 @@ from math import ceil
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.examples.builders.ethAddrUpdater import EthAddrUpdater, \
     frameHeader
 from hwtSimApi.constants import CLK_PERIOD
@@ -20,23 +20,23 @@ class EthAddrUpdater_dw64_alaignas64TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = EthAddrUpdater()
-        u.DATA_WIDTH = cls.DW
-        u.ADDR_WIDTH = cls.AW
-        u.ALIGNAS = cls.ALIGNAS
-        cls.compileSim(u)
+        dut = cls.dut = EthAddrUpdater()
+        dut.DATA_WIDTH = cls.DW
+        dut.ADDR_WIDTH = cls.AW
+        dut.ALIGNAS = cls.ALIGNAS
+        cls.compileSim(dut)
 
     def test_simpleOp(self):
         DW = self.DW
-        u = self.u
+        dut = self.dut
         r = self.randomize
-        r(u.axi_m.ar)
-        r(u.axi_m.r)
-        r(u.axi_m.aw)
-        r(u.axi_m.w)
-        r(u.axi_m.b)
+        r(dut.axi_m.ar)
+        r(dut.axi_m.r)
+        r(dut.axi_m.aw)
+        r(dut.axi_m.w)
+        r(dut.axi_m.b)
 
-        m = AxiSimRam(u.axi_m)
+        m = Axi4SimRam(dut.axi_m)
         tmpl = TransTmpl(frameHeader)
         frameTmpl = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))[0]
 
@@ -58,7 +58,7 @@ class EthAddrUpdater_dw64_alaignas64TC(SimTestCase):
             return ptr, data
 
         framePtr, frameData = randFrame()
-        u.packetAddr._ag.data.append(framePtr)
+        dut.packetAddr._ag.data.append(framePtr)
 
         self.runSim(100 * CLK_PERIOD)
         updatedFrame = m.getStruct(framePtr, tmpl)

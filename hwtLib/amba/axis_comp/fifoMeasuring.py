@@ -2,71 +2,71 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, SwitchLogic
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked, Signal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil, isPow2
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.amba.axis_comp.fifo import AxiSFifo
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
+from hwtLib.amba.axis_comp.fifo import Axi4SFifo
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from pyMathBitPrecise.bit_utils import mask
 
 
-class AxiS_fifoMeasuring(Unit):
+class Axi4S_fifoMeasuring(HwModule):
     """
     Fifo which are counting sizes of frames and sends it over
     dedicated handshaked interface "sizes"
 
-    .. hwt-autodoc:: _example_AxiS_fifoMeasuring
+    .. hwt-autodoc:: _example_Axi4S_fifoMeasuring
     """
 
     def _config(self):
-        AxiStream._config(self)
-        self.SIZES_BUFF_DEPTH = Param(16)
-        self.MAX_LEN = Param((2048 // 8) - 1)
-        self.EXPORT_ALIGNMENT_ERROR = Param(False)
+        Axi4Stream._config(self)
+        self.SIZES_BUFF_DEPTH = HwParam(16)
+        self.MAX_LEN = HwParam((2048 // 8) - 1)
+        self.EXPORT_ALIGNMENT_ERROR = HwParam(False)
 
     def getAlignBitsCnt(self):
         return log2ceil(self.DATA_WIDTH // 8)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = AxiStream()
-            self.dataOut = AxiStream()._m()
-            db = self.dataBuff = AxiSFifo()
+        with self._hwParamsShared():
+            self.dataIn = Axi4Stream()
+            self.dataOut = Axi4Stream()._m()
+            db = self.dataBuff = Axi4SFifo()
             # to place fifo in bram
             db.DEPTH = (self.MAX_LEN + 1) * 2
 
-        self.sizes = Handshaked()._m()
+        self.sizes = HwIODataRdVld()._m()
         self.sizes.DATA_WIDTH = (log2ceil(self.MAX_LEN)
                                  +1
                                  +self.getAlignBitsCnt())
 
-        sb = self.sizesBuff = HandshakedFifo(Handshaked)
+        sb = self.sizesBuff = HandshakedFifo(HwIODataRdVld)
         sb.DEPTH = self.SIZES_BUFF_DEPTH
         sb.DATA_WIDTH = self.sizes.DATA_WIDTH
 
         if self.EXPORT_ALIGNMENT_ERROR:
             assert self.USE_STRB, "Error can not happend"\
                 " when there is no validity mask for alignment"
-            self.errorAlignment = Signal()._m()
+            self.errorAlignment = HwIOSignal()._m()
 
         assert isPow2(self.DATA_WIDTH)
 
     def _impl(self):
         propagateClkRstn(self)
-        dIn = AxiSBuilder(self, self.dataIn).buff().end
+        dIn = Axi4SBuilder(self, self.dataIn).buff().end
 
         sb = self.sizesBuff
         db = self.dataBuff
 
         wordCntr = self._reg("wordCntr",
-                             Bits(log2ceil(self.MAX_LEN) + 1),
+                             HBits(log2ceil(self.MAX_LEN) + 1),
                              def_val=0)
 
         overflow = wordCntr._eq(self.MAX_LEN)
@@ -83,7 +83,7 @@ class AxiS_fifoMeasuring(Unit):
         BYTE_CNT = dIn.data._dtype.bit_length() // 8
         if dIn.USE_STRB:
             # compress strb mask as binary number
-            rem = self._sig("rem", Bits(log2ceil(BYTE_CNT)))
+            rem = self._sig("rem", HBits(log2ceil(BYTE_CNT)))
 
             SwitchLogic(
                 cases=[
@@ -107,7 +107,7 @@ class AxiS_fifoMeasuring(Unit):
             )
         else:
             length(wordCntr + 1)
-            rem = Bits(log2ceil(BYTE_CNT)).from_py(0)
+            rem = HBits(log2ceil(BYTE_CNT)).from_py(0)
 
         sb.dataIn.data(Concat(length, rem))
 
@@ -123,16 +123,16 @@ class AxiS_fifoMeasuring(Unit):
         self.dataOut(db.dataOut)
 
 
-def _example_AxiS_fifoMeasuring():
-    u = AxiS_fifoMeasuring()
-    u.USE_STRB = True
+def _example_Axi4S_fifoMeasuring():
+    m = Axi4S_fifoMeasuring()
+    m.USE_STRB = True
     # u.EXPORT_ALIGNMENT_ERROR = True
-    u.MAX_LEN = 15
-    u.SIZES_BUFF_DEPTH = 4
-    return u
+    m.MAX_LEN = 15
+    m.SIZES_BUFF_DEPTH = 4
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiS_fifoMeasuring()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4S_fifoMeasuring()
+    print(to_rtl_str(m))

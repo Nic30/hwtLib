@@ -24,28 +24,28 @@ from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_TCs
 from hwtLib.amba.axi_comp.lsu.read_aggregator_test import AxiReadAggregator_TCs
-from hwtLib.amba.axi_comp.lsu.store_queue_write_propagating_test import AxiStoreQueueWritePropagating_TCs
+from hwtLib.amba.axi_comp.lsu.store_queue_write_propagating_test import Axi4StoreQueueWritePropagating_TCs
 from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_TCs
 from hwtLib.amba.axi_comp.oooOp.reorder_buffer_test import ReorderBufferTC
 from hwtLib.amba.axi_comp.resize_test import AxiResizeTC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
-from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
-from hwtLib.amba.axi_comp.static_remap_test import AxiStaticRemapTCs
+from hwtLib.amba.axi_comp.slave_timeout_test import Axi4SlaveTimeoutTC
+from hwtLib.amba.axi_comp.static_remap_test import Axi4StaticRemapTCs
 from hwtLib.amba.axi_comp.stream_to_mem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
 from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.amba.axi_test import AxiTC
-from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
-from hwtLib.amba.axis_comp.fifoDrop_test import AxiSFifoDropTC
-from hwtLib.amba.axis_comp.fifoMeasuring_test import AxiS_fifoMeasuringTC
+from hwtLib.amba.axis_comp.en_test import Axi4S_en_TC
+from hwtLib.amba.axis_comp.fifoDrop_test import Axi4SFifoDropTC
+from hwtLib.amba.axis_comp.fifoMeasuring_test import Axi4S_fifoMeasuringTC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
-from hwtLib.amba.axis_comp.frame_deparser.test import AxiS_frameDeparser_TC
-from hwtLib.amba.axis_comp.frame_join.test import AxiS_FrameJoin_TCs
-from hwtLib.amba.axis_comp.frame_parser.footer_split_test import AxiS_footerSplitTC
-from hwtLib.amba.axis_comp.frame_parser.test import AxiS_frameParserTC
-from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_TCs
-from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
-from hwtLib.amba.axis_comp.strformat_test import AxiS_strFormat_TC
+from hwtLib.amba.axis_comp.frame_deparser.test import Axi4S_frameDeparser_TC
+from hwtLib.amba.axis_comp.frame_join.test import Axi4S_FrameJoin_TCs
+from hwtLib.amba.axis_comp.frame_parser.footer_split_test import Axi4S_footerSplitTC
+from hwtLib.amba.axis_comp.frame_parser.test import Axi4S_frameParserTC
+from hwtLib.amba.axis_comp.resizer_test import Axi4S_resizer_TCs
+from hwtLib.amba.axis_comp.storedBurst_test import Axi4SStoredBurstTC
+from hwtLib.amba.axis_comp.strformat_test import Axi4S_strFormat_TC
 from hwtLib.amba.datapump.interconnect.rStrictOrder_test import \
     RStrictOrderInterconnectTC
 from hwtLib.amba.datapump.interconnect.wStrictOrderComplex_test import \
@@ -67,7 +67,7 @@ from hwtLib.cesnet.mi32.mi32agent_test import Mi32AgentTC
 from hwtLib.cesnet.mi32.sliding_window_test import Mi32SlidingWindowTC
 from hwtLib.cesnet.mi32.to_axi4Lite_test import Mi32_to_Axi4LiteTC
 from hwtLib.clocking.cdc_test import CdcTC
-from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
+from hwtLib.commonHwIO.addr_data_to_Axi_test import HwIOAddrDataRdVld_to_Axi_TCs
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.multiplierBooth_test import MultiplierBoothTC
 from hwtLib.examples.arithmetic.privateSignals_test import PrivateSignalsOfStructTypeTC
@@ -84,24 +84,24 @@ from hwtLib.examples.builders.handshakedBuilderSimple import \
     HandshakedBuilderSimpleTC
 from hwtLib.examples.builders.hsBuilderSplit_test import HsBuilderSplit_TC
 from hwtLib.examples.builders.hwException_test import HwExceptionCatch_TC
-from hwtLib.examples.builders.pingResponder_test import PingResponderTC
-from hwtLib.examples.emptyUnitWithSpi import EmptyUnitWithSpiTC
+from hwtLib.examples.builders.pingResponder_test import Axi4SPingResponderTC
+from hwtLib.examples.emptyHwModuleWithSpi import EmptyHwModuleWithSpiTC
 from hwtLib.examples.errors.combLoops import CombLoopAnalysisTC
 from hwtLib.examples.errors.errors_test import ErrorsTC
+from hwtLib.examples.hObjLists.listOfHwIOs0 import ListOfHwIOsSample0TC
+from hwtLib.examples.hObjLists.listOfHwIOs1 import ListOfHwIOsSample1TC
+from hwtLib.examples.hObjLists.listOfHwIOs2 import ListOfHwIOsSample2TC
+from hwtLib.examples.hObjLists.listOfHwIOs3 import ListOfHwIOsSample3TC
+from hwtLib.examples.hObjLists.listOfHwIOs4 import ListOfHwIOsSample4TC
 from hwtLib.examples.hdlComments_test import HdlCommentsTC
-from hwtLib.examples.hdlObjLists.listOfInterfaces0 import ListOfInterfacesSample0TC
-from hwtLib.examples.hdlObjLists.listOfInterfaces1 import ListOfInterfacesSample1TC
-from hwtLib.examples.hdlObjLists.listOfInterfaces2 import ListOfInterfacesSample2TC
-from hwtLib.examples.hdlObjLists.listOfInterfaces3 import ListOfInterfacesSample3TC
-from hwtLib.examples.hdlObjLists.listOfInterfaces4 import ListOfInterfacesSample4TC
 from hwtLib.examples.hierarchy.hierarchySerialization_test import \
     HierarchySerializationTC
-from hwtLib.examples.hierarchy.simpleSubunit2 import SimpleSubunit2TC
-from hwtLib.examples.hierarchy.simpleSubunit3 import SimpleSubunit3TC
-from hwtLib.examples.hierarchy.simpleSubunit_test import SimpleSubunitTC
-from hwtLib.examples.hierarchy.unitToUnitConnection import \
-    UnitToUnitConnectionTC
-from hwtLib.examples.hierarchy.unitWrapper_test import UnitWrapperTC
+from hwtLib.examples.hierarchy.hwModuleToHwModuleConnection import \
+    HwModuleToHwModuleConnectionTC
+from hwtLib.examples.hierarchy.hwModuleWrapper_test import HwModuleWrapperTC
+from hwtLib.examples.hierarchy.simpleSubHwModule1_test import SimpleSubHwModuleTC
+from hwtLib.examples.hierarchy.simpleSubHwModule2 import SimpleSubModule2TC
+from hwtLib.examples.hierarchy.simpleSubHwModule3 import SimpleSubModule3TC
 from hwtLib.examples.mem.avalonmm_ram_test import AvalonMmBram_TC
 from hwtLib.examples.mem.axi_ram_test import Axi4BRam_TC
 from hwtLib.examples.mem.bram_wire import BramWireTC
@@ -117,14 +117,14 @@ from hwtLib.examples.operators.indexing_test import IndexingTC
 from hwtLib.examples.parametrization_test import ParametrizationTC
 from hwtLib.examples.rtlLvl.rtlLvl_test import RtlLvlTC
 from hwtLib.examples.showcase0_test import Showcase0TC
-from hwtLib.examples.simple2withNonDirectIntConnection import \
+from hwtLib.examples.simpleHwModule2withNonDirectIntConnection import \
     Simple2withNonDirectIntConnectionTC
-from hwtLib.examples.simpleAxiStream_test import SimpleUnitAxiStream_TC
-from hwtLib.examples.simpleWithNonDirectIntConncetion import \
-    SimpleWithNonDirectIntConncetionTC
-from hwtLib.examples.simpleWithParam import SimpleUnitWithParamTC
-from hwtLib.examples.simple_test import SimpleTC
-from hwtLib.examples.specialIntfTypes.intfWithArray import InterfaceWithArrayTypesTC
+from hwtLib.examples.simpleHwModuleAxi4Stream_test import SimpleModuleAxi4Stream_TC
+from hwtLib.examples.simpleHwModuleWithHwParam import SimpleHwModuleWithParamTC
+from hwtLib.examples.simpleHwModuleWithNonDirectIntConncetion import \
+    SimpleModuleWithNonDirectIntConncetionTC
+from hwtLib.examples.simpleHwModule_test import SimpleTC
+from hwtLib.examples.speciaHwIOTypes.hwIOWithArray import HwIOWithArrayTypesTC
 from hwtLib.examples.statements.codeBlockStm_test import CodeBlokStmTC
 from hwtLib.examples.statements.constCondition import ConstConditionTC
 from hwtLib.examples.statements.constDriver_test import ConstDriverTC
@@ -138,14 +138,14 @@ from hwtLib.examples.statements.vldMaskConflictsResolving_test import \
 from hwtLib.examples.timers import TimerTC
 from hwtLib.handshaked.cdc_test import HandshakedCdc_slow_to_fast_TC, \
     HandshakedCdc_fast_to_slow_TC
+from hwtLib.handshaked.dataRdVldToAxi4Stream_test import DataRdVldToAxi4StreamTCs
 from hwtLib.handshaked.fifoAsync_test import HsFifoAsyncTC
 from hwtLib.handshaked.fifo_test import HsFifoTC
-from hwtLib.handshaked.handshakedToAxiStream_test import HandshakedToAxiStreamTCs
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
     HsJoinFair_3inputs_TC
 from hwtLib.handshaked.joinPrioritized_test import HsJoinPrioritizedTC, \
     HsJoinPrioritized_randomized_TC
-from hwtLib.handshaked.ramAsHs_test import RamAsHs_TCs
+from hwtLib.handshaked.ramAsAddrDataRdVld_test import RamWithRdVldSync_TCs
 from hwtLib.handshaked.reg_test import HandshakedRegTCs
 from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
@@ -206,12 +206,14 @@ from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.constraints.xdc_clock_related_test import ConstraintsXdcClockRelatedTC
 from hwtLib.tests.frameTmpl_test import FrameTmplTC
+from hwtLib.tests.hwIORdSync_agent_test import HwIORdSync_agent_TC
+from hwtLib.tests.hwIOStruct_operator_test import HwIOStruct_operatorTC
+from hwtLib.tests.hwIOUnion_test import HwIOUnionTC
 from hwtLib.tests.pyUtils.arrayQuery_test import ArrayQueryTC
 from hwtLib.tests.pyUtils.fileUtils_test import FileUtilsTC
-from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
 from hwtLib.tests.repr_of_hdlObjs_test import ReprOfHdlObjsTC
 from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
-from hwtLib.tests.serialization.hdlReaname_test import SerializerHdlRename_TC
+from hwtLib.tests.serialization.hdlRename_test import SerializerHdlRename_TC
 from hwtLib.tests.serialization.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.serialization.modes_test import SerializerModes_TC
 from hwtLib.tests.serialization.tmpVar_test import Serializer_tmpVar_TC
@@ -220,11 +222,10 @@ from hwtLib.tests.serialization.vhdl_test import Vhdl2008Serializer_TC
 from hwtLib.tests.simulator.basicRtlSimulatorVcdTmpDirs_test import BasicRtlSimulatorVcdTmpDirs_TCs
 from hwtLib.tests.simulator.json_log_test import HsFifoJsonLogTC
 from hwtLib.tests.simulator.utils_test import SimulatorUtilsTC
-from hwtLib.tests.structIntf_operator_test import StructIntf_operatorTC
 from hwtLib.tests.synthesizer.astNodeIoReplacing_test import AstNodeIoReplacingTC
-from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \
-    InterfaceSynthesizerTC
-from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import \
+from hwtLib.tests.synthesizer.interfaceLevel.hwIOSynthesizerTC import \
+    HwIOSynthesizerTC
+from hwtLib.tests.synthesizer.interfaceLevel.subHwModuleSynthesisTC import \
     SubunitsSynthesisTC
 from hwtLib.tests.synthesizer.rtlLevel.basic_signal_methods_test import BasicSignalMethodsTC
 from hwtLib.tests.synthesizer.rtlLevel.statements_consystency_test import StatementsConsystencyTC
@@ -233,17 +234,16 @@ from hwtLib.tests.synthesizer.statementTrees_test import StatementTreesTC
 from hwtLib.tests.synthesizer.statements_test import StatementsTC
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
 from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
-from hwtLib.tests.types.hstructVal_test import HStructValTC
-from hwtLib.tests.types.hvalue_test import HValueTC
+from hwtLib.tests.types.hConst_test import HConstTC
+from hwtLib.tests.types.hStructConst_test import HStructConstTC
+from hwtLib.tests.types.hUnion_test import HUnionTC
 from hwtLib.tests.types.operators_test import OperatorTC
-from hwtLib.tests.types.union_test import UnionTC
-from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
 from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
 from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
-from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.xilinx.locallink.axis_conv_test import Axi4S_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
 
@@ -273,50 +273,50 @@ suite = testSuiteFromTCs(
     RtlLvlTC,
     ReprOfHdlObjsTC,
     HdlCommentsTC,
-    InterfaceSynthesizerTC,
+    HwIOSynthesizerTC,
     SubunitsSynthesisTC,
-    EmptyUnitWithSpiTC,
+    EmptyHwModuleWithSpiTC,
     Simple2withNonDirectIntConnectionTC,
-    SimpleWithNonDirectIntConncetionTC,
-    SimpleSubunit3TC,
-    UnitToUnitConnectionTC,
+    SimpleModuleWithNonDirectIntConncetionTC,
+    SimpleSubModule3TC,
+    HwModuleToHwModuleConnectionTC,
     OperatorTC,
-    StructIntf_operatorTC,
+    HwIOStruct_operatorTC,
     CastTc,
     BitsSlicingTC,
-    HStructValTC,
+    HStructConstTC,
     ParametrizationTC,
     BasicSignalMethodsTC,
     StatementsConsystencyTC,
-    HValueTC,
+    HConstTC,
     StatementTreesInternalTC,
     StatementTreesTC,
     StatementsTC,
     AstNodeIoReplacingTC,
     ErrorsTC,
     StaticForLoopCntrlTC,
-    SimpleUnitWithParamTC,
-    SimpleSubunit2TC,
+    SimpleHwModuleWithParamTC,
+    SimpleSubModule2TC,
     HierarchySerializationTC,
-    ListOfInterfacesSample0TC,
-    ListOfInterfacesSample1TC,
-    ListOfInterfacesSample2TC,
-    ListOfInterfacesSample3TC,
-    ListOfInterfacesSample4TC,
+    ListOfHwIOsSample0TC,
+    ListOfHwIOsSample1TC,
+    ListOfHwIOsSample2TC,
+    ListOfHwIOsSample3TC,
+    ListOfHwIOsSample4TC,
     PrivateSignalsOfStructTypeTC,
     FrameTmplTC,
     Showcase0TC,
     SimulatorUtilsTC,
     HsFifoJsonLogTC,
-    RdSynced_agent_TC,
+    HwIORdSync_agent_TC,
     Segment7TC,
     SerializerModes_TC,
     Serializer_tmpVar_TC,
     SerializerHdlRename_TC,
     VhdlVectorAutoCastExampleTC,
     TransTmpl_TC,
-    UnionTC,
-    UnionIntfTC,
+    HUnionTC,
+    HwIOUnionTC,
     ResourceAnalyzer_TC,
     CombLoopAnalysisTC,
     Vhdl2008Serializer_TC,
@@ -347,7 +347,7 @@ suite = testSuiteFromTCs(
     ConstDriverTC,
     WidthCastingExampleTC,
     SimpleTC,
-    SimpleSubunitTC,
+    SimpleSubHwModuleTC,
     RamTC,
     RamXorSingleClockTC,
     *RamTransactionalTCs,
@@ -359,7 +359,7 @@ suite = testSuiteFromTCs(
     OneHotToBinTC,
     BinToBcdTC,
     BcdToBinTC,
-    AxiS_strFormat_TC,
+    Axi4S_strFormat_TC,
     BinToOneHotTC,
     GrayCntrTC,
     TwoCntrsTC,
@@ -371,7 +371,7 @@ suite = testSuiteFromTCs(
     RamResourcesTC,
     SimpleAsyncRamTC,
     SimpleSyncRamTC,
-    SimpleUnitAxiStream_TC,
+    SimpleModuleAxi4Stream_TC,
     FifoWriterAgentTC,
     FifoReaderAgentTC,
     FifoTC,
@@ -383,11 +383,11 @@ suite = testSuiteFromTCs(
     HsJoinFair_3inputs_TC,
     HandshakedCdc_slow_to_fast_TC,
     HandshakedCdc_fast_to_slow_TC,
-    *HandshakedToAxiStreamTCs,
-    *RamAsHs_TCs,
+    *DataRdVldToAxi4StreamTCs,
+    *RamWithRdVldSync_TCs,
     LfsrTC,
     BitonicSorterTC,
-    InterfaceWithArrayTypesTC,
+    HwIOWithArrayTypesTC,
 
     FlipRegTC,
     FlipCntrTC,
@@ -447,26 +447,26 @@ suite = testSuiteFromTCs(
     Axi_to_AxiLite_TC,
     AxiRegTC,
     AxiTesterTC,
-    *AxiStaticRemapTCs,
+    *Axi4StaticRemapTCs,
     AxiResizeTC,
 
     AxisFrameGenTC,
-    *AddrDataHs_to_Axi_TCs,
+    *HwIOAddrDataRdVld_to_Axi_TCs,
     Axi4BRam_TC,
     *Axi_rDatapump_alignedTCs,
     *Axi_rDatapump_unalignedTCs,
     *Axi_wDatapumpTCs,
-    AxiSlaveTimeoutTC,
-    AxiSStoredBurstTC,
-    AxiS_en_TC,
-    AxiS_fifoMeasuringTC,
-    AxiSFifoDropTC,
-    *AxiS_resizer_TCs,
-    AxiS_frameDeparser_TC,
-    AxiS_localLinkConvTC,
-    AxiS_footerSplitTC,
-    AxiS_frameParserTC,
-    *AxiS_FrameJoin_TCs,
+    Axi4SlaveTimeoutTC,
+    Axi4SStoredBurstTC,
+    Axi4S_en_TC,
+    Axi4S_fifoMeasuringTC,
+    Axi4SFifoDropTC,
+    *Axi4S_resizer_TCs,
+    Axi4S_frameDeparser_TC,
+    Axi4S_localLinkConvTC,
+    Axi4S_footerSplitTC,
+    Axi4S_frameParserTC,
+    *Axi4S_FrameJoin_TCs,
     HandshakedBuilderSimpleTC,
     *EthAddrUpdaterTCs,
 
@@ -482,7 +482,7 @@ suite = testSuiteFromTCs(
 
     *AxiWriteAggregator_TCs,
     *AxiReadAggregator_TCs,
-    *AxiStoreQueueWritePropagating_TCs,
+    *Axi4StoreQueueWritePropagating_TCs,
     *AxiCacheWriteAllocWawOnlyWritePropagatingTCs,
 
     Axi_ag_TC,
@@ -516,11 +516,11 @@ suite = testSuiteFromTCs(
     *Mi32EndpointTCs,
 
     # complex units tests
-    UnitWrapperTC,
+    HwModuleWrapperTC,
     IpCorePackagerTC,
     HashTableCoreWithRamTC,
     *CuckooHashTableWithRamTCs,
-    PingResponderTC,
+    Axi4SPingResponderTC,
     DebugBusMonitorExampleAxiTC,
 
     RmiiAdapterTC,

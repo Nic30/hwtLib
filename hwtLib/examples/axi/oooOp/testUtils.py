@@ -2,10 +2,10 @@ from io import StringIO
 from typing import Union
 
 from hwt.hdl.types.array import HArray
-from hwt.hdl.types.bitsVal import BitsVal
+from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.struct import HStruct
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interface import Interface
+from hwt.hwIO import HwIO
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
 from hwtLib.examples.axi.oooOp.counterHashTable import OooOpExampleCounterHashTable
@@ -15,9 +15,9 @@ from hwtSimApi.triggers import Edge, WaitCombStable
 from pyMathBitPrecise.bit_utils import ValidityError
 
 
-def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounterHashTable, model: BasicRtlSimModel, states:list):
+def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, dut: OooOpExampleCounterHashTable, model: BasicRtlSimModel, states:list):
     m = model.io
-    clk = u.clk
+    clk = dut.clk
     if clk._sigInside is None:
         clk = clk._sig
     else:
@@ -30,24 +30,24 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
         except ValidityError:
             return None
 
-    def read_data(sig: Union[RtlSignal, Interface]):
+    def read_data(sig: Union[RtlSignal, HwIO]):
         """
         read data from simulation
         """
-        if isinstance(sig, Interface):
-            if sig._interfaces:
-                return tuple(read_data(i) for i in sig._interfaces)
+        if isinstance(sig, HwIO):
+            if sig._hwIOs:
+                return tuple(read_data(hwIO) for hwIO in sig._hwIOs)
             else:
                 sig = sig._sig
         return int_or_none(getattr(m, sig.name).read())
     
-    has_operation = hasattr(u, "OPERATION")
-    has_trans_data = u.TRANSACTION_STATE_T is not None
-    has_composite_data = isinstance(u.MAIN_STATE_T, (HStruct, HArray))
+    has_operation = hasattr(dut, "OPERATION")
+    has_trans_data = dut.TRANSACTION_STATE_T is not None
+    has_composite_data = isinstance(dut.MAIN_STATE_T, (HStruct, HArray))
     ops_without_match = []
     if has_operation:
         for n in ("SWAP_BY_ADDR", "READ_BY_ADDR"):
-            o = getattr(u.OPERATION, n, None)
+            o = getattr(dut.OPERATION, n, None)
             if o is not None:
                 ops_without_match.append(o)
  
@@ -58,7 +58,7 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
         if clk.read():
             clk_i = tc.hdl_simulator.now // CLK_PERIOD
             cur_state = []
-            for st in u.pipeline:
+            for st in dut.pipeline:
                 st: OOOOpPipelineStage
                 vld = read_data(st.valid)
                 if vld:
@@ -69,7 +69,7 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
                         addr = read_data(st.addr)
                         assert addr is not None
                     
-                    trans_state_present = st.index > 0 and st.index <= u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK
+                    trans_state_present = st.index > 0 and st.index <= dut.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK
                     if has_operation:
                         if trans_state_present:
                             op = read_data(st.transaction_state.operation)
@@ -77,27 +77,27 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
                         else:
                             op = None
                     
-                    if st.index >= u.PIPELINE_CONFIG.STATE_LOAD and st.index < u.PIPELINE_CONFIG.WRITE_BACK:
+                    if st.index >= dut.PIPELINE_CONFIG.STATE_LOAD and st.index < dut.PIPELINE_CONFIG.WRITE_BACK:
                         if has_trans_data and op not in ops_without_match:
                             key_match = []
-                            for i, km in enumerate(st.key_matches):
-                                if not isinstance(km, BitsVal):
+                            for hwIO, km in enumerate(st.key_matches):
+                                if not isinstance(km, HBitsConst):
                                     km = read_data(km)
-                                    assert km is not None, (op, st, i)
+                                    assert km is not None, (op, st, hwIO)
                                     if km:
-                                        key_match.append(i)
+                                        key_match.append(hwIO)
                         else:
                             key_match = None
  
                         collision = None
-                        for i, cd in enumerate(st.collision_detect):
+                        for hwIO, cd in enumerate(st.collision_detect):
                             if not isinstance(cd, int):
                                 cd = read_data(cd)
                                 assert cd is not None
                                 if cd:
-                                    collision = i
-                                    # assert read_data(u.pipeline[i].valid), (clk_i,
-                                    #    u.pipeline[i].valid.name,
+                                    collision = hwIO
+                                    # assert read_data(u.pipeline[hwIO].valid), (clk_i,
+                                    #    u.pipeline[hwIO].valid.name,
                                     #    "not valid and we expecting collision with it")            
                                     break
                             
@@ -105,14 +105,14 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
                         key_match = None
                         collision = None
 
-                    if st.index >= u.PIPELINE_CONFIG.STATE_LOAD and st.index <= u.PIPELINE_CONFIG.WRITE_BACK:
+                    if st.index >= dut.PIPELINE_CONFIG.STATE_LOAD and st.index <= dut.PIPELINE_CONFIG.WRITE_BACK:
                         wr_forward = []
-                        if st.index == u.PIPELINE_CONFIG.WRITE_BACK:
-                            src_st = u.pipeline[u.PIPELINE_CONFIG.WRITE_BACK]
+                        if st.index == dut.PIPELINE_CONFIG.WRITE_BACK:
+                            src_st = dut.pipeline[dut.PIPELINE_CONFIG.WRITE_BACK]
                             if getattr(m, f"write_forwarding_en_{st.index}from{src_st.index}").read():
                                 wr_forward.append(src_st.index)
                         else:
-                            for src_st in u.pipeline[u.PIPELINE_CONFIG.WRITE_BACK:]:
+                            for src_st in dut.pipeline[dut.PIPELINE_CONFIG.WRITE_BACK:]:
                                 if getattr(m, f"write_forwarding_en_{st.index}from{src_st.index}").read():
                                     wr_forward.append(src_st.index)
                     else:
@@ -162,7 +162,7 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
             if not states or states[-1][1] != cur_state:
                 states.append((clk_i, cur_state))  
                 # print(f"clk {clk_i}: {cur_state}")
-                for st_data in cur_state[u.PIPELINE_CONFIG.STATE_LOAD:u.PIPELINE_CONFIG.WRITE_BACK]:
+                for st_data in cur_state[dut.PIPELINE_CONFIG.STATE_LOAD:dut.PIPELINE_CONFIG.WRITE_BACK]:
                     if st_data is not None:
                         (_, addr, _, data, collision, wr_forward, _) = st_data
                         if has_composite_data:
@@ -172,7 +172,7 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
                             key = None
                             # data = data
 
-                        for st in u.pipeline[u.PIPELINE_CONFIG.WRITE_BACK:(len(u.pipeline) if collision is None else collision)]:
+                        for st in dut.pipeline[dut.PIPELINE_CONFIG.WRITE_BACK:(len(dut.pipeline) if collision is None else collision)]:
                             if st.index == collision:
                                 assert read_data(st.addr) and read_data(st.addr) == addr, (clk_i,
                                     "collision prediction was invalid", st.index,
@@ -184,24 +184,24 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
                                         "collision prediction missed item", st.index, read_data(st.addr))
         
     
-def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, u: OooOpExampleCounterHashTable, states: list):
+def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, dut: OooOpExampleCounterHashTable, states: list):
     rows = []
-    st_names = {getattr(u.PIPELINE_CONFIG, n): n for n in [
+    st_names = {getattr(dut.PIPELINE_CONFIG, n): n for n in [
                     "READ_DATA_RECEIVE",
                     "STATE_LOAD",
                     "WRITE_BACK",
                     "WAIT_FOR_WRITE_ACK"]}
-    if hasattr(u, "OPERATION"):
+    if hasattr(dut, "OPERATION"):
         operation_names = {}
-        for attr in dir(u.OPERATION):
-            v = getattr(u.OPERATION, attr)
+        for attr in dir(dut.OPERATION):
+            v = getattr(dut.OPERATION, attr)
             if isinstance(v, int):
                 assert v not in operation_names, (attr, v, operation_names)
                 operation_names[v] = attr
     else:
         operation_names = None
-    has_trans_data = u.TRANSACTION_STATE_T is not None
-    has_composite_data = isinstance(u.MAIN_STATE_T, (HStruct, HArray))
+    has_trans_data = dut.TRANSACTION_STATE_T is not None
+    has_composite_data = isinstance(dut.MAIN_STATE_T, (HStruct, HArray))
 
     for clk_i, total_st in states:
         if not rows:
@@ -226,7 +226,7 @@ def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, u: OooOpExampleCo
                  t,
                  data,
                  collision, wr_forward, key_match) = st
-                if st_i == 0 or st_i > u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
+                if st_i == 0 or st_i > dut.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
                     op = ""  # operation is not present in these stages
                     t = None
                 else:
@@ -274,7 +274,7 @@ def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, u: OooOpExampleCo
                     cell_lines.append(f"t_key_match:{key_match}<br/>")
 
                 cell_lines = "".join(cell_lines)
-                if st_i >= u.PIPELINE_CONFIG.WRITE_BACK: 
+                if st_i >= dut.PIPELINE_CONFIG.WRITE_BACK: 
                     style =  ' style="background-color:LightGreen;"'
                 else:
                     style = ''

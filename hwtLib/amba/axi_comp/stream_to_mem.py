@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If, Switch
-from hwt.hdl.types.bits import Bits
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -19,7 +19,7 @@ from hwtLib.types.ctypes import uint32_t
 from pyMathBitPrecise.bit_utils import mask
 
 
-class Axi4streamToMem(Unit):
+class Axi4streamToMem(HwModule):
     """
     Most simple DMA for AXI4 interface.
 
@@ -46,24 +46,24 @@ class Axi4streamToMem(Unit):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(32)
-        self.CNTRL_AW = Param(5)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(32)
+        self.CNTRL_AW = HwParam(5)
 
         # size of data which should be transfered in worlds
-        self.DATA_LEN = Param(33)
-        self.MAX_BUTST_LEN = Param(16)
+        self.DATA_LEN = HwParam(33)
+        self.MAX_BUTST_LEN = HwParam(16)
         self.REGISTER_MAP = HStruct(
                              (uint32_t, "control"),
                              (uint32_t, "baseAddr")
                              )
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             addClkRstn(self)
             self.axi = Axi4()._m()
             self.axi.HAS_R = False
-            self.dataIn = Handshaked()
+            self.dataIn = HwIODataRdVld()
         cntrl = self.cntrlBus = Axi4Lite()
         regs = self.regsConventor = AxiLiteEndpoint(self.REGISTER_MAP)
 
@@ -120,7 +120,7 @@ class Axi4streamToMem(Unit):
         idle = st._eq(st._dtype.fullIdle)
         regs = self.regsConventor.decoded
         regs.control.din(Concat(onoff, idle,
-                                Bits(self.DATA_WIDTH - 2).from_py(0)))
+                                HBits(self.DATA_WIDTH - 2).from_py(0)))
 
         If(regs.control.dout.vld,
            onoff(regs.control.dout.data[0])
@@ -222,11 +222,11 @@ class Axi4streamToMem(Unit):
                                     "writeDataLast"])
 
         onoff = self._reg("on_off_reg", def_val=0)
-        baseAddr = self._reg("baseAddr_reg", Bits(self.ADDR_WIDTH), 0)
+        baseAddr = self._reg("baseAddr_reg", HBits(self.ADDR_WIDTH), 0)
         st = self._reg("state_reg", st_t, st_t.fullIdle)
-        actualAddr = self._reg("actualAddr_reg", Bits(self.ADDR_WIDTH))
+        actualAddr = self._reg("actualAddr_reg", HBits(self.ADDR_WIDTH))
         lenRem = self._reg("lenRem_reg",
-                           Bits(int(self.DATA_LEN).bit_length() + 1),
+                           HBits(int(self.DATA_LEN).bit_length() + 1),
                            self.DATA_LEN)
         actualLenRem = self._reg("actualLenRem_reg", axi.aw.len._dtype)
 
@@ -237,7 +237,7 @@ class Axi4streamToMem(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Axi4streamToMem()
-    # u = AxiLiteRegs(Axi4streamToMem().REGISTER_MAP)
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = Axi4streamToMem()
+    # m = AxiLiteRegs(Axi4streamToMem().REGISTER_MAP)
+    print(to_rtl_str(m))

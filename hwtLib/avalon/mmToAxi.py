@@ -1,6 +1,6 @@
 from hwt.code import Switch, If
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
@@ -21,12 +21,12 @@ class AvalonMm_to_Axi4(BusBridge):
 
     def _config(self) -> None:
         AvalonMM._config(self)
-        self.ID_WIDTH = Param(1)
+        self.ID_WIDTH = HwParam(1)
 
     def _declr(self) -> None:
         addClkRstn(self)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = AvalonMM()
             self.m: Axi4 = Axi4()._m()
 
@@ -137,9 +137,9 @@ class AvalonMm_to_Axi4(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AvalonMm_to_Axi4()
-    u.MAX_BURST = 2 ** 7 - 1
-    u.DATA_WIDTH = 256
-    u.ADDR_WIDTH = 26
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = AvalonMm_to_Axi4()
+    m.MAX_BURST = 2 ** 7 - 1
+    m.DATA_WIDTH = 256
+    m.ADDR_WIDTH = 26
+    print(to_rtl_str(m))

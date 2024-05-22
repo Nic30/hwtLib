@@ -1,17 +1,17 @@
 from collections import deque
 
-from hwt.hdl.constants import DIRECTION
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Clk, Signal, VectSignal
-from hwt.interfaces.tristate import TristateSig
+from hwt.constants import DIRECTION
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOClk, HwIOSignal, HwIOVectSignal
+from hwt.hwIOs.hwIOTristate import HwIOTristateSig
 from hwt.simulator.agentBase import SyncAgentBase
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
-from pyMathBitPrecise.bit_utils import mask, get_bit
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from hwtSimApi.triggers import WaitCombRead, WaitWriteOnly, Timer
+from pyMathBitPrecise.bit_utils import mask, get_bit
 
 
 class SpiAgent(SyncAgentBase):
@@ -26,8 +26,8 @@ class SpiAgent(SyncAgentBase):
     """
     BITS_IN_WORD = 8
 
-    def __init__(self, sim: HdlSimulator, intf: "Spi", allowNoReset=False):
-        AgentBase.__init__(self, sim, intf)
+    def __init__(self, sim: HdlSimulator, hwIO: "Spi", allowNoReset=False):
+        AgentBase.__init__(self, sim, hwIO)
 
         self.txData = deque()
         self.rxData = deque()
@@ -35,12 +35,12 @@ class SpiAgent(SyncAgentBase):
 
         self._txBitBuff = deque()
         self._rxBitBuff = deque()
-        self.csMask = mask(intf.cs._dtype.bit_length())
+        self.csMask = mask(hwIO.cs._dtype.bit_length())
         self.slaveEn = False
 
         # resolve clk and rstn
-        self.clk = self.intf._getAssociatedClk()._sigInside
-        self.rst, self.rstOffIn = self._discoverReset(intf, allowNoReset=allowNoReset)
+        self.clk = self.hwIO._getAssociatedClk()._sigInside
+        self.rst, self.rstOffIn = self._discoverReset(hwIO, allowNoReset=allowNoReset)
 
         # read on rising edge write on falling
         self.monitorRx = OnRisingCallbackLoop(self.sim, self.clk,
@@ -69,7 +69,7 @@ class SpiAgent(SyncAgentBase):
                       for i in range(self.BITS_IN_WORD - 1, -1, -1)])
 
     def mergeBits(self, bits):
-        t = Bits(self.BITS_IN_WORD, False)
+        t = HBits(self.BITS_IN_WORD, False)
         val = 0
         vld_mask = 0
         for v in bits:
@@ -78,7 +78,7 @@ class SpiAgent(SyncAgentBase):
             vld_mask <<= 1
             vld_mask |= v.vld_mask
 
-        return t.getValueCls()(t, val, vld_mask)
+        return t.getConstCls()(t, val, vld_mask)
 
     def readRxSig(self, sig):
         d = sig.read()
@@ -101,12 +101,12 @@ class SpiAgent(SyncAgentBase):
     def monitorRx(self):
         yield WaitCombRead()
         if self.notReset():
-            cs = self.intf.cs.read()
+            cs = self.hwIO.cs.read()
             cs = int(cs)
             if cs != self.csMask:  # if any slave is enabled
                 if not self._rxBitBuff:
                     self.chipSelects.append(cs)
-                self.readRxSig(self.intf.mosi)
+                self.readRxSig(self.hwIO.mosi)
 
     # def monitorTx_pre_set(self):
     #     yield WaitWriteOnly()
@@ -115,17 +115,17 @@ class SpiAgent(SyncAgentBase):
     def monitorTx(self):
         yield WaitCombRead()
         if self.notReset():
-            cs = self.intf.cs.read()
+            cs = self.hwIO.cs.read()
             cs = int(cs)
             if cs != self.csMask:
                 yield Timer(1)
                 yield WaitWriteOnly()
-                self.writeTxSig(self.intf.miso)
+                self.writeTxSig(self.hwIO.miso)
 
     def driverRx(self):
         yield WaitCombRead()
         if self.notReset() and self.slaveEn:
-            self.readRxSig(self.intf.miso)
+            self.readRxSig(self.hwIO.miso)
 
     def driverTx(self):
         yield WaitCombRead()
@@ -136,15 +136,15 @@ class SpiAgent(SyncAgentBase):
                 except IndexError:
                     self.slaveEn = False
                     yield WaitWriteOnly()
-                    self.intf.cs.write(self.csMask)
+                    self.hwIO.cs.write(self.csMask)
                     return
 
                 self.slaveEn = True
                 yield WaitWriteOnly()
-                self.intf.cs.write(cs)
+                self.hwIO.cs.write(cs)
 
             yield WaitWriteOnly()
-            self.writeTxSig(self.intf.mosi)
+            self.writeTxSig(self.hwIO.mosi)
 
     def getDrivers(self):
         yield self.driverRx()
@@ -157,7 +157,7 @@ class SpiAgent(SyncAgentBase):
 
 
 # http://www.corelis.com/education/SPI_Tutorial.htm
-class Spi(Interface):
+class Spi(HwIO):
     """
     Bare SPI interface (Serial peripheral interface)
 
@@ -165,22 +165,22 @@ class Spi(Interface):
     """
 
     def _config(self):
-        self.SLAVE_CNT = Param(1)
-        self.HAS_MISO = Param(True)
-        self.HAS_MOSI = Param(True)
-        self.FREQ = Param(Clk.DEFAULT_FREQ)
+        self.SLAVE_CNT = HwParam(1)
+        self.HAS_MISO = HwParam(True)
+        self.HAS_MOSI = HwParam(True)
+        self.FREQ = HwParam(HwIOClk.DEFAULT_FREQ)
 
     def _declr(self):
-        self.clk = Clk()
+        self.clk = HwIOClk()
         self.clk.FREQ = self.FREQ
 
         assert self.HAS_MOSI or self.HAS_MISO
         if self.HAS_MOSI:
-            self.mosi = Signal()  # master out slave in
+            self.mosi = HwIOSignal()  # master out slave in
         if self.HAS_MISO:
-            self.miso = Signal(masterDir=DIRECTION.IN)  # master in slave out
+            self.miso = HwIOSignal(masterDir=DIRECTION.IN)  # master in slave out
         if self.SLAVE_CNT is not None:
-            self.cs = VectSignal(self.SLAVE_CNT)  # chip select
+            self.cs = HwIOVectSignal(self.SLAVE_CNT)  # chip select
 
         self._associatedClk = self.clk
 
@@ -197,13 +197,13 @@ class SpiTristate(Spi):
 
     def _config(self):
         Spi._config(self)
-        self.DATA_WIDTH = Param(1)
+        self.DATA_WIDTH = HwParam(1)
 
     def _declr(self):
-        self.clk = Clk()
-        with self._paramsShared():
-            self.io = TristateSig()  # mosi and miso in one wire
-        self.cs = VectSignal(self.SLAVE_CNT)  # chip select
+        self.clk = HwIOClk()
+        with self._hwParamsShared():
+            self.io = HwIOTristateSig()  # mosi and miso in one wire
+        self.cs = HwIOVectSignal(self.SLAVE_CNT)  # chip select
 
         self._associatedClk = self.clk
 
@@ -217,4 +217,4 @@ class QSPI(SpiTristate):
 
     def _config(self):
         Spi._config(self)
-        self.DATA_WIDTH = Param(4)
+        self.DATA_WIDTH = HwParam(4)

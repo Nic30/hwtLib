@@ -2,11 +2,11 @@ from math import ceil
 
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
+from hwt.math import shiftIntArray
 from hwt.pyUtils.arrayQuery import grouper
 from pyMathBitPrecise.bit_utils import mask, get_bit_range, int_list_to_int
-from hwt.math import shiftIntArray
 
 
 class AllocationError(Exception):
@@ -150,7 +150,7 @@ class SimRam():
         """
         baseIndex = addr // self.cellSize
         if item_size != self.cellSize or baseIndex * self.cellSize != addr:
-            return self._getArray(addr * 8, TransTmpl(Bits(item_size * 8)[item_cnt]))
+            return self._getArray(addr * 8, TransTmpl(HBits(item_size * 8)[item_cnt]))
         else:
             out = []
             for i in range(baseIndex, baseIndex + item_cnt):
@@ -175,7 +175,7 @@ class SimRam():
 
         inFieldOffset = 0
         allMask = mask(wordWidth)
-        value = Bits(end - start, signed=sign).from_py(None)
+        value = HBits(end - start, signed=sign).from_py(None)
 
         while start != end:
             assert start < end, (start, end)
@@ -215,7 +215,7 @@ class SimRam():
         arr_offset = offset
         item_width = c.bitAddrEnd - c.bitAddr
         value = []
-        if not isinstance(t.element_t, Bits):
+        if not isinstance(t.element_t, HBits):
             raise NotImplementedError(t.element_t)
 
         for _ in range(t.size):
@@ -233,7 +233,7 @@ class SimRam():
         for subTmpl in transTmpl.children:
             t = subTmpl.dtype
             name = subTmpl.origin[-1].name
-            if isinstance(t, Bits):
+            if isinstance(t, HBits):
                 value = self.getBits(
                     subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset, t.signed)
             elif isinstance(t, HArray):

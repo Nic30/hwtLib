@@ -15,72 +15,72 @@ class TwoCntrsTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = TwoCntrs()
-        cls.compileSim(cls.u)
+        cls.dut = TwoCntrs()
+        cls.compileSim(cls.dut)
 
     def test_nothingEnable(self):
-        u = self.u
-        u.a_en._ag.data.append(0)
-        u.b_en._ag.data.append(0)
+        dut = self.dut
+        dut.a_en._ag.data.append(0)
+        dut.b_en._ag.data.append(0)
 
         self.runSim(9 * CLK_PERIOD)
 
         eq = self.assertValSequenceEqual
-        eq(u.eq._ag.data, eightOnes)
-        eq(u.gt._ag.data, eightZeros)
-        eq(u.lt._ag.data, eightZeros)
-        eq(u.ne._ag.data, eightZeros)
+        eq(dut.eq._ag.data, eightOnes)
+        eq(dut.gt._ag.data, eightZeros)
+        eq(dut.lt._ag.data, eightZeros)
+        eq(dut.ne._ag.data, eightZeros)
 
     def test_allEnable(self):
-        u = self.u
-        u.a_en._ag.data.append(1)
-        u.b_en._ag.data.append(1)
+        dut = self.dut
+        dut.a_en._ag.data.append(1)
+        dut.b_en._ag.data.append(1)
 
         self.runSim(9 * CLK_PERIOD)
 
         eq = self.assertValSequenceEqual
-        eq(u.eq._ag.data, eightOnes)
-        eq(u.gt._ag.data, eightZeros)
-        eq(u.lt._ag.data, eightZeros)
-        eq(u.ne._ag.data, eightZeros)
+        eq(dut.eq._ag.data, eightOnes)
+        eq(dut.gt._ag.data, eightZeros)
+        eq(dut.lt._ag.data, eightZeros)
+        eq(dut.ne._ag.data, eightZeros)
 
     def test_aEnable(self):
-        u = self.u
-        u.a_en._ag.data.append(1)
-        u.b_en._ag.data.append(0)
+        dut = self.dut
+        dut.a_en._ag.data.append(1)
+        dut.b_en._ag.data.append(0)
 
         self.runSim(9 * CLK_PERIOD)
 
         eq = self.assertValSequenceEqual
-        eq(u.eq._ag.data, [1, 0, 0, 0, 0, 0, 0, 0])
-        eq(u.gt._ag.data, [0, 1, 1, 1, 1, 1, 1, 1])
-        eq(u.lt._ag.data, eightZeros)
-        eq(u.ne._ag.data, [0, 1, 1, 1, 1, 1, 1, 1])
+        eq(dut.eq._ag.data, [1, 0, 0, 0, 0, 0, 0, 0])
+        eq(dut.gt._ag.data, [0, 1, 1, 1, 1, 1, 1, 1])
+        eq(dut.lt._ag.data, eightZeros)
+        eq(dut.ne._ag.data, [0, 1, 1, 1, 1, 1, 1, 1])
 
     def test_nonValid(self):
-        u = self.u
-        u.a_en._ag.data.append(None)
-        u.b_en._ag.data.append(None)
+        dut = self.dut
+        dut.a_en._ag.data.append(None)
+        dut.b_en._ag.data.append(None)
 
         self.runSim(9 * CLK_PERIOD)
         eq = self.assertValSequenceEqual
-        eq(u.eq._ag.data, [1, None, None, None, None, None, None, None])
-        eq(u.gt._ag.data, [0, None, None, None, None, None, None, None])
-        eq(u.lt._ag.data, [0, None, None, None, None, None, None, None])
-        eq(u.ne._ag.data, [0, None, None, None, None, None, None, None])
+        eq(dut.eq._ag.data, [1, None, None, None, None, None, None, None])
+        eq(dut.gt._ag.data, [0, None, None, None, None, None, None, None])
+        eq(dut.lt._ag.data, [0, None, None, None, None, None, None, None])
+        eq(dut.ne._ag.data, [0, None, None, None, None, None, None, None])
 
     def test_withStops(self):
-        u = self.u
-        u.a_en._ag.data.extend([1, 0, 0, 1])
-        u.b_en._ag.data.extend([1, 1, 0, 0, 1])
+        dut = self.dut
+        dut.a_en._ag.data.extend([1, 0, 0, 1])
+        dut.b_en._ag.data.extend([1, 1, 0, 0, 1])
 
         self.runSim(9 * CLK_PERIOD)
 
         eq = self.assertValSequenceEqual
-        eq(u.eq._ag.data, [1, 1, 0, 0, 1, 1, 1, 1])
-        eq(u.gt._ag.data, eightZeros)
-        eq(u.lt._ag.data, [0, 0, 1, 1, 0, 0, 0, 0])
-        eq(u.ne._ag.data, [0, 0, 1, 1, 0, 0, 0, 0])
+        eq(dut.eq._ag.data, [1, 1, 0, 0, 1, 1, 1, 1])
+        eq(dut.gt._ag.data, eightZeros)
+        eq(dut.lt._ag.data, [0, 0, 1, 1, 0, 0, 0, 0])
+        eq(dut.ne._ag.data, [0, 0, 1, 1, 0, 0, 0, 0])
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
+from hwt.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
@@ -18,45 +18,45 @@ class WStrictOrderInterconnectTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = WStrictOrderInterconnect()
-        u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
-        cls.DATA_WIDTH = u.DATA_WIDTH
-        u.DRIVER_CNT = cls.DRIVER_CNT = 2
-        cls.compileSim(u)
+        cls.dut = dut = WStrictOrderInterconnect()
+        dut.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
+        cls.DATA_WIDTH = dut.DATA_WIDTH
+        dut.DRIVER_CNT = cls.DRIVER_CNT = 2
+        cls.compileSim(dut)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.runSim(200 * Time.ns)
 
-        for d in u.drivers:
+        for d in dut.drivers:
             self.assertEqual(len(d.ack._ag.data), 0)
 
-        self.assertEmpty(u.wDatapump.req._ag.data)
-        self.assertEmpty(u.wDatapump.w._ag.data)
+        self.assertEmpty(dut.wDatapump.req._ag.data)
+        self.assertEmpty(dut.wDatapump.w._ag.data)
 
     def test_passReq(self):
-        u = self.u
+        dut = self.dut
 
-        for i, driver in enumerate(u.drivers):
+        for i, driver in enumerate(dut.drivers):
             driver.req._ag.data.append((i + 1, i + 1, i + 1, 0))
 
         self.runSim(40 * Time.ns)
 
-        self.assertEmpty(u.wDatapump.w._ag.data)
+        self.assertEmpty(dut.wDatapump.w._ag.data)
 
-        req = u.wDatapump.req._ag.data
+        req = dut.wDatapump.req._ag.data
         expectedReq = [(i + 1, i + 1, i + 1, 0) for i in range(2)]
         self.assertValSequenceEqual(req, expectedReq)
 
     def test_passData(self):
-        u = self.u
+        dut = self.dut
         expectedW = []
 
-        for i, driver in enumerate(u.drivers):
+        for i, driver in enumerate(dut.drivers):
             _id = i + 1
             _len = i + 1
             driver.req._ag.data.append((_id, i + 1, _len, 0))
-            strb = mask(u.DATA_WIDTH // 8)
+            strb = mask(dut.DATA_WIDTH // 8)
             for i2 in range(_len + 1):
                 _data = i + i2 + 1
                 last = int(i2 == _len)
@@ -66,8 +66,8 @@ class WStrictOrderInterconnectTC(SimTestCase):
 
         self.runSim(80 * Time.ns)
 
-        req = u.wDatapump.req._ag.data
-        wData = u.wDatapump.w._ag.data
+        req = dut.wDatapump.req._ag.data
+        wData = dut.wDatapump.w._ag.data
 
         for i, _req in enumerate(req):
             self.assertValSequenceEqual(_req,
@@ -79,30 +79,30 @@ class WStrictOrderInterconnectTC(SimTestCase):
             self.assertValSequenceEqual(w, expW)
 
     def test_randomized(self):
-        u = self.u
-        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        dut = self.dut
+        m = AxiDpSimRam(dut.DATA_WIDTH, dut.clk, wDatapumpHwIO=dut.wDatapump)
 
-        for d in u.drivers:
+        for d in dut.drivers:
             self.randomize(d.req)
             self.randomize(d.w)
             self.randomize(d.ack)
 
-        self.randomize(u.wDatapump.req)
-        self.randomize(u.wDatapump.w)
-        self.randomize(u.wDatapump.ack)
+        self.randomize(dut.wDatapump.req)
+        self.randomize(dut.wDatapump.w)
+        self.randomize(dut.wDatapump.ack)
 
         sectors = []
 
         def prepare(driverIndex, addr, size, valBase=1, _id=1):
-            driver = u.drivers[driverIndex]
+            driver = dut.drivers[driverIndex]
             driver.req._ag.data.append((_id, addr, size - 1, 0))
-            _mask = mask(u.DATA_WIDTH // 8)
+            _mask = mask(dut.DATA_WIDTH // 8)
 
             for i in range(size):
                 d = (valBase + i, _mask, int(i == size - 1))
 
                 driver.w._ag.data.append(d)
-                u.wDatapump.ack._ag.data.append(driverIndex)
+                dut.wDatapump.ack._ag.data.append(driverIndex)
 
             sectors.append((addr, valBase, size))
 
@@ -117,30 +117,30 @@ class WStrictOrderInterconnectTC(SimTestCase):
 
         for addr, seed, size in sectors:
             expected = [seed + i for i in range(size)]
-            self.assertValSequenceEqual(m.getArray(addr, u.DATA_WIDTH // 8, size), expected)
+            self.assertValSequenceEqual(m.getArray(addr, dut.DATA_WIDTH // 8, size), expected)
 
     def test_randomized2(self):
-        u = self.u
-        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        dut = self.dut
+        m = AxiDpSimRam(dut.DATA_WIDTH, dut.clk, wDatapumpHwIO=dut.wDatapump)
         N = 25
-        _mask = mask(u.DATA_WIDTH // 8)
+        _mask = mask(dut.DATA_WIDTH // 8)
 
-        for d in u.drivers:
+        for d in dut.drivers:
             self.randomize(d.req)
             self.randomize(d.w)
             self.randomize(d.ack)
 
-        self.randomize(u.wDatapump.req)
-        self.randomize(u.wDatapump.w)
-        self.randomize(u.wDatapump.ack)
+        self.randomize(dut.wDatapump.req)
+        self.randomize(dut.wDatapump.w)
+        self.randomize(dut.wDatapump.ack)
 
         sectors = []
         framesCnt = [0 for _ in range(self.DRIVER_CNT)]
         for i in range(N):
-            for _id, d in enumerate(u.drivers):
+            for _id, d in enumerate(dut.drivers):
                 size = self._rand.getrandbits(3) + 1
                 magic = self._rand.getrandbits(16)
-                addr = m.calloc(size, u.DATA_WIDTH // 8,
+                addr = m.calloc(size, dut.DATA_WIDTH // 8,
                                 initValues=[None for _ in range(size)])
 
                 d.req._ag.data.append((_id, addr, size - 1, 0))
@@ -154,14 +154,14 @@ class WStrictOrderInterconnectTC(SimTestCase):
 
         self.runSim(self.DRIVER_CNT * N * 250 * Time.ns)
 
-        for _id, d in enumerate(u.drivers):
+        for _id, d in enumerate(dut.drivers):
             self.assertEmpty(d.req._ag.data)
             self.assertEmpty(d.w._ag.data)
-            self.assertEqual(len(u.drivers[_id].ack._ag.data),
+            self.assertEqual(len(dut.drivers[_id].ack._ag.data),
                              framesCnt[_id])
 
         for _id, addr, expected in sectors:
-            v = m.getArray(addr, u.DATA_WIDTH // 8, len(expected))
+            v = m.getArray(addr, dut.DATA_WIDTH // 8, len(expected))
             self.assertSequenceEqual(v, expected)
 
 
@@ -169,26 +169,26 @@ class WStrictOrderInterconnect2TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = cls.u = WStrictOrderInterconnect()
-        u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
-        cls.DATA_WIDTH = u.DATA_WIDTH = 64
-        u.DRIVER_CNT = cls.DRIVER_CNT = 3
-        cls.compileSim(u)
+        cls.dut = dut = WStrictOrderInterconnect()
+        dut.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
+        cls.DATA_WIDTH = dut.DATA_WIDTH = 64
+        dut.DRIVER_CNT = cls.DRIVER_CNT = 3
+        cls.compileSim(dut)
 
     def test_3x128(self):
-        u = self.u
-        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        dut = self.dut
+        m = AxiDpSimRam(dut.DATA_WIDTH, dut.clk, wDatapumpHwIO=dut.wDatapump)
         N = 128
-        _mask = mask(u.DATA_WIDTH // 8)
-        data = [[self._rand.getrandbits(u.DATA_WIDTH) for _ in range(N)]
+        _mask = mask(dut.DATA_WIDTH // 8)
+        data = [[self._rand.getrandbits(dut.DATA_WIDTH) for _ in range(N)]
                 for _ in range(self.DRIVER_CNT)]
 
-        dataAddress = [m.malloc(N * u.DATA_WIDTH // 8)
+        dataAddress = [m.malloc(N * dut.DATA_WIDTH // 8)
                        for _ in range(self.DRIVER_CNT)]
 
         for di, _data in enumerate(data):
-            req = u.drivers[di].req._ag
-            wIn = u.drivers[di].w._ag
+            req = dut.drivers[di].req._ag
+            wIn = dut.drivers[di].w._ag
             dataIt = iter(_data)
 
             addr = dataAddress[di]
@@ -206,23 +206,23 @@ class WStrictOrderInterconnect2TC(SimTestCase):
                     req.data.append(mkReq(addr, len(frame) - 1))
                     wIn.data.extend([(d, _mask, i == len(frame) - 1)
                                      for i, d in enumerate(frame)])
-                    addr += len(frame) * u.DATA_WIDTH // 8
+                    addr += len(frame) * dut.DATA_WIDTH // 8
                 if end:
                     break
 
         ra = self.randomize
-        for d in u.drivers:
+        for d in dut.drivers:
             ra(d.req)
             ra(d.w)
             ra(d.ack)
 
-        ra(u.wDatapump.req)
-        ra(u.wDatapump.w)
-        ra(u.wDatapump.ack)
+        ra(dut.wDatapump.req)
+        ra(dut.wDatapump.w)
+        ra(dut.wDatapump.ack)
 
         self.runSim(self.DRIVER_CNT * N * 50 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):
-            inMem = m.getArray(baseAddr, u.DATA_WIDTH // 8, N)
+            inMem = m.getArray(baseAddr, dut.DATA_WIDTH // 8, N)
             self.assertValSequenceEqual(inMem, data[i], f"driver:{i:d}")
 
 

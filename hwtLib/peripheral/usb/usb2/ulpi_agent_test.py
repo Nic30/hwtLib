@@ -5,9 +5,9 @@ from collections  import deque
 from copy import deepcopy
 import unittest
 
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
 from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
 from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ULPI_TX_CMD
 from hwtLib.peripheral.usb.usb2.ulpi_agent import UlpiAgent
@@ -16,7 +16,7 @@ from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
 
-class UlpiWire(Unit):
+class UlpiWire(HwModule):
 
     def _declr(self):
         addClkRstn(self)
@@ -43,8 +43,8 @@ class UlpiAgentTC(UlpiAgentBaseTC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = UlpiWire()
-        cls.compileSim(u)
+        cls.dut = dut = UlpiWire()
+        cls.compileSim(dut)
 
     def format_pid_before_tx(self, pid: int):
         return int(ULPI_TX_CMD.USB_PID(pid))
@@ -54,15 +54,15 @@ class UlpiAgentTC(UlpiAgentBaseTC):
 
     def test_nop(self):
         self.runSim(100 * CLK_PERIOD)
-        u = self.u
-        self.assertUlpiAgFinished(u.host._ag)
-        self.assertUlpiAgFinished(u.dev._ag)
+        dut = self.dut
+        self.assertUlpiAgFinished(dut.host._ag)
+        self.assertUlpiAgFinished(dut.dev._ag)
 
     def test_link_to_phy(self, tx_pkt_lens=[2, 3, 2, 1, 2]):
         # dev -> host (transmit)
-        u = self.u
-        dev: UlpiAgent = u.dev._ag
-        host: UlpiAgent = u.host._ag
+        dut = self.dut
+        dev: UlpiAgent = dut.dev._ag
+        host: UlpiAgent = dut.host._ag
         for i, pkt_len in enumerate(tx_pkt_lens):
             p = deque([self.format_pid_before_tx(i & mask(4)), ])
             p.extend(range(pkt_len))
@@ -75,9 +75,9 @@ class UlpiAgentTC(UlpiAgentBaseTC):
 
     def test_phy_to_link(self, rx_pkt_lens=[2, 3, 2, 1, 2]):
         # host -> dev (receive)
-        u = self.u
-        dev: UlpiAgent = u.dev._ag
-        host: UlpiAgent = u.host._ag
+        dut = self.dut
+        dev: UlpiAgent = dut.dev._ag
+        host: UlpiAgent = dut.host._ag
 
         for pkt_len in rx_pkt_lens:
             p = deque()
@@ -87,13 +87,13 @@ class UlpiAgentTC(UlpiAgentBaseTC):
         rx_ref = deepcopy(host.phy_to_link_packets)
 
         self.runSim(100 * CLK_PERIOD)
-        self.assertUlpiAgFinished(u.host._ag)
+        self.assertUlpiAgFinished(dut.host._ag)
         self.assertSequenceEqual(dev.phy_to_link_packets, rx_ref)
 
     def test_bidir(self, rx_pkt_lens=[1, 2, 3, 3, 2, 1], tx_pkt_lens=[2, 3, 2, 1, 2, 1]):
-        u = self.u
-        dev: UlpiAgent = u.dev._ag
-        host: UlpiAgent = u.host._ag
+        dut = self.dut
+        dev: UlpiAgent = dut.dev._ag
+        host: UlpiAgent = dut.host._ag
 
         for i, pkt_len in enumerate(tx_pkt_lens):
             p = deque([self.format_pid_before_tx(i & mask(4)), ])
@@ -123,24 +123,24 @@ class UlpiUsbAgentTC(UlpiAgentBaseTC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = UlpiWire()
-        cls.compileSim(u)
+        cls.dut = dut = UlpiWire()
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
-        u = self.u
-        u.host._ag = UlpiUsbAgent(self.rtl_simulator, u.host)
-        u.dev._ag = UlpiUsbAgent(self.rtl_simulator, u.dev)
-        u.dev._ag.descriptors = get_default_usb_cdc_vcp_descriptors()
+        dut = self.dut
+        dut.host._ag = UlpiUsbAgent(self.rtl_simulator, dut.host)
+        dut.dev._ag = UlpiUsbAgent(self.rtl_simulator, dut.dev)
+        dut.dev._ag.descriptors = get_default_usb_cdc_vcp_descriptors()
 
     def test_descriptor_download(self):
         self.runSim(500 * CLK_PERIOD)
-        u = self.u
+        dut = self.dut
 
-        self.assertUlpiAgFinished(u.dev._ag)
-        self.assertUlpiAgFinished(u.host._ag)
-        dev = u.dev._ag.usb_driver
-        host = u.host._ag.usb_driver
+        self.assertUlpiAgFinished(dut.dev._ag)
+        self.assertUlpiAgFinished(dut.host._ag)
+        dev = dut.dev._ag.usb_driver
+        host = dut.host._ag.usb_driver
 
         self.assertEqual(dev.addr, 1)
         self.assertEqual(len(host.descr), 1)

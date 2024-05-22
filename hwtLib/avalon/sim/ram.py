@@ -1,13 +1,11 @@
-from collections import deque
-
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.value import HValue
+from hwt.hdl.const import HConst
+from hwt.constants import READ, READ_WRITE, WRITE
+from hwt.hdl.types.bits import HBits
 from hwtLib.abstract.sim_ram import SimRam
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY
 from hwtSimApi.triggers import WaitWriteOnly
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit, \
     get_bit_range
-from hwt.hdl.constants import READ, READ_WRITE, WRITE
 
 
 class AvalonMmSimRam(SimRam):
@@ -31,7 +29,7 @@ class AvalonMmSimRam(SimRam):
         SimRam.__init__(self, DW // 8, parent=parent)
 
         self.allMask = mask(self.cellSize)
-        self.word_t = Bits(self.cellSize * 8)
+        self.word_t = HBits(self.cellSize * 8)
 
         if clk is None:
             clk = avalon_mm._getAssociatedClk()
@@ -132,7 +130,7 @@ class AvalonMmSimRam(SimRam):
     def add_r_ag_data(self, data):
         self.bus._ag.rDataAg.data.append((data, RESP_OKAY))
 
-    def _write_single_word(self, data: HValue, strb: int, word_i: int):
+    def _write_single_word(self, data: HConst, strb: int, word_i: int):
         if strb == 0:
             return
 
@@ -184,4 +182,5 @@ class AvalonMmSimRam(SimRam):
 
     def doWriteAck(self):
         self.bus._ag.wRespAg.data.append(RESP_OKAY)
+
 

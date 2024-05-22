@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import VectSignal
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIOVectSignal
+from hwt.hwParam import HwParam
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
-from hwtLib.examples.hierarchy.extractHierarchyExamples import UnitWidthDynamicallyGeneratedSubunitsForRegisters, \
-    UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr, UnitWidthDynamicallyGeneratedSubunitsForManyRegisters
+from hwtLib.examples.hierarchy.extractHierarchyExamples import HwModuleWidthDynamicallyGeneratedSubunitsForRegisters, \
+    HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr, HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters
 from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
 from hwtLib.examples.hierarchy.netFilter import NetFilter
 from hwtLib.examples.hierarchy.rippleadder import RippleAdder0, \
     RippleAdder1, RippleAdder2, RippleAdder3
-from hwtLib.examples.simpleWithParam import SimpleUnitWithParam
+from hwtLib.examples.simpleHwModuleWithHwParam import SimpleHwModuleWithHwParam
 
 
-class SimpleUnitWithParamWithIrrelevantParamAndAnotherParam(SimpleUnitWithParam):
+class SimpleHwModuleWithParamWithIrrelevantParamAndAnotherParam(SimpleHwModuleWithHwParam):
 
     def _config(self):
-        SimpleUnitWithParam._config(self)
-        self.IRELEVANT_PARAM = Param(10)
-        self.ADDR_WIDTH = Param(10)
+        SimpleHwModuleWithHwParam._config(self)
+        self.IRELEVANT_PARAM = HwParam(10)
+        self.ADDR_WIDTH = HwParam(10)
 
     def _declr(self):
-        SimpleUnitWithParam._declr(self)
-        self.a_addr = VectSignal(self.ADDR_WIDTH)
-        self.b_addr = VectSignal(self.ADDR_WIDTH)._m()
+        SimpleHwModuleWithHwParam._declr(self)
+        self.a_addr = HwIOVectSignal(self.ADDR_WIDTH)
+        self.b_addr = HwIOVectSignal(self.ADDR_WIDTH)._m()
 
     def _impl(self):
-        SimpleUnitWithParam._impl(self)
+        SimpleHwModuleWithHwParam._impl(self)
         self.b_addr(self.a_addr)
 
 
@@ -34,70 +34,70 @@ class HierarchySerializationTC(BaseSerializationTC):
     __FILE__ = __file__
 
     def test_NetFilter_vhdl(self):
-        u = NetFilter()
-        self.assert_serializes_as_file(u, "netFilter.vhd")
+        m = NetFilter()
+        self.assert_serializes_as_file(m, "netFilter.vhd")
 
     def test_NetFilter_verilog(self):
-        u = NetFilter()
-        self.assert_serializes_as_file(u, "netFilter.v")
+        m = NetFilter()
+        self.assert_serializes_as_file(m, "netFilter.v")
 
     def test_NetFilter_systemc(self):
-        u = NetFilter()
-        self.assert_serializes_as_file(u, "netFilter.cpp")
+        m = NetFilter()
+        self.assert_serializes_as_file(m, "netFilter.cpp")
 
     def test_groupOfBlockrams_vhdl(self):
-        u = GroupOfBlockrams()
-        self.assert_serializes_as_file(u, "GroupOfBlockrams.vhd")
+        m = GroupOfBlockrams()
+        self.assert_serializes_as_file(m, "GroupOfBlockrams.vhd")
 
     def test_RippleAdder0_verilog(self):
-        u = RippleAdder0()
-        self.assert_serializes_as_file(u, "RippleAdder0.v")
+        m = RippleAdder0()
+        self.assert_serializes_as_file(m, "RippleAdder0.v")
 
     def test_RippleAdder0_vhdl(self):
-        u = RippleAdder0()
-        self.assert_serializes_as_file(u, "RippleAdder0.vhd")
+        m = RippleAdder0()
+        self.assert_serializes_as_file(m, "RippleAdder0.vhd")
 
     def test_RippleAdder1_verilog(self):
-        u = RippleAdder1()
-        self.assert_serializes_as_file(u, "RippleAdder1.v")
+        m = RippleAdder1()
+        self.assert_serializes_as_file(m, "RippleAdder1.v")
 
     def test_RippleAdder2_verilog(self):
-        u = RippleAdder2()
-        self.assert_serializes_as_file(u, "RippleAdder2.v")
+        m = RippleAdder2()
+        self.assert_serializes_as_file(m, "RippleAdder2.v")
 
     def test_RippleAdder3_verilog(self):
-        u = RippleAdder3()
-        self.assert_serializes_as_file(u, "RippleAdder3.v")
+        m = RippleAdder3()
+        self.assert_serializes_as_file(m, "RippleAdder3.v")
 
-    def test_UnitWidthDynamicallyGeneratedSubunitsForRegisters_vhdl(self):
-        u = UnitWidthDynamicallyGeneratedSubunitsForRegisters()
-        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForRegisters.vhd")
+    def test_HwModuleWidthDynamicallyGeneratedSubunitsForRegisters_vhdl(self):
+        m = HwModuleWidthDynamicallyGeneratedSubunitsForRegisters()
+        self.assert_serializes_as_file(m, "HwModuleWidthDynamicallyGeneratedSubunitsForRegisters.vhd")
 
-    def test_UnitWidthDynamicallyGeneratedSubunitsForRegisters_verilog(self):
-        u = UnitWidthDynamicallyGeneratedSubunitsForRegisters()
-        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForRegisters.v")
+    def test_HwModuleWidthDynamicallyGeneratedSubunitsForRegisters_verilog(self):
+        m = HwModuleWidthDynamicallyGeneratedSubunitsForRegisters()
+        self.assert_serializes_as_file(m, "HwModuleWidthDynamicallyGeneratedSubunitsForRegisters.v")
         
-    def test_UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr_vhdl(self):
-        u = UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr()
-        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr.vhd")
+    def test_HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr_vhdl(self):
+        m = HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr()
+        self.assert_serializes_as_file(m, "HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr.vhd")
 
-    def test_UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr_verilog(self):
-        u = UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr()
-        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr.v")
+    def test_HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr_verilog(self):
+        m = HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr()
+        self.assert_serializes_as_file(m, "HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr.v")
 
-    def test_UnitWidthDynamicallyGeneratedSubunitsForManyRegisters_vhdl(self):
-        u = UnitWidthDynamicallyGeneratedSubunitsForManyRegisters()
-        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForManyRegisters.vhd")
+    def test_HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters_vhdl(self):
+        m = HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters()
+        self.assert_serializes_as_file(m, "HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters.vhd")
 
-    def test_UnitWidthDynamicallyGeneratedSubunitsForManyRegisters_verilog(self):
-        u = UnitWidthDynamicallyGeneratedSubunitsForManyRegisters()
-        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForManyRegisters.v")
+    def test_HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters_verilog(self):
+        m = HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters()
+        self.assert_serializes_as_file(m, "HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters.v")
 
 
 if __name__ == "__main__":
     import unittest
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([HierarchySerializationTC("test_MultiConfigUnitWrapper_same_io_type_different_int_param_verilog")])
+    # suite = unittest.TestSuite([HierarchySerializationTC("test_MultiConfigHwModuleWrapper_same_io_type_different_int_param_verilog")])
     suite = testLoader.loadTestsFromTestCase(HierarchySerializationTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -5,18 +5,18 @@ import math
 from typing import Tuple, Union
 
 from hwt.code import If, Switch
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.bitsVal import BitsVal
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsConst import HBitsConst
+from hwt.hwIOs.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import grouper
-from hwt.synthesizer.param import Param
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axi4s import Axi4Stream
 from pyMathBitPrecise.bit_utils import mask, byte_list_to_be_int
 
 
-class AxiSStoredBurst(Unit):
+class Axi4SStoredBurst(HwModule):
     """
     This unit send data stored in property :obj:`~.DATA` over axi-stream interface
 
@@ -27,17 +27,17 @@ class AxiSStoredBurst(Unit):
     """
 
     def _config(self):
-        AxiStream._config(self)
-        self.REPEAT: bool = Param(False)
-        self.DATA: Union[bytes, Tuple[Union[int, BitsVal, None], ...]] = Param("Hello world!!!!!".encode())
+        Axi4Stream._config(self)
+        self.REPEAT: bool = HwParam(False)
+        self.DATA: Union[bytes, Tuple[Union[int, HBitsConst, None], ...]] = HwParam("Hello world!!!!!".encode())
 
     def dataRd(self):
         return self.dataOut.ready
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataOut: AxiStream = AxiStream()._m()
+        with self._hwParamsShared():
+            self.dataOut: Axi4Stream = Axi4Stream()._m()
 
     def nextWordIndexLogic(self, wordIndex: RtlSignal, DATA_LEN:int):
         if self.REPEAT:
@@ -77,7 +77,7 @@ class AxiSStoredBurst(Unit):
         DATA_LEN = len(DATA)
 
         wordIndex_w = int(math.log2(DATA_LEN) + 1)
-        wordIndex = self._reg("wordIndex", Bits(wordIndex_w), def_val=0)
+        wordIndex = self._reg("wordIndex", HBits(wordIndex_w), def_val=0)
 
         Switch(wordIndex)\
             .add_cases([(i, dout.data(d))
@@ -106,5 +106,5 @@ class AxiSStoredBurst(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    print(to_rtl_str(AxiSStoredBurst()))
+    from hwt.synth import to_rtl_str
+    print(to_rtl_str(Axi4SStoredBurst()))

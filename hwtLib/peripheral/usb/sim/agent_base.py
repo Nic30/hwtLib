@@ -3,11 +3,11 @@ from math import inf
 from typing import List, Union, Deque
 
 from hwt.code import Concat
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.bitsVal import BitsVal
+from hwt.hdl.const import HConst
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.hdlType import HdlType
-from hwt.hdl.value import HValue
-from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
+from hwt.constants import NOT_SPECIFIED
 from hwtLib.logic.crcPoly import CRC_5_USB, CRC_16_USB
 from hwtLib.logic.crc_test_utils import NaiveCrcAccumulator
 from hwtLib.peripheral.usb.constants import usb_packet_token_t, USB_PID
@@ -41,12 +41,12 @@ class UsbPacketToken():
     #    })
 
     @classmethod
-    def from_pid_and_body_bytes(cls, pid: int, addr_ep_crc_byte_list: Union[BitsVal, List[BitsVal]]):
+    def from_pid_and_body_bytes(cls, pid: int, addr_ep_crc_byte_list: Union[HBitsConst, List[HBitsConst]]):
         v = addr_ep_crc_byte_list
         if isinstance(v, (list, tuple, deque)):
-            v = Concat(*reversed([d if isinstance(d, HValue) else uint8_t.from_py(d) for d in v]))
+            v = Concat(*reversed([d if isinstance(d, HConst) else uint8_t.from_py(d) for d in v]))
 
-        _v = Concat(v, Bits(4).from_py(pid))._reinterpret_cast(usb_packet_token_t)
+        _v = Concat(v, HBits(4).from_py(pid))._reinterpret_cast(usb_packet_token_t)
         addr = int(_v.addr)
         endp = int(_v.endp)
         self = cls(pid, addr, endp)
@@ -55,7 +55,7 @@ class UsbPacketToken():
         return self
 
     # @classmethod
-    # def unpack(cls, v: Union[BitsVal, List[BitsVal]]):
+    # def unpack(cls, v: Union[HBitsConst, List[HBitsConst]]):
     #    if isinstance(v, (list, tuple)):
     #        v = Concat(*reversed(v))
     #
@@ -75,7 +75,7 @@ class UsbPacketData():
 
     def __init__(self, pid: int, data: List[int]):
         self.pid = pid
-        if isinstance(data, HValue):
+        if isinstance(data, HConst):
             data = UsbDescriptorBundle.pack_descriptor(data)
         else:
             assert isinstance(data, (list, deque, bytes)), data
@@ -92,7 +92,7 @@ class UsbPacketData():
         reinterpret data as specified type
         """
         assert len(self.data) == t.bit_length() // 8
-        data = [d if isinstance(d, HValue) else uint8_t.from_py(d) for d in self.data]
+        data = [d if isinstance(d, HConst) else uint8_t.from_py(d) for d in self.data]
         return Concat(*reversed(data))._reinterpret_cast(t)
 
     def __repr__(self):

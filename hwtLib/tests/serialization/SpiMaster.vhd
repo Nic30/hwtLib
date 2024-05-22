@@ -28,7 +28,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Master for SPI interface
 --
---    :ivar ~.SPI_FREQ_PESCALER: frequency prescaler to get SPI clk from main clk (Param)
+--    :ivar ~.SPI_FREQ_PESCALER: frequency prescaler to get SPI clk from main clk (HwParam)
 --    :ivar ~.SS_WAIT_CLK_TICKS: number of SPI ticks to wait with SPI clk activation after slave select
 --    :ivar ~.HAS_TX: if set true write part will be instantiated
 --    :ivar ~.HAS_RX: if set true read part will be instantiated

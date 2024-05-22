@@ -14,23 +14,23 @@ class Usb2CdcVcpTC(UlpiAgentBaseTC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = Usb2CdcVcp()
-        u.PRE_NEGOTIATED_TO = USB_VER.USB2_0  # to avoid waiting at the begin of sim
-        cls.compileSim(u)
+        cls.dut = dut = Usb2CdcVcp()
+        dut.PRE_NEGOTIATED_TO = USB_VER.USB2_0  # to avoid waiting at the begin of sim
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
-        u = self.u
-        u.phy._ag = UtmiUsbAgent(u.phy._ag.sim, u.phy)
-        u.phy._ag.RETRY_CNTR_MAX = 100
+        dut = self.dut
+        dut.phy._ag = UtmiUsbAgent(dut.phy._ag.sim, dut.phy)
+        dut.phy._ag.RETRY_CNTR_MAX = 100
 
     def test_descriptor_download(self):
-        u = self.u
-        CLK_PERIOD = int(freq_to_period(u.CLK_FREQ))
+        dut = self.dut
+        CLK_PERIOD = int(freq_to_period(dut.CLK_FREQ))
         self.runSim(600 * CLK_PERIOD)
 
-        self.assertUlpiAgFinished(u.phy._ag)
-        host = u.phy._ag.usb_driver
+        self.assertUlpiAgFinished(dut.phy._ag)
+        host = dut.phy._ag.usb_driver
 
         # self.assertEqual(dev.addr, 1)
         self.assertEqual(len(host.descr), 1)

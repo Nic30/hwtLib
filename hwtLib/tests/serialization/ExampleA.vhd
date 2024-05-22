@@ -1,20 +1,20 @@
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-ENTITY OnceUnit IS
+ENTITY OnceHwModule IS
     PORT(
         a : OUT STD_LOGIC
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF OnceUnit IS
+ARCHITECTURE rtl OF OnceHwModule IS
 BEGIN
     a <= '1';
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-ENTITY ParamsUniqUnit IS
+ENTITY ParamsUniqHwModule IS
     GENERIC(
         A : INTEGER := 0;
         B : INTEGER := 1
@@ -24,7 +24,7 @@ ENTITY ParamsUniqUnit IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF ParamsUniqUnit IS
+ARCHITECTURE rtl OF ParamsUniqHwModule IS
 BEGIN
     a_0 <= '1';
     ASSERT A = 0 REPORT "Generated only for this value" SEVERITY failure;
@@ -33,7 +33,7 @@ END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-ENTITY ParamsUniqUnit_0 IS
+ENTITY ParamsUniqHwModule_0 IS
     GENERIC(
         A : INTEGER := 0;
         B : INTEGER := 12
@@ -43,7 +43,7 @@ ENTITY ParamsUniqUnit_0 IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF ParamsUniqUnit_0 IS
+ARCHITECTURE rtl OF ParamsUniqHwModule_0 IS
 BEGIN
     a_0 <= '1';
     ASSERT A = 0 REPORT "Generated only for this value" SEVERITY failure;
@@ -59,17 +59,17 @@ ENTITY ExampleA IS
 END ENTITY;
 
 ARCHITECTURE rtl OF ExampleA IS
-    COMPONENT ExcludedUnit IS
+    COMPONENT ExcludedHwModule IS
         PORT(
             a : OUT STD_LOGIC
         );
     END COMPONENT;
-    COMPONENT OnceUnit IS
+    COMPONENT OnceHwModule IS
         PORT(
             a : OUT STD_LOGIC
         );
     END COMPONENT;
-    COMPONENT ParamsUniqUnit IS
+    COMPONENT ParamsUniqHwModule IS
         GENERIC(
             A : INTEGER := 0;
             B : INTEGER := 1
@@ -78,7 +78,7 @@ ARCHITECTURE rtl OF ExampleA IS
             a_0 : OUT STD_LOGIC
         );
     END COMPONENT;
-    COMPONENT ParamsUniqUnit_0 IS
+    COMPONENT ParamsUniqHwModule_0 IS
         GENERIC(
             A : INTEGER := 0;
             B : INTEGER := 12
@@ -87,47 +87,47 @@ ARCHITECTURE rtl OF ExampleA IS
             a_0 : OUT STD_LOGIC
         );
     END COMPONENT;
-    SIGNAL sig_u0_a : STD_LOGIC;
-    SIGNAL sig_u1_a : STD_LOGIC;
-    SIGNAL sig_u2_a : STD_LOGIC;
-    SIGNAL sig_u3_a : STD_LOGIC;
-    SIGNAL sig_u4_a : STD_LOGIC;
-    SIGNAL sig_u5_a : STD_LOGIC;
-    SIGNAL sig_u6_a : STD_LOGIC;
-    SIGNAL sig_u7_a : STD_LOGIC;
+    SIGNAL sig_m0_a : STD_LOGIC;
+    SIGNAL sig_m1_a : STD_LOGIC;
+    SIGNAL sig_m2_a : STD_LOGIC;
+    SIGNAL sig_m3_a : STD_LOGIC;
+    SIGNAL sig_m4_a : STD_LOGIC;
+    SIGNAL sig_m5_a : STD_LOGIC;
+    SIGNAL sig_m6_a : STD_LOGIC;
+    SIGNAL sig_m7_a : STD_LOGIC;
 BEGIN
-    u0_inst: ExcludedUnit PORT MAP(
-        a => sig_u0_a
+    m0_inst: ExcludedHwModule PORT MAP(
+        a => sig_m0_a
     );
-    u1_inst: ExcludedUnit PORT MAP(
-        a => sig_u1_a
+    m1_inst: ExcludedHwModule PORT MAP(
+        a => sig_m1_a
     );
-    u2_inst: OnceUnit PORT MAP(
-        a => sig_u2_a
+    m2_inst: OnceHwModule PORT MAP(
+        a => sig_m2_a
     );
-    u3_inst: OnceUnit PORT MAP(
-        a => sig_u3_a
+    m3_inst: OnceHwModule PORT MAP(
+        a => sig_m3_a
     );
-    u4_inst: OnceUnit PORT MAP(
-        a => sig_u4_a
+    m4_inst: OnceHwModule PORT MAP(
+        a => sig_m4_a
     );
-    u5_inst: ParamsUniqUnit GENERIC MAP(
+    m5_inst: ParamsUniqHwModule GENERIC MAP(
         A => 0,
         B => 1
     ) PORT MAP(
-        a_0 => sig_u5_a
+        a_0 => sig_m5_a
     );
-    u6_inst: ParamsUniqUnit GENERIC MAP(
+    m6_inst: ParamsUniqHwModule GENERIC MAP(
         A => 0,
         B => 1
     ) PORT MAP(
-        a_0 => sig_u6_a
+        a_0 => sig_m6_a
     );
-    u7_inst: ParamsUniqUnit_0 GENERIC MAP(
+    m7_inst: ParamsUniqHwModule_0 GENERIC MAP(
         A => 0,
         B => 12
     ) PORT MAP(
-        a_0 => sig_u7_a
+        a_0 => sig_m7_a
     );
-    a <= sig_u0_a & sig_u1_a & sig_u2_a & sig_u3_a & sig_u4_a & sig_u5_a & sig_u6_a;
+    a <= sig_m0_a & sig_m1_a & sig_m2_a & sig_m3_a & sig_m4_a & sig_m5_a & sig_m6_a;
 END ARCHITECTURE;

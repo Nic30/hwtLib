@@ -1,12 +1,13 @@
-from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
-from hwt.hdl.operator import Operator
-from hwt.hdl.operatorDefs import AllOps, isEventDependentOp
+from hwt.hdl.operator import HOperatorNode
+from hwt.hdl.operatorDefs import HwtOps, isEventDependentOp
 from hwt.hdl.portItem import HdlPortItem
-from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
+from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
+from hwt.mainBases import HwModuleBase
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.abstract.busInterconnect import BusInterconnect
 from hwtLib.abstract.busStaticRemap import BusStaticRemap
+from hwt.hwIO import HwIO
 
 
 def getEpSignal(sig, op):
@@ -18,30 +19,30 @@ def getEpSignal(sig, op):
         is creating new datapath
     """
     # we do not follow results of indexing like something[sig]
-    if op.operator == AllOps.INDEX:
+    if op.operator == HwtOps.INDEX:
         if op.operands[0] is not sig:
             return
-    if op.operator not in [AllOps.INDEX,
-                           AllOps.ADD,
-                           AllOps.SUB,
-                           AllOps.MUL,
-                           AllOps.DIV,
-                           AllOps.CONCAT]:
+    if op.operator not in [HwtOps.INDEX,
+                           HwtOps.ADD,
+                           HwtOps.SUB,
+                           HwtOps.MUL,
+                           HwtOps.DIV,
+                           HwtOps.CONCAT]:
         return
 
     if sig in op.operands:
         return op.result
 
 
-def getParentUnit(sig):
+def getParentHwModule(sig):
     try:
-        intf = sig._interface
+        hwIO = sig._hwIO
     except AttributeError:
-        return  # if there is no interface it cant be a signal in IO of :class:`hwt.synthesizer.unit.Unit` instance
+        return  # if there is no interface it cant be a signal in IO of :class:`hwt.hwModule.HwModule` instance
 
-    while not isinstance(intf._parent, UnitBase):
-        intf = intf._parent
-    return intf._parent
+    while not isinstance(hwIO._parent, HwModuleBase):
+        hwIO = hwIO._parent
+    return hwIO._parent
 
 
 class AddressSpaceProbe(object):
@@ -50,18 +51,18 @@ class AddressSpaceProbe(object):
     Discovery is made by walking on address signal.
     """
 
-    def __init__(self, topIntf, getMainSigFn, offset=0):
+    def __init__(self, topHwIO, getMainSigFn, offset=0):
         """
-        :param topIntf: interface on which should discovery start
+        :param topHwIO: interface on which should discovery start
         :param getMainSigFn: function which gets the main signal
             form interface which should this code care about
             usually address
         """
-        self.topIntf = topIntf
+        self.topHwIO = topHwIO
         self.getMainSigFn = getMainSigFn
         self.offset = offset
         self.seen = set([None, ])
-        self.discovered = self._discoverAddressSpace(self.topIntf,
+        self.discovered = self._discoverAddressSpace(self.topHwIO,
                                                      self.offset)
 
     def _extractStruct(self, converter, offset):
@@ -87,10 +88,10 @@ class AddressSpaceProbe(object):
 
         self.seen.add(mainSig)
 
-        parent = getParentUnit(mainSig)
+        parent = getParentHwModule(mainSig)
 
         if parent not in self.seen:
-            # check if the parent :class:`hwt.synthesizer.unit.Unit` instance is some specific component
+            # check if the parent :class:`hwt.hwModule.HwModule` instance is some specific component
             # which handles bus protocol
             self.seen.add(parent)
             if isinstance(parent, BusEndpoint):
@@ -107,15 +108,15 @@ class AddressSpaceProbe(object):
             elif isinstance(parent, BusInterconnect):
                 if len(parent._masters) != 1:
                     raise NotImplementedError()
-                for intf, addrRec in zip(parent.m, parent._slaves):
+                for hwIO, addrRec in zip(parent.m, parent._slaves):
                     _offset = addrRec[0]
-                    yield from self.walkToConverter(self._getMainSigFn(intf),
+                    yield from self.walkToConverter(self._getMainSigFn(hwIO),
                                                     offset + _offset)
                 return
 
         # walk endpoints where this signal is connected
         for e in mainSig.endpoints:
-            if isinstance(e, Operator) and not isEventDependentOp(e):
+            if isinstance(e, HOperatorNode) and not isEventDependentOp(e):
                 ep = getEpSignal(mainSig, e)
                 yield from self.walkToConverter(ep, offset)
             elif isinstance(e, (HdlAssignmentContainer, HdlPortItem)):
@@ -124,16 +125,16 @@ class AddressSpaceProbe(object):
                 for outp in e._outputs:
                     yield from self.walkToConverter(outp, offset)
 
-    def _getMainSigFn(self, intf):
-        _mainSig = self.getMainSigFn(intf)
+    def _getMainSigFn(self, hwIO: HwIO):
+        _mainSig = self.getMainSigFn(hwIO)
         s = _mainSig._sig
         if s is None:
             return _mainSig._sigInside
         else:
             return s
 
-    def _discoverAddressSpace(self, topIntf, offset):
-        mainSig = self._getMainSigFn(topIntf)
+    def _discoverAddressSpace(self, topHwIO: HwIO, offset: int):
+        mainSig = self._getMainSigFn(topHwIO)
         t = None
         for _offset, converter in self.walkToConverter(mainSig, offset):
             # addrMap = self._extractAddressMap(converter, offset)

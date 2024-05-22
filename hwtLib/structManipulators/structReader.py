@@ -7,31 +7,31 @@ from hwt.code import StaticForEach
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Handshaked, Signal
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.abstract.template_configured import TemplateConfigured
-from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
-from hwtLib.amba.datapump.intf import AxiRDatapumpIntf, AddrSizeHs
+from hwtLib.amba.axis_comp.frame_parser import Axi4S_frameParser
+from hwtLib.amba.datapump.intf import HwIOAxiRDatapump, AddrSizeHs
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode
 
 
-class StructReader(AxiS_frameParser):
+class StructReader(Axi4S_frameParser):
     """
     This unit downloads required structure fields over rDatapump
     interface from address specified by get interface
 
-    :ivar ~.ID: Param, id for transactions on bus
-    :ivar ~.READ_ACK: Param, if true ready on "get" will be set only
+    :ivar ~.ID: HwParam, id for transactions on bus
+    :ivar ~.READ_ACK: HwParam, if true ready on "get" will be set only
         when component is in idle (if false "get"
         is regular handshaked interface)
-    :ivar ~.SHARED_READY: Param, if this is true field interfaces
+    :ivar ~.SHARED_READY: HwParam, if this is true field interfaces
         will be of type VldSynced and single ready signal
         will be used for all else every interface
-        will be instance of Handshaked and it
+        will be instance of HwIODataRdVld and it
         will have it's own ready(rd) signal
     :attention: interfaces of field will not send data in same time
 
@@ -53,16 +53,16 @@ class StructReader(AxiS_frameParser):
         :attention: interfaces for each field in struct will be dynamically created
         :attention: structT can not contain fields with variable size like HStream
         """
-        Unit.__init__(self)
+        HwModule.__init__(self)
         assert isinstance(structT, HStruct)
         TemplateConfigured.__init__(self, structT, tmpl=tmpl, frames=frames)
 
     def _config(self):
-        self.ID = Param(0)
-        AxiRDatapumpIntf._config(self)
+        self.ID = HwParam(0)
+        HwIOAxiRDatapump._config(self)
         self.USE_STRB = False
-        self.READ_ACK = Param(False)
-        self.SHARED_READY = Param(False)
+        self.READ_ACK = HwParam(False)
+        self.SHARED_READY = HwParam(False)
 
     def maxWordIndex(self):
         return max(f.endBitAddr - 1 for f in self._frames) // self.DATA_WIDTH
@@ -87,27 +87,27 @@ class StructReader(AxiS_frameParser):
 
     def _declr(self):
         addClkRstn(self)
-        self.dataOut = StructIntf(self._structT,
+        self.dataOut = HwIOStruct(self._structT,
                                   tuple(),
-                                  self._mkFieldIntf)._m()
+                                  self._mkFieldHwIO)._m()
 
-        g = self.get = Handshaked()  # data signal is addr of structure to download
+        g = self.get = HwIODataRdVld()  # data signal is addr of structure to download
         g.DATA_WIDTH = self.ADDR_WIDTH
         self.parseTemplate()
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             # interface for communication with datapump
-            self.rDatapump = AxiRDatapumpIntf()._m()
+            self.rDatapump = HwIOAxiRDatapump()._m()
             self.rDatapump.MAX_BYTES = self.maxBytesInTransaction()
 
-        with self._paramsShared(exclude=({"ID_WIDTH"}, set())):
-            self.parser = AxiS_frameParser(self._structT,
+        with self._hwParamsShared(exclude=({"ID_WIDTH"}, set())):
+            self.parser = Axi4S_frameParser(self._structT,
                                            tmpl=self._tmpl,
                                            frames=self._frames)
             self.parser.SYNCHRONIZE_BY_LAST = False
 
         if self.SHARED_READY:
-            self.ready = Signal()
+            self.ready = HwIOSignal()
 
     def driveReqRem(self, req: AddrSizeHs, MAX_BITS: int):
         return req.rem(ceil((MAX_BITS % self.DATA_WIDTH) / 8))
@@ -147,11 +147,11 @@ class StructReader(AxiS_frameParser):
 
         self.parser.dataIn(r, exclude=data_sig_to_exclude)
 
-        for _, field in self._tmpl.walkFlatten():
+        for _, field in self._tmpl.HwIO_walkFlatten():
             p = field.getFieldPath()
-            myIntf = self.dataOut._fieldsToInterfaces[p]
-            parserIntf = self.parser.dataOut._fieldsToInterfaces[p]
-            myIntf(parserIntf)
+            fieldHwIO = self.dataOut._fieldsToHwIOs[p]
+            parserHwIO = self.parser.dataOut._fieldsToHwIOs[p]
+            fieldHwIO(parserHwIO)
 
 
 def _example_StructReader():
@@ -177,11 +177,12 @@ def _example_StructReader():
         (uint64_t, "item7"),
         )
 
-    u = StructReader(s)
-    return u
+    m = StructReader(s)
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_StructReader()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_StructReader()
+    print(to_rtl_str(m))

@@ -11,12 +11,12 @@ from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
 from hwtLib.amba.axiLite_comp.sim.memSpaceMaster import AxiLiteMemSpaceMaster
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
-from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.amba.axi_comp.tester import AxiTester, SEND_AR, RECV_R
 from hwtLib.amba.constants import BYTES_IN_TRANS, PROT_DEFAULT, LOCK_DEFAULT, \
     CACHE_DEFAULT, BURST_INCR, RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class SimProcessSequence(deque):
@@ -38,9 +38,9 @@ class AxiTesterTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiTester(Axi3)
-        u.DATA_WIDTH = 32
-        cls.compileSim(u, onAfterToRtl=cls.mkRegisterMap)
+        cls.dut = dut = AxiTester(Axi3)
+        dut.DATA_WIDTH = 32
+        cls.compileSim(dut, onAfterToRtl=cls.mkRegisterMap)
 
     @classmethod
     def mkRegisterMap(cls, u):
@@ -50,11 +50,11 @@ class AxiTesterTC(SimTestCase):
 
     def setUp(self):
         super(AxiTesterTC, self).setUp()
-        u = self.u
-        self.m = AxiSimRam(u.m_axi)
+        dut = self.dut
+        self.m = Axi4SimRam(dut.m_axi)
 
     def randomize_all(self):
-        axi_randomize_per_channel(self, self.u.m_axi)
+        axi_randomize_per_channel(self, self.dut.m_axi)
 
     def test_nop(self):
         self.randomize_all()
@@ -62,7 +62,7 @@ class AxiTesterTC(SimTestCase):
 
     def poolWhileBusy(self, onReady):
         def repeatWaitIfNotReady():
-            d = self.u.cntrl.r._ag.data[-1][0]
+            d = self.dut.cntrl.r._ag.data[-1][0]
             d = int(d)
             if d:
                 # ready, run callback
@@ -77,10 +77,10 @@ class AxiTesterTC(SimTestCase):
         self.randomize_all()
         r = self.regs
         m = self.m
-        WORD_SIZE = int(self.u.DATA_WIDTH) // 8
-        ID_WIDTH = int(self.u.ID_WIDTH)
+        WORD_SIZE = int(self.dut.DATA_WIDTH) // 8
+        ID_WIDTH = int(self.dut.ID_WIDTH)
         ID_MASK = mask(ID_WIDTH)
-        cntrl_r = self.u.cntrl.r._ag.data
+        cntrl_r = self.dut.cntrl.r._ag.data
 
         MAGIC = 89
         expected_data = []
@@ -164,7 +164,7 @@ class AxiTesterTC(SimTestCase):
         self.procs.append(seq.run())
         self.runSim(400 * CLK_PERIOD)
         self.assertEmpty(seq)
-        self.assertEqual(len(self.u.cntrl.w._ag.data), 0)
+        self.assertEqual(len(self.dut.cntrl.w._ag.data), 0)
         self.assertEqual(self.transactionCompleted,
                          sum([x[1] for x in transactions]))
 

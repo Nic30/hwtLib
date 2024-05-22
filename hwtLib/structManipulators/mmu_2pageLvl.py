@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -
 
 from hwt.code import Concat, If
-from hwt.interfaces.std import Handshaked, BramPort_withoutClk, \
-    Signal
-from hwt.interfaces.utils import propagateClkRstn, addClkRstn
+from hwt.hwIOs.std import HwIODataRdVld, HwIOBramPort_noClk, \
+    HwIOSignal
+from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
+from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.ramAsHs import RamAsHs
+from hwtLib.handshaked.ramAsAddrDataRdVld import RamAsAddrDataRdVld
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.structManipulators.arrayItemGetter import ArrayItemGetter
@@ -20,7 +20,7 @@ FLAG_INVALID = 1
 
 
 # http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0301h/I1026235.html
-class MMU_2pageLvl(Unit):
+class MMU_2pageLvl(HwModule):
     """
     MMU where parent page table is stored in ram this unit
     and only items from leaf page tables are download on each request
@@ -38,15 +38,15 @@ class MMU_2pageLvl(Unit):
     """
     def _config(self):
         # width of id signal for bus
-        self.ID_WIDTH = Param(1)
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
+        self.ID_WIDTH = HwParam(1)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(64)
 
-        self.VIRT_ADDR_WIDTH = Param(32)
-        self.LVL1_PAGE_TABLE_ITEMS = Param(512)
-        self.PAGE_SIZE = Param(int(2 ** 12))
+        self.VIRT_ADDR_WIDTH = HwParam(32)
+        self.LVL1_PAGE_TABLE_ITEMS = HwParam(512)
+        self.PAGE_SIZE = HwParam(int(2 ** 12))
 
-        self.MAX_OVERLAP = Param(16)
+        self.MAX_OVERLAP = HwParam(16)
 
     def _declr(self):
         self.PAGE_OFFSET_WIDTH = log2ceil(self.PAGE_SIZE)
@@ -59,37 +59,37 @@ class MMU_2pageLvl(Unit):
 
         # public interfaces
         addClkRstn(self)
-        with self._paramsShared():
-            self.rDatapump = AxiRDatapumpIntf()._m()
+        with self._hwParamsShared():
+            self.rDatapump = HwIOAxiRDatapump()._m()
             self.rDatapump.MAX_BYTES = self.DATA_WIDTH // 8
 
-        i = self.virtIn = Handshaked()
+        i = self.virtIn = HwIODataRdVld()
         i.DATA_WIDTH = self.VIRT_ADDR_WIDTH
 
-        i = self.physOut = Handshaked()._m()
+        i = self.physOut = HwIODataRdVld()._m()
         i.DATA_WIDTH = self.ADDR_WIDTH
-        self.segfault = Signal()._m()
+        self.segfault = HwIOSignal()._m()
 
-        self.lvl1Table = BramPort_withoutClk()
+        self.lvl1Table = HwIOBramPort_noClk()
 
         # internal components
         self.lvl1Storage = RamSingleClock()
         self.lvl1Storage.PORT_CNT = 1
-        self.lvl1Converter = RamAsHs()
+        self.lvl1Converter = RamAsAddrDataRdVld()
         for u in [self.lvl1Table, self.lvl1Converter, self.lvl1Storage]:
             u.DATA_WIDTH = self.ADDR_WIDTH
             u.ADDR_WIDTH = self.LVL1_PAGE_TABLE_INDX_WIDTH
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.lvl2get = ArrayItemGetter()
         self.lvl2get.ITEM_WIDTH = self.ADDR_WIDTH
         self.lvl2get.ITEMS = self.LVL2_PAGE_TABLE_ITEMS
 
-        self.lvl2indxFifo = HandshakedFifo(Handshaked)
+        self.lvl2indxFifo = HandshakedFifo(HwIODataRdVld)
         self.lvl2indxFifo.DEPTH = self.MAX_OVERLAP // 2
         self.lvl2indxFifo.DATA_WIDTH = self.LVL2_PAGE_TABLE_INDX_WIDTH
 
-        self.pageOffsetFifo = HandshakedFifo(Handshaked)
+        self.pageOffsetFifo = HandshakedFifo(HwIODataRdVld)
         self.pageOffsetFifo.DEPTH = self.MAX_OVERLAP
         self.pageOffsetFifo.DATA_WIDTH = self.PAGE_OFFSET_WIDTH
 
@@ -151,8 +151,8 @@ class MMU_2pageLvl(Unit):
         lvl2item = self.lvl2get.item
         segfaultFlag = self._reg("segfaultFlag", def_val=False)
 
-        def errVal(intf):
-            return intf.vld & intf.data[0]._eq(FLAG_INVALID)
+        def errVal(hwIO):
+            return hwIO.vld & hwIO.data[0]._eq(FLAG_INVALID)
 
         If(errVal(lvl1item) | errVal(lvl2item),
            segfaultFlag(1)
@@ -174,6 +174,7 @@ class MMU_2pageLvl(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = MMU_2pageLvl()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = MMU_2pageLvl()
+    print(to_rtl_str(m))

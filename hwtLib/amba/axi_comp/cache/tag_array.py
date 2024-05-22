@@ -3,25 +3,25 @@
 
 from hwt.code import Or, Concat, If
 from hwt.code_utils import rename_signal
-from hwt.hdl.constants import READ, WRITE
-from hwt.hdl.types.bits import Bits
+from hwt.constants import READ, WRITE
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, \
+    HwIOBramPort_noClk, HwIODataVld, HwIORdVldSync
+from hwt.hwIOs.hwIOStruct import HwIOStruct, HdlType_to_HwIO
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import VectSignal, Signal, \
-    BramPort_withoutClk, VldSynced, HandshakeSync
-from hwt.interfaces.structIntf import StructIntf, HdlType_to_Interface
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_comp.cache.addrTypeConfig import CacheAddrTypeConfig
-from hwtLib.amba.axi_intf_common import Axi_id
-from hwtLib.common_nonstd_interfaces.addr_hs import AddrHs
+from hwtLib.amba.axi_common import Axi_id
+from hwtLib.commonHwIO.addr import HwIOAddrRdVld
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.mem.ram import RamSingleClock
 
 
-class AxiCacheTagArrayLookupResIntf(HandshakeSync):
+class HwIOAxiCacheTagArrayLookupRes(HwIORdVldSync):
     """
     Interface used for r/w logic of cache to return result of search in cache
 
@@ -31,23 +31,23 @@ class AxiCacheTagArrayLookupResIntf(HandshakeSync):
     """
 
     def _config(self):
-        self.ID_WIDTH = Param(4)
-        AxiCacheTagArrayUpdateIntf._config(self)
-        self.TAG_T = Param(None)
+        self.ID_WIDTH = HwParam(4)
+        HwIOAxiCacheTagArrayUpdate._config(self)
+        self.TAG_T = HwParam(None)
 
     def _declr(self):
         Axi_id._declr(self)
-        self.found = Signal()
-        self.addr = VectSignal(self.ADDR_WIDTH)
+        self.found = HwIOSignal()
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         if self.WAY_CNT > 1:
-            self.way = VectSignal(log2ceil(self.WAY_CNT - 1))
+            self.way = HwIOVectSignal(log2ceil(self.WAY_CNT - 1))
         if self.TAG_T is not None:
-            self.tags = HObjList(HdlType_to_Interface().apply(self.TAG_T) for _ in range(self.WAY_CNT))
+            self.tags = HObjList(HdlType_to_HwIO().apply(self.TAG_T) for _ in range(self.WAY_CNT))
 
-        HandshakeSync._declr(self)
+        HwIORdVldSync._declr(self)
 
 
-class AxiCacheTagArrayUpdateIntf(VldSynced):
+class HwIOAxiCacheTagArrayUpdate(HwIODataVld):
     """
     Interface used to insert or delete records in tag array.
 
@@ -60,15 +60,15 @@ class AxiCacheTagArrayUpdateIntf(VldSynced):
     """
 
     def _config(self):
-        self.WAY_CNT = Param(4)
-        self.ADDR_WIDTH = Param(32)
+        self.WAY_CNT = HwParam(4)
+        self.ADDR_WIDTH = HwParam(32)
 
     def _declr(self):
-        self.addr = VectSignal(self.ADDR_WIDTH)
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         if self.WAY_CNT > 1:
-            self.way_en = VectSignal(self.WAY_CNT)
-        self.delete = Signal()
-        self.vld = Signal()
+            self.way_en = HwIOVectSignal(self.WAY_CNT)
+        self.delete = HwIOSignal()
+        self.vld = HwIOSignal()
 
 
 class AxiCacheTagArray(CacheAddrTypeConfig):
@@ -84,24 +84,24 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
     :ivar CACHE_LINE_SIZE: size of cacheline [B]
 
     :see: :meth:`~.AxiCacheTagArrayLookupIntf._config`
-    :see: :meth:`~.AxiCacheTagArrayLookupResIntf._config`
+    :see: :meth:`~.HwIOAxiCacheTagArrayLookupRes._config`
 
     .. hwt-autodoc:: _example_AxiCacheTagArray
     """
 
     def _config(self):
-        self.PORT_CNT = Param(2)
-        self.UPDATE_PORT_CNT = Param(1)
-        self.ID_WIDTH = Param(4)
-        AxiCacheTagArrayUpdateIntf._config(self)
+        self.PORT_CNT = HwParam(2)
+        self.UPDATE_PORT_CNT = HwParam(1)
+        self.ID_WIDTH = HwParam(4)
+        HwIOAxiCacheTagArrayUpdate._config(self)
         CacheAddrTypeConfig._config(self)
         self.LOOKUP_LATENCY = 1
-        self.MAX_BLOCK_DATA_WIDTH = Param(None)
+        self.MAX_BLOCK_DATA_WIDTH = HwParam(None)
 
     def define_tag_record_t(self):
         tag_record_t = [
             # tag specifies which cacheline is currently loaded
-            (Bits(self.TAG_W), "tag"),
+            (HBits(self.TAG_W), "tag"),
             # valid specifies if record on this row is valid or not
             # valid can be altered on cacheline flush or fill
             (BIT, "valid"),
@@ -110,26 +110,26 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         # because we will use byte-enable on ram port to update this item in array of such a items
         misalign = (self.TAG_W + 1) % 8
         if misalign != 0:
-            tag_record_t.append((Bits(8 - misalign), None))
+            tag_record_t.append((HBits(8 - misalign), None))
         return HStruct(*tag_record_t)
 
     def _declr(self):
         self._compupte_tag_index_offset_widths()
         self.tag_record_t = self.define_tag_record_t()
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.lookup = HObjList(
-                AddrHs()
+                HwIOAddrRdVld()
                 for _ in range(self.PORT_CNT)
             )
             self.lookupRes = HObjList(
-                AxiCacheTagArrayLookupResIntf()._m()
+                HwIOAxiCacheTagArrayLookupRes()._m()
                 for _ in range(self.PORT_CNT)
             )
             for i in self.lookupRes:
                 i.TAG_T = self.tag_record_t
             self.update = HObjList(
-                AxiCacheTagArrayUpdateIntf()
+                HwIOAxiCacheTagArrayUpdate()
                 for _ in range(self.UPDATE_PORT_CNT)
             )
 
@@ -143,7 +143,7 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         )
         tag_mem.HAS_BE = True
 
-    def connect_update_port(self, update: AxiCacheTagArrayUpdateIntf, tag_mem_port_w: BramPort_withoutClk):
+    def connect_update_port(self, update: HwIOAxiCacheTagArrayUpdate, tag_mem_port_w: HwIOBramPort_noClk):
         update_tmp = self._reg(
             "update_tmp",
             HStruct(
@@ -166,9 +166,9 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
             "tag": tag,
             "valid":~update.delete,
         })
-        tag_record = tag_record._reinterpret_cast(Bits(self.tag_record_t.bit_length()))
+        tag_record = tag_record._reinterpret_cast(HBits(self.tag_record_t.bit_length()))
         tag_mem_port_w.din(Concat(*(tag_record for _ in range(self.WAY_CNT))))
-        tag_be_t = Bits(self.tag_record_t.bit_length() // 8)
+        tag_be_t = HBits(self.tag_record_t.bit_length() // 8)
         tag_en = tag_be_t.from_py(tag_be_t.all_mask())
         tag_not_en = tag_be_t.from_py(0)
         tag_mem_port_w.we(Concat(*reversed([
@@ -178,10 +178,10 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         return update_tmp
 
     def connect_lookup_port(self,
-                lookup: AddrHs,
-                tag_mem_port_r: BramPort_withoutClk,
-                lookupRes: AxiCacheTagArrayLookupResIntf,
-                update_tmp: StructIntf):
+                lookup: HwIOAddrRdVld,
+                tag_mem_port_r: HwIOBramPort_noClk,
+                lookupRes: HwIOAxiCacheTagArrayLookupRes,
+                update_tmp: HwIOStruct):
         lookup_tmp = self._reg(
             "lookup_tmp",
             HStruct(
@@ -269,14 +269,14 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
 
 
 def _example_AxiCacheTagArray():
-    u = AxiCacheTagArray()
-    u.PORT_CNT = 2
-    u.UPDATE_PORT_CNT = 1
-    u.MAX_BLOCK_DATA_WIDTH = 8
-    return u
+    m = AxiCacheTagArray()
+    m.PORT_CNT = 2
+    m.UPDATE_PORT_CNT = 1
+    m.MAX_BLOCK_DATA_WIDTH = 8
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiCacheTagArray()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_AxiCacheTagArray()
+    print(to_rtl_str(m))

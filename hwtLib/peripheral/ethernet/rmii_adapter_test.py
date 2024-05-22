@@ -12,23 +12,23 @@ class RmiiAdapterTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = RmiiAdapter()
-        cls.compileSim(cls.u)
+        cls.dut = RmiiAdapter()
+        cls.compileSim(cls.dut)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.runSim(self.CLK * 100)
-        self.assertEmpty(u.rx._ag.data)
-        self.assertEmpty(u.eth.tx._ag.data)
+        self.assertEmpty(dut.rx._ag.data)
+        self.assertEmpty(dut.eth.tx._ag.data)
 
     def test_rx(self):
         N = 10
         data = [i for i in range(N)]
-        u = self.u
-        u.eth.rx._ag._append_frame(data)
+        dut = self.dut
+        dut.eth.rx._ag._append_frame(data)
         self.runSim(self.CLK * 100)
         self.assertValSequenceEqual(
-            u.rx._ag.data,
+            dut.rx._ag.data,
             [(d, 0, int(last)) for last, d in iter_with_last(data)])
 
     def test_tx(self):
@@ -39,12 +39,12 @@ class RmiiAdapterTC(SimTestCase):
             int(ETH.SFD),
             *data,
         ]
-        u = self.u
-        u.tx._ag.data.extend([(d, last) for last, d in iter_with_last(data)])
+        dut = self.dut
+        dut.tx._ag.data.extend([(d, last) for last, d in iter_with_last(data)])
         self.runSim(self.CLK * 200)
-        self.assertEmpty(u.eth.tx._ag.data)
-        self.assertEqual(len(u.eth.tx._ag.frames), 1)
-        self.assertValSequenceEqual(u.eth.tx._ag.frames[0], expected)
+        self.assertEmpty(dut.eth.tx._ag.data)
+        self.assertEqual(len(dut.eth.tx._ag.frames), 1)
+        self.assertValSequenceEqual(dut.eth.tx._ag.frames[0], expected)
 
 
 if __name__ == "__main__":

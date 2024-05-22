@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import propagateClkRstn
+from hwt.hObjList import HObjList
 from hwt.math import log2ceil
-from hwt.synthesizer.hObjList import HObjList
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
@@ -36,7 +36,7 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
         order_m_index_for_s_data = HObjList()
         for connected_masters in masters_for_slave:
             if len(connected_masters) > 1:
-                f = HandshakedFifo(Handshaked)
+                f = HandshakedFifo(HwIODataRdVld)
                 f.DEPTH = self.MAX_TRANS_OVERLAP
                 f.DATA_WIDTH = log2ceil(len(self.MASTERS))
             else:
@@ -48,7 +48,7 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
         order_s_index_for_m_data = HObjList()
         for connected_slaves in self.MASTERS:
             if len(connected_slaves) > 1:
-                f = HandshakedFifo(Handshaked)
+                f = HandshakedFifo(HwIODataRdVld)
                 f.DEPTH = self.MAX_TRANS_OVERLAP
                 f.DATA_WIDTH = log2ceil(len(self.SLAVES))
             else:
@@ -56,13 +56,13 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
             order_s_index_for_m_data.append(f)
         self.order_s_index_for_m_data = order_s_index_for_m_data
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.addr_crossbar = AxiInterconnectMatrixAddrCrossbar(
-                self.intfCls.AR_CLS)
+                self.hwIOCls.AR_CLS)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             c = self.data_crossbar = AxiInterconnectMatrixCrossbar(
-                self.intfCls.R_CLS)
+                self.hwIOCls.R_CLS)
             c.INPUT_CNT = len(self.SLAVES)
             c.OUTPUTS = self.MASTERS
 
@@ -94,25 +94,25 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
 
 
 def example_AxiInterconnectMatrixR():
-    u = AxiInterconnectMatrixR(Axi4)
-    # u.MASTERS = ({0, 1}, )
-    # u.MASTERS = ({0, 1, 2}, )
-    # u.MASTERS = ({0}, {0}, {0}, )
-    # u.SLAVES = ((0x1000, 0x1000),
+    m = AxiInterconnectMatrixR(Axi4)
+    # m.MASTERS = ({0, 1}, )
+    # m.MASTERS = ({0, 1, 2}, )
+    # m.MASTERS = ({0}, {0}, {0}, )
+    # m.SLAVES = ((0x1000, 0x1000),
     #            (0x2000, 0x1000),
     #            (0x3000, 0x1000),
     #          )
-    # u.SLAVES = ((0x1000, 0x1000))
+    # m.SLAVES = ((0x1000, 0x1000))
 
-    u.MASTERS = ({0, 1}, {0, 1})
-    u.SLAVES = ((0x1000, 0x1000),
+    m.MASTERS = ({0, 1}, {0, 1})
+    m.SLAVES = ((0x1000, 0x1000),
                 (0x2000, 0x1000),
                 )
 
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = example_AxiInterconnectMatrixR()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = example_AxiInterconnectMatrixR()
+    print(to_rtl_str(m))

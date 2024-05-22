@@ -4,61 +4,61 @@
 from math import ceil
 
 from hwt.code import FsmBuilder, If, Switch
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.std import Handshaked, HandshakeSync, Signal, VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOSignal, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.storedBurst import HandshakedStoredBurst
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.peripheral.displays.hd44780.intf import Hd44780Intf
+from hwtLib.peripheral.displays.hd44780.intf import HwIOHd44780
 
 
-class Hd44780CmdIntf(HandshakeSync):
+class HwIOHd44780Cmd(HwIORdVldSync):
     """
     .. hwt-autodoc::
     """
     def _config(self):
-        self.DATA_WIDTH = Param(8)
+        self.DATA_WIDTH = HwParam(8)
 
     def _declr(self):
-        self.rs = Signal()  # register select
-        self.rw = Signal()
-        self.long_wait = Signal()
-        self.d = VectSignal(self.DATA_WIDTH)
-        super(Hd44780CmdIntf, self)._declr()
+        self.rs = HwIOSignal()  # register select
+        self.rw = HwIOSignal()
+        self.long_wait = HwIOSignal()
+        self.d = HwIOVectSignal(self.DATA_WIDTH)
+        super(HwIOHd44780Cmd, self)._declr()
 
 
-class Hd44780CmdIntfBurst(HandshakedStoredBurst):
+class Hd44780CmdBurst(HandshakedStoredBurst):
     """
     .. hwt-autodoc::
     """
 
     def __init__(self):
-        super(Hd44780CmdIntfBurst, self).__init__(Hd44780CmdIntf)
+        super(Hd44780CmdBurst, self).__init__(HwIOHd44780Cmd)
         self.DATA = ((0, 0, 0, 0), # an example meaningless data
                      (0, 0, 0, 1))
 
-    def set_data(self, intf: Hd44780CmdIntf, d):
+    def set_data(self, hwIO: HwIOHd44780Cmd, d):
         if d is None:
             rs, rw, long_wait, d = None, None, None, None
         else:
             rs, rw, long_wait, d = d
         return [
-            intf.rs(rs),
-            intf.rw(rw),
-            intf.long_wait(long_wait),
-            intf.d(d),
+            hwIO.rs(rs),
+            hwIO.rw(rw),
+            hwIO.long_wait(long_wait),
+            hwIO.d(d),
         ]
 
 
 # http://elm-chan.org/docs/lcd/hd44780_e.html
-class Hd44780Driver(Unit):
+class Hd44780Driver(HwModule):
     """
     Controller for Hitachi HD44780 based LCD displays
 
@@ -75,22 +75,22 @@ class Hd44780Driver(Unit):
     """
 
     def _config(self):
-        self.LCD_ROWS = Param(2)
-        self.LCD_COLS = Param(16)
-        self.LCD_DATA_WIDTH = Param(8)
-        self.LCD_FREQ = Param(int(270e3))
+        self.LCD_ROWS = HwParam(2)
+        self.LCD_COLS = HwParam(16)
+        self.LCD_DATA_WIDTH = HwParam(8)
+        self.LCD_FREQ = HwParam(int(270e3))
         # frequency of this component to compute timing for LCD control
-        self.FREQ = Param(int(100e6))
+        self.FREQ = HwParam(int(100e6))
 
     def _declr(self):
         addClkRstn(self)
         self.clk.FREQ = self.FREQ
-        with self._paramsShared(prefix="LCD_"):
-            self.dataOut = Hd44780Intf()._m()
-        self.dataIn = Handshaked()
+        with self._hwParamsShared(prefix="LCD_"):
+            self.dataOut = HwIOHd44780()._m()
+        self.dataIn = HwIODataRdVld()
         self.dataIn.DATA_WIDTH = 8
 
-    def _translate_data_in(self, din: Handshaked) -> Hd44780CmdIntf:
+    def _translate_data_in(self, din: HwIODataRdVld) -> HwIOHd44780Cmd:
         """
         Translates special characters to a LCD commands
 
@@ -98,20 +98,20 @@ class Hd44780Driver(Unit):
         * '\\f' clean the LCD and reset cursor position
         """
         if self.LCD_ROWS > 1:
-            row = self._reg('row', Bits(log2ceil(self.LCD_ROWS - 1)), def_val=0)
-            line_offsets = self._sig("line_offsets", Bits(8)[self.LCD_ROWS], def_val=[
-                Hd44780Intf.CMD_DDRAM_ADDR_SET(i * self.LCD_COLS)
+            row = self._reg('row', HBits(log2ceil(self.LCD_ROWS - 1)), def_val=0)
+            line_offsets = self._sig("line_offsets", HBits(8)[self.LCD_ROWS], def_val=[
+                HwIOHd44780.CMD_DDRAM_ADDR_SET(i * self.LCD_COLS)
                 for i in range(self.LCD_ROWS)
             ])
-            line_offset = self._sig("line_offset", Bits(8))
+            line_offset = self._sig("line_offset", HBits(8))
             line_offset(line_offsets[row])
         else:
             # version without row register
             raise NotImplementedError()
 
-        col = self._reg('col', Bits(log2ceil(self.LCD_COLS - 1)), def_val=0)
+        col = self._reg('col', HBits(log2ceil(self.LCD_COLS - 1)), def_val=0)
 
-        dout = Hd44780CmdIntf()
+        dout = HwIOHd44780Cmd()
         dout.DATA_WIDTH = self.LCD_DATA_WIDTH
         self.data_in_translated = dout
 
@@ -150,39 +150,39 @@ class Hd44780Driver(Unit):
             ).Case(new_line_fsm_t.jmp_on_nextline,
                 col(0),
                 *set_out(line_offset,
-                         Hd44780Intf.RS_CONTROL,
-                         Hd44780Intf.RW_WRITE, 0),
+                         HwIOHd44780.RS_CONTROL,
+                         HwIOHd44780.RW_WRITE, 0),
                 din.rd(0),
                 dout.vld(1),
             ).Case(new_line_fsm_t.clean_line,
                 If(dout.rd,
                    col(col + 1),
                 ),
-                *set_out(Hd44780Intf.CHAR_MAP[' '],
-                         Hd44780Intf.RS_DATA,
-                         Hd44780Intf.RW_WRITE, 0),
+                *set_out(HwIOHd44780.CHAR_MAP[' '],
+                         HwIOHd44780.RS_DATA,
+                         HwIOHd44780.RW_WRITE, 0),
             ).Case(new_line_fsm_t.jmp_on_line_start,
                 *set_out(line_offset,
-                         Hd44780Intf.RS_CONTROL,
-                         Hd44780Intf.RW_WRITE, 0),
+                         HwIOHd44780.RS_CONTROL,
+                         HwIOHd44780.RW_WRITE, 0),
                 *StreamNode([din], [dout]).sync(),
             ),
         ).Elif(din.vld & din.data._eq(ord('\f')),
-            *set_out(Hd44780Intf.CMD_CLEAR_DISPLAY,
-                     Hd44780Intf.RS_CONTROL,
-                     Hd44780Intf.RW_WRITE, 1),
+            *set_out(HwIOHd44780.CMD_CLEAR_DISPLAY,
+                     HwIOHd44780.RS_CONTROL,
+                     HwIOHd44780.RW_WRITE, 1),
             *StreamNode([din], [dout]).sync(),
         ).Else(
             *set_out(din.data,
-                     Hd44780Intf.RS_DATA,
-                     Hd44780Intf.RW_WRITE, 0),
+                     HwIOHd44780.RS_DATA,
+                     HwIOHd44780.RW_WRITE, 0),
             *StreamNode([din], [dout]).sync(),
         )
 
         return dout
 
     def _io_core(
-            self, data_in: Hd44780CmdIntf,
+            self, data_in: HwIOHd44780Cmd,
             cmd_timer_rst,
             lcd_clk_en: RtlSignal,
             delay_cmd_half_done: RtlSignal,
@@ -242,16 +242,16 @@ class Hd44780Driver(Unit):
             ClkBuilder(self, self.clk)\
             .timers([
                 # used to signalize that the 'en' should be asserted low
-                ("delay_cmd_half_done", Hd44780Intf.DELAY_CMD // 2),
+                ("delay_cmd_half_done", HwIOHd44780.DELAY_CMD // 2),
                 # used to signalize that the processing of command is completed
-                ("delay_cmd_done", Hd44780Intf.DELAY_CMD),
+                ("delay_cmd_done", HwIOHd44780.DELAY_CMD),
                 # used to signalize that the long command (return home, etc.) is completed
-                ("delay_cmd_long_done", Hd44780Intf.DELAY_RETURN_HOME)
+                ("delay_cmd_long_done", HwIOHd44780.DELAY_RETURN_HOME)
             ],
                 enableSig=lcd_clk_en,
                 rstSig=cmd_timer_rst
             )
-        data_in_tmp = Hd44780CmdIntf()
+        data_in_tmp = HwIOHd44780Cmd()
         data_in_tmp.DATA_WIDTH = self.LCD_DATA_WIDTH
         self.data_in_tmp = data_in_tmp
 
@@ -259,17 +259,17 @@ class Hd44780Driver(Unit):
                       lcd_clk_en, delay_cmd_half_done,
                       delay_cmd_done, delay_cmd_long_done)
         INIT_SEQUENCE = [
-            Hd44780Intf.CMD_FUNCTION_SET(
-                Hd44780Intf.DATA_LEN_8b if LCD_DW == 8 else Hd44780Intf.DATA_LEN_4b,
+            HwIOHd44780.CMD_FUNCTION_SET(
+                HwIOHd44780.DATA_LEN_8b if LCD_DW == 8 else HwIOHd44780.DATA_LEN_4b,
                 self.LCD_ROWS - 1,
-                Hd44780Intf.FONT_5x8),
-            Hd44780Intf.CMD_DISPLAY_CONTROL(1, 0, 0),
-            Hd44780Intf.CMD_ENTRY_MODE_SET(1, 1),
+                HwIOHd44780.FONT_5x8),
+            HwIOHd44780.CMD_DISPLAY_CONTROL(1, 0, 0),
+            HwIOHd44780.CMD_ENTRY_MODE_SET(1, 1),
         ]
-        init_seq = Hd44780CmdIntfBurst()
+        init_seq = Hd44780CmdBurst()
         init_seq.DATA_WIDTH = self.LCD_DATA_WIDTH
         init_seq.DATA = tuple(
-            (Hd44780Intf.RS_CONTROL, Hd44780Intf.RW_WRITE, 0, d)
+            (HwIOHd44780.RS_CONTROL, HwIOHd44780.RW_WRITE, 0, d)
             for d in INIT_SEQUENCE
         )
         self.init_seq = init_seq
@@ -279,6 +279,7 @@ class Hd44780Driver(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Hd44780Driver()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = Hd44780Driver()
+    print(to_rtl_str(m))

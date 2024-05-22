@@ -1,7 +1,7 @@
 from typing import List, Tuple, Optional
 
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.value import HValue
+from hwt.hdl.const import HConst
+from hwt.hdl.types.bits import HBits
 from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE, \
     usb_descriptor_device_t, usb_descriptor_endpoint_t, USB_ENDPOINT_DIR, \
     USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE
@@ -77,7 +77,7 @@ class UsbDescriptorBundle(list):
         self.compiled_rom: Optional[List[int]] = None
         self.compiled_type_to_addr_and_size: Optional[USB_DESCRIPTOR_TYPE, List[Tuple[int, int]]] = None
 
-    def get_descriptor(self, descr_t, descr_i: int) -> Tuple[int, HValue]:
+    def get_descriptor(self, descr_t, descr_i: int) -> Tuple[int, HConst]:
         """
         Get an index of descriptor of a specific type
 
@@ -99,7 +99,7 @@ class UsbDescriptorBundle(list):
         return self.get_descriptor(descr_t, descr_i)[0]
 
     @staticmethod
-    def pack_descriptor(d: HValue) -> List[int]:
+    def pack_descriptor(d: HConst) -> List[int]:
         _data = d._reinterpret_cast(uint8_t[d._dtype.bit_length() // 8])
         return _data.to_py()
 
@@ -187,16 +187,16 @@ class UsbDescriptorBundle(list):
             raise UsbNoSuchDescriptor()
 
     @staticmethod
-    def HValue_to_byte_list(d: HValue):
+    def HConst_to_byte_list(d: HConst):
         w = d._dtype.bit_length()
-        return d._reinterpret_cast(Bits(8)[w // 8]).to_py()
+        return d._reinterpret_cast(HBits(8)[w // 8]).to_py()
 
     def compile_rom(self) -> List[int]:
         assert self.compiled_rom is None, "Avoid recompilation"
         self.compiled_rom = []
         self.compiled_type_to_addr_and_size = {}
         for d in self:
-            as_bytelist = self.HValue_to_byte_list(d)
+            as_bytelist = self.HConst_to_byte_list(d)
             addr = len(self.compiled_rom)
             size = len(as_bytelist)
             self.compiled_rom.extend(as_bytelist)

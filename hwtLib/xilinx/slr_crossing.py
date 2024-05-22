@@ -3,13 +3,13 @@
 
 from hwt.code import If
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.xilinx.primitive.lutAsShiftReg import LutAsShiftReg
 
@@ -20,13 +20,13 @@ class HsSlrCrossingIo(BusBridge):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
+        self.DATA_WIDTH = HwParam(64)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.s = Handshaked()
-            self.m = Handshaked()._m()
+        with self._hwParamsShared():
+            self.s = HwIODataRdVld()
+            self.m = HwIODataRdVld()._m()
 
 
 class SlrCrossingSrc(HsSlrCrossingIo):
@@ -87,7 +87,7 @@ class SlrCrossingDst(HsSlrCrossingIo):
         cross_ce = self._reg("cross_ce", def_val=1)
         cross_ce(cross_ce_inreg)
 
-        sh_addr = self._reg("sh_push", Bits(log2ceil(DEPTH)), def_val=0)
+        sh_addr = self._reg("sh_push", HBits(log2ceil(DEPTH)), def_val=0)
         If(~out_ce & cross_ce,
            sh_addr(sh_addr + 1)
         ).Elif(out_ce & ~cross_ce,
@@ -125,7 +125,7 @@ class HsSlrCrossing(HsSlrCrossingIo):
 
     def _declr(self):
         HsSlrCrossingIo._declr(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.src = SlrCrossingSrc()
             self.dst = SlrCrossingDst()
 
@@ -138,7 +138,8 @@ class HsSlrCrossing(HsSlrCrossingIo):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = HsSlrCrossing()
-    u.DATA_WIDTH = 4
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = HsSlrCrossing()
+    m.DATA_WIDTH = 4
+    print(to_rtl_str(m))

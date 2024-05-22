@@ -6,7 +6,7 @@ import struct
 import traceback
 from typing import Dict, Tuple
 
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwtLib.peripheral.usb.descriptors.std import USB_ENDPOINT_DIR
 from hwtLib.peripheral.usb.device_request import usb_request_type_t, USB_REQUEST, \
     USB_REQUEST_TYPE_RECIPIENT
@@ -213,7 +213,7 @@ class USBIPConnection:
             if wLength != buflen:
                 raise USBIPProtocolErrorException(f"wLength {wLength:d} != buflen {buflen:d}")
 
-            req = Bits(8).from_py(bRequestType)._reinterpret_cast(usb_request_type_t)
+            req = HBits(8).from_py(bRequestType)._reinterpret_cast(usb_request_type_t)
             if self.debug:
                 _req_str = repr(req).replace('\n', ' ')
                 self.debug_log(f"seq 0x{seqnum:x} EP0 requesttype {_req_str:s}, request {bRequest:d}, wValue {wValue:d},"

@@ -3,18 +3,18 @@
 
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import VectSignal, Signal, HandshakeSync
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIORdVldSync
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busBridge import BusBridge
-from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.cesnet.mi32.intf import Mi32
+from hwtLib.handshaked.builder import HsBuilder
 
 
-class Mi32AddrHs(HandshakeSync):
+class Mi32AddrHs(HwIORdVldSync):
     """
     Equivalent of Mi32 address/write data channel
-    with HandshakeSync compatible signal names
+    with HwIORdVldSync compatible signal names
 
     .. hwt-autodoc::
     """
@@ -22,11 +22,11 @@ class Mi32AddrHs(HandshakeSync):
         Mi32._config(self)
 
     def _declr(self):
-        self.addr = VectSignal(self.ADDR_WIDTH)
-        self.read = Signal()
-        self.write = Signal()
-        self.be = VectSignal(self.DATA_WIDTH // 8)
-        self.dwr = VectSignal(self.DATA_WIDTH)
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
+        self.read = HwIOSignal()
+        self.write = HwIOSignal()
+        self.be = HwIOVectSignal(self.DATA_WIDTH // 8)
+        self.dwr = HwIOVectSignal(self.DATA_WIDTH)
         super(Mi32AddrHs, self)._declr()
 
 
@@ -39,12 +39,12 @@ class Mi32Buff(BusBridge):
 
     def _config(self):
         Mi32._config(self)
-        self.ADDR_BUFF_DEPTH = Param(1)
-        self.DATA_BUFF_DEPTH = Param(1)
+        self.ADDR_BUFF_DEPTH = HwParam(1)
+        self.DATA_BUFF_DEPTH = HwParam(1)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = Mi32()
             self.m = Mi32()._m()
 
@@ -93,7 +93,7 @@ class Mi32Buff(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
 
-    u = Mi32Buff()
-    print(to_rtl_str(u))
+    m = Mi32Buff()
+    print(to_rtl_str(n))

@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Xor
-from hwt.hdl.constants import READ_WRITE, WRITE, READ
-from hwt.interfaces.utils import propagateClk, addClkRst
+from hwt.constants import READ_WRITE, WRITE, READ
+from hwt.hwIOs.utils import propagateClk, addClkRst
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwtLib.mem.ram import RamSingleClock
 
 
@@ -35,7 +35,7 @@ class RamXorSingleClock(RamSingleClock):
     def _config(self):
         RamSingleClock._config(self)
         self.PORT_CNT = (WRITE, WRITE, READ)
-        self.PRIMITIVE_MEMORY_PORTS = Param((WRITE, READ))
+        self.PRIMITIVE_MEMORY_PORTS = HwParam((WRITE, READ))
 
     def _declr(self):
         addClkRst(self)
@@ -172,9 +172,10 @@ class RamXorSingleClock(RamSingleClock):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = RamXorSingleClock()
-    u.ADDR_WIDTH = 10
-    u.DATA_WIDTH = 32
-    u.PORT_CNT = (*(WRITE for _ in range(4)), *(READ for _ in range(8)))
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = RamXorSingleClock()
+    m.ADDR_WIDTH = 10
+    m.DATA_WIDTH = 32
+    m.PORT_CNT = (*(WRITE for _ in range(4)), *(READ for _ in range(8)))
+    print(to_rtl_str(m))

@@ -10,16 +10,16 @@ class CountLeadingTC(SimTestCase):
         SimTestCase.tearDown(self)
 
     def test_CountLeadingZeros(self):
-        u = CountLeadingZeros()
-        u.DATA_WIDTH = 4
-        self.compileSimAndStart(u)
+        dut = CountLeadingZeros()
+        dut.DATA_WIDTH = 4
+        self.compileSimAndStart(dut)
 
-        test_values = list(range(2 ** u.DATA_WIDTH))
-        u.data_in._ag.data.extend(test_values)
+        test_values = list(range(2 ** dut.DATA_WIDTH))
+        dut.data_in._ag.data.extend(test_values)
 
         ref = []
         for v in test_values:
-            leading = u.DATA_WIDTH
+            leading = dut.DATA_WIDTH
             while v:
                 v >>= 1
                 leading -= 1
@@ -28,19 +28,19 @@ class CountLeadingTC(SimTestCase):
         self.runSim((len(ref) + 1) * CLK_PERIOD)
         ref.append(0)
 
-        self.assertValSequenceEqual(u.data_out._ag.data, ref)
+        self.assertValSequenceEqual(dut.data_out._ag.data, ref)
 
     def test_CountLeadingOnes(self):
-        u = CountLeadingOnes()
-        u.DATA_WIDTH = 4
-        self.compileSimAndStart(u)
+        dut = CountLeadingOnes()
+        dut.DATA_WIDTH = 4
+        self.compileSimAndStart(dut)
 
-        test_values = list(range(2 ** u.DATA_WIDTH))
-        u.data_in._ag.data.extend(test_values)
+        test_values = list(range(2 ** dut.DATA_WIDTH))
+        dut.data_in._ag.data.extend(test_values)
 
         ref = []
         for v in test_values:
-            x = 1 << u.DATA_WIDTH - 1
+            x = 1 << dut.DATA_WIDTH - 1
             leading = 0
             while v & x:
                 x >>= 1
@@ -50,7 +50,7 @@ class CountLeadingTC(SimTestCase):
         self.runSim((len(ref) + 1) * CLK_PERIOD)
         ref.append(4)
 
-        self.assertValSequenceEqual(u.data_out._ag.data, ref)
+        self.assertValSequenceEqual(dut.data_out._ag.data, ref)
 
 
 if __name__ == '__main__':

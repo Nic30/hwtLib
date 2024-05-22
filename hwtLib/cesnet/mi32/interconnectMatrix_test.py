@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import READ, WRITE, Time
+from hwt.constants import READ, WRITE, Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.busInterconnect import AUTO_ADDR, ALL
 from hwtLib.cesnet.mi32.interconnectMatrix import Mi32InterconnectMatrix
@@ -21,9 +21,9 @@ class Mi32InterconnectMatrixTC(SimTestCase):
 
         AUTO = AUTO_ADDR
 
-        u = Mi32InterconnectMatrix()
-        u.MASTERS = (ALL,)
-        u.SLAVES = (
+        dut = Mi32InterconnectMatrix()
+        dut.MASTERS = (ALL,)
+        dut.SLAVES = (
             (0x0000, 0x0100),
             (0x0100, 0x0100),
             (AUTO, 0x0100),
@@ -31,21 +31,21 @@ class Mi32InterconnectMatrixTC(SimTestCase):
         )
         self.DW = 32
         self.wordSize = self.DW // 8
-        u.DATA_WIDTH = self.DW
-        u.ADDR_WIDTH = u.getOptimalAddrSize()
+        dut.DATA_WIDTH = self.DW
+        dut.ADDR_WIDTH = dut.getOptimalAddrSize()
         self.m = mask(self.wordSize)
-        self.u = u
-        self.compileSimAndStart(u)
+        self.dut = dut
+        self.compileSimAndStart(dut)
 
     def test_readAndWrite(self, N=2):
         self.mySetUp()
-        u = self.u
+        dut = self.dut
         offsets = [0x0, 0x100, 0x200, 0x1000]
-        for s, o in zip(u._slaves, offsets):
+        for s, o in zip(dut._slaves, offsets):
             self.assertEqual(s[0], o)
 
-        m = self.u.s[0]._ag
-        mems = [Mi32SimRam(s) for s in self.u.m]
+        m = self.dut.s[0]._ag
+        mems = [Mi32SimRam(s) for s in self.dut.m]
         MAGIC_R = 10
         MAGIC_W = 100
 

@@ -5,18 +5,18 @@ from typing import Tuple, Optional
 
 from hwt.code import If
 from hwt.constraints import set_max_delay, set_async_reg
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Rst, Signal, Clk
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIORst, HwIOSignal, HwIOClk
+from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
+from hwt.hwParam import HwParam
+from hwt.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 
 
 class SignalCdcBuilder():
     """
-    Object which can build CDCs for simple Signal interfaces.
+    Object which can build CDCs for simple HwIOSignal interfaces.
     It automatically adding constrains and check correnctnes of CDC path.
     Main purpose of this class is to allow building
     of CDCs without requirement of component instantiation.
@@ -51,7 +51,7 @@ class SignalCdcBuilder():
         else:
             # interface
             i = i._parent
-            while not isinstance(i, Unit):
+            while not isinstance(i, HwModule):
                 i = i._parent
             return i
 
@@ -91,9 +91,9 @@ class SignalCdcBuilder():
         self.out_reg_cnt += 1
 
 
-class Cdc(Unit):
+class Cdc(HwModule):
     """
-    CDC (Clock Domain Crossing) for Signal interface
+    CDC (Clock Domain Crossing) for HwIOSignal interface
     (Synchronizes the signal for different clock domain.)
 
     :attention: regular multibits signals should not be sychronized using
@@ -110,28 +110,28 @@ class Cdc(Unit):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.DATA_WIDTH = Param(1)
-        self.INIT_VAL = Param(0)
-        self.IN_FREQ = Param(100e6)
-        self.OUT_FREQ = Param(100e6)
-        self.OUT_REG_CNT = Param(2)
+        self.DATA_WIDTH = HwParam(1)
+        self.INIT_VAL = HwParam(0)
+        self.IN_FREQ = HwParam(100e6)
+        self.OUT_FREQ = HwParam(100e6)
+        self.OUT_REG_CNT = HwParam(2)
 
     def _declr(self):
         assert self.OUT_REG_CNT >= 2, self.OUT_REG_CNT
 
-        self.dataIn_clk = Clk()
+        self.dataIn_clk = HwIOClk()
         self.dataIn_clk.FREQ = self.IN_FREQ
         with self._associated(clk=self.dataIn_clk):
-            self.dataIn_rst = Rst()
+            self.dataIn_rst = HwIORst()
             with self._associated(rst=self.dataIn_rst):
-                self.dataIn = Signal(dtype=Bits(self.DATA_WIDTH))
+                self.dataIn = HwIOSignal(dtype=HBits(self.DATA_WIDTH))
 
-        self.dataOut_clk = Clk()
+        self.dataOut_clk = HwIOClk()
         self.dataOut_clk.FREQ = self.OUT_FREQ
         with self._associated(clk=self.dataOut_clk):
-            self.dataOut_rst = Rst()
+            self.dataOut_rst = HwIORst()
             with self._associated(rst=self.dataOut_rst):
-                self.dataOut = Signal(dtype=Bits(self.DATA_WIDTH))._m()
+                self.dataOut = HwIOSignal(dtype=HBits(self.DATA_WIDTH))._m()
 
     def _impl(self):
         in_clk_rst = self.dataIn_clk, self.dataIn_rst
@@ -167,7 +167,7 @@ class CdcPulseGen(Cdc):
         assert self.DATA_WIDTH == 1, self.DATA_WIDTH
         Cdc._declr(self)
         with self._associated(clk=self.dataOut_clk, rst=self.dataOut_rst):
-            self.dataOut_en = Signal()._m()
+            self.dataOut_en = HwIOSignal()._m()
 
     def _impl(self):
         (_, _, _, out_reg1, out_reg2) = Cdc._impl(self)
@@ -175,5 +175,6 @@ class CdcPulseGen(Cdc):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
+
     print(to_rtl_str(Cdc()))

@@ -1,6 +1,6 @@
-from hwtLib.amba.axi4Lite import Axi4Lite_addr, Axi4Lite_w, Axi4Lite_r,\
+from hwtLib.amba.axi4Lite import Axi4Lite_addr, Axi4Lite_w, Axi4Lite_r, \
     Axi4Lite_b, Axi4Lite
-from hwtLib.amba.axi_intf_common import Axi_id
+from hwtLib.amba.axi_common import Axi_id
 
 
 class Axi4Lite_addr_withId(Axi4Lite_addr):

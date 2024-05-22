@@ -5,8 +5,8 @@ from math import ceil
 
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.xilinx.primitive.examples.dsp48e1Add import Dsp48e1Add
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Dsp48e1Add_48b_noRegsTC(SimTestCase):
@@ -16,23 +16,23 @@ class Dsp48e1Add_48b_noRegsTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = Dsp48e1Add()
-        u.DATA_WIDTH = cls.DATA_WIDTH
-        u.REG_IN = cls.REG_IN
-        u.REG_OUT = cls.REG_OUT
-        cls.compileSim(u)
+        cls.dut = dut = Dsp48e1Add()
+        dut.DATA_WIDTH = cls.DATA_WIDTH
+        dut.REG_IN = cls.REG_IN
+        dut.REG_OUT = cls.REG_OUT
+        cls.compileSim(dut)
 
     def test_3x_exact(self):
-        u = self.u
-        u.data_in._ag.data.extend([(7, 16), (21, 19), (1, 2)])
+        dut = self.dut
+        dut.data_in._ag.data.extend([(7, 16), (21, 19), (1, 2)])
         ref = [7 + 16, 21 + 19, 1 + 2]
 
         self.runSim((8 + ceil(self.DATA_WIDTH / 48)) * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.data_out._ag.data, ref)
+        self.assertValSequenceEqual(dut.data_out._ag.data, ref)
 
     def test_40x_random(self, N=40, randomize=True):
-        u = self.u
+        dut = self.dut
         r = self._rand
         din = []
         ref = []
@@ -44,15 +44,15 @@ class Dsp48e1Add_48b_noRegsTC(SimTestCase):
             din.append((a, b))
             ref.append(res)
 
-        u.data_in._ag.data.extend(din)
+        dut.data_in._ag.data.extend(din)
 
         if randomize:
-            self.randomize(u.data_in)
-            self.randomize(u.data_out)
+            self.randomize(dut.data_in)
+            self.randomize(dut.data_out)
 
         self.runSim((5 * N + 10) * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.data_out._ag.data, ref)
+        self.assertValSequenceEqual(dut.data_out._ag.data, ref)
 
 
 class Dsp48e1Add_48b_inRegsTC(Dsp48e1Add_48b_noRegsTC):

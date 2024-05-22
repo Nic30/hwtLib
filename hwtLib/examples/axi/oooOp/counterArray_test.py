@@ -5,7 +5,7 @@ from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpPipelineConfig
-from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.examples.axi.oooOp.counterArray import OooOpExampleCounterArray
 from hwtLib.examples.axi.oooOp.testUtils import OutOfOrderCummulativeOp_dump_pipeline, \
     OutOfOrderCummulativeOp_dump_pipeline_html
@@ -19,61 +19,61 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = OooOpExampleCounterArray()
-        u.MAIN_STATE_T = uint32_t
-        u.TRANSACTION_STATE_T = None
-        u.ID_WIDTH = 2
-        u.ADDR_WIDTH = 2 + 3
-        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length()
-        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+        dut = cls.dut = OooOpExampleCounterArray()
+        dut.MAIN_STATE_T = uint32_t
+        dut.TRANSACTION_STATE_T = None
+        dut.ID_WIDTH = 2
+        dut.ADDR_WIDTH = 2 + 3
+        dut.DATA_WIDTH = dut.MAIN_STATE_T.bit_length()
+        dut.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=2,
                 WRITE_ACK_TO_READ_DATA_LATENCY=4)
-        cls.compileSim(u)
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
-        u = self.u
-        self.m = AxiSimRam(axi=u.m)
+        dut = self.dut
+        self.m = Axi4SimRam(axi=dut.m)
         # clear counters
-        for i in range(2 ** u.ADDR_WIDTH // (u.DATA_WIDTH // 8)):
+        for i in range(2 ** dut.ADDR_WIDTH // (dut.DATA_WIDTH // 8)):
             self.m.data[i] = 0
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
 
         self.runSim(10 * CLK_PERIOD)
-        self.assertEmpty(u.dataOut._ag.data)
-        self.assertEmpty(u.m.aw._ag.data)
-        self.assertEmpty(u.m.w._ag.data)
-        self.assertEmpty(u.m.ar._ag.data)
+        self.assertEmpty(dut.dataOut._ag.data)
+        self.assertEmpty(dut.m.aw._ag.data)
+        self.assertEmpty(dut.m.w._ag.data)
+        self.assertEmpty(dut.m.ar._ag.data)
 
     def get_counter(self, i: int):
-        parts = [int(self.m.data[i * self.u.BUS_WORD_CNT + i2]) for i2 in range(self.u.BUS_WORD_CNT)]
-        return int_list_to_int(parts, self.u.DATA_WIDTH)
+        parts = [int(self.m.data[i * self.dut.BUS_WORD_CNT + i2]) for i2 in range(self.dut.BUS_WORD_CNT)]
+        return int_list_to_int(parts, self.dut.DATA_WIDTH)
 
     def _test_incr(self, indexes=[0, ], randomize=False):
         # indexes = self._indexes_to_addresses(indexes)
-        u = self.u
-        u.dataIn._ag.data.extend(indexes)
+        dut = self.dut
+        dut.dataIn._ag.data.extend(indexes)
 
-        t = (20 + len(indexes) * u.BUS_WORD_CNT * 2) * CLK_PERIOD
+        t = (20 + len(indexes) * dut.BUS_WORD_CNT * 2) * CLK_PERIOD
         if randomize:
-            axi_randomize_per_channel(self, u.m)
-            self.randomize(u.dataIn)
-            self.randomize(u.dataOut)
+            axi_randomize_per_channel(self, dut.m)
+            self.randomize(dut.dataIn)
+            self.randomize(dut.dataOut)
             t *= 5
 
         states = []
-        self.procs.append(OutOfOrderCummulativeOp_dump_pipeline(self, u, self.rtl_simulator.model, states))
+        self.procs.append(OutOfOrderCummulativeOp_dump_pipeline(self, dut, self.rtl_simulator.model, states))
         try:
             self.runSim(t)
             # handle the case where something went wrong and ctl thread is still running
         finally:
             with open(f"tmp/{self.getTestName()}_pipeline.html", "w") as f:
-                OutOfOrderCummulativeOp_dump_pipeline_html(f, u, states)
+                OutOfOrderCummulativeOp_dump_pipeline_html(f, dut, states)
 
         # check if pipeline registers are empty
-        for i in range(u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK):
+        for i in range(dut.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK):
             valid = getattr(self.rtl_simulator.model.io, f"st{i:d}_valid")
             self.assertValEqual(valid.read(), 0, ("stall in stage", i))
 
@@ -83,12 +83,12 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
         self.assertValEqual(ooo_fifo.read_wait.read(), 1)
 
         # check if all transactions on AXI are finished
-        self.assertEmpty(u.m.b._ag.data)
-        self.assertEmpty(u.m.r._ag.data)
+        self.assertEmpty(dut.m.b._ag.data)
+        self.assertEmpty(dut.m.r._ag.data)
 
         # check output data itself
         ref_data = [(v, indexes[:i + 1].count(v)) for i, v in enumerate(indexes)]
-        self.assertValSequenceEqual(u.dataOut._ag.data, ref_data)
+        self.assertValSequenceEqual(dut.dataOut._ag.data, ref_data)
         for i in sorted(set(indexes)):
             self.assertValEqual(self.get_counter(i), indexes.count(i), i)
 
@@ -112,7 +112,7 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
         self._test_incr(d, randomize=True)
 
     def test_r_incr_100x_random(self):
-        index_pool = list(range(2 ** self.u.ID_WIDTH))
+        index_pool = list(range(2 ** self.dut.ID_WIDTH))
         d = [self._rand.choice(index_pool) for _ in range(100)]
         self._test_incr(d, randomize=True)
 
@@ -123,7 +123,7 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
 
     def test_no_comb_loops(self):
         s = CombLoopAnalyzer()
-        s.visit_Unit(self.u)
+        s.visit_HwModule(self.dut)
         comb_loops = freeze_set_of_sets(s.report())
         # for loop in comb_loops:
         #     print(10 * "-")
@@ -137,48 +137,48 @@ class OooOpExampleCounterArray_0_5w_TC(OooOpExampleCounterArray_1w_TC):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = OooOpExampleCounterArray()
-        u.MAIN_STATE_T = uint32_t
-        u.TRANSACTION_STATE_T = None
-        u.ID_WIDTH = 2
-        u.ADDR_WIDTH = 2 + 3
-        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() * 2
-        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+        dut = cls.dut = OooOpExampleCounterArray()
+        dut.MAIN_STATE_T = uint32_t
+        dut.TRANSACTION_STATE_T = None
+        dut.ID_WIDTH = 2
+        dut.ADDR_WIDTH = 2 + 3
+        dut.DATA_WIDTH = dut.MAIN_STATE_T.bit_length() * 2
+        dut.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=2,
                 WRITE_ACK_TO_READ_DATA_LATENCY=4)
-        cls.compileSim(u)
+        cls.compileSim(dut)
 
 
 class OooOpExampleCounterArray_2w_TC(OooOpExampleCounterArray_1w_TC):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = OooOpExampleCounterArray()
-        u.MAIN_STATE_T = uint32_t
-        u.TRANSACTION_STATE_T = None
-        u.ID_WIDTH = 2
-        u.ADDR_WIDTH = 2 + 3
-        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() // 2
-        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+        dut = cls.dut = OooOpExampleCounterArray()
+        dut.MAIN_STATE_T = uint32_t
+        dut.TRANSACTION_STATE_T = None
+        dut.ID_WIDTH = 2
+        dut.ADDR_WIDTH = 2 + 3
+        dut.DATA_WIDTH = dut.MAIN_STATE_T.bit_length() // 2
+        dut.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=1,
                 WRITE_ACK_TO_READ_DATA_LATENCY=4)
-        cls.compileSim(u)
+        cls.compileSim(dut)
 
 
 class OooOpExampleCounterArray_2w_2WtoB_TC(OooOpExampleCounterArray_1w_TC):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = OooOpExampleCounterArray()
-        u.MAIN_STATE_T = uint32_t
-        u.TRANSACTION_STATE_T = None
-        u.ID_WIDTH = 2
-        u.ADDR_WIDTH = 2 + 3
-        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() // 2
-        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+        dut = cls.dut = OooOpExampleCounterArray()
+        dut.MAIN_STATE_T = uint32_t
+        dut.TRANSACTION_STATE_T = None
+        dut.ID_WIDTH = 2
+        dut.ADDR_WIDTH = 2 + 3
+        dut.DATA_WIDTH = dut.MAIN_STATE_T.bit_length() // 2
+        dut.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=2,
                 WRITE_ACK_TO_READ_DATA_LATENCY=4)
-        cls.compileSim(u)
+        cls.compileSim(dut)
 
 
 OooOpExampleCounterArray_TCs = [

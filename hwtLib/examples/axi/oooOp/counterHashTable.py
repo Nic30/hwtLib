@@ -3,10 +3,10 @@
 
 from hwt.code import If, In, SwitchLogic
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.structIntf import StructIntf
+from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwtLib.amba.axi_comp.oooOp.outOfOrderCummulativeOp import OutOfOrderCummulativeOp
 from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
 
@@ -35,8 +35,8 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         # state in main memory
         self.MAIN_STATE_T = HStruct(
             (BIT, "item_valid"),
-            (Bits(32), "key"),
-            (Bits(self.DATA_WIDTH - 32 - 1), "value"),
+            (HBits(32), "key"),
+            (HBits(self.DATA_WIDTH - 32 - 1), "value"),
         )
         # the transaction always just increments the counter
         # so there is no need for transaction state
@@ -51,7 +51,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             # must be computed in WRITE_BACK -1 stage because we need it for main_op which takes place before
             # WRITE_BACK
             (BIT, "key_match"),
-            (Bits(2), "operation"),  # :see: :class:`~.OPERATION`
+            (HBits(2), "operation"),  # :see: :class:`~.OPERATION`
         )
 
     def _declr(self):
@@ -140,8 +140,8 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             to the next stage.
         """
         PIPELINE_CONFIG = self.PIPELINE_CONFIG
-        src:StructIntf[self.TRANSACTION_STATE_T] = src_st.transaction_state
-        dst:StructIntf[self.TRANSACTION_STATE_T] = dst_st.transaction_state
+        src:HwIOStruct[self.TRANSACTION_STATE_T] = src_st.transaction_state
+        dst:HwIOStruct[self.TRANSACTION_STATE_T] = dst_st.transaction_state
         if dst_st.index == PIPELINE_CONFIG.WRITE_BACK - 1:
             # here we are loading the word into a stage WRITE_BACK - 1
             # we must compute key matching for main_op
@@ -207,7 +207,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             latest_key_match,
             f"exec_main_op_on_lookup_match_update_{dst_st.index:d}from{src_st.index:d}")
 
-        dst_tr:StructIntf[self.TRANSACTION_STATE_T] = dst_st.transaction_state
+        dst_tr:HwIOStruct[self.TRANSACTION_STATE_T] = dst_st.transaction_state
         return  [
             If(prev_st.valid,
                 *(
@@ -262,26 +262,27 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
 
 
 def _example_OooOpExampleCounterHashTable():
-    u = OooOpExampleCounterHashTable()
-    u.ID_WIDTH = 6
-    u.ADDR_WIDTH = 16 + 3
-    u.MAIN_STATE_T = HStruct(
+    m = OooOpExampleCounterHashTable()
+    m.ID_WIDTH = 6
+    m.ADDR_WIDTH = 16 + 3
+    m.MAIN_STATE_T = HStruct(
         (BIT, "item_valid"),
-        (Bits(256), "key"),
-        (Bits(32), "value"),
-        (Bits(512 - 256 - 32 - 1), "padding"),
+        (HBits(256), "key"),
+        (HBits(32), "value"),
+        (HBits(512 - 256 - 32 - 1), "padding"),
     )
-    u.TRANSACTION_STATE_T = HStruct(
+    m.TRANSACTION_STATE_T = HStruct(
         (BIT, "reset"),
-        (u.MAIN_STATE_T, "original_data"),
+        (m.MAIN_STATE_T, "original_data"),
         (BIT, "key_match"),
-        (Bits(2), "operation"),  # :see: :class:`~.OPERATION`
+        (HBits(2), "operation"),  # :see: :class:`~.OPERATION`
     )
-    u.DATA_WIDTH = u.MAIN_STATE_T.bit_length()
-    return u
+    m.DATA_WIDTH = m.MAIN_STATE_T.bit_length()
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_OooOpExampleCounterHashTable()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_OooOpExampleCounterHashTable()
+    print(to_rtl_str(m))

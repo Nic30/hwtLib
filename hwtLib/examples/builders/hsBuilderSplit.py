@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 from hwtLib.handshaked.builder import HsBuilder
 
 
-class HsBuilderSplit(Unit):
+class HsBuilderSplit(HwModule):
     """
     Example of HsBuilder.split_* functions
 
@@ -16,32 +16,32 @@ class HsBuilderSplit(Unit):
     def _declr(self):
         addClkRstn(self)
 
-        self.a = Handshaked()
-        self.a_0 = Handshaked()._m()
-        self.a_1 = Handshaked()._m()
-        self.a_2 = Handshaked()._m()
+        self.a = HwIODataRdVld()
+        self.a_0 = HwIODataRdVld()._m()
+        self.a_1 = HwIODataRdVld()._m()
+        self.a_2 = HwIODataRdVld()._m()
 
-        self.b = Handshaked()
-        self.b_0 = Handshaked()._m()
-        self.b_1 = Handshaked()._m()
-        self.b_2 = Handshaked()._m()
-        self.b_selected = Handshaked()._m()
+        self.b = HwIODataRdVld()
+        self.b_0 = HwIODataRdVld()._m()
+        self.b_1 = HwIODataRdVld()._m()
+        self.b_2 = HwIODataRdVld()._m()
+        self.b_selected = HwIODataRdVld()._m()
         self.b_selected.DATA_WIDTH = 3
 
-        self.c = Handshaked()
-        self.c_0 = Handshaked()._m()
-        self.c_1 = Handshaked()._m()
+        self.c = HwIODataRdVld()
+        self.c_0 = HwIODataRdVld()._m()
+        self.c_1 = HwIODataRdVld()._m()
 
-        self.d = Handshaked()
-        self.d_0 = Handshaked()._m()
-        self.d_1 = Handshaked()._m()
-        self.d_2 = Handshaked()._m()
+        self.d = HwIODataRdVld()
+        self.d_0 = HwIODataRdVld()._m()
+        self.d_1 = HwIODataRdVld()._m()
+        self.d_2 = HwIODataRdVld()._m()
 
-        self.e = Handshaked()
-        self.e_0 = Handshaked()._m()
-        self.e_1 = Handshaked()._m()
-        self.e_2 = Handshaked()._m()
-        self.e_select = Handshaked()
+        self.e = HwIODataRdVld()
+        self.e_0 = HwIODataRdVld()._m()
+        self.e_1 = HwIODataRdVld()._m()
+        self.e_2 = HwIODataRdVld()._m()
+        self.e_select = HwIODataRdVld()
         self.e_select.DATA_WIDTH = 3
 
     def _impl(self):
@@ -94,6 +94,7 @@ class HsBuilderSplit(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = HsBuilderSplit()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = HsBuilderSplit()
+    print(to_rtl_str(m))

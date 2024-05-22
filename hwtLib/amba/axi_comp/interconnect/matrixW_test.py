@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from itertools import chain
+from typing import Union
 
+from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
@@ -20,36 +22,36 @@ class AxiInterconnectMatrixW_1to1TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixW(Axi4)
-        u.MASTERS = ({0}, )
-        u.SLAVES = (
+        cls.dut = dut = AxiInterconnectMatrixW(Axi4)
+        dut.MASTERS = ({0}, )
+        dut.SLAVES = (
             (0x0000, 0x1000),
         )
-        u.ADDR_WIDTH = log2ceil(0x1000 - 1)
-        cls.compileSim(u)
+        dut.ADDR_WIDTH = log2ceil(0x1000 - 1)
+        cls.compileSim(dut)
 
     def setUp(self):
         AxiInterconnectMatrixR_1to1TC.setUp(self)
 
     def randomize_all(self):
-        u = self.u
-        for i in chain(u.s, u.m):
+        dut = self.dut
+        for i in chain(dut.s, dut.m):
             self.randomize(i)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.randomize_all()
 
         self.runSim(10 * CLK_PERIOD)
 
-        for i in chain(u.s, u.m):
+        for i in chain(dut.s, dut.m):
             self.assertEmpty(i.aw._ag.data)
             self.assertEmpty(i.w._ag.data)
             self.assertEmpty(i.b._ag.data)
 
-    def data_transaction(self, id_, data):
+    def data_transaction(self, id_:int, data: Union[int, HBitsConst]):
         transactions = []
-        DW = self.u.s[0].w.DATA_WIDTH
+        DW = self.dut.s[0].w.DATA_WIDTH
         m = mask(DW // 8)
         for is_last, d in iter_with_last(data):
             transactions.append(
@@ -57,18 +59,18 @@ class AxiInterconnectMatrixW_1to1TC(SimTestCase):
             )
         return transactions
 
-    def rand_write(self, master_i, slave_i, magic):
+    def rand_write(self, master_i: int, slave_i: int, magic: int):
         """
         :ivar ~.magic: random value used to distinguis the data
         """
         m = self.memory[slave_i]
-        slave_addr_offset = self.u.SLAVES[slave_i][0]
-        aw = self.u.s[master_i].aw
-        w = self.u.s[master_i].w
+        slave_addr_offset = self.dut.SLAVES[slave_i][0]
+        aw = self.dut.s[master_i].aw
+        w = self.dut.s[master_i].w
 
         word_cnt = int(self._rand.random() * self.LEN_MAX) + 1
         in_slave_addr = m.malloc(
-            word_cnt * self.u.s[master_i].DATA_WIDTH // 8)
+            word_cnt * self.dut.s[master_i].DATA_WIDTH // 8)
 
         data = []
         for i2 in range(word_cnt):
@@ -89,18 +91,18 @@ class AxiInterconnectMatrixW_1to1TC(SimTestCase):
         return (indx, data), b_transaction
 
     def test_write(self, transaction_cnt=2, magic=99):
-        u = self.u
+        dut = self.dut
         self.randomize_all()
 
         # allocate memory, prepare axi.ar transactions and store axi.r transactions
         # for later check
-        slave_w_data = [[] for _ in u.SLAVES]
+        slave_w_data = [[] for _ in dut.SLAVES]
         master_b_data = []
-        for master_i, accesible_slaves in enumerate(u.MASTERS):
+        for master_i, accesible_slaves in enumerate(dut.MASTERS):
             m_b_data = []
             master_b_data.append(m_b_data)
 
-            for slave_i, _ in enumerate(u.SLAVES):
+            for slave_i, _ in enumerate(dut.SLAVES):
                 if slave_i not in accesible_slaves:
                     continue
                 s_d = slave_w_data[slave_i]
@@ -112,7 +114,7 @@ class AxiInterconnectMatrixW_1to1TC(SimTestCase):
                     m_b_data.append(b_transaction)
 
         max_trans_duration = 2 * max(len(m.aw._ag.data)
-                                     for m in u.s)\
+                                     for m in dut.s)\
             + max(sum(len(wt[1]) for wt in wd) for wd in slave_w_data)
         self.runSim(4 * max_trans_duration * transaction_cnt * CLK_PERIOD)
 
@@ -126,7 +128,7 @@ class AxiInterconnectMatrixW_1to1TC(SimTestCase):
                     data.append(d)
                 self.assertValSequenceEqual(data, ref_data)
 
-        for m_i, (m, m_b_data) in enumerate(zip(u.s, master_b_data)):
+        for m_i, (m, m_b_data) in enumerate(zip(dut.s, master_b_data)):
             self.assertValSequenceEqual(
                 m.b._ag.data, m_b_data, f"master:{m_i:d}")
 
@@ -135,49 +137,49 @@ class AxiInterconnectMatrixW_1to3TC(AxiInterconnectMatrixW_1to1TC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixW(Axi4)
-        u.MASTERS = ({0, 1, 2}, )
-        u.SLAVES = (
+        cls.dut = dut = AxiInterconnectMatrixW(Axi4)
+        dut.MASTERS = ({0, 1, 2}, )
+        dut.SLAVES = (
             (0x0000, 0x1000),
             (0x1000, 0x1000),
             (0x2000, 0x1000),
         )
-        u.ADDR_WIDTH = log2ceil(0x4000 - 1)
-        cls.compileSim(u)
+        dut.ADDR_WIDTH = log2ceil(0x4000 - 1)
+        cls.compileSim(dut)
 
 
 class AxiInterconnectMatrixW_3to1TC(AxiInterconnectMatrixW_1to1TC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixW(Axi4)
-        u.MASTERS = ({0}, {0}, {0})
-        u.SLAVES = (
+        cls.dut = dut = AxiInterconnectMatrixW(Axi4)
+        dut.MASTERS = ({0}, {0}, {0})
+        dut.SLAVES = (
             (0x0000, 0x1000),
         )
-        u.ADDR_WIDTH = log2ceil(0x2000 - 1)
-        cls.compileSim(u)
+        dut.ADDR_WIDTH = log2ceil(0x2000 - 1)
+        cls.compileSim(dut)
 
 
 class AxiInterconnectMatrixW_3to3TC(AxiInterconnectMatrixW_1to1TC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixW(Axi4)
-        # u.MASTERS = ({0, 1}, {0, 1})
-        # u.SLAVES = (
+        cls.dut = dut = AxiInterconnectMatrixW(Axi4)
+        # dut.MASTERS = ({0, 1}, {0, 1})
+        # dut.SLAVES = (
         #     (0x0000, 0x1000),
         #     (0x1000, 0x1000),
         # )
 
-        u.MASTERS = ({0, 1, 2}, {0, 1, 2}, {0, 1, 2})
-        u.SLAVES = (
+        dut.MASTERS = ({0, 1, 2}, {0, 1, 2}, {0, 1, 2})
+        dut.SLAVES = (
             (0x0000, 0x1000),
             (0x1000, 0x1000),
             (0x2000, 0x1000),
         )
-        u.ADDR_WIDTH = log2ceil(0x4000 - 1)
-        cls.compileSim(u)
+        dut.ADDR_WIDTH = log2ceil(0x4000 - 1)
+        cls.compileSim(dut)
 
 
 AxiInterconnectMatrixW_TCs = [

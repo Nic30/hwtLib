@@ -4,20 +4,20 @@
 import unittest
 
 from hwt.code import Switch, If
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwModule import HwModule
 from hwt.hdl.statements.switchContainer import SwitchContainer
 from hwt.hdl.types.defs import BIT
+from hwt.synth import synthesised
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from hwt.synthesizer.unit import Unit
-from hwt.interfaces.std import Signal
-from hwt.synthesizer.utils import synthesised
-from hwtLib.tests.types.hvalue_test import hBit
+from hwtLib.tests.types.hConst_test import hBit
 
 
-class If_solvable_comb_loop(Unit):
+class If_solvable_comb_loop(HwModule):
 
     def _declr(self):
-        self.a = Signal()
-        self.c = Signal()._m()
+        self.a = HwIOSignal()
+        self.c = HwIOSignal()._m()
 
     def _impl(self):
         b = self.b = self._sig("b")
@@ -34,7 +34,7 @@ class If_solvable_comb_loop_nested(If_solvable_comb_loop):
 
     def _declr(self):
         super(If_solvable_comb_loop_nested, self)._declr()
-        self.d = Signal()
+        self.d = HwIOSignal()
 
     def _impl(self):
         If(self.d,
@@ -190,43 +190,43 @@ class StatementsTC(unittest.TestCase):
         self.assertTrue(s2_0.isSame(s2_cut))
 
     def test_If_solvable_comb_loop(self):
-        u = If_solvable_comb_loop()
-        synthesised(u)
-        b_d = u.b.drivers
-        c_d = u.c._sigInside.drivers
+        dut = If_solvable_comb_loop()
+        synthesised(dut)
+        b_d = dut.b.drivers
+        c_d = dut.c._sigInside.drivers
         self.assertEqual(len(b_d), 1)
         self.assertEqual(len(c_d), 1)
         self.assertIsNot(b_d[0], c_d[0])
 
         self.assertIsNone(b_d[0].parentStm)
-        self.assertSequenceEqual(b_d[0]._inputs, [u.a._sigInside])
-        self.assertSequenceEqual(b_d[0]._outputs, [u.b])
-        self.assertSequenceEqual(b_d[0]._sensitivity, [u.a._sigInside])
+        self.assertSequenceEqual(b_d[0]._inputs, [dut.a._sigInside])
+        self.assertSequenceEqual(b_d[0]._outputs, [dut.b])
+        self.assertSequenceEqual(b_d[0]._sensitivity, [dut.a._sigInside])
 
         self.assertIsNone(c_d[0].parentStm)
-        self.assertSequenceEqual(c_d[0]._inputs, [u.a._sigInside, u.b])
-        self.assertSequenceEqual(c_d[0]._outputs, [u.c._sigInside])
-        self.assertSequenceEqual(c_d[0]._sensitivity, [u.a._sigInside, u.b])
+        self.assertSequenceEqual(c_d[0]._inputs, [dut.a._sigInside, dut.b])
+        self.assertSequenceEqual(c_d[0]._outputs, [dut.c._sigInside])
+        self.assertSequenceEqual(c_d[0]._sensitivity, [dut.a._sigInside, dut.b])
 
     def test_If_solvable_comb_loop_nested(self):
-        u = If_solvable_comb_loop_nested()
-        synthesised(u)
-        b_d = u.b.drivers
-        c_d = u.c._sigInside.drivers
+        dut = If_solvable_comb_loop_nested()
+        synthesised(dut)
+        b_d = dut.b.drivers
+        c_d = dut.c._sigInside.drivers
         self.assertEqual(len(b_d), 1)
         self.assertEqual(len(c_d), 1)
         self.assertIsNot(b_d[0], c_d[0])
 
-        d = u.d._sigInside
+        d = dut.d._sigInside
         self.assertIsNone(b_d[0].parentStm)
-        self.assertSequenceEqual(b_d[0]._inputs, [d, u.a._sigInside])
-        self.assertSequenceEqual(b_d[0]._outputs, [u.b])
-        self.assertSequenceEqual(b_d[0]._sensitivity, [d, u.a._sigInside])
+        self.assertSequenceEqual(b_d[0]._inputs, [d, dut.a._sigInside])
+        self.assertSequenceEqual(b_d[0]._outputs, [dut.b])
+        self.assertSequenceEqual(b_d[0]._sensitivity, [d, dut.a._sigInside])
 
         self.assertIsNone(c_d[0].parentStm)
-        self.assertSequenceEqual(c_d[0]._inputs, [d, u.a._sigInside, u.b])
-        self.assertSequenceEqual(c_d[0]._outputs, [u.c._sigInside])
-        self.assertSequenceEqual(c_d[0]._sensitivity, [d, u.a._sigInside, u.b])
+        self.assertSequenceEqual(c_d[0]._inputs, [d, dut.a._sigInside, dut.b])
+        self.assertSequenceEqual(c_d[0]._outputs, [dut.c._sigInside])
+        self.assertSequenceEqual(c_d[0]._sensitivity, [d, dut.a._sigInside, dut.b])
 
 
 if __name__ == '__main__':

@@ -2,23 +2,23 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, Switch, If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.xilinx.locallink.intf import LocalLink
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.xilinx.locallink.hIOLocallink import LocalLink
 from pyMathBitPrecise.bit_utils import mask
 
 
 def strbToRem(strbBits, remBits):
     for i in range(strbBits):
-        strb = Bits(strbBits).from_py(mask(i + 1))
-        rem = Bits(remBits).from_py(i)
+        strb = HBits(strbBits).from_py(mask(i + 1))
+        rem = HBits(remBits).from_py(i)
         yield strb, rem
 
 
-class AxiSToLocalLink(Unit):
+class Axi4SToLocalLink(HwModule):
     """
     Axi 4 stream to LocalLink
 
@@ -30,14 +30,14 @@ class AxiSToLocalLink(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(32)
-        self.USER_WIDTH = Param(2)
-        self.USE_STRB = Param(True)
+        self.DATA_WIDTH = HwParam(32)
+        self.USER_WIDTH = HwParam(2)
+        self.USE_STRB = HwParam(True)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             addClkRstn(self)
-            self.dataIn = AxiStream()
+            self.dataIn = Axi4Stream()
             self.dataOut = LocalLink()._m()
 
     def _impl(self):
@@ -102,7 +102,7 @@ class AxiSToLocalLink(Unit):
         Out.sof_n(~sof)
 
 
-class LocalLinkToAxiS(Unit):
+class LocalLinkToAxi4S(HwModule):
     """
     Framelink to axi-stream
 
@@ -114,13 +114,13 @@ class LocalLinkToAxiS(Unit):
     """
 
     def _config(self):
-        AxiSToLocalLink._config(self)
+        Axi4SToLocalLink._config(self)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             addClkRstn(self)
             self.dataIn = LocalLink()
-            self.dataOut = AxiStream()._m()
+            self.dataOut = Axi4Stream()._m()
 
     def _impl(self):
         In = self.dataIn
@@ -150,6 +150,7 @@ class LocalLinkToAxiS(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AxiSToLocalLink()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = Axi4SToLocalLink()
+    print(to_rtl_str(m))

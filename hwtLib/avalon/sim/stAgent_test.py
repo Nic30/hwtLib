@@ -3,15 +3,14 @@
 
 import unittest
 
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
-
+from hwt.hwModule import HwModule
 from hwtLib.avalon.st import AvalonST
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class AvalonStWire(Unit):
+class AvalonStWire(HwModule):
 
     def _declr(self):
         addClkRstn(self)
@@ -27,47 +26,47 @@ class AvalonStAgentTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AvalonStWire()
-        cls.compileSim(u)
+        cls.dut = dut = AvalonStWire()
+        cls.compileSim(dut)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.runSim(CLK_PERIOD)
 
         self.assertValSequenceEqual(
-            u.dataOut._ag.data,
+            dut.dataOut._ag.data,
             []
         )
 
     def test_can_pass_data(self):
-        u = self.u
+        dut = self.dut
         N = 10
 
         #channel, data, error, startOfPacket, endOfPacket
         d = [(1, i, 0, i == 0, i == N - 1) for i in range(N)]
-        u.dataIn._ag.data.extend(d)
+        dut.dataIn._ag.data.extend(d)
 
         self.runSim((N + 10) * self.CLK)
 
         self.assertValSequenceEqual(
-            u.dataOut._ag.data,
+            dut.dataOut._ag.data,
             d
         )
 
     def test_can_pass_data_randomized(self):
-        u = self.u
+        dut = self.dut
         N = 40
 
         #channel, data, error, startOfPacket, endOfPacket
         d = [(1, i, 0, i == 0, i == N - 1) for i in range(N)]
-        u.dataIn._ag.data.extend(d)
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        dut.dataIn._ag.data.extend(d)
+        self.randomize(dut.dataIn)
+        self.randomize(dut.dataOut)
 
         self.runSim(4 * N * self.CLK)
 
         self.assertValSequenceEqual(
-            u.dataOut._ag.data,
+            dut.dataOut._ag.data,
             d
         )
 

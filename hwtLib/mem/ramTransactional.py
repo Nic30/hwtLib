@@ -5,20 +5,20 @@ from typing import Tuple, List
 
 from hwt.code import Concat, If
 from hwt.code_utils import rename_signal
-from hwt.hdl.constants import READ, WRITE
-from hwt.hdl.types.bits import Bits
+from hwt.constants import READ, WRITE
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.hsStructIntf import HsStructIntf
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.hwIOStruct import HwIOStructRdVld
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil, isPow2
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
-from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
-from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
+from hwtLib.commonHwIO.addr_data import HwIOAddrDataRdVld
+from hwtLib.handshaked.ramAsAddrDataRdVld import RamAsAddrDataRdVld, HwIORamRdVldR
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
@@ -26,7 +26,7 @@ from hwtLib.mem.ramTransactional_io import TransRamHsR, TransRamHsW
 from pyMathBitPrecise.bit_utils import mask
 
 
-class RamTransactional(Unit):
+class RamTransactional(HwModule):
     """
     A RAM with 1 read port and 1 write port with flush before functionality.
     If the flush is activate the current data is read first before it is overwritten by write data.
@@ -40,12 +40,12 @@ class RamTransactional(Unit):
     """
 
     def _config(self):
-        self.ADDR_WIDTH = Param(8)  # address has the granularity of the item
-        self.DATA_WIDTH = Param(8)
-        self.WORD_WIDTH = Param(16)
-        self.MAX_BLOCK_DATA_WIDTH = Param(None)
-        self.W_PRIV_T = Param(None)
-        self.R_ID_WIDTH = Param(0)
+        self.ADDR_WIDTH = HwParam(8)  # address has the granularity of the item
+        self.DATA_WIDTH = HwParam(8)
+        self.WORD_WIDTH = HwParam(16)
+        self.MAX_BLOCK_DATA_WIDTH = HwParam(None)
+        self.W_PRIV_T = HwParam(None)
+        self.R_ID_WIDTH = HwParam(0)
 
     def _declr_io(self):
         assert self.WORD_WIDTH % self.DATA_WIDTH == 0, (self.WORD_WIDTH, self.DATA_WIDTH)
@@ -55,7 +55,7 @@ class RamTransactional(Unit):
         self.WORD_INDEX_MAX = self.ITEM_WORDS - 1
 
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.r = TransRamHsR()
             self.r.ID_WIDTH = self.R_ID_WIDTH
             self.w = TransRamHsW()
@@ -75,10 +75,10 @@ class RamTransactional(Unit):
         d.PORT_CNT = (READ, WRITE)
         d.HAS_BE = True
 
-    def construct_ram_io(self) -> Tuple[RamHsR, AddrDataHs]:
+    def construct_ram_io(self) -> Tuple[HwIORamRdVldR, HwIOAddrDataRdVld]:
         data_arr_r_port, data_arr_w_port = self.data_array.port
-        data_arr_r_to_hs = RamAsHs()
-        data_arr_w_to_hs = RamAsHs()
+        data_arr_r_to_hs = RamAsAddrDataRdVld()
+        data_arr_w_to_hs = RamAsAddrDataRdVld()
         data_arr_r_to_hs._updateParamsFrom(data_arr_r_port)
         data_arr_w_to_hs._updateParamsFrom(data_arr_w_port)
         self.data_arr_r_to_hs = data_arr_r_to_hs
@@ -91,20 +91,20 @@ class RamTransactional(Unit):
 
     def construct_r_meta(self, flush_req: RtlSignal,
                          read_pending: RtlSignal,
-                         r: RamHsR, w: AddrDataHs,
-                         w_index: StructIntf,
-                         r_index_o: StructIntf) -> HandshakedReg:
+                         r: HwIORamRdVldR, w: HwIOAddrDataRdVld,
+                         w_index: HwIOStruct,
+                         r_index_o: HwIOStruct) -> HandshakedReg:
 
         HAS_R_PRIV = self.R_ID_WIDTH != 0
         HAS_W_PRIV = self.W_PRIV_T is not None
 
-        r_meta = HObjList(HandshakedReg(HsStructIntf) for _ in range(2))
+        r_meta = HObjList(HandshakedReg(HwIOStructRdVld) for _ in range(2))
         for reg in r_meta:
             reg.LATENCY = 1
             reg.T = HStruct(
-                *([(Bits(self.R_ID_WIDTH), "r_priv")] if HAS_R_PRIV else []),
+                *([(HBits(self.R_ID_WIDTH), "r_priv")] if HAS_R_PRIV else []),
                 *([(self.W_PRIV_T, "w_priv")] if HAS_W_PRIV else []),
-                (Bits(self.ADDR_WIDTH), "addr"),
+                (HBits(self.ADDR_WIDTH), "addr"),
                 (BIT, "flushing"),
                 (BIT, "is_last"),
                 (BIT, "is_first"),
@@ -173,12 +173,12 @@ class RamTransactional(Unit):
     def construct_read_part(self,
                             r: TransRamHsR,
                             w_addr: RtlSignal,
-                            da_r: RamHsR,
+                            da_r: HwIORamRdVldR,
                             r_meta: List[HandshakedReg],
                             flush_req: RtlSignal,
                             read_pending: RtlSignal,
-                            r_index_o: StructIntf,
-                            r_index_i: StructIntf,
+                            r_index_o: HwIOStruct,
+                            r_index_i: HwIOStruct,
                             flush_data: TransRamHsW):
 
         r_en = rename_signal(self, read_pending | flush_req | r.addr.vld, "r_en")
@@ -279,11 +279,11 @@ class RamTransactional(Unit):
 
     def construct_write_part(self,
                              w: TransRamHsW,
-                             da_r: RamHsR,
-                             da_w: AddrDataHs,
-                             w_index_i: StructIntf,
+                             da_r: HwIORamRdVldR,
+                             da_w: HwIOAddrDataRdVld,
+                             w_index_i: HwIOStruct,
                              w_index_o, r_index_o,
-                             r_meta_din: HsStructIntf):
+                             r_meta_din: HwIOStructRdVld):
         WORD_INDEX_MAX = self.WORD_INDEX_MAX
 
         write_pending = w_index_o.vld
@@ -340,8 +340,8 @@ class RamTransactional(Unit):
     def _impl(self):
         r_index = self._reg("r_index",
             HStruct(
-                (Bits(self.ADDR_WIDTH), "item_index"),
-                (Bits(log2ceil(self.ITEM_WORDS)), "word_index"),
+                (HBits(self.ADDR_WIDTH), "item_index"),
+                (HBits(log2ceil(self.ITEM_WORDS)), "word_index"),
                 (BIT, "vld"),
             ),
             def_val={
@@ -379,11 +379,11 @@ class RamTransactional(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = RamTransactional()
-    u.R_ID_WIDTH = 4
-    u.W_PRIV_T = Bits(5)
-    u.DATA_WIDTH = 32
-    u.ADDR_WIDTH = 3
-    u.WORD_WIDTH = 64
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = RamTransactional()
+    m.R_ID_WIDTH = 4
+    m.W_PRIV_T = HBits(5)
+    m.DATA_WIDTH = 32
+    m.ADDR_WIDTH = 3
+    m.WORD_WIDTH = 64
+    print(to_rtl_str(m))

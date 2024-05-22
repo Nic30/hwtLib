@@ -1,11 +1,11 @@
 from hwt.code import Concat
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Signal
-from hwt.interfaces.tristate import TristateSig
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwIOs.hwIOTristate import HwIOTristateSig
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
 from hwtLib.peripheral.usb.constants import USB_PID
 from hwtLib.peripheral.usb.usb2.utmi import utmi_function_control_t, \
     utmi_interface_control_t, utmi_otg_control_t, utmi_interrupt_t
@@ -46,10 +46,10 @@ class ULPI_TX_CMD():
         packet identifier USB_PID(3:0).
         """
         if pid is None or isinstance(pid, int):
-            pid = Bits(4).from_py(pid)
+            pid = HBits(4).from_py(pid)
         else:
             assert pid._dtype.bit_length() == 4
-        return Concat(Bits(4).from_py(0b01_00), pid)
+        return Concat(HBits(4).from_py(0b01_00), pid)
 
     @staticmethod
     def REGW(addr):
@@ -57,10 +57,10 @@ class ULPI_TX_CMD():
         Register write command with 6-bit immediate address.
         """
         if addr is None or isinstance(addr, int):
-            addr = Bits(6).from_py(addr)
+            addr = HBits(6).from_py(addr)
         else:
             assert addr._dtype.bit_length() == 6
-        return Concat(Bits(2).from_py(0b10), addr)
+        return Concat(HBits(2).from_py(0b10), addr)
 
     """
     :cvar Extended reqister write command. 8-bit address
@@ -76,10 +76,10 @@ class ULPI_TX_CMD():
     @staticmethod
     def REGR(addr):
         if addr is None or isinstance(addr, int):
-            addr = Bits(6).from_py(addr)
+            addr = HBits(6).from_py(addr)
         else:
             assert addr._dtype.bit_length() == 6
-        return Concat(Bits(2).from_py(0b11), addr)
+        return Concat(HBits(2).from_py(0b11), addr)
 
     """
     :cvar EXTR: Extended register read command. 8-bit address
@@ -190,13 +190,13 @@ ulpi_reg_usb_interrupt_status_t_reset_default = {
 ulpi_reg_debug_t = HStruct(
     (BIT, "LineState0"),
     (BIT, "LineState1"),
-    (Bits(6), None),
+    (HBits(6), None),
 )
 
 
-class Ulpi(Interface):
+class Ulpi(HwIO):
     """
-    ULPI (UTMI+ Low Pin Interface for USB2.0 PHY)
+    ULPI (UTMI+ Low Pin HwIO for USB2.0 PHY)
 
     * https://www.sparkfun.com/datasheets/Components/SMD/ULPI_v1_1.pdf
 
@@ -240,15 +240,15 @@ class Ulpi(Interface):
         LINK = 0
 
     def _config(self):
-        self.DATA_WIDTH = Param(8)
+        self.DATA_WIDTH = HwParam(8)
 
     def _declr(self):
         # the "t" has to be driven from outside of PHY (from Link usually implemented in FPGA)
-        self.data = TristateSig(masterDir=DIRECTION.IN)
+        self.data = HwIOTristateSig(masterDir=DIRECTION.IN)
         self.data.DATA_WIDTH = self.DATA_WIDTH
-        self.dir = Signal()
-        self.stp = Signal(masterDir=DIRECTION.IN)
-        self.nxt = Signal()
+        self.dir = HwIOSignal()
+        self.stp = HwIOSignal(masterDir=DIRECTION.IN)
+        self.nxt = HwIOSignal()
 
     def _getIpCoreIntfClass(self):
         return IP_Ulpi

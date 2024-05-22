@@ -2,21 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, FsmBuilder
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.std import Handshaked, RegCntrl
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld, HwIORegCntrl
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.amba.datapump.intf import AxiRDatapumpIntf, AxiWDatapumpIntf
+from hwtLib.amba.datapump.intf import HwIOAxiRDatapump, HwIOAxiWDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from pyMathBitPrecise.bit_utils import mask
 
 
-class CLinkedListWriter(Unit):
+class CLinkedListWriter(HwModule):
     """
     This unit writes items to (circular) linked list like structure
     (List does not necessary need to be circular but space is specified
@@ -45,49 +45,49 @@ class CLinkedListWriter(Unit):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.ID_WIDTH = Param(4)
+        self.ID_WIDTH = HwParam(4)
         # id on interfaces for default transaction
-        self.ID = Param(3)
+        self.ID = HwParam(3)
 
-        self.BUFFER_CAPACITY = Param(32)
-        self.ITEMS_IN_BLOCK = Param(4096 // 8 - 1)
+        self.BUFFER_CAPACITY = HwParam(32)
+        self.ITEMS_IN_BLOCK = HwParam(4096 // 8 - 1)
 
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
-        self.PTR_WIDTH = Param(16)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(64)
+        self.PTR_WIDTH = HwParam(16)
 
         # timeout to send items from buffer even if they are smaller
         # than recomended burst
-        self.TIMEOUT = Param(4096)
+        self.TIMEOUT = HwParam(4096)
 
     def _declr(self):
         addClkRstn(self)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             # read interface for datapump
             # interface which sending requests to download addr of next block
-            self.rDatapump = AxiRDatapumpIntf()._m()
+            self.rDatapump = HwIOAxiRDatapump()._m()
             # because we are downloading only addres of next block
             self.rDatapump.MAX_LEN = 1
 
             # write interface for datapump
-            self.wDatapump = AxiWDatapumpIntf()._m()
+            self.wDatapump = HwIOAxiWDatapump()._m()
             self.wDatapump.MAX_LEN = self.BUFFER_CAPACITY // 2
             assert self.BUFFER_CAPACITY <= self.ITEMS_IN_BLOCK
 
             # interface for items which should be written into list
-            self.dataIn = Handshaked()
+            self.dataIn = HwIODataRdVld()
 
         # interface to control internal register
-        a = self.baseAddr = RegCntrl()
+        a = self.baseAddr = HwIORegCntrl()
         a.DATA_WIDTH = self.ADDR_WIDTH
 
-        self.rdPtr = RegCntrl()
-        self.wrPtr = RegCntrl()
+        self.rdPtr = HwIORegCntrl()
+        self.wrPtr = HwIORegCntrl()
         for ptr in [self.rdPtr, self.wrPtr]:
             ptr.DATA_WIDTH = self.PTR_WIDTH
 
-        f = self.dataFifo = HandshakedFifo(Handshaked)
+        f = self.dataFifo = HandshakedFifo(HwIODataRdVld)
         f.EXPORT_SIZE = True
         f.DATA_WIDTH = self.DATA_WIDTH
         f.DEPTH = self.BUFFER_CAPACITY
@@ -98,7 +98,7 @@ class CLinkedListWriter(Unit):
         return addr[:self.ALIGN_BITS]
 
     def indexToAddr(self, indx):
-        return Concat(indx, Bits(self.ALIGN_BITS).from_py(0))
+        return Concat(indx, HBits(self.ALIGN_BITS).from_py(0))
 
     def rReqHandler(self, baseIndex, doReq):
         # always download only one word with address of next block
@@ -124,7 +124,7 @@ class CLinkedListWriter(Unit):
         rIn = self.rDatapump.r
         rReq = self.rDatapump.req
 
-        addr_index_t = Bits(self.ADDR_WIDTH - self.ALIGN_BITS)
+        addr_index_t = HBits(self.ADDR_WIDTH - self.ALIGN_BITS)
         baseIndex = r("baseIndex_backup", addr_index_t)
         nextBaseIndex = r("nextBaseIndex", addr_index_t)
         t = HEnum("nextBaseFsm_t",
@@ -163,7 +163,7 @@ class CLinkedListWriter(Unit):
 
     def timeoutHandler(self, rst, incr):
         timeoutCntr = self._reg("timeoutCntr",
-                                Bits(log2ceil(self.TIMEOUT) + 1, signed=False),
+                                HBits(log2ceil(self.TIMEOUT) + 1, signed=False),
                                 def_val=self.TIMEOUT)
         If(rst,
            timeoutCntr(self.TIMEOUT)
@@ -174,7 +174,7 @@ class CLinkedListWriter(Unit):
 
     def queuePtrLogic(self, wrPtrIncrVal, wrPtrIncrEn):
         r, s = self._reg, self._sig
-        ringSpace_t = Bits(self.PTR_WIDTH)
+        ringSpace_t = HBits(self.PTR_WIDTH)
 
         # Logic of tail/head,
         rdPtr = r("rdPtr", ringSpace_t, def_val=0)
@@ -206,7 +206,7 @@ class CLinkedListWriter(Unit):
         inBlockRemain_asPtrSize = fitTo(inBlockRemain, lenByPtrs)
 
         # wReq driver
-        ringSpace_t = Bits(self.PTR_WIDTH)
+        ringSpace_t = HBits(self.PTR_WIDTH)
         constraingLen = s("constraingSpace", ringSpace_t)
 
         If(inBlockRemain_asPtrSize < lenByPtrs,
@@ -265,10 +265,10 @@ class CLinkedListWriter(Unit):
         bufferHasData = s("bufferHasData")
         bufferHasData(f.size > (BURST_LEN - 1))
         # we are counting base next addr as item as well
-        addr_index_t = Bits(self.ADDR_WIDTH - self.ALIGN_BITS)
+        addr_index_t = HBits(self.ADDR_WIDTH - self.ALIGN_BITS)
         baseIndex = r("baseIndex", addr_index_t)
 
-        dataCntr_t = Bits(log2ceil(BURST_LEN + 1), signed=False)
+        dataCntr_t = HBits(log2ceil(BURST_LEN + 1), signed=False)
         # counter of uploading data
         dataCntr = r("dataCntr", dataCntr_t, def_val=0)
         reqLen_backup = r("reqLen_backup", w.req.len._dtype, def_val=0)
@@ -303,7 +303,7 @@ class CLinkedListWriter(Unit):
         timeout(self.timeoutHandler(fsm != fsm_t.idle,
                                     (f.size != 0) & queueHasSpace))
 
-        inBlock_t = Bits(log2ceil(self.ITEMS_IN_BLOCK + 1))
+        inBlock_t = HBits(log2ceil(self.ITEMS_IN_BLOCK + 1))
         inBlockRemain = r("inBlockRemain_reg", inBlock_t, def_val=self.ITEMS_IN_BLOCK)
 
         wReqEn = fsm._eq(fsm_t.reqPending)
@@ -338,9 +338,10 @@ class CLinkedListWriter(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = CLinkedListWriter()
-    u.BUFFER_CAPACITY = 8
-    u.ITEMS_IN_BLOCK = 31
-    u.PTR_WIDTH = 8
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = CLinkedListWriter()
+    m.BUFFER_CAPACITY = 8
+    m.ITEMS_IN_BLOCK = 31
+    m.PTR_WIDTH = 8
+    print(to_rtl_str(m))

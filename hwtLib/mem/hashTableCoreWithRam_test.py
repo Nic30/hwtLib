@@ -4,7 +4,7 @@
 from binascii import crc_hqx
 
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import valuesToInts
+from hwt.simulator.utils import HConstSequenceToInts
 from hwtLib.logic.crcPoly import CRC_16_CCITT
 from hwtLib.mem.hashTableCoreWithRam import HashTableCoreWithRam
 from hwtSimApi.constants import CLK_PERIOD
@@ -16,13 +16,13 @@ class HashTableCoreWithRamTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = HashTableCoreWithRam(CRC_16_CCITT)
-        u.KEY_WIDTH = 16
-        u.DATA_WIDTH = 8
+        dut = cls.dut = HashTableCoreWithRam(CRC_16_CCITT)
+        dut.KEY_WIDTH = 16
+        dut.DATA_WIDTH = 8
 
-        u.LOOKUP_HASH = True
-        u.LOOKUP_KEY = True
-        cls.compileSim(u)
+        dut.LOOKUP_HASH = True
+        dut.LOOKUP_KEY = True
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
@@ -31,34 +31,34 @@ class HashTableCoreWithRamTC(SimTestCase):
         mem.val = mem.def_val = mem._dtype.from_py(0 for _ in range(mem._dtype.size))
 
     def test_lookupInEmpty(self):
-        u = self.u
+        dut = self.dut
 
-        u.io.lookup._ag.data.extend([0,
+        dut.io.lookup._ag.data.extend([0,
                                   self._rand.getrandbits(8),
                                   self._rand.getrandbits(8)])
 
         self.runSim(15 * CLK_PERIOD)
 
-        for d in u.io.lookupRes._ag.data:
+        for d in dut.io.lookupRes._ag.data:
             found = d[-1]
             self.assertValEqual(found, 0)
 
     def test_lookupInsertLookup(self, N=16, randomized=False):
-        u = self.u
+        dut = self.dut
         t_factor = CLK_PERIOD
         if randomized:
-            self.randomize(u.io.lookup)
-            self.randomize(u.io.lookupRes)
-            self.randomize(u.io.insert)
+            self.randomize(dut.io.lookup)
+            self.randomize(dut.io.lookupRes)
+            self.randomize(dut.io.insert)
             t_factor *= 3
 
-        lookup = u.io.lookup._ag.data
-        lookupRes = u.io.lookupRes._ag.data
+        lookup = dut.io.lookup._ag.data
+        lookupRes = dut.io.lookupRes._ag.data
         getrandbits = self._rand.getrandbits
 
         def get_hash(k: int):
-            return crc_hqx(k.to_bytes(u.KEY_WIDTH // 8, "little"),
-                           CRC_16_CCITT.INIT) & mask(u.io.HASH_WIDTH)
+            return crc_hqx(k.to_bytes(dut.KEY_WIDTH // 8, "little"),
+                           CRC_16_CCITT.INIT) & mask(dut.io.HASH_WIDTH)
 
         # {hash: (key, data)}
         expected_content = {}
@@ -88,7 +88,7 @@ class HashTableCoreWithRamTC(SimTestCase):
 
             data = getrandbits(8)
             # insert previous lookup with new data
-            u.io.insert._ag.data.append((hash0, key0, data, 1))
+            dut.io.insert._ag.data.append((hash0, key0, data, 1))
 
             yield Timer(3 * t_factor)
             expected_content[hash0] = (key0, data)
@@ -104,7 +104,7 @@ class HashTableCoreWithRamTC(SimTestCase):
 
             lookup.extend([key0, key1])
             # hash, key, data, found, occupied
-            expected0 = tuple(valuesToInts((hash0, key0, data, 1, 1)))
+            expected0 = tuple(HConstSequenceToInts((hash0, key0, data, 1, 1)))
             while len(lookupRes) < 2:
                 yield Timer(t_factor)
             d0, d1 = [lookupRes.popleft() for _ in range(2)]
@@ -130,7 +130,7 @@ class HashTableCoreWithRamTC(SimTestCase):
         self.procs.append(tryInsertNotFoundAndLookupIt())
 
         self.runSim(N * 20 * t_factor)
-        self.assertValSequenceEqual(u.io.lookupRes._ag.data, [])
+        self.assertValSequenceEqual(dut.io.lookupRes._ag.data, [])
 
     def test_lookupInsertLookup_randomized(self, N=16):
         self.test_lookupInsertLookup(N, randomized=True)

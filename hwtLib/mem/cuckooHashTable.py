@@ -6,22 +6,22 @@ from typing import List
 from hwt.code import FsmBuilder, And, Or, If, ror, SwitchLogic, \
     Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import HandshakeSync
-from hwt.interfaces.utils import propagateClkRstn, addClkRstn
+from hwt.hwIOs.std import HwIORdVldSync
+from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.mem.cuckooHashTable_intf import CInsertIntf, CInsertResIntf
+from hwtLib.mem.cuckooHashTable_intf import HwIOCuckooInsert, HwIOCuckooInsertRes
 from hwtLib.mem.hashTableCore import HashTableCore
-from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf, \
-    HashTableIntf
+from hwtLib.mem.hashTable_intf import HwIOLookupKey, HwIOLookupResult, \
+    HwIOHashTable
 
 
 ORIGIN_TYPE = HEnum("ORIGIN_TYPE", ["INSERT", "LOOKUP", "DELETE"])
@@ -52,39 +52,39 @@ class CuckooHashTable(HashTableCore):
     """
 
     def __init__(self):
-        Unit.__init__(self)
+        HwModule.__init__(self)
 
     def _config(self):
-        self.TABLE_SIZE = Param(32)
-        self.DATA_WIDTH = Param(32)
-        self.KEY_WIDTH = Param(8)
-        self.LOOKUP_KEY = Param(False)
-        self.TABLE_CNT = Param(2)
-        self.MAX_LOOKUP_OVERLAP = Param(16)
-        self.MAX_REINSERT = Param(15)
+        self.TABLE_SIZE = HwParam(32)
+        self.DATA_WIDTH = HwParam(32)
+        self.KEY_WIDTH = HwParam(8)
+        self.LOOKUP_KEY = HwParam(False)
+        self.TABLE_CNT = HwParam(2)
+        self.MAX_LOOKUP_OVERLAP = HwParam(16)
+        self.MAX_REINSERT = HwParam(15)
 
     def _declr_outer_io(self):
         addClkRstn(self)
         assert self.TABLE_SIZE % self.TABLE_CNT == 0
         self.HASH_WIDTH = log2ceil(self.TABLE_SIZE // self.TABLE_CNT)
 
-        with self._paramsShared():
-            self.insert = CInsertIntf()
-            self.insertRes = CInsertResIntf()._m()
-            self.lookup = LookupKeyIntf()
-            self.lookupRes = LookupResultIntf()._m()
+        with self._hwParamsShared():
+            self.insert = HwIOCuckooInsert()
+            self.insertRes = HwIOCuckooInsertRes()._m()
+            self.lookup = HwIOLookupKey()
+            self.lookupRes = HwIOLookupResult()._m()
             self.lookupRes.HASH_WIDTH = self.HASH_WIDTH
 
-        with self._paramsShared(exclude=({"DATA_WIDTH"}, set())):
-            self.delete = CInsertIntf()
+        with self._hwParamsShared(exclude=({"DATA_WIDTH"}, set())):
+            self.delete = HwIOCuckooInsert()
             self.delete.DATA_WIDTH = 0
 
-        self.clean = HandshakeSync()
+        self.clean = HwIORdVldSync()
 
     def _declr(self):
         self._declr_outer_io()
         self.tables = HObjList(
-            HashTableIntf()._m()
+            HwIOHashTable()._m()
             for _ in range(self.TABLE_CNT))
         self.configure_tables(self.tables)
 
@@ -101,7 +101,7 @@ class CuckooHashTable(HashTableCore):
     def clean_addr_iterator(self, en):
         lastAddr = self.TABLE_SIZE // self.TABLE_CNT - 1
         addr = self._reg("cleanupAddr",
-                         Bits(log2ceil(lastAddr), signed=False),
+                         HBits(log2ceil(lastAddr), signed=False),
                          def_val=0)
         last = addr._eq(lastAddr)
         If(en,
@@ -143,7 +143,7 @@ class CuckooHashTable(HashTableCore):
         tables = self.tables
         # one hot encoded index where item should be stored (where was found
         # or where is place)
-        insertTargetOH = self._reg("insertTargetOH", Bits(self.TABLE_CNT, force_vector=True))
+        insertTargetOH = self._reg("insertTargetOH", HBits(self.TABLE_CNT, force_vector=True))
 
         res = [t.lookupRes for t in tables]
         insertFinal = self._reg("insertFinal")
@@ -182,7 +182,7 @@ class CuckooHashTable(HashTableCore):
         """
         Select a insert address
         """
-        insertIndex = self._sig("insertIndex", Bits(self.HASH_WIDTH))
+        insertIndex = self._sig("insertIndex", HBits(self.HASH_WIDTH))
         If(state._eq(state._dtype.cleaning),
             insertIndex(cleanAddr)
         ).Else(
@@ -297,7 +297,7 @@ class CuckooHashTable(HashTableCore):
         """
         lookup = self.lookup
         lookupRes = self.lookupRes
-        lookup_in_progress = self._reg("lookup_in_progress", Bits(log2ceil(self.MAX_LOOKUP_OVERLAP - 1)), def_val=0)
+        lookup_in_progress = self._reg("lookup_in_progress", HBits(log2ceil(self.MAX_LOOKUP_OVERLAP - 1)), def_val=0)
         lookup_trans = lookup.rd & lookup.vld
         lookupRes_trans = lookupRes.rd & lookupRes.vld
 
@@ -330,9 +330,9 @@ class CuckooHashTable(HashTableCore):
 
         # stash is storage for item which is going to be swapped with actual
         stash_t = HStruct(
-            (Bits(self.KEY_WIDTH), "key"),
-            (Bits(self.DATA_WIDTH), "data"),
-            (Bits(log2ceil(self.MAX_REINSERT + 1)), "reinsert_cntr"),
+            (HBits(self.KEY_WIDTH), "key"),
+            (HBits(self.DATA_WIDTH), "data"),
+            (HBits(log2ceil(self.MAX_REINSERT + 1)), "reinsert_cntr"),
             (BIT, "item_vld"),
             (ORIGIN_TYPE, "origin_op"),
         )
@@ -421,7 +421,8 @@ class CuckooHashTable(HashTableCore):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = CuckooHashTable()
-    u.TABLE_CNT = 2
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = CuckooHashTable()
+    m.TABLE_CNT = 2
+    print(to_rtl_str(m))

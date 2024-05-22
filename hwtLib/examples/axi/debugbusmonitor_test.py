@@ -23,7 +23,7 @@ class DebugBusMonitorCtlSim(DebugBusMonitorCtl):
         self.tc = tc
 
     def read(self, addr, size):
-        axi = self.tc.u.s
+        axi = self.tc.dut.s
         word_size = axi.DATA_WIDTH // 8
         words = []
         for _ in range(ceil(size / word_size)):
@@ -59,9 +59,9 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = DebugBusMonitorExampleAxi()
-        u.DATA_WIDTH = 32
-        cls.compileSim(u)
+        dut = cls.dut = DebugBusMonitorExampleAxi()
+        dut.DATA_WIDTH = 32
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
@@ -70,7 +70,7 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
         self.r_data_available.acquire()
 
     def test_dump(self):
-        u = self.u
+        dut = self.dut
         tc = self
 
         class SpyDeque(deque):
@@ -84,18 +84,18 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
                     self.tc.r_data_available.release()
                 super(SpyDeque, self).append(x)
 
-        u.s.r._ag.data = SpyDeque(self)
-        u.din0._ag.data.extend([1, 2])
-        u.din1._ag.data.extend([3, 4])
-        u.din2._ag.data.extend([5, 6])
+        dut.s.r._ag.data = SpyDeque(self)
+        dut.din0._ag.data.extend([1, 2])
+        dut.din1._ag.data.extend([3, 4])
+        dut.din2._ag.data.extend([5, 6])
 
         def sim_init():
             yield WaitWriteOnly()
-            u.dout1._ag.setEnable(False)
+            dut.dout1._ag.setEnable(False)
 
         def time_sync():
             while True:
-                if u.s.r._ag.data and self.r_data_available.locked():
+                if dut.s.r._ag.data and self.r_data_available.locked():
                     tc.r_data_available.release()
                 yield Timer(CLK_PERIOD)
                 if self.sim_done:

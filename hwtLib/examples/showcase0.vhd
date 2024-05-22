@@ -2,7 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Every HW component class has to be derived from :class:`hwt.synthesizer.unit.Unit` class
+--    Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
 --
 --    .. hwt-autodoc::
 --    

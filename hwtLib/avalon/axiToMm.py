@@ -5,15 +5,15 @@ from typing import Optional
 
 from hwt.code import If
 from hwt.code_utils import rename_signal
-from hwt.hdl.constants import READ
-from hwt.hdl.types.bits import Bits
+from hwt.constants import READ
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Handshaked, HandshakeSync, VectSignal
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOVectSignal
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
@@ -23,16 +23,16 @@ from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 
 
-class IdLenHs(HandshakeSync):
+class IdLenHs(HwIORdVldSync):
 
     def _config(self) -> None:
-        self.ID_WIDTH = Param(4)
-        self.LEN_WIDTH = Param(6)
+        self.ID_WIDTH = HwParam(4)
+        self.LEN_WIDTH = HwParam(6)
 
     def _declr(self):
-        self.id = VectSignal(self.ID_WIDTH)
-        self.len = VectSignal(self.LEN_WIDTH)
-        HandshakeSync._declr(self)
+        self.id = HwIOVectSignal(self.ID_WIDTH)
+        self.len = HwIOVectSignal(self.LEN_WIDTH)
+        HwIORdVldSync._declr(self)
 
 
 class Axi4_to_AvalonMm(BusBridge):
@@ -47,15 +47,15 @@ class Axi4_to_AvalonMm(BusBridge):
     def _config(self) -> None:
         AvalonMM._config(self)
         self.MAX_BURST = 512
-        self.ID_WIDTH = Param(4)
-        self.RW_PRIORITY = Param(READ)
-        self.R_DATA_FIFO_DEPTH = Param(16)
-        self.R_SIZE_FIFO_DEPTH = Param(16)
+        self.ID_WIDTH = HwParam(4)
+        self.RW_PRIORITY = HwParam(READ)
+        self.R_DATA_FIFO_DEPTH = HwParam(16)
+        self.R_SIZE_FIFO_DEPTH = HwParam(16)
 
     def _declr(self) -> None:
         addClkRstn(self)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = Axi4()
             self.m = AvalonMM()._m()
 
@@ -70,7 +70,7 @@ class Axi4_to_AvalonMm(BusBridge):
     def connect_r_fifo(self, avalon: AvalonMM, axi: Axi4):
         # buffer for read data to allow forward dispatch of the read requests
         # the availability of the space in fifo is checked using r_data_fifo_capacity counter
-        f = HandshakedFifo(Handshaked)
+        f = HandshakedFifo(HwIODataRdVld)
         f.DEPTH = self.R_DATA_FIFO_DEPTH
         f.DATA_WIDTH = self.DATA_WIDTH
         self.r_data_fifo = f
@@ -111,7 +111,7 @@ class Axi4_to_AvalonMm(BusBridge):
         axi.r.last(wordIndexCntr.len._eq(0))
         return rename_signal(self, r_out_node.ack(), "r_data_ack")
 
-    def load_addr_tmp(self, addr_tmp: StructIntf, axi_addr: Optional[Axi4_addr]):
+    def load_addr_tmp(self, addr_tmp: HwIOStruct, axi_addr: Optional[Axi4_addr]):
         if axi_addr is None:
             return [
                 addr_tmp.addr(None),
@@ -154,7 +154,7 @@ class Axi4_to_AvalonMm(BusBridge):
         # cause overflow of read data fifo
         r_data_fifo_capacity = self._reg(
             "r_data_fifo_capacity",
-            Bits(log2ceil(self.R_DATA_FIFO_DEPTH + 1)),
+            HBits(log2ceil(self.R_DATA_FIFO_DEPTH + 1)),
             def_val=self.R_DATA_FIFO_DEPTH)
 
         will_be_idle = ~addr_tmp.vld | \
@@ -258,6 +258,6 @@ class Axi4_to_AvalonMm(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Axi4_to_AvalonMm()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = Axi4_to_AvalonMm()
+    print(to_rtl_str(m))

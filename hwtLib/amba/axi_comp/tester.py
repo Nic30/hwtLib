@@ -4,13 +4,13 @@
 from typing import Optional
 
 from hwt.code import FsmBuilder, If, Concat
-from hwt.hdl.types.bits import Bits
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -20,7 +20,7 @@ from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 SEND_AW, SEND_W, RECV_B, SEND_AR, RECV_R = range(1, 6)
 
 
-class AxiTester(Unit):
+class AxiTester(HwModule):
     """
     Tester for AXI3/4 interfaces
 
@@ -39,14 +39,14 @@ class AxiTester(Unit):
 
     def _config(self):
         self._axiCls._config(self)
-        self.CNTRL_DATA_WIDTH = Param(32)
-        self.CNTRL_ADDR_WIDTH = Param(32)
+        self.CNTRL_DATA_WIDTH = HwParam(32)
+        self.CNTRL_ADDR_WIDTH = HwParam(32)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.m_axi = self._axiCls()._m()
-        with self._paramsShared(prefix="CNTRL_"):
+        with self._hwParamsShared(prefix="CNTRL_"):
             self.cntrl = self._cntrlCls()
             self._add_ep()
 
@@ -58,52 +58,52 @@ class AxiTester(Unit):
         LOCK_WIDTH = self.m_axi.LOCK_WIDTH
 
         mem_space = HStruct(
-            (Bits(32), "id_reg"), # 0x00
-            (Bits(32), "cmd_and_status"),
-            (Bits(self.ADDR_WIDTH), "addr"),
+            (HBits(32), "id_reg"), # 0x00
+            (HBits(32), "cmd_and_status"),
+            (HBits(self.ADDR_WIDTH), "addr"),
             # a or w id
-            (Bits(self.ID_WIDTH), "ar_aw_w_id"),
-            (Bits(32 - int(self.ID_WIDTH)), None),
+            (HBits(self.ID_WIDTH), "ar_aw_w_id"),
+            (HBits(32 - int(self.ID_WIDTH)), None),
 
-            (Bits(2), "burst"), # 0x10
-            (Bits(32 - 2), None),
-            (Bits(4), "cache"),
-            (Bits(32 - 4), None),
-            (Bits(LEN_WIDTH), "len"),
-            (Bits(32 - LEN_WIDTH), None),
-            (Bits(LOCK_WIDTH), "lock"),
-            (Bits(32 - LOCK_WIDTH), None),
-            (Bits(3), "prot"), # 0x20
-            (Bits(32 - 3), None),
-            (Bits(3), "size"),
-            (Bits(32 - 3), None),
-            (Bits(4), "qos"),
-            (Bits(32 - 4), None),
+            (HBits(2), "burst"), # 0x10
+            (HBits(32 - 2), None),
+            (HBits(4), "cache"),
+            (HBits(32 - 4), None),
+            (HBits(LEN_WIDTH), "len"),
+            (HBits(32 - LEN_WIDTH), None),
+            (HBits(LOCK_WIDTH), "lock"),
+            (HBits(32 - LOCK_WIDTH), None),
+            (HBits(3), "prot"), # 0x20
+            (HBits(32 - 3), None),
+            (HBits(3), "size"),
+            (HBits(32 - 3), None),
+            (HBits(4), "qos"),
+            (HBits(32 - 4), None),
 
-            (Bits(self.ID_WIDTH), "r_id"),
-            (Bits(32 - int(self.ID_WIDTH)), None),
-            (Bits(DATA_FIELD_W), "r_data"), # 0x30
-            (Bits(2), "r_resp"),
-            (Bits(32 - 2), None),
+            (HBits(self.ID_WIDTH), "r_id"),
+            (HBits(32 - int(self.ID_WIDTH)), None),
+            (HBits(DATA_FIELD_W), "r_data"), # 0x30
+            (HBits(2), "r_resp"),
+            (HBits(32 - 2), None),
             (BIT, "r_last"),
-            (Bits(32 - 1), None),
+            (HBits(32 - 1), None),
 
-            (Bits(self.ID_WIDTH), "b_id"),
-            (Bits(32 - int(self.ID_WIDTH)), None),
-            (Bits(2), "b_resp"), # 0x40
-            (Bits(32 - 2), None),
+            (HBits(self.ID_WIDTH), "b_id"),
+            (HBits(32 - int(self.ID_WIDTH)), None),
+            (HBits(2), "b_resp"), # 0x40
+            (HBits(32 - 2), None),
 
-            (Bits(DATA_FIELD_W), "w_data"),
+            (HBits(DATA_FIELD_W), "w_data"),
             (BIT, "w_last"),
-            (Bits(32 - 1), None),
-            (Bits(strb_w), "w_strb"),
-            (Bits(32 - int(strb_w)), None),
+            (HBits(32 - 1), None),
+            (HBits(strb_w), "w_strb"),
+            (HBits(32 - int(strb_w)), None),
             # 0x50
-            (Bits(5*2), "hs"),
-            (Bits(5*2 - 1), None),
+            (HBits(5*2), "hs"),
+            (HBits(5*2 - 1), None),
         )
 
-        ep = self.axi_ep = AxiLiteEndpoint(mem_space, intfCls=self._cntrlCls)
+        ep = self.axi_ep = AxiLiteEndpoint(mem_space, hwIOCls=self._cntrlCls)
         ep.DATA_WIDTH = self.CNTRL_DATA_WIDTH
         ep.ADDR_WIDTH = self.CNTRL_ADDR_WIDTH
 
@@ -245,12 +245,12 @@ class AxiTester(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     #from hwt.serializer.ip_packager import IpPackager
     #from os.path import expanduser
 
-    u = AxiTester(Axi3)
-    print(to_rtl_str(u))
-    #p = IpPackager(u)
+    m = AxiTester(Axi3)
+    print(to_rtl_str(m))
+    #p = IpPackager(m)
     #p.createPackage(expanduser("~"))
 

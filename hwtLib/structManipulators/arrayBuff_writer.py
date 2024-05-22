@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -
 
 from hwt.code import If, Concat, FsmBuilder
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIORegCntrl
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.amba.datapump.intf import AddrSizeHs, AxiWDatapumpIntf
+from hwtLib.amba.datapump.intf import AddrSizeHs, HwIOAxiWDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from pyMathBitPrecise.bit_utils import mask
@@ -24,7 +24,7 @@ stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
 # [TODO] use AxiVirtualDma
 
 @serializeParamsUniq
-class ArrayBuff_writer(Unit):
+class ArrayBuff_writer(HwModule):
     """
     Write data in to a circula buffer allocated as an array.
     Collect items and send them over wDatapump
@@ -38,30 +38,30 @@ class ArrayBuff_writer(Unit):
 
     def _config(self):
         AddrSizeHs._config(self)
-        self.ID = Param(3)
+        self.ID = HwParam(3)
         self.MAX_LEN = 15
-        self.ITEM_WIDTH = Param(16)
-        self.BUFF_DEPTH = Param(16)
-        self.TIMEOUT = Param(1024)
-        self.ITEMS = Param(4096 // 8)
+        self.ITEM_WIDTH = HwParam(16)
+        self.BUFF_DEPTH = HwParam(16)
+        self.TIMEOUT = HwParam(1024)
+        self.ITEMS = HwParam(4096 // 8)
 
     def _declr(self):
         addClkRstn(self)
 
-        self.items = Handshaked()
+        self.items = HwIODataRdVld()
         self.items.DATA_WIDTH = self.ITEM_WIDTH
 
-        with self._paramsShared():
-            self.wDatapump = AxiWDatapumpIntf()._m()
+        with self._hwParamsShared():
+            self.wDatapump = HwIOAxiWDatapump()._m()
 
-        self.uploaded = VectSignal(16)._m()
+        self.uploaded = HwIOVectSignal(16)._m()
 
-        self.baseAddr = RegCntrl()
+        self.baseAddr = HwIORegCntrl()
         self.baseAddr.DATA_WIDTH = self.ADDR_WIDTH
 
-        self.buff_remain = VectSignal(16)._m()
+        self.buff_remain = HwIOVectSignal(16)._m()
 
-        b = HandshakedFifo(Handshaked)
+        b = HandshakedFifo(HwIODataRdVld)
         b.DATA_WIDTH = self.ITEM_WIDTH
         b.EXPORT_SIZE = True
         b.DEPTH = self.BUFF_DEPTH
@@ -87,20 +87,20 @@ class ArrayBuff_writer(Unit):
 
         propagateClkRstn(self)
 
-        sizeOfitems = self._reg("sizeOfItems", Bits(
+        sizeOfitems = self._reg("sizeOfItems", HBits(
             buff.size._dtype.bit_length()))
 
         # aligned base addr
-        baseAddr = self._reg("baseAddrReg", Bits(self.ADDR_WIDTH - ALIGN_BITS))
+        baseAddr = self._reg("baseAddrReg", HBits(self.ADDR_WIDTH - ALIGN_BITS))
         If(self.baseAddr.dout.vld,
            baseAddr(self.baseAddr.dout.data[:ALIGN_BITS])
         )
-        self.baseAddr.din(Concat(baseAddr, Bits(ALIGN_BITS).from_py(0)))
+        self.baseAddr.din(Concat(baseAddr, HBits(ALIGN_BITS).from_py(0)))
 
         # offset in buffer and its complement
-        offset_t = Bits(log2ceil(ITEMS + 1), signed=False)
+        offset_t = HBits(log2ceil(ITEMS + 1), signed=False)
         offset = self._reg("offset", offset_t, def_val=0)
-        remaining = self._reg("remaining", Bits(
+        remaining = self._reg("remaining", HBits(
             log2ceil(ITEMS + 1), signed=False), def_val=ITEMS)
         self.buff_remain(remaining, fit=True)
 
@@ -109,7 +109,7 @@ class ArrayBuff_writer(Unit):
 
         # req values logic
         req.id(self.ID)
-        req.addr(Concat(addrTmp, Bits(ALIGN_BITS).from_py(0)))
+        req.addr(Concat(addrTmp, HBits(ALIGN_BITS).from_py(0)))
         req.rem(0)
 
         sizeTmp = self._sig("sizeTmp", buff.size._dtype)
@@ -141,7 +141,7 @@ class ArrayBuff_writer(Unit):
         w_ack = w.ready & buff.dataOut.vld
 
         # timeout logic
-        timeoutCntr = self._reg("timeoutCntr", Bits(log2ceil(self.TIMEOUT), False),
+        timeoutCntr = self._reg("timeoutCntr", HBits(log2ceil(self.TIMEOUT), False),
                                 def_val=TIMEOUT_MAX)
         # buffer is full or timeout
         beginReq = buff.size._eq(self.BUFF_DEPTH) | timeoutCntr._eq(0)
@@ -203,7 +203,8 @@ class ArrayBuff_writer(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = ArrayBuff_writer()
-    u.TIMEOUT = 32
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = ArrayBuff_writer()
+    m.TIMEOUT = 32
+    print(to_rtl_str(m))

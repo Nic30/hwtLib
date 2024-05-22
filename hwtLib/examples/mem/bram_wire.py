@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import READ
-from hwt.interfaces.std import BramPort_withoutClk
-from hwt.interfaces.utils import addClkRst
+from hwt.constants import READ
+from hwt.hwIOs.std import HwIOBramPort_noClk
+from hwt.hwIOs.utils import addClkRst
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class BramWire(Unit):
+class BramWire(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
         addClkRst(self)
-        self.din = BramPort_withoutClk()
-        self.dout = BramPort_withoutClk()._m()
+        self.din = HwIOBramPort_noClk()
+        self.dout = HwIOBramPort_noClk()._m()
 
     def _impl(self):
         self.dout(self.din)
@@ -26,17 +26,17 @@ class BramWireTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = BramWire()
-        cls.compileSim(cls.u)
+        cls.dut = BramWire()
+        cls.compileSim(cls.dut)
 
     def test_read(self):
-        u = self.u
-        u.dout._ag.mem[1] = 1
-        u.dout._ag.mem[2] = 2
+        dut = self.dut
+        dut.dout._ag.mem[1] = 1
+        dut.dout._ag.mem[2] = 2
 
-        u.din._ag.requests.extend([(READ, 1), (READ, 2), (READ, 3)])
+        dut.din._ag.requests.extend([(READ, 1), (READ, 2), (READ, 3)])
         self.runSim(10 * CLK_PERIOD)
-        self.assertValSequenceEqual(u.din._ag.r_data, [1, 2, None])
+        self.assertValSequenceEqual(dut.din._ag.r_data, [1, 2, None])
 
 
 if __name__ == "__main__":

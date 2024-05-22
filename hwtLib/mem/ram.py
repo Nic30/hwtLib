@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdl.constants import READ_WRITE, WRITE, READ
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
+from hwt.constants import READ_WRITE, WRITE, READ
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOBramPort, HwIOClk, HwIOBramPort_noClk
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 
 @serializeParamsUniq
-class RamSingleClock(Unit):
+class RamSingleClock(HwModule):
     """
     RAM/ROM with only one clock signal.
     It can be configured to have arbitrary number of ports.
@@ -22,26 +22,26 @@ class RamSingleClock(Unit):
     :note: This memory may not be mapped to RAM
         if synthesis tool consider it to be too small.
 
-    :ivar PORT_CNT: Param which specifies number of ram ports,
+    :ivar PORT_CNT: HwParam which specifies number of ram ports,
         it can be int or tuple of READ_WRITE, WRITE, READ
         to specify rw access for each port separately
-    :ivar HAS_BE: Param, if True the write ports will have byte enable signal
+    :ivar HAS_BE: HwParam, if True the write ports will have byte enable signal
 
     .. hwt-autodoc::
     """
-    PORT_CLS = BramPort_withoutClk
+    PORT_CLS = HwIOBramPort_noClk
 
     def _config(self):
-        self.ADDR_WIDTH = Param(10)
-        self.DATA_WIDTH = Param(64)
-        self.PORT_CNT = Param(1)
-        self.HAS_BE = Param(False)
-        self.MAX_BLOCK_DATA_WIDTH = Param(None)
-        self.INIT_DATA = Param(None)
+        self.ADDR_WIDTH = HwParam(10)
+        self.DATA_WIDTH = HwParam(64)
+        self.PORT_CNT = HwParam(1)
+        self.HAS_BE = HwParam(False)
+        self.MAX_BLOCK_DATA_WIDTH = HwParam(None)
+        self.INIT_DATA = HwParam(None)
 
     def _declr_ports(self):
         PORTS = self.PORT_CNT
-        with self._paramsShared():
+        with self._hwParamsShared():
             ports = HObjList()
             if isinstance(PORTS, int):
                 for _ in range(PORTS):
@@ -79,12 +79,12 @@ class RamSingleClock(Unit):
         self.children = children
 
     def _declr(self):
-        self.clk = Clk()
+        self.clk = HwIOClk()
         self._declr_ports()
         self._declr_children()
 
     @staticmethod
-    def mem_write(mem, port: BramPort_withoutClk):
+    def mem_write(mem, port: HwIOBramPort_noClk):
         drive = []
         if port.HAS_BE:
             assert port.DATA_WIDTH % 8 == 0, port.DATA_WIDTH
@@ -113,7 +113,7 @@ class RamSingleClock(Unit):
         return drive
 
     @staticmethod
-    def connect_port(clk: RtlSignal, port: BramPort_withoutClk, mem: RtlSignal):
+    def connect_port(clk: RtlSignal, port: HwIOBramPort_noClk, mem: RtlSignal):
         if port.HAS_R and port.HAS_W:
             If(clk._onRisingEdge(),
                 If(port.en,
@@ -172,7 +172,7 @@ class RamSingleClock(Unit):
         if self.children:
             self.delegate_to_children()
         else:
-            dt = Bits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
+            dt = HBits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
             self._mem = self._sig("ram_memory", dt, def_val=self.INIT_DATA)
 
             for p in self.port:
@@ -180,7 +180,7 @@ class RamSingleClock(Unit):
 
 
 @serializeParamsUniq
-class RamMultiClock(Unit):
+class RamMultiClock(HwModule):
     """
     RAM where each port has an independet clock.
     It can be configured to true dual port RAM etc.
@@ -190,7 +190,7 @@ class RamMultiClock(Unit):
 
     .. hwt-autodoc::
     """
-    PORT_CLS = BramPort
+    PORT_CLS = HwIOBramPort
 
     def _config(self):
         RamSingleClock._config(self)
@@ -204,7 +204,7 @@ class RamMultiClock(Unit):
         if self.children:
             self.delegate_to_children()
         else:
-            dt = Bits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
+            dt = HBits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
             self._mem = self._sig("ram_memory", dt, self.INIT_DATA)
 
             for p in self.port:
@@ -212,9 +212,10 @@ class RamMultiClock(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = RamSingleClock()
-    u.HAS_BE = True
-    u.ADDR_WIDTH = 10
-    u.DATA_WIDTH = 17*8
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = RamSingleClock()
+    m.HAS_BE = True
+    m.ADDR_WIDTH = 10
+    m.DATA_WIDTH = 17 * 8
+    print(to_rtl_str(m))

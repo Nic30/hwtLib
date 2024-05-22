@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Switch
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import propagateClkRstn
-from hwt.synthesizer.param import Param
+from hwt.code_utils import rename_signal
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.utils import propagateClkRstn
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode
@@ -17,7 +18,6 @@ from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descri
 from hwtLib.peripheral.usb.usb2.device_common import Usb2DeviceCommon
 from hwtLib.peripheral.usb.usb2.device_ep_buffers import UsbDeviceEpBuffers
 from hwtLib.types.ctypes import uint8_t
-from hwt.code_utils import rename_signal
 
 
 class Usb2CdcVcp(Usb2DeviceCommon):
@@ -38,28 +38,28 @@ class Usb2CdcVcp(Usb2DeviceCommon):
         self.DESCRIPTORS: UsbDescriptorBundle = get_default_usb_cdc_vcp_descriptors(
             productStr=self.__class__.__name__,
             bMaxPacketSize=512)
-        self.RX_AGGREGATION_TIMEOUT = Param(512)
+        self.RX_AGGREGATION_TIMEOUT = HwParam(512)
 
     def _declr(self):
         Usb2DeviceCommon._declr(self)
-        self.rx:Handshaked = Handshaked()._m()
-        self.tx = Handshaked()
+        self.rx:HwIODataRdVld = HwIODataRdVld()._m()
+        self.tx = HwIODataRdVld()
         for i in [self.rx, self.tx]:
             i.DATA_WIDTH = 8
 
     def generat_descriptor_rom(self, descriptors: UsbDescriptorBundle, rst):
         _descriptor_rom = descriptors.compile_rom()
-        line_coding = descriptors.HValue_to_byte_list(make_usb_line_coding_default())
+        line_coding = descriptors.HConst_to_byte_list(make_usb_line_coding_default())
         descriptors.ROM_CDC_LINE_CODING_ADDR = len(descriptors)
         descriptors.ROM_CDC_LINE_CODING_SIZE = len(line_coding)
         _descriptor_rom.extend(line_coding)
-        descriptor_rom = self._sig("descriptor_rom", Bits(8)[len(_descriptor_rom)], def_val=_descriptor_rom)
+        descriptor_rom = self._sig("descriptor_rom", HBits(8)[len(_descriptor_rom)], def_val=_descriptor_rom)
         # a register for descriptor reader
         descr_addr = self._reg("descr_addr", uint8_t, rst=rst)
         descr_d = descriptor_rom[descr_addr]
         return descr_addr, descr_d
 
-    def decode_setup_request_class(self, setup:StructIntf, ep0_stall: RtlSignal, usb_addr_next: RtlSignal,
+    def decode_setup_request_class(self, setup:HwIOStruct, ep0_stall: RtlSignal, usb_addr_next: RtlSignal,
                             descriptors: UsbDescriptorBundle,
                             req_bDescriptorType: RtlSignal, req_bDescriptorIndex: RtlSignal, dev_configured: RtlSignal,
                             descr_addr: RtlSignal, ep0_trans_len: RtlSignal):
@@ -116,6 +116,7 @@ class Usb2CdcVcp(Usb2DeviceCommon):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Usb2CdcVcp()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = Usb2CdcVcp()
+    print(to_rtl_str(m))

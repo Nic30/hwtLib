@@ -1,13 +1,13 @@
-from hwt.interfaces.std import VldSynced, Signal
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
-from hwtLib.amba.axis import AxiStream
+from hwt.hwIOs.std import HwIODataVld, HwIOSignal
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
+from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.peripheral.usb.constants import usb_endp_t
 from hwtLib.peripheral.usb.descriptors.std import USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE
 from ipCorePackager.constants import DIRECTION
 
 
-class UsbEndpointInterface(Interface):
+class UsbEndpointInterface(HwIO):
     """
     An interface to transfer data between the USB core and endpont memory/usb function
 
@@ -32,27 +32,27 @@ class UsbEndpointInterface(Interface):
     USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE
 
     def _config(self):
-        self.HAS_RX = Param(True)
-        self.HAS_TX = Param(True)
-        self.DATA_WIDTH = Param(8)
+        self.HAS_RX = HwParam(True)
+        self.HAS_TX = HwParam(True)
+        self.DATA_WIDTH = HwParam(8)
 
     def _declr(self):
-        self.endp = VldSynced()
+        self.endp = HwIODataVld()
         self.endp.DATA_WIDTH = usb_endp_t.bit_length()
 
         if self.HAS_RX:
-            self.rx_stall = Signal(masterDir=DIRECTION.IN)
-            rx = AxiStream()
+            self.rx_stall = HwIOSignal(masterDir=DIRECTION.IN)
+            rx = Axi4Stream()
             rx.DATA_WIDTH = self.DATA_WIDTH
             rx.USE_KEEP = True
             rx.USER_WIDTH = 1
             self.rx = rx
 
         if self.HAS_TX:
-            self.tx_stall = Signal(masterDir=DIRECTION.IN)
-            tx = self.tx = AxiStream(masterDir=DIRECTION.IN)
+            self.tx_stall = HwIOSignal(masterDir=DIRECTION.IN)
+            tx = self.tx = Axi4Stream(masterDir=DIRECTION.IN)
             tx.DATA_WIDTH = self.DATA_WIDTH
             tx.USE_KEEP = True
 
-            self.tx_success = VldSynced()
+            self.tx_success = HwIODataVld()
             self.tx_success.DATA_WIDTH = 1

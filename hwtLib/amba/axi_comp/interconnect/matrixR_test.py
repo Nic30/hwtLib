@@ -9,7 +9,7 @@ from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC
 from hwtLib.amba.axi_comp.interconnect.matrixR import AxiInterconnectMatrixR
-from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtSimApi.constants import CLK_PERIOD
 
 
@@ -18,44 +18,44 @@ class AxiInterconnectMatrixR_1to1TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = ({0},)
-        u.SLAVES = (
+        cls.dut = dut = AxiInterconnectMatrixR(Axi4)
+        dut.MASTERS = ({0},)
+        dut.SLAVES = (
             (0x0000, 0x1000),
         )
-        u.ADDR_WIDTH = log2ceil(0x1000 - 1)
-        cls.compileSim(u)
+        dut.ADDR_WIDTH = log2ceil(0x1000 - 1)
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
-        u = self.u
-        self.memory = [AxiSimRam(axi=s) for s in u.m]
+        dut = self.dut
+        self.memory = [Axi4SimRam(axi=s) for s in dut.m]
 
     def randomize_all(self):
-        u = self.u
-        for i in chain(u.s, u.m):
+        dut = self.dut
+        for i in chain(dut.s, dut.m):
             self.randomize(i)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.randomize_all()
 
         self.runSim(10 * CLK_PERIOD)
-        for i in chain(u.s, u.m):
+        for i in chain(dut.s, dut.m):
             self.assertEmpty(i.ar._ag.data)
             self.assertEmpty(i.r._ag.data)
 
-    def rand_read(self, master_i, slave_i, magic):
+    def rand_read(self, master_i:int, slave_i:int, magic:int):
         """
         :ivar ~.magic: random value used to distinguis the data
         """
         m = self.memory[slave_i]
-        slave_addr_offset = self.u.SLAVES[slave_i][0]
-        ar = self.u.s[master_i].ar
+        slave_addr_offset = self.dut.SLAVES[slave_i][0]
+        ar = self.dut.s[master_i].ar
 
         word_cnt = int(self._rand.random() * self.LEN_MAX) + 1
         in_slave_addr = m.malloc(
-            word_cnt * self.u.s[master_i].DATA_WIDTH // 8)
+            word_cnt * self.dut.s[master_i].DATA_WIDTH // 8)
         indx = in_slave_addr // m.cellSize
         data = []
 
@@ -75,18 +75,18 @@ class AxiInterconnectMatrixR_1to1TC(SimTestCase):
         r_transactions = AxiInterconnectMatrixCrossbar_1to1TC.data_transaction(self, id_, data)
         return r_transactions
 
-    def test_read(self, transaction_cnt=2, magic=99):
-        u = self.u
+    def test_read(self, transaction_cnt:int=2, magic:int=99):
+        dut = self.dut
         self.randomize_all()
 
         # allocate memory, prepare axi.ar transactions and store axi.r transactions
         # for later check
         master_r_data = []
-        for master_i, accesible_slaves in enumerate(u.MASTERS):
+        for master_i, accesible_slaves in enumerate(dut.MASTERS):
             m_r_data = []
             master_r_data.append(m_r_data)
 
-            for slave_i, _ in enumerate(u.SLAVES):
+            for slave_i, _ in enumerate(dut.SLAVES):
                 if slave_i not in accesible_slaves:
                     continue
 
@@ -96,16 +96,16 @@ class AxiInterconnectMatrixR_1to1TC(SimTestCase):
                     m_r_data.extend(data)
 
         max_trans_duration = max(len(m.ar._ag.data)
-                                 for m in u.s) + max(len(d) for d in master_r_data)
+                                 for m in dut.s) + max(len(d) for d in master_r_data)
         self.runSim(4 * max_trans_duration * transaction_cnt * CLK_PERIOD)
 
-        # for m_i, (m, m_r_data) in enumerate(zip(u.saster, master_r_data)):
+        # for m_i, (m, m_r_data) in enumerate(zip(dut.saster, master_r_data)):
         #    print(len(m.r._ag.data), len(m_r_data))
         #    for _m, _m_ref in zip(m.r._ag.data, m_r_data):
         #        print(valuesToInts(_m), _m_ref)
         #    print("#############################")
 
-        for m_i, (m, m_r_data) in enumerate(zip(u.s, master_r_data)):
+        for m_i, (m, m_r_data) in enumerate(zip(dut.s, master_r_data)):
             self.assertValSequenceEqual(
                 m.r._ag.data, m_r_data, f"master:{m_i:d}")
 
@@ -114,49 +114,49 @@ class AxiInterconnectMatrixR_1to3TC(AxiInterconnectMatrixR_1to1TC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = ({0, 1, 2},)
-        u.SLAVES = (
+        cls.dut = dut = AxiInterconnectMatrixR(Axi4)
+        dut.MASTERS = ({0, 1, 2},)
+        dut.SLAVES = (
             (0x0000, 0x1000),
             (0x1000, 0x1000),
             (0x2000, 0x1000),
         )
-        u.ADDR_WIDTH = log2ceil(0x4000 - 1)
-        cls.compileSim(u)
+        dut.ADDR_WIDTH = log2ceil(0x4000 - 1)
+        cls.compileSim(dut)
 
 
 class AxiInterconnectMatrixR_3to1TC(AxiInterconnectMatrixR_1to1TC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = ({0}, {0}, {0})
-        u.SLAVES = (
+        cls.dut = dut = AxiInterconnectMatrixR(Axi4)
+        dut.MASTERS = ({0}, {0}, {0})
+        dut.SLAVES = (
             (0x0000, 0x1000),
         )
-        u.ADDR_WIDTH = log2ceil(0x2000 - 1)
-        cls.compileSim(u)
+        dut.ADDR_WIDTH = log2ceil(0x2000 - 1)
+        cls.compileSim(dut)
 
 
 class AxiInterconnectMatrixR_3to3TC(AxiInterconnectMatrixR_1to1TC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = ({0, 1}, {0, 1})
-        u.SLAVES = (
+        cls.dut = dut = AxiInterconnectMatrixR(Axi4)
+        dut.MASTERS = ({0, 1}, {0, 1})
+        dut.SLAVES = (
             (0x0000, 0x1000),
             (0x1000, 0x1000),
         )
 
-        # u.MASTERS = ({0, 1, 2}, {0, 1, 2}, {0, 1, 2})
-        # u.SLAVES = (
+        # dut.MASTERS = ({0, 1, 2}, {0, 1, 2}, {0, 1, 2})
+        # dut.SLAVES = (
         #    (0x0000, 0x1000),
         #    (0x1000, 0x1000),
         #    (0x2000, 0x1000),
         # )
-        u.ADDR_WIDTH = log2ceil(0x4000 - 1)
-        cls.compileSim(u)
+        dut.ADDR_WIDTH = log2ceil(0x4000 - 1)
+        cls.compileSim(dut)
 
 
 AxiInterconnectMatrixR_TCs = [

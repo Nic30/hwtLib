@@ -3,20 +3,20 @@
 
 from hwt.code import If, Switch, Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import Handshaked, HandshakeSync, VectSignal
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class TwoOperandsHsAgent(HandshakedAgent):
+class TwoOperandsHsAgent(HwIODataRdVldAgent):
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         return i.a.read(), i.b.read()
 
     def set_data(self, data):
@@ -25,23 +25,23 @@ class TwoOperandsHsAgent(HandshakedAgent):
             b = None
         else:
             a, b = data
-        i = self.intf
+        i = self.hwIO
         i.a.write(a)
         i.b.write(b)
 
 
-class TwoOperandsHs(Handshaked):
+class TwoOperandsHs(HwIODataRdVld):
 
     def _declr(self):
-        self.a = VectSignal(self.DATA_WIDTH)
-        self.b = VectSignal(self.DATA_WIDTH)
-        HandshakeSync._declr(self)
+        self.a = HwIOVectSignal(self.DATA_WIDTH)
+        self.b = HwIOVectSignal(self.DATA_WIDTH)
+        HwIORdVldSync._declr(self)
 
     def _initSimAgent(self, sim:HdlSimulator):
         self._ag = TwoOperandsHsAgent(sim, self)
 
 
-class MultiplierBooth(Unit):
+class MultiplierBooth(HwModule):
     """
     An implementation of Booth's multiplication algorithm
 
@@ -58,8 +58,8 @@ class MultiplierBooth(Unit):
     """
 
     def _config(self) -> None:
-        self.DATA_WIDTH = Param(4)
-        self.RESULT_WIDTH = Param(None)
+        self.DATA_WIDTH = HwParam(4)
+        self.RESULT_WIDTH = HwParam(None)
 
     def _declr(self):
         if self.RESULT_WIDTH is None:
@@ -67,12 +67,12 @@ class MultiplierBooth(Unit):
         addClkRstn(self)
         self.dataIn = TwoOperandsHs()
         self.dataIn.DATA_WIDTH = self.DATA_WIDTH
-        self.dataOut = Handshaked()._m()
+        self.dataOut = HwIODataRdVld()._m()
         self.dataOut.DATA_WIDTH = self.RESULT_WIDTH
 
     def _impl(self) -> None:
         start = self._sig("start")
-        part_res_t = Bits(self.DATA_WIDTH)
+        part_res_t = HBits(self.DATA_WIDTH)
         # High-order n bits of product
         a = self._reg("a", part_res_t)
         # multiplicand
@@ -87,7 +87,7 @@ class MultiplierBooth(Unit):
 
         counter = self._reg(
             "counter",
-            Bits(log2ceil(self.DATA_WIDTH + 1), signed=False),
+            HBits(log2ceil(self.DATA_WIDTH + 1), signed=False),
             def_val=0)
         done = counter._eq(0)
         waitinOnConsumer = self._reg("waitinOnConsumer", def_val=0)
@@ -132,6 +132,8 @@ class MultiplierBooth(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = MultiplierBooth()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = MultiplierBooth()
+    print(to_rtl_str(m))
+

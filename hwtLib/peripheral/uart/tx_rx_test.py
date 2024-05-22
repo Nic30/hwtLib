@@ -1,30 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Handshaked, VldSynced
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld, HwIODataVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import valToInt
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.simulator.utils import Bits3valToInt
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.peripheral.uart.rx import UartRx
 from hwtLib.peripheral.uart.tx import UartTx
 from hwtSimApi.utils import freq_to_period
 
 
-class TestUnit_uart(Unit):
+class TestHwModule_uart(HwModule):
 
     def _config(self):
-        self.DATA_WIDTH = Param(8)
-        self.FREQ = Param(115200 * 16)
-        self.BAUD = Param(115200)
-        self.OVERSAMPLING = Param(16)
+        self.DATA_WIDTH = HwParam(8)
+        self.FREQ = HwParam(115200 * 16)
+        self.BAUD = HwParam(115200)
+        self.OVERSAMPLING = HwParam(16)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.din = Handshaked()
-            self.dout = VldSynced()._m()
+        with self._hwParamsShared():
+            self.din = HwIODataRdVld()
+            self.dout = HwIODataVld()._m()
 
             self.tx = UartTx()
             self.rx = UartRx()
@@ -40,19 +40,19 @@ class UartTxRxTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = TestUnit_uart()
-        u.BAUD = 115200
-        u.FREQ = 115200 * 16
-        u.OVERSAMPLING = 16
-        cls.CLK_PERIOD = int(freq_to_period(u.FREQ))
-        cls.compileSim(u)
+        dut = cls.dut = TestHwModule_uart()
+        dut.BAUD = 115200
+        dut.FREQ = 115200 * 16
+        dut.OVERSAMPLING = 16
+        cls.CLK_PERIOD = int(freq_to_period(dut.FREQ))
+        cls.compileSim(dut)
 
     def getStr(self):
-        return "".join([chr(valToInt(d)) for d in self.u.dout._ag.data])
+        return "".join([chr(Bits3valToInt(d)) for d in self.dut.dout._ag.data])
 
     def sendStr(self, string):
         for s in string:
-            self.u.din._ag.data.append(ord(s))
+            self.dut.din._ag.data.append(ord(s))
 
     def test_nop(self):
         self.runSim(20 * self.CLK_PERIOD)

@@ -13,75 +13,75 @@ class ArrayItemGetterTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = ArrayItemGetter()
-        u.ID = 3
-        u.ITEMS = 32
-        u.DATA_WIDTH = 64
-        u.ITEM_WIDTH = 64
-        cls.compileSim(u)
+        dut = cls.dut = ArrayItemGetter()
+        dut.ID = 3
+        dut.ITEMS = 32
+        dut.DATA_WIDTH = 64
+        dut.ITEM_WIDTH = 64
+        cls.compileSim(dut)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.runSim(20 * CLK_PERIOD)
 
-        self.assertEqual(len(u.rDatapump.req._ag.data), 0)
-        self.assertEqual(len(u.item._ag.data), 0)
+        self.assertEqual(len(dut.rDatapump.req._ag.data), 0)
+        self.assertEqual(len(dut.item._ag.data), 0)
 
     def test_singleGet(self):
-        u = self.u
+        dut = self.dut
         t = 5
-        BASE = 8 * (u.DATA_WIDTH // 8)
+        BASE = 8 * (dut.DATA_WIDTH // 8)
         MAGIC = 99
-        INDEX = u.ITEMS - 1
+        INDEX = dut.ITEMS - 1
 
-        u.base._ag.data.append(BASE)
-        u.index._ag.data.append(INDEX)
+        dut.base._ag.data.append(BASE)
+        dut.index._ag.data.append(INDEX)
 
-        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
+        m = AxiDpSimRam(dut.DATA_WIDTH, dut.clk, rDatapumpHwIO=dut.rDatapump)
         m.data[BASE // 8 + INDEX] = MAGIC
 
         self.runSim(t * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.item._ag.data, [MAGIC, ])
+        self.assertValSequenceEqual(dut.item._ag.data, [MAGIC, ])
 
 
 class ArrayItemGetter2in1WordTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = ArrayItemGetter()
-        u.ID = 3
-        u.ITEMS = 32
-        u.DATA_WIDTH = 64
-        u.ITEM_WIDTH = 32
-        cls.compileSim(u)
+        dut = cls.dut = ArrayItemGetter()
+        dut.ID = 3
+        dut.ITEMS = 32
+        dut.DATA_WIDTH = 64
+        dut.ITEM_WIDTH = 32
+        cls.compileSim(dut)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.runSim(20 * CLK_PERIOD)
 
-        self.assertEqual(len(u.rDatapump.req._ag.data), 0)
-        self.assertEqual(len(u.item._ag.data), 0)
+        self.assertEqual(len(dut.rDatapump.req._ag.data), 0)
+        self.assertEqual(len(dut.item._ag.data), 0)
 
     def test_get(self):
-        u = self.u
+        dut = self.dut
         MAGIC = 99
-        N = u.ITEMS
+        N = dut.ITEMS
         t = 10 + N
 
-        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
-        base = m.calloc(u.ITEMS,
-                        u.ITEM_WIDTH // 8,
+        m = AxiDpSimRam(dut.DATA_WIDTH, dut.clk, rDatapumpHwIO=dut.rDatapump)
+        base = m.calloc(dut.ITEMS,
+                        dut.ITEM_WIDTH // 8,
                         initValues=[
                                       MAGIC + i
                                       for i in range(N)
                                       ])
-        u.base._ag.data.append(base)
-        u.index._ag.data.extend([i for i in range(N)])
+        dut.base._ag.data.append(base)
+        dut.index._ag.data.extend([i for i in range(N)])
 
         self.runSim(t * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.item._ag.data,
+        self.assertValSequenceEqual(dut.item._ag.data,
                                     [
                                       MAGIC + i
                                       for i in range(N)

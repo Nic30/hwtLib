@@ -1,12 +1,12 @@
 from typing import List
 
-from hwt.hdl.constants import DIRECTION, INTF_DIRECTION
-from hwt.interfaces.std import VectSignal
+from hwt.constants import DIRECTION, INTF_DIRECTION
+from hwt.hwIOs.std import HwIOVectSignal
 from hwt.serializer.ip_packager import IpPackager
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.synthesizer.param import Param
-from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
+from hwt.hwIO import HwIO
+from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
+from hwt.hwParam import HwParam
+from hwtLib.amba.axi_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from ipCorePackager.component import Component
 from ipCorePackager.intfIpMeta import IntfIpMeta
@@ -20,10 +20,10 @@ class Axi3Lite_addr(Axi_hs):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.ADDR_WIDTH = Param(32)
+        self.ADDR_WIDTH = HwParam(32)
 
     def _declr(self):
-        self.addr = VectSignal(self.ADDR_WIDTH)
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         Axi_hs._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
@@ -36,10 +36,10 @@ class Axi3Lite_addrAgent(BaseAxiAgent):
     """
 
     def get_data(self):
-        return self.intf.addr.read()
+        return self.hwIO.addr.read()
 
     def set_data(self, data):
-        self.intf.addr.write(data)
+        self.hwIO.addr.write(data)
 
     def create_addr_req(self, addr, prot=None):
         assert prot is None, "Axi3Lite_addr does not have a prot signal"
@@ -52,11 +52,11 @@ class Axi3Lite_r(Axi_hs):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.DATA_WIDTH = Param(64)
+        self.DATA_WIDTH = HwParam(64)
 
     def _declr(self):
-        self.data = VectSignal(self.DATA_WIDTH)
-        self.resp = VectSignal(2)
+        self.data = HwIOVectSignal(self.DATA_WIDTH)
+        self.resp = HwIOVectSignal(2)
         Axi_hs._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
@@ -69,19 +69,19 @@ class AxiLite_rAgent(BaseAxiAgent):
     """
 
     def get_data(self):
-        intf = self.intf
+        hwIO = self.hwIO
 
-        return (intf.data.read(), intf.resp.read())
+        return (hwIO.data.read(), hwIO.resp.read())
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
         if data is None:
             data = [None for _ in range(2)]
 
         data, resp = data
 
-        intf.data.write(data)
-        intf.resp.write(resp)
+        hwIO.data.write(data)
+        hwIO.resp.write(resp)
 
 
 #################################################################
@@ -90,11 +90,11 @@ class Axi3Lite_w(Axi_hs):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.DATA_WIDTH = Param(64)
+        self.DATA_WIDTH = HwParam(64)
 
     def _declr(self):
-        self.data = VectSignal(self.DATA_WIDTH)
-        self.strb = VectSignal(self.DATA_WIDTH // 8)
+        self.data = HwIOVectSignal(self.DATA_WIDTH)
+        self.strb = HwIOVectSignal(self.DATA_WIDTH // 8)
         Axi_hs._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
@@ -107,18 +107,18 @@ class Axi3Lite_wAgent(BaseAxiAgent):
     """
 
     def get_data(self):
-        intf = self.intf
-        return (intf.data.read(), intf.strb.read())
+        hwIO = self.hwIO
+        return (hwIO.data.read(), hwIO.strb.read())
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
         if data is None:
-            intf.data.write(None)
-            intf.strb.write(None)
+            hwIO.data.write(None)
+            hwIO.strb.write(None)
         else:
             data, strb = data
-            intf.data.write(data)
-            intf.strb.write(strb)
+            hwIO.data.write(data)
+            hwIO.strb.write(strb)
 
 
 #################################################################
@@ -127,7 +127,7 @@ class Axi3Lite_b(Axi_hs):
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.resp = VectSignal(2)
+        self.resp = HwIOVectSignal(2)
         Axi_hs._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
@@ -140,14 +140,14 @@ class Axi3Lite_bAgent(BaseAxiAgent):
     """
 
     def get_data(self):
-        return self.intf.resp.read()
+        return self.hwIO.resp.read()
 
     def set_data(self, data):
-        self.intf.resp.write(data)
+        self.hwIO.resp.write(data)
 
 
 #################################################################
-class Axi3Lite(Interface):
+class Axi3Lite(HwIO):
     """
     AMBA AXI3-lite interface
 
@@ -163,13 +163,13 @@ class Axi3Lite(Interface):
     LEN_WIDTH = 0
 
     def _config(self):
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(64)
         self.HAS_R = True
         self.HAS_W = True
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             if self.HAS_R:
                 self.ar = self.AR_CLS()
                 self.r = self.R_CLS(masterDir=DIRECTION.IN)
@@ -207,23 +207,23 @@ class Axi3LiteAgent(AgentBase):
     data for each agent is stored in agent for given channel (ar, aw, r, ... property)
     """
 
-    def __init__(self, sim: HdlSimulator, intf):
+    def __init__(self, sim: HdlSimulator, hwIO):
         self.__enable = True
-        self.intf = intf
+        self.hwIO = hwIO
 
-        def ag(intf):
-            intf._initSimAgent(sim)
-            agent = intf._ag
+        def ag(hwIO):
+            hwIO._initSimAgent(sim)
+            agent = hwIO._ag
             return agent
 
-        if intf.HAS_R:
-            self.ar = ag(intf.ar)
-            self.r = ag(intf.r)
+        if hwIO.HAS_R:
+            self.ar = ag(hwIO.ar)
+            self.r = ag(hwIO.r)
 
-        if intf.HAS_W:
-            self.aw = ag(intf.aw)
-            self.w = ag(intf.w)
-            self.b = ag(intf.b)
+        if hwIO.HAS_W:
+            self.aw = ag(hwIO.aw)
+            self.w = ag(hwIO.w)
+            self.b = ag(hwIO.b)
 
     def getEnable(self):
         return self.__enable
@@ -231,36 +231,36 @@ class Axi3LiteAgent(AgentBase):
     def setEnable(self, en):
         if self.__enable != en:
             self.__enable = en
-            if self.intf.HAS_R:
+            if self.hwIO.HAS_R:
                 self.ar.setEnable(en)
                 self.r.setEnable(en)
-            if self.intf.HAS_W:
+            if self.hwIO.HAS_W:
                 self.aw.setEnable(en)
                 self.w.setEnable(en)
                 self.b.setEnable(en)
 
     def getDrivers(self):
-        if self.intf.HAS_W:
+        if self.hwIO.HAS_W:
             yield from self.aw.getDrivers()
             yield from self.w.getDrivers()
             yield from self.b.getMonitors()
 
-        if self.intf.HAS_R:
+        if self.hwIO.HAS_R:
             yield from self.ar.getDrivers()
             yield from self.r.getMonitors()
 
     def getMonitors(self):
-        if self.intf.HAS_W:
+        if self.hwIO.HAS_W:
             yield from self.aw.getMonitors()
             yield from self.w.getMonitors()
             yield from self.b.getDrivers()
 
-        if self.intf.HAS_R:
+        if self.hwIO.HAS_R:
             yield from self.ar.getMonitors()
             yield from self.r.getDrivers()
 
     def create_addr_req(self, *args, **kwargs):
-        if self.intf.HAS_R:
+        if self.hwIO.HAS_R:
             ch = self.ar
         else:
             ch = self.aw
@@ -302,7 +302,7 @@ class IP_Axi3Lite(IntfIpMeta):
             return d.lower()
 
     def asQuartusTcl(self, buff: List[str], version: str, component: Component,
-                     packager: IpPackager, thisIf: Interface):
+                     packager: IpPackager, thisIf: HwIO):
         IntfIpMeta.asQuartusTcl(self, buff, version,
                                 component, packager, thisIf)
         name = getSignalName(thisIf)

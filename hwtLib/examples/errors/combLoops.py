@@ -5,13 +5,13 @@ import unittest
 
 from hwt.code import If
 from hwt.hdl.statements.statement import HwtSyntaxError
-from hwt.interfaces.std import VectSignal, HandshakeSync, Signal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIOVectSignal, HwIORdVldSync, HwIOSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.serializer.combLoopAnalyzer.tarjan import StronglyConnectedComponentSearchTarjan
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import synthesised, to_rtl_str
+from hwt.hObjList import HObjList
+from hwt.hwModule import HwModule
+from hwt.synth import synthesised, to_rtl_str
 from hwtLib.handshaked.reg import HandshakedReg
 
 
@@ -19,14 +19,14 @@ def freeze_set_of_sets(obj):
     return frozenset(map(frozenset, obj))
 
 
-class CntrCombLoop(Unit):
+class CntrCombLoop(HwModule):
     """
     A direct combinational loop which is detected  immediately
     """
 
     def _declr(self):
-        self.a = Signal()
-        self.c = VectSignal(8, signed=False)._m()
+        self.a = HwIOSignal()
+        self.c = HwIOVectSignal(8, signed=False)._m()
 
     def _impl(self) -> None:
         b = self._sig("b", self.c._dtype, def_val=0)
@@ -36,12 +36,12 @@ class CntrCombLoop(Unit):
         self.c(b)
 
 
-class HandshakeWire0(Unit):
+class HandshakeWire0(HwModule):
 
     def _declr(self):
         addClkRstn(self)
-        self.dataIn = HandshakeSync()
-        self.dataOut = HandshakeSync()._m()
+        self.dataIn = HwIORdVldSync()
+        self.dataOut = HwIORdVldSync()._m()
 
     def _impl(self) -> None:
         self.dataOut(self.dataIn)
@@ -78,7 +78,7 @@ class WrongHandshakeCheckExample1(HandshakeWire0):
         dataOut.vld(dataIn.vld & dataOut.rd)
 
 
-class HandshakeRegLoop(Unit):
+class HandshakeRegLoop(HwModule):
 
     def __init__(self, loop_connector_cls):
         self.loop_connector_cls = loop_connector_cls
@@ -86,15 +86,15 @@ class HandshakeRegLoop(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.rd, self.vld = Signal()._m(), Signal()._m()
+        self.rd, self.vld = HwIOSignal()._m(), HwIOSignal()._m()
 
     def _impl(self) -> None:
-        r = HandshakedReg(HandshakeSync)
+        r = HandshakedReg(HwIORdVldSync)
         # r.DELAY = 1
         # r.LATENCY = 2 # to break ready signal chain
         self.reg = r
         if self.loop_connector_cls == HandshakedReg:
-            c = self.loop_connector_cls(HandshakeSync)
+            c = self.loop_connector_cls(HwIORdVldSync)
         else:
             c = self.loop_connector_cls()
 
@@ -113,7 +113,7 @@ class HandshakeRegLoop(Unit):
 class DoubleHandshakeReg(HandshakeWire0):
 
     def _impl(self) -> None:
-        regs = self.regs = HObjList(HandshakedReg(HandshakeSync) for _ in range(2))
+        regs = self.regs = HObjList(HandshakedReg(HwIORdVldSync) for _ in range(2))
         regs[0].dataIn(self.dataIn)
         regs[1].dataIn(regs[0].dataOut)
         self.dataOut(regs[1].dataOut)
@@ -131,32 +131,32 @@ class CombLoopAnalysisTC(unittest.TestCase):
         self.assertEqual(res, freeze_set_of_sets([[9], [8, 7, 6], [5], [2, 1], [4, 3]]))
 
     def test_CntrCombLoop(self):
-        u = CntrCombLoop()
+        m = CntrCombLoop()
         with self.assertRaises(HwtSyntaxError):
-            to_rtl_str(u)
+            to_rtl_str(m)
 
-    def get_comb_loops(self, u: Unit):
+    def get_comb_loops(self, m: HwModule):
         s = CombLoopAnalyzer()
-        synthesised(u)
-        s.visit_Unit(u)
+        synthesised(m)
+        s.visit_HwModule(m)
         return freeze_set_of_sets(
             set(str(member.resolve()[1:]) for member in loop)
             for loop in s.report()
         )
 
     def test_HandshakeWire0(self):
-        u = HandshakeWire0()
-        comb_loops = self.get_comb_loops(u)
+        m = HandshakeWire0()
+        comb_loops = self.get_comb_loops(m)
         self.assertEqual(comb_loops, frozenset())
 
     def test_HandshakeWire1(self):
-        u = HandshakeWire1()
-        comb_loops = self.get_comb_loops(u)
+        m = HandshakeWire1()
+        comb_loops = self.get_comb_loops(m)
         self.assertEqual(comb_loops, frozenset())
 
     def test_HandshakeRegLoop_HandshakeWire0(self):
-        u = HandshakeRegLoop(HandshakeWire0)
-        comb_loops = self.get_comb_loops(u)
+        m = HandshakeRegLoop(HandshakeWire0)
+        comb_loops = self.get_comb_loops(m)
         self.assertEqual(comb_loops,
             freeze_set_of_sets([
                [
@@ -172,18 +172,18 @@ class CombLoopAnalysisTC(unittest.TestCase):
             ]))
 
     def test_HandshakeRegLoop_HandshakeWire1(self):
-        u = HandshakeRegLoop(HandshakeWire1)
-        comb_loops = self.get_comb_loops(u)
+        m = HandshakeRegLoop(HandshakeWire1)
+        comb_loops = self.get_comb_loops(m)
         self.assertEqual(comb_loops, frozenset())
 
     def test_shared_component_instance_no_comb_loops(self):
-        u = DoubleHandshakeReg()
-        comb_loops = self.get_comb_loops(u)
+        m = DoubleHandshakeReg()
+        comb_loops = self.get_comb_loops(m)
         self.assertEqual(comb_loops, frozenset())
 
     def test_shared_component_instance_with_comb_loops(self):
-        u = HandshakeRegLoop(HandshakedReg)
-        comb_loops = self.get_comb_loops(u)
+        m = HandshakeRegLoop(HandshakedReg)
+        comb_loops = self.get_comb_loops(m)
         ref = [
                [
                     'sig_con_dataIn_rd',
@@ -210,13 +210,13 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    # u = HandshakeRegLoop(HandshakeCheckExample)
-    # u = HandshakeRegLoop(HandshakeWire1)
-    # u = HandshakeCheckExample()
-    # print(to_rtl_str(u))
+    # m = HandshakeRegLoop(HandshakeCheckExample)
+    # m = HandshakeRegLoop(HandshakeWire1)
+    # m = HandshakeCheckExample()
+    # print(to_rtl_str(m))
     # s = CombLoopAnalyzer()
-    # synthesised(u)
-    # s.visit_Unit(u)
+    # synthesised(m)
+    # s.visit_HwModule(u)
 
     # for k, v in s.comb_connection_matrix.items():
     #    print(to_set_of_names(k), "\t", list(to_set_of_names(_v) for _v in v))

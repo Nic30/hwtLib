@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.handshaked.splitSelect import HsSplitSelect
 
 
-class AxiSSpliSelect(AxiSCompBase, HsSplitSelect):
+class Axi4SSpliSelect(Axi4SCompBase, HsSplitSelect):
     """
     Send input frame to one of N output streams as specified
     by selectOneHot interface
@@ -20,6 +20,6 @@ class AxiSSpliSelect(AxiSCompBase, HsSplitSelect):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AxiSSpliSelect()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = Axi4SSpliSelect()
+    print(to_rtl_str(m))

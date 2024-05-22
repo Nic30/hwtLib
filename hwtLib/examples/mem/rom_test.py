@@ -7,7 +7,7 @@ from unittest.case import TestCase
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.utils import synthesised
+from hwt.synth import synthesised
 from hwtLib.examples.mem.rom import SimpleRom, SimpleSyncRom
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -16,42 +16,42 @@ class SimpleRomTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = SimpleRom()
-        cls.compileSim(cls.u)
+        cls.dut = SimpleRom()
+        cls.compileSim(cls.dut)
 
     def test_async_allData(self):
-        u = self.u
+        dut = self.dut
 
-        u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
+        dut.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
         self.runSim(8 * CLK_PERIOD)
 
         self.assertValSequenceEqual(
-            u.dout._ag.data, [1, 2, 3, 4, None, 4, 3, 2])
+            dut.dout._ag.data, [1, 2, 3, 4, None, 4, 3, 2])
 
 
 class SimpleSyncRomTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = SimpleSyncRom()
-        cls.compileSim(cls.u)
+        cls.dut = SimpleSyncRom()
+        cls.compileSim(cls.dut)
 
     def test_sync_allData(self):
-        u = self.u
+        dut = self.dut
 
-        u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
+        dut.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
         self.runSim(9 * CLK_PERIOD)
 
         self.assertValSequenceEqual(
-            u.dout._ag.data, [None, 1, 2, 3, 4, None, 4, 3, 2])
+            dut.dout._ag.data, [None, 1, 2, 3, 4, None, 4, 3, 2])
 
 
 class RomResourcesTC(TestCase):
 
     def test_sync_resources(self):
-        u = SimpleSyncRom()
+        m = SimpleSyncRom()
         expected = {
             ResourceRAM(8, 4,
                         0, 1, 0, 0,
@@ -59,12 +59,12 @@ class RomResourcesTC(TestCase):
         }
 
         s = ResourceAnalyzer()
-        synthesised(u)
-        s.visit_Unit(u)
+        synthesised(m)
+        s.visit_HwModule(m)
         self.assertDictEqual(s.report(), expected)
 
     def test_async_resources(self):
-        u = SimpleRom()
+        m = SimpleRom()
         expected = {
             ResourceRAM(8, 4,
                         0, 0, 0, 0,
@@ -72,8 +72,8 @@ class RomResourcesTC(TestCase):
         }
 
         s = ResourceAnalyzer()
-        synthesised(u)
-        s.visit_Unit(u)
+        synthesised(m)
+        s.visit_HwModule(m)
         r = s.report()
         self.assertDictEqual(r, expected)
 

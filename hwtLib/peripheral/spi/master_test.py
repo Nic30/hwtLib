@@ -10,49 +10,49 @@ class SpiMasterTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = SpiMaster()
-        u.SPI_FREQ_PESCALER = 8
-        cls.compileSim(u)
+        dut = cls.dut = SpiMaster()
+        dut.SPI_FREQ_PESCALER = 8
+        cls.compileSim(dut)
 
     def test_readAndWrite8bits(self):
-        u = self.u
+        dut = self.dut
 
         # slave, d, last
-        u.data._ag.data.append([0, 7, 1])
-        u.spi._ag.txData.append(11)
+        dut.data._ag.data.append([0, 7, 1])
+        dut.spi._ag.txData.append(11)
 
         self.runSim(150 * CLK_PERIOD)
         aeq = self.assertValSequenceEqual
-        aeq(u.data._ag.dinData, [11])
-        aeq(u.spi._ag.rxData, [7])
-        aeq(u.spi._ag.chipSelects, [0])
+        aeq(dut.data._ag.dinData, [11])
+        aeq(dut.spi._ag.rxData, [7])
+        aeq(dut.spi._ag.chipSelects, [0])
 
     def test_readAndWrite16bits(self):
-        u = self.u
+        dut = self.dut
 
         # slave, d, last
-        u.data._ag.data.extend(([0, 7, 0], [0, 99, 1]))
-        u.spi._ag.txData.extend([11, 48])
+        dut.data._ag.data.extend(([0, 7, 0], [0, 99, 1]))
+        dut.spi._ag.txData.extend([11, 48])
 
         self.runSim(200 * CLK_PERIOD)
         aeq = self.assertValSequenceEqual
-        aeq(u.data._ag.dinData, [11, 48])
-        aeq(u.spi._ag.rxData, [7, 99])
-        aeq(u.spi._ag.chipSelects, [0, 0])
+        aeq(dut.data._ag.dinData, [11, 48])
+        aeq(dut.spi._ag.rxData, [7, 99])
+        aeq(dut.spi._ag.chipSelects, [0, 0])
 
     def test_readAndWrite2x8bits(self):
-        u = self.u
+        dut = self.dut
 
         # slave, d, last
-        u.data._ag.data.extend(([0, 7, 1], [0, 99, 1]))
-        u.spi._ag.txData.extend([11, 48])
+        dut.data._ag.data.extend(([0, 7, 1], [0, 99, 1]))
+        dut.spi._ag.txData.extend([11, 48])
 
         self.runSim(200 * CLK_PERIOD)
 
         aeq = self.assertValSequenceEqual
-        aeq(u.data._ag.dinData, [11, 48])
-        aeq(u.spi._ag.rxData, [7, 99])
-        aeq(u.spi._ag.chipSelects, [0, 0])
+        aeq(dut.data._ag.dinData, [11, 48])
+        aeq(dut.spi._ag.rxData, [7, 99])
+        aeq(dut.spi._ag.chipSelects, [0, 0])
 
 
 if __name__ == "__main__":

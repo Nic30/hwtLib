@@ -4,8 +4,8 @@
 from copy import copy
 import unittest
 
-from hwt.hdl.constants import NOP
-from hwt.interfaces.std import Handshaked
+from hwt.constants import NOP
+from hwt.hwIOs.std import HwIODataRdVld
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mem.fifo_test import FifoTC
 
@@ -14,11 +14,11 @@ class HsFifoTC(FifoTC):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = HandshakedFifo(Handshaked)
-        u.DEPTH = cls.ITEMS
-        u.DATA_WIDTH = 64
-        u.EXPORT_SIZE = True
-        cls.compileSim(u)
+        dut = cls.dut = HandshakedFifo(HwIODataRdVld)
+        dut.DEPTH = cls.ITEMS
+        dut.DATA_WIDTH = 64
+        dut.EXPORT_SIZE = True
+        cls.compileSim(dut)
 
     def getFifoItems(self):
         m = self.rtl_simulator.model
@@ -28,8 +28,8 @@ class HsFifoTC(FifoTC):
         return items
 
     def getUnconsumedInput(self):
-        d = copy(self.u.dataIn._ag.data)
-        ad = self.u.dataIn._ag.actualData
+        d = copy(self.dut.dataIn._ag.data)
+        ad = self.dut.dataIn._ag.actualData
         if ad != NOP:
             d.appendleft(ad)
         return d

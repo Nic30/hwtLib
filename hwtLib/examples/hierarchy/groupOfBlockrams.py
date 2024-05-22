@@ -1,30 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Signal, Clk, VectSignal
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOSignal, HwIOClk, HwIOVectSignal
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.mem.ram import RamMultiClock
 
 
-class GroupOfBlockrams(Unit):
+class GroupOfBlockrams(HwModule):
     """
     .. hwt-autodoc::
     """
     def _config(self):
-        self.ADDR_WIDTH = Param(8)
-        self.DATA_WIDTH = Param(64)
+        self.ADDR_WIDTH = HwParam(8)
+        self.DATA_WIDTH = HwParam(64)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             def extData():
-                return VectSignal(self.DATA_WIDTH)
+                return HwIOVectSignal(self.DATA_WIDTH)
 
-            self.clk = Clk()
-            self.en = Signal()
-            self.we = Signal()
+            self.clk = HwIOClk()
+            self.en = HwIOSignal()
+            self.we = HwIOSignal()
 
-            self.addr = VectSignal(self.ADDR_WIDTH)
+            self.addr = HwIOVectSignal(self.ADDR_WIDTH)
             self.in_w_a = extData()
             self.in_w_b = extData()
             self.in_r_a = extData()
@@ -35,7 +35,7 @@ class GroupOfBlockrams(Unit):
             self.out_r_a = extData()._m()
             self.out_r_b = extData()._m()
 
-            with self._paramsShared():
+            with self._hwParamsShared():
                 r = self.bramR = RamMultiClock()
                 w = self.bramW = RamMultiClock()
                 r.PORT_CNT = w.PORT_CNT = 2
@@ -63,5 +63,5 @@ class GroupOfBlockrams(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(GroupOfBlockrams()))

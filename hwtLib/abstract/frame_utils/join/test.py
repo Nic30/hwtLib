@@ -1,7 +1,7 @@
 from math import inf
 import unittest
 
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils
 from hwtLib.abstract.frame_utils.join.fsm import input_B_dst_to_fsm
@@ -14,7 +14,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         word_bytes = 2
         f_len = (1, 1)
         streams = [
-            HStream(Bits(8), frame_len=f_len, start_offsets=[1]),
+            HStream(HBits(8), frame_len=f_len, start_offsets=[1]),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -36,7 +36,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
     def test_fsm0_w2_0B(self):
         word_bytes = 2
         streams = [
-            HStream(Bits(8), frame_len=(0, 1)),
+            HStream(HBits(8), frame_len=(0, 1)),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -59,7 +59,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
     def test_fsm0_0B(self):
         word_bytes = 1
         streams = [
-            HStream(Bits(8), frame_len=(0, 1)),
+            HStream(HBits(8), frame_len=(0, 1)),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -84,7 +84,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         word_bytes = 2
         f_len = (1, inf)
         streams = [
-            HStream(Bits(8), frame_len=f_len),
+            HStream(HBits(8), frame_len=f_len),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -112,7 +112,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         word_bytes = 2
         f_len = (1, inf)
         streams = [
-            HStream(Bits(8), frame_len=f_len, start_offsets=[1]),
+            HStream(HBits(8), frame_len=f_len, start_offsets=[1]),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -150,7 +150,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         word_bytes = 2
         f_len = (2, 2)
         streams = [
-            HStream(Bits(8), frame_len=f_len, start_offsets=[1]),
+            HStream(HBits(8), frame_len=f_len, start_offsets=[1]),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -174,8 +174,8 @@ class FrameJoinUtilsTC(unittest.TestCase):
     def test_fsm_2x1B_on_2B(self):
         word_bytes = 2
         streams = [
-            HStream(Bits(8 * 1), (1, 2), [0]),
-            HStream(Bits(8 * 1), (1, 2), [0]),
+            HStream(HBits(8 * 1), (1, 2), [0]),
+            HStream(HBits(8 * 1), (1, 2), [0]),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -218,8 +218,8 @@ class FrameJoinUtilsTC(unittest.TestCase):
     def test_fsm_2x0to2B_on_2B(self):
         word_bytes = 2
         streams = [
-            HStream(Bits(8 * 1), (0, 2), [0]),
-            HStream(Bits(8 * 1), (0, 2), [0]),
+            HStream(HBits(8 * 1), (0, 2), [0]),
+            HStream(HBits(8 * 1), (0, 2), [0]),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -283,8 +283,8 @@ class FrameJoinUtilsTC(unittest.TestCase):
     def test_fsm_2x1B_on_3B(self):
         word_bytes = 3
         streams = [
-            HStream(Bits(8 * 1), (1, 3), [0]),
-            HStream(Bits(8 * 1), (1, 3), [0]),
+            HStream(HBits(8 * 1), (1, 3), [0]),
+            HStream(HBits(8 * 1), (1, 3), [0]),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -347,7 +347,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
     def test_fsm_1x3B_on_2B_offset_1(self):
         word_bytes = 2
         streams = [
-            HStream(Bits(8 * 3), (1, 1), [1]),
+            HStream(HBits(8 * 3), (1, 1), [1]),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
@@ -372,7 +372,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
     def test_fsm_1x3B_on_2B_offset_0_1(self):
         word_bytes = 2
         streams = [
-            HStream(Bits(8 * 3), (1, 1), [0, 1]),
+            HStream(HBits(8 * 3), (1, 1), [0, 1]),
         ]
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)

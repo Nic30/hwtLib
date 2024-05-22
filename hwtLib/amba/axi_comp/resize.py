@@ -4,14 +4,14 @@
 from typing import Optional
 
 from hwt.code import Concat, Switch
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 
@@ -23,16 +23,16 @@ class AxiResize(BusBridge):
     .. hwt-autodoc:: _example_AxiResize
     """
 
-    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
-        self.intfCls = intfCls
+    def __init__(self, hwIOCls, hdl_name_override:Optional[str]=None):
+        self.hwIOCls = hwIOCls
         super(AxiResize, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
-        self.INTF_CLS = Param(self.intfCls)
-        self.intfCls._config(self)
-        self.OUT_DATA_WIDTH = Param(self.DATA_WIDTH)
-        self.OUT_ADDR_WIDTH = Param(self.ADDR_WIDTH)
-        self.MAX_TRANS_OVERLAP = Param(4)
+        self.HWIO_CLS = HwParam(self.hwIOCls)
+        self.hwIOCls._config(self)
+        self.OUT_DATA_WIDTH = HwParam(self.DATA_WIDTH)
+        self.OUT_ADDR_WIDTH = HwParam(self.ADDR_WIDTH)
+        self.MAX_TRANS_OVERLAP = HwParam(4)
 
     def _declr(self):
         addClkRstn(self)
@@ -41,11 +41,11 @@ class AxiResize(BusBridge):
         assert self.ALIGN_BITS_IN <= self.ADDR_WIDTH, (self.ALIGN_BITS_IN, self.ADDR_WIDTH)
         assert self.ALIGN_BITS_OUT <= self.OUT_ADDR_WIDTH, (self.ALIGN_BITS_OUT, self.OUT_ADDR_WIDTH)
 
-        with self._paramsShared():
-            self.s = self.intfCls()
+        with self._hwParamsShared():
+            self.s = self.hwIOCls()
 
-        with self._paramsShared():
-            self.m = self.intfCls()._m()
+        with self._hwParamsShared():
+            self.m = self.hwIOCls()._m()
             self.m.ADDR_WIDTH = self.OUT_ADDR_WIDTH
             self.m.DATA_WIDTH = self.OUT_DATA_WIDTH
 
@@ -55,14 +55,14 @@ class AxiResize(BusBridge):
         AL_OUT_W = self.ALIGN_BITS_OUT
         ALIG_W = AL_OUT_W - AL_IN_W
         assert ALIG_W > 0, ALIG_W
-        m_a = AxiSBuilder(self, m_a).buff().end
+        m_a = Axi4SBuilder(self, m_a).buff().end
 
-        align_fifo = HandshakedFifo(Handshaked)
+        align_fifo = HandshakedFifo(HwIODataRdVld)
         align_fifo.DATA_WIDTH = ALIG_W
         align_fifo.DEPTH = self.MAX_TRANS_OVERLAP
         setattr(self, name_prefix + "align_fifo", align_fifo)
 
-        aligned_addr = Concat(m_a.addr[:AL_OUT_W], Bits(AL_OUT_W).from_py(0))
+        aligned_addr = Concat(m_a.addr[:AL_OUT_W], HBits(AL_OUT_W).from_py(0))
         align_fifo.dataIn.data(m_a.addr[AL_OUT_W:AL_IN_W])
 
         s_a(m_a, exclude={m_a.addr, m_a.valid, m_a.ready})
@@ -84,10 +84,10 @@ class AxiResize(BusBridge):
         else:
             data = []
             if dst_h < dst_w:
-                data.append(Bits(dst_w - dst_h).from_py(0))
+                data.append(HBits(dst_w - dst_h).from_py(0))
             data.append(src[src_h:src_l])
             if dst_l > 0:
-                data.append(Bits(dst_l).from_py(0))
+                data.append(HBits(dst_l).from_py(0))
             return dst(Concat(*data))
 
     def connect_shifted(self, src_ch, dst_ch, i):
@@ -201,13 +201,13 @@ class AxiResize(BusBridge):
 
 
 def _example_AxiResize():
-    u = AxiResize(Axi4Lite)
-    u.DATA_WIDTH = 32
-    u.OUT_DATA_WIDTH = 512
-    return u
+    m = AxiResize(Axi4Lite)
+    m.DATA_WIDTH = 32
+    m.OUT_DATA_WIDTH = 512
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiResize()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_AxiResize()
+    print(to_rtl_str(m))

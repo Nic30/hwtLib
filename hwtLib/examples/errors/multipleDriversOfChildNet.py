@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.unit import Unit
-from hwt.interfaces.std import Handshaked
+from hwt.hwModule import HwModule
+from hwt.hwIOs.std import HwIODataRdVld
 
 
-class ExampleChild(Unit):
+class ExampleChild(HwModule):
     def _declr(self):
-        self.c = Handshaked()
-        self.d = Handshaked()._m()
+        self.c = HwIODataRdVld()
+        self.d = HwIODataRdVld()._m()
 
     def _impl(self):
         self.d(self.c)
 
 
-class MultipleDriversOfChildNet(Unit):
+class MultipleDriversOfChildNet(HwModule):
     def _declr(self):
-        self.a = Handshaked()
-        self.b = Handshaked()._m()
+        self.a = HwIODataRdVld()
+        self.b = HwIODataRdVld()._m()
 
         self.ch = ExampleChild()
 
@@ -38,7 +38,8 @@ class MultipleDriversOfChildNet2(MultipleDriversOfChildNet):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = MultipleDriversOfChildNet()
+    from hwt.synth import to_rtl_str
+    
+    m = MultipleDriversOfChildNet()
     # hwt.serializer.exceptions.SerializerException
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

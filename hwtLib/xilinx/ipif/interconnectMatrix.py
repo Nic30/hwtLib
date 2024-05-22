@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import SwitchLogic
-from hwt.interfaces.utils import addClkRstn
-from hwt.math import log2ceil
-from hwt.synthesizer.hObjList import HObjList
-from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
-from hwtLib.xilinx.ipif.intf import Ipif
-from pyMathBitPrecise.bit_utils import get_bit_range
 from hwt.hdl.types.defs import BIT
+from hwt.hwIOs.utils import addClkRstn
+from hwt.math import log2ceil
+from hwt.hObjList import HObjList
+from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
+from hwtLib.xilinx.ipif.hIOIpif import Ipif
+from pyMathBitPrecise.bit_utils import get_bit_range
 
 
 class IpifInterconnectMatrix(BusInterconnect):
@@ -83,18 +83,19 @@ class IpifInterconnectMatrix(BusInterconnect):
 
 def _example_IpifInterconnectMatrix():
     AUTO = AUTO_ADDR
-    u = IpifInterconnectMatrix()
-    u.MASTERS = (({0, 1, 2, 3}),)
-    u.SLAVES = (
+    m = IpifInterconnectMatrix()
+    m.MASTERS = (({0, 1, 2, 3}),)
+    m.SLAVES = (
         (0x0000, 0x100),
         (0x0100, 0x100),
         (AUTO, 0x100),
         (0x1000, 0x1000),
     )
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_IpifInterconnectMatrix()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_IpifInterconnectMatrix()
+    print(to_rtl_str(m))

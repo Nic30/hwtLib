@@ -3,12 +3,12 @@
 
 from hwt.code import StaticForEach
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Handshaked, HandshakeSync
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
-from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
-from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
+from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
+from hwtLib.amba.axis_comp.frame_deparser import Axi4S_frameDeparser
+from hwtLib.amba.datapump.intf import HwIOAxiWDatapump
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.reg import HandshakedReg
@@ -25,7 +25,7 @@ class StructWriter(StructReader):
     specified over set interface
 
     :ivar ~.MAX_OVERLAP: parameter which specifies the maximum number of concurrent transaction
-    :ivar ~.WRITE_ACK: Param, if true ready on "set" will be set only
+    :ivar ~.WRITE_ACK: HwParam, if true ready on "set" will be set only
         when component is in idle (if false "set"
         is regular handshaked interface)
 
@@ -38,29 +38,29 @@ class StructWriter(StructReader):
 
     def _config(self):
         StructReader._config(self)
-        self.MAX_OVERLAP = Param(2)
-        self.WRITE_ACK = Param(False)
+        self.MAX_OVERLAP = HwParam(2)
+        self.WRITE_ACK = HwParam(False)
 
     def _createInterfaceForField(self, parent, structField):
-        return AxiS_frameDeparser._mkFieldIntf(self, parent, structField)
+        return Axi4S_frameDeparser._mkFieldHwIO(self, parent, structField)
 
     def _declr(self):
         addClkRstn(self)
         self.parseTemplate()
-        self.dataIn = StructIntf(self._structT, tuple(),
+        self.dataIn = HwIOStruct(self._structT, tuple(),
                                  self._createInterfaceForField)
 
-        s = self.set = Handshaked()  # data signal is addr of structure to write
+        s = self.set = HwIODataRdVld()  # data signal is addr of structure to write
         s.DATA_WIDTH = self.ADDR_WIDTH
         # write ack from slave
-        self.writeAck: HandshakeSync = HandshakeSync()._m()
+        self.writeAck: HwIORdVldSync = HwIORdVldSync()._m()
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             # interface for communication with datapump
-            self.wDatapump = AxiWDatapumpIntf()._m()
+            self.wDatapump = HwIOAxiWDatapump()._m()
             self.wDatapump.MAX_BYTES = self.maxBytesInTransaction()
 
-            self.frameAssember = AxiS_frameDeparser(
+            self.frameAssember = Axi4S_frameDeparser(
                 self._structT,
                 tmpl=self._tmpl,
                 frames=self._frames
@@ -73,10 +73,10 @@ class StructWriter(StructReader):
 
         # multi frame
         if self.MAX_OVERLAP > 1:
-            ackPropageteInfo = HandshakedFifo(Handshaked)
+            ackPropageteInfo = HandshakedFifo(HwIODataRdVld)
             ackPropageteInfo.DEPTH = self.MAX_OVERLAP
         else:
-            ackPropageteInfo = HandshakedReg(Handshaked)
+            ackPropageteInfo = HandshakedReg(HwIODataRdVld)
         ackPropageteInfo.DATA_WIDTH = 1
         self.ackPropageteInfo = ackPropageteInfo
 
@@ -118,10 +118,10 @@ class StructWriter(StructReader):
         ).sync()
 
         # connect fields to assembler
-        for _, transTmpl in self._tmpl.walkFlatten():
+        for _, transTmpl in self._tmpl.HwIO_walkFlatten():
             f = transTmpl.getFieldPath()
-            intf = self.frameAssember.dataIn._fieldsToInterfaces[f]
-            intf(self.dataIn._fieldsToInterfaces[f])
+            hwIO = self.frameAssember.dataIn._fieldsToHwIOs[f]
+            hwIO(self.dataIn._fieldsToHwIOs[f])
 
         propagateClkRstn(self)
 
@@ -147,11 +147,11 @@ def _example_StructWriter():
             (uint64_t, "item7"),
         )
 
-    u = StructWriter(s)
-    return u
+    m = StructWriter(s)
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_StructWriter()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_StructWriter()
+    print(to_rtl_str(m))

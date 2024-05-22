@@ -1,8 +1,8 @@
 from collections import deque
 
 from hwtLib.abstract.sim_ram import SimRam
-from pyMathBitPrecise.bit_utils import mask, ValidityError
 from hwtSimApi.triggers import WaitWriteOnly
+from pyMathBitPrecise.bit_utils import mask, ValidityError
 
 
 class AxiDpSimRam(SimRam):
@@ -12,10 +12,10 @@ class AxiDpSimRam(SimRam):
     :ivar ~.data: memory dict
     """
 
-    def __init__(self, cellWidth, clk, rDatapumpIntf=None,
-                 wDatapumpIntf=None, parent=None):
+    def __init__(self, cellWidth, clk, rDatapumpHwIO=None,
+                 wDatapumpHwIO=None, parent=None):
         """
-        :param cellWidth: width of items in memmory
+        :param cellWidth: width of items in memory
         :param clk: clk signal for synchronization
         :param parent: parent instance of SimRam
                        (memory will be shared with this instance)
@@ -24,30 +24,30 @@ class AxiDpSimRam(SimRam):
         super(AxiDpSimRam, self).__init__(cellWidth // 8, parent=parent)
         self.allMask = mask(self.cellSize)
 
-        assert rDatapumpIntf is not None or wDatapumpIntf is not None, \
+        assert rDatapumpHwIO is not None or wDatapumpHwIO is not None, \
             "At least read or write interface has to be present"
 
-        if rDatapumpIntf is None:
+        if rDatapumpHwIO is None:
             arAg = rAg = None
         else:
-            arAg = rDatapumpIntf.req._ag
-            rAg = rDatapumpIntf.r._ag
+            arAg = rDatapumpHwIO.req._ag
+            rAg = rDatapumpHwIO.r._ag
 
         self.arAg = arAg
         self.rAg = rAg
         self.rPending = deque()
 
-        if wDatapumpIntf is None:
+        if wDatapumpHwIO is None:
             awAg = wAg = wAckAg = None
         else:
-            awAg = wDatapumpIntf.req._ag
-            wAg = wDatapumpIntf.w._ag
-            wAckAg = wDatapumpIntf.ack._ag
+            awAg = wDatapumpHwIO.req._ag
+            wAg = wDatapumpHwIO.w._ag
+            wAckAg = wDatapumpHwIO.ack._ag
 
-        self.w_use_strb = wDatapumpIntf is not None and hasattr(
-            wDatapumpIntf.w, "strb")
-        self.r_use_strb = rDatapumpIntf is not None and hasattr(
-            rDatapumpIntf.r, "strb")
+        self.w_use_strb = wDatapumpHwIO is not None and hasattr(
+            wDatapumpHwIO.w, "strb")
+        self.r_use_strb = rDatapumpHwIO is not None and hasattr(
+            rDatapumpHwIO.r, "strb")
 
         self.awAg = awAg
         self.wAg = wAg
@@ -55,13 +55,13 @@ class AxiDpSimRam(SimRam):
         self.wPending = deque()
         self.clk = clk
         if awAg is not None:
-            intf = awAg.intf
+            hwIO = awAg.hwIO
         elif arAg is not None:
-            intf = arAg.intf
+            hwIO = arAg.hwIO
         else:
             raise AssertionError("Need at least some interface")
-        self.ID_WIDTH = intf.ID_WIDTH
-        self.MAX_LEN = intf.MAX_LEN
+        self.ID_WIDTH = hwIO.ID_WIDTH
+        self.MAX_LEN = hwIO.MAX_LEN
 
         self._registerOnClock()
 
@@ -136,7 +136,7 @@ class AxiDpSimRam(SimRam):
 
     def doRead(self):
         _id, addr, size, lastWordBitmask = self.rPending.popleft()
-        HAS_ID = self.rAg.intf.ID_WIDTH > 0
+        HAS_ID = self.rAg.hwIO.ID_WIDTH > 0
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
             raise NotImplementedError(

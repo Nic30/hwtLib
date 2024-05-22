@@ -6,30 +6,30 @@ from typing import Tuple, Optional, Union
 from hwt.code import If
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Signal, Rst_n, Rst, Clk, VectSignal
-from hwt.interfaces.utils import propagateClkRstn
+from hwt.hwIOs.std import HwIOSignal, HwIORst_n, HwIORst, HwIOClk, HwIOVectSignal
+from hwt.hwIOs.utils import propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf, \
-    connectPacked
-from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.amba.axis_comp.reg import AxiSReg
+from hwt.synthesizer.interfaceLevel.utils import HwIO_pack, \
+    HwIO_connectPacked
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
+from hwtLib.amba.axis_comp.reg import Axi4SReg
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mem.fifoCopy import FifoCopy
 
 
 @serializeParamsUniq
-class AxiSRegCopy(AxiSCompBase, HandshakedFifo):
+class Axi4SRegCopy(Axi4SCompBase, HandshakedFifo):
     """
-    Same thing as a :class:`~.AxiSFifoCopy`
+    Same thing as a :class:`~.Axi4SFifoCopy`
     just uses registers without fifo pointers
 
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        AxiSFifoCopy._declr_io(self)
-        with self._paramsShared():
-            self.reg = AxiSReg(self.intfCls)
+        Axi4SFifoCopy._declr_io(self)
+        with self._hwParamsShared():
+            self.reg = Axi4SReg(self.hwIOCls)
 
     def _impl(self):
         reg = self.reg
@@ -58,7 +58,7 @@ class AxiSRegCopy(AxiSCompBase, HandshakedFifo):
 
 
 @serializeParamsUniq
-class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
+class Axi4SFifoCopy(Axi4SCompBase, HandshakedFifo):
     """
     Synchronous fifo for axi-stream interface which can copy last frame or work
     as a regular fifo.
@@ -67,16 +67,16 @@ class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
 
     :see: :class:`hwtLib.handshaked.fifo_copy.HandshakedFifoCopy`
 
-    .. hwt-autodoc:: _example_AxiSFifoCopy
+    .. hwt-autodoc:: _example_Axi4SFifoCopy
     """
     FIFO_CLS = FifoCopy
 
     def _declr_io(self):
         HandshakedFifo._declr_io(self)
         # these signals are used sorely in dataOut beat which has last=1
-        self.dataOut_copy_frame = Signal()
+        self.dataOut_copy_frame = HwIOSignal()
         if self.ID_WIDTH > 0:
-            self.dataOut_replacement_id = VectSignal(self.ID_WIDTH)
+            self.dataOut_replacement_id = HwIOVectSignal(self.ID_WIDTH)
 
     def _declr(self)->None:
         assert self.DEPTH > 1 ,\
@@ -84,8 +84,8 @@ class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
         HandshakedFifo._declr(self)
 
     def _impl(self, clk_rst: Optional[Tuple[
-            Tuple[Clk, Union[Rst, Rst_n]],
-            Tuple[Clk, Union[Rst, Rst_n]]]]=None):
+            Tuple[HwIOClk, Union[HwIORst, HwIORst_n]],
+            Tuple[HwIOClk, Union[HwIORst, HwIORst_n]]]]=None):
         HandshakedFifo._impl(self, clk_rst=clk_rst)
 
     def _connect_fifo_in(self):
@@ -96,7 +96,7 @@ class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
         wr_en = ~fIn.wait
 
         rd(din)(wr_en)
-        fIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
+        fIn.data(HwIO_pack(din, exclude=[vld(din), rd(din)]))
         fIn.en(vld(din) & wr_en)
 
     def _connect_fifo_out(self, out_clk, out_rst):
@@ -109,7 +109,7 @@ class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
         out_vld = self._reg("out_vld", def_val=0, clk=out_clk, rst=out_rst)
         vld(dout)(out_vld)
         non_data = [vld(dout), rd(dout),]
-        data_connections = connectPacked(fOut.data,
+        data_connections = HwIO_connectPacked(fOut.data,
                       dout,
                       exclude=non_data)
         if self.ID_WIDTH > 0:
@@ -142,17 +142,17 @@ class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
         return out_vld
 
 
-def _example_AxiSFifoCopy():
-    u = AxiSFifoCopy()
-    u.DEPTH = 4
-    u.ID_WIDTH = 2
-    # u.EXPORT_SIZE = True
-    # u.EXPORT_SPACE = True
-    return u
+def _example_Axi4SFifoCopy():
+    m = Axi4SFifoCopy()
+    m.DEPTH = 4
+    m.ID_WIDTH = 2
+    # m.EXPORT_SIZE = True
+    # m.EXPORT_SPACE = True
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiSFifoCopy()
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4SFifoCopy()
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

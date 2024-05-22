@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import And
-from hwt.interfaces.std import Handshaked
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwParam import HwParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
-from hwt.synthesizer.hObjList import HObjList
+from hwt.hObjList import HObjList
 
 
 class HsSplitCopy(HandshakedCompBase):
@@ -19,15 +19,16 @@ class HsSplitCopy(HandshakedCompBase):
 
     .. hwt-autodoc:: _example_HsSplitCopy
     """
+
     def _config(self):
-        self.OUTPUTS = Param(2)
+        self.OUTPUTS = HwParam(2)
         super()._config()
 
     def _declr(self):
-        with self._paramsShared():
-            self.dataIn = self.intfCls()
+        with self._hwParamsShared():
+            self.dataIn = self.hwIOCls()
             self.dataOut = HObjList(
-                self.intfCls()._m() for _ in range(int(self.OUTPUTS))
+                self.hwIOCls()._m() for _ in range(int(self.OUTPUTS))
             )
 
     def _impl(self):
@@ -55,11 +56,12 @@ class HsSplitCopy(HandshakedCompBase):
 
 
 def _example_HsSplitCopy():
-    u = HsSplitCopy(Handshaked)
-    return u
+    m = HsSplitCopy(HwIODataRdVld)
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HsSplitCopy()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_HsSplitCopy()
+    print(to_rtl_str(m))

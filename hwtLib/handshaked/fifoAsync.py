@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Clk, Rst_n, VectSignal
+from hwt.hwIOs.std import HwIOClk, HwIORst_n, HwIOVectSignal
 from hwt.math import log2ceil, isPow2
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mem.fifoAsync import FifoAsync
 
@@ -21,26 +21,26 @@ class HsFifoAsync(HandshakedFifo):
     """
     def _config(self):
         HandshakedFifo._config(self)
-        self.IN_FREQ = Param(int(100e6))
-        self.OUT_FREQ = Param(int(100e6))
+        self.IN_FREQ = HwParam(int(100e6))
+        self.OUT_FREQ = HwParam(int(100e6))
 
     def _declr(self):
         assert isPow2(self.DEPTH - 1), (
             "DEPTH has to be 2**n + 1"
             " because fifo has have DEPTH 2**n"
             " and 1 item is stored on output reg", self.DEPTH)
-        self.dataIn_clk = Clk()
-        self.dataOut_clk = Clk()
-        with self._paramsShared():
+        self.dataIn_clk = HwIOClk()
+        self.dataOut_clk = HwIOClk()
+        with self._hwParamsShared():
             with self._associated(clk=self.dataIn_clk):
-                self.dataIn_rst_n = Rst_n()
+                self.dataIn_rst_n = HwIORst_n()
                 with self._associated(rst=self.dataIn_rst_n):
-                    self.dataIn = self.intfCls()
+                    self.dataIn = self.hwIOCls()
 
             with self._associated(clk=self.dataOut_clk):
-                self.dataOut_rst_n = Rst_n()
+                self.dataOut_rst_n = HwIORst_n()
                 with self._associated(rst=self.dataOut_rst_n):
-                    self.dataOut = self.intfCls()._m()
+                    self.dataOut = self.hwIOCls()._m()
 
         f = self.fifo = FifoAsync()
         f.IN_FREQ = self.IN_FREQ
@@ -54,9 +54,9 @@ class HsFifoAsync(HandshakedFifo):
 
         SIZE_W = log2ceil(self.DEPTH + 1 + 1)
         if self.EXPORT_SIZE:
-            self.size = VectSignal(SIZE_W, signed=False)
+            self.size = HwIOVectSignal(SIZE_W, signed=False)
         if self.EXPORT_SPACE:
-            self.space = VectSignal(SIZE_W, signed=False)
+            self.space = HwIOVectSignal(SIZE_W, signed=False)
 
     def _impl(self):
         HandshakedFifo._impl(
@@ -69,13 +69,15 @@ class HsFifoAsync(HandshakedFifo):
 
 
 def _example_HsFifoAsync():
-    from hwt.interfaces.std import Handshaked
-    u = HsFifoAsync(Handshaked)
-    u.DEPTH = 5
-    return u
+    from hwt.hwIOs.std import HwIODataRdVld
+    
+    m = HsFifoAsync(HwIODataRdVld)
+    m.DEPTH = 5
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HsFifoAsync()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_HsFifoAsync()
+    print(to_rtl_str(m))

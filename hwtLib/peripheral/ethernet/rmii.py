@@ -1,48 +1,48 @@
-from hwt.interfaces.std import VectSignal, Signal, Clk
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIOClk
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
+from hwtLib.peripheral.ethernet.rmii_agent import RmiiAgent, RmiiTxChannelAgent, \
+    RmiiRxChannelAgent
+from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from hwtSimApi.hdlSimulator import HdlSimulator
-from hwtLib.peripheral.ethernet.rmii_agent import RmiiAgent, RmiiTxChannelAgent,\
-    RmiiRxChannelAgent
 
 
-class RmiiTxChannel(Interface):
+class RmiiTxChannel(HwIO):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(2)
+        self.DATA_WIDTH = HwParam(2)
 
     def _declr(self):
-        self.d = VectSignal(self.DATA_WIDTH)
-        self.en = Signal()
+        self.d = HwIOVectSignal(self.DATA_WIDTH)
+        self.en = HwIOSignal()
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = RmiiTxChannelAgent(sim, self)
 
 
-class RmiiRxChannel(Interface):
+class RmiiRxChannel(HwIO):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(2)
+        self.DATA_WIDTH = HwParam(2)
 
     def _declr(self):
-        self.d = VectSignal(self.DATA_WIDTH)
-        self.crs_dv = Signal()
+        self.d = HwIOVectSignal(self.DATA_WIDTH)
+        self.crs_dv = HwIOSignal()
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = RmiiRxChannelAgent(sim, self)
 
 
-class Rmii(Interface):
+class Rmii(HwIO):
     """
-    Reduced Media Independent Interface
+    Reduced Media Independent HwIO
 
     off-chip PHY-MAC interface for <=100BASE Ethernet
 
@@ -59,14 +59,14 @@ class Rmii(Interface):
 
 
     def _config(self):
-        self.CLK_MASTER_DIR = Param(DIRECTION.IN)
-        self.FREQ = Param(int(50e6))
-        self.DATA_WIDTH = Param(2)
+        self.CLK_MASTER_DIR = HwParam(DIRECTION.IN)
+        self.FREQ = HwParam(int(50e6))
+        self.DATA_WIDTH = HwParam(2)
 
     def _declr(self):
-        self.ref_clk = Clk(masterDir=self.CLK_MASTER_DIR)
+        self.ref_clk = HwIOClk(masterDir=self.CLK_MASTER_DIR)
         self.ref_clk.FREQ = self.FREQ
-        with self._paramsShared():
+        with self._hwParamsShared():
             with self._associated(clk=self.ref_clk):
                 self.tx = RmiiTxChannel()
                 self.rx = RmiiRxChannel(masterDir=DIRECTION.IN)

@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, CodeBlock
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 
 
-class BlockStm_complete_override0(Unit):
+class BlockStm_complete_override0(HwModule):
 
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()
-        self.c = Signal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()._m()
 
     def _impl(self):
         # results in c = b
@@ -67,7 +67,7 @@ class BlockStm_nop_val(BlockStm_nop_val_optimized_out):
 
     def _declr(self):
         BlockStm_nop_val_optimized_out._declr(self)
-        self.c1 = Signal()._m()
+        self.c1 = HwIOSignal()._m()
 
     def _impl(self):
         r = self._reg("r")
@@ -81,11 +81,11 @@ class BlockStm_nop_val(BlockStm_nop_val_optimized_out):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    # u = BlockStm_complete_override0()
-    # print(to_rtl_str(u))
-    u = BlockStm_nop_val()
-    print(to_rtl_str(u))
-    # u = BlockStm_complete_override2()
-    # print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    # m = BlockStm_complete_override0()
+    # print(to_rtl_str(m))
+    m = BlockStm_nop_val()
+    print(to_rtl_str(m))
+    # m = BlockStm_complete_override2()
+    # print(to_rtl_str(m))
 

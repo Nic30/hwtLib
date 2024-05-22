@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Handshaked
+from hwt.hwIOs.std import HwIODataRdVld
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtSimApi.constants import CLK_PERIOD
@@ -13,31 +13,31 @@ class HandshakedRegL1D0TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = HandshakedReg(Handshaked)
-        u.DELAY = cls.DELAY
-        u.LATENCY = cls.LATENCY
+        dut = cls.dut = HandshakedReg(HwIODataRdVld)
+        dut.DELAY = cls.DELAY
+        dut.LATENCY = cls.LATENCY
         cls.MAX_LATENCY = cls.LATENCY if isinstance(cls.LATENCY, int) else max(cls.LATENCY)
-        cls.compileSim(u)
+        cls.compileSim(dut)
 
     def test_passdata(self, N=20):
-        u = self.u
-        u.dataIn._ag.data.extend(range(N))
+        dut = self.dut
+        dut.dataIn._ag.data.extend(range(N))
 
         self.runSim((self.DELAY + self.MAX_LATENCY) * 2 * N * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data, list(range(N)))
-        self.assertValSequenceEqual([], u.dataIn._ag.data)
+        self.assertValSequenceEqual(dut.dataOut._ag.data, list(range(N)))
+        self.assertValSequenceEqual([], dut.dataIn._ag.data)
 
     def test_r_passdata(self, N=20):
-        u = self.u
-        u.dataIn._ag.data.extend(range(N))
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        dut = self.dut
+        dut.dataIn._ag.data.extend(range(N))
+        self.randomize(dut.dataIn)
+        self.randomize(dut.dataOut)
 
         self.runSim((self.DELAY + self.MAX_LATENCY) * 4 * N * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data, list(range(N)))
-        self.assertValSequenceEqual([], u.dataIn._ag.data)
+        self.assertValSequenceEqual(dut.dataOut._ag.data, list(range(N)))
+        self.assertValSequenceEqual([], dut.dataIn._ag.data)
 
 
 class HandshakedRegL2D1TC(HandshakedRegL1D0TC):

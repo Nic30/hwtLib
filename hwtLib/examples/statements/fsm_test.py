@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
+from hwt.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.statements.fsm import FsmExample, HadrcodedFsmExample
@@ -13,18 +13,18 @@ class FsmExampleTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = FsmExample()
-        cls.compileSim(cls.u)
+        cls.dut = FsmExample()
+        cls.compileSim(cls.dut)
 
     def test_allCases(self):
-        u = self.u
+        dut = self.dut
 
-        u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 0, 0])
-        u.b._ag.data.extend([0, 1, 0, 0, 1, 0, 1, 0])
+        dut.a._ag.data.extend([1, 1, 1, 0, 0, 0, 0, 0])
+        dut.b._ag.data.extend([0, 1, 0, 0, 1, 0, 1, 0])
 
         self.runSim(90 * Time.ns)
 
-        self.assertValSequenceEqual(u.dout._ag.data,
+        self.assertValSequenceEqual(dut.dout._ag.data,
                                     [1, 1, 3, 1, 1, 2, 2, 2])
 
 
@@ -32,8 +32,8 @@ class HadrcodedFsmExampleTC(FsmExampleTC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = HadrcodedFsmExample()
-        cls.compileSim(cls.u)
+        cls.dut = HadrcodedFsmExample()
+        cls.compileSim(cls.dut)
 
 
 class FsmSerializationTC(BaseSerializationTC):

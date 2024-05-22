@@ -1,17 +1,17 @@
 from typing import Tuple, Union, List
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.math import log2ceil
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.hwIO import HwIO
+from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
 
 
-AnySig = Union[RtlSignal, Interface]
+AnySig = Union[RtlSignal, HwIO]
 
 
 class ClkBuilder(AbstractComponentBuilder):
@@ -71,13 +71,13 @@ class ClkBuilder(AbstractComponentBuilder):
         else:
             periodSig, name = periodSig, getSignalName(periodSig)
 
-        parentUnit = self.parent
+        parentHwModule = self.parent
 
         timer = DynamicTimerInfo(periodSig, name)
         maxVal = timer.maxVal - 1
         assert maxVal._dtype.bit_length() > 0
 
-        r = parentUnit._reg(timer.name + "_delayCntr",
+        r = parentHwModule._reg(timer.name + "_delayCntr",
                             periodSig._dtype,
                             def_val=0
                             )
@@ -87,7 +87,7 @@ class ClkBuilder(AbstractComponentBuilder):
                                                            enableSig,
                                                            rstSig)
 
-        timer.tick = parentUnit._sig(timer.name + "_delayTick")
+        timer.tick = parentHwModule._sig(timer.name + "_delayTick")
         timer.tick(tick)
         return timer.tick
 
@@ -112,7 +112,7 @@ class ClkBuilder(AbstractComponentBuilder):
                                     enableSig=sampleTick,
                                     rstSig=rstSig)
         oversampleCntr = self.parent._reg(f"{n:s}_oversample{sCnt:d}_cntr",
-                                          Bits(log2ceil(sampleCount) + 1, False),
+                                          HBits(log2ceil(sampleCount) + 1, False),
                                           def_val=0)
 
         if rstSig is None:

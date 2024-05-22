@@ -249,13 +249,13 @@ SC_MODULE(Exporter) {
 #include <systemc.h>
 
 //
-//    Stream duplicator for AxiStream interfaces
+//    Stream duplicator for Axi4Stream interfaces
 //
 //    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 //
 //    .. hwt-autodoc::
 //    
-SC_MODULE(AxiSSplitCopy) {
+SC_MODULE(Axi4SSplitCopy) {
     // ports
     sc_in<sc_uint<64>> dataIn_data;
     sc_in<sc_uint<1>> dataIn_last;
@@ -299,7 +299,7 @@ SC_MODULE(AxiSSplitCopy) {
         dataOut_1_valid.write(dataIn_valid.read() & dataOut_0_ready.read());
     }
 
-    SC_CTOR(AxiSSplitCopy) {
+    SC_CTOR(Axi4SSplitCopy) {
         SC_METHOD(assig_process_dataIn_ready);
         sensitive << dataOut_0_ready << dataOut_1_ready;
         SC_METHOD(assig_process_dataOut_0_data);
@@ -359,7 +359,7 @@ SC_MODULE(NetFilter) {
     // component instances
     Exporter exporter_inst();
     Filter filter_inst();
-    AxiSSplitCopy gen_dout_splitCopy_0_inst();
+    Axi4SSplitCopy gen_dout_splitCopy_0_inst();
     HeadFieldExtractor hfe_inst();
     PatternMatch patternMatch_inst();
     // internal signals

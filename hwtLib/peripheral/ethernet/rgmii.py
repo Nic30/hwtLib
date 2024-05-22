@@ -1,11 +1,11 @@
-from hwt.interfaces.std import Clk, VectSignal, Signal
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIOClk, HwIOVectSignal, HwIOSignal
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
-class RgmiiChannel(Interface):
+class RgmiiChannel(HwIO):
     """
     :note: clk.FREQ can be 125 MHz, 25 MHz, or 2.5 MHz
         with ±50 ppm tolerance based on the selected speed.
@@ -14,17 +14,17 @@ class RgmiiChannel(Interface):
     """
 
     def _config(self):
-        self.FREQ = Param(int(125e6))
+        self.FREQ = HwParam(int(125e6))
 
     def _declr(self):
-        self.clk = Clk()
+        self.clk = HwIOClk()
         self.clk.FREQ = self.FREQ
         with self._associated(clk=self.clk):
-            self.d = VectSignal(4)
-            self.ctl = Signal()
+            self.d = HwIOVectSignal(4)
+            self.ctl = HwIOSignal()
 
 
-class Rgmii(Interface):
+class Rgmii(HwIO):
     """
     Reduced Gigabit Media Independent interface
     Used to off-chip commect 1G Ethernet MAC and PHY
@@ -41,7 +41,7 @@ class Rgmii(Interface):
         RgmiiChannel._config(self)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.rx = RgmiiChannel(masterDir=DIRECTION.IN)
             self.tx = RgmiiChannel()
 

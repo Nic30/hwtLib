@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.agents.fifo import FifoWriterAgent
-from hwt.interfaces.std import FifoWriter, FifoReader, Signal
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.agents.fifo import HwIOFifoWriterAgent
+from hwt.hwIOs.std import HwIOFifoWriter, HwIOFifoReader, HwIOSignal
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.mem.fifo import Fifo
 from hwtSimApi.hdlSimulator import HdlSimulator
-from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecified
+from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecifiedError
 
 
-class FifoWriterDropable(FifoWriter):
+class FifoWriterDropable(HwIOFifoWriter):
     """
     FIFO write port interface witch commit and discard signal
     used to drop data chunks already written in fifo
@@ -30,20 +30,20 @@ class FifoWriterDropable(FifoWriter):
     """
     def _declr(self):
         super(FifoWriterDropable, self)._declr()
-        self.commit = Signal()
-        self.discard = Signal()
+        self.commit = HwIOSignal()
+        self.discard = HwIOSignal()
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = FifoWriterDropableAgent(sim, self)
 
     def _getIpCoreIntfClass(self):
-        raise IntfIpMetaNotSpecified()
+        raise IntfIpMetaNotSpecifiedError()
 
 
-class FifoWriterDropableAgent(FifoWriterAgent):
+class FifoWriterDropableAgent(HwIOFifoWriterAgent):
 
     def set_data(self, d):
-        i = self.intf
+        i = self.hwIO
         if d is None:
             commit, discard = (None, None)
         else:
@@ -53,7 +53,7 @@ class FifoWriterDropableAgent(FifoWriterAgent):
         i.data.write(d)
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         return (
             i.commit.read(),
             i.discard.read(),
@@ -80,20 +80,20 @@ class FifoDrop(Fifo):
         assert int(self.DEPTH) > 0,\
             "Fifo is disabled in this case, do not use it entirely"
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.dataIn = FifoWriterDropable()
-            self.dataOut = FifoReader()._m()
+            self.dataOut = HwIOFifoReader()._m()
 
         self._declr_size_and_space()
 
     def _impl(self):
         DEPTH = self.DEPTH
 
-        index_t = Bits(log2ceil(DEPTH), signed=False)
+        index_t = HBits(log2ceil(DEPTH), signed=False)
         s = self._sig
         r = self._reg
 
-        mem = self.mem = s("memory", Bits(self.DATA_WIDTH)[self.DEPTH])
+        mem = self.mem = s("memory", HBits(self.DATA_WIDTH)[self.DEPTH])
         # write pointer which is seen by reader
         wr_ptr = r("wr_ptr", index_t, 0)
         # write pointer which is used by writer and can be potentially
@@ -233,15 +233,16 @@ class FifoDrop(Fifo):
 
 
 def _example_FifoDrop():
-    u = FifoDrop()
-    u.DATA_WIDTH = 8
-    u.EXPORT_SIZE = True
-    u.EXPORT_SPACE = True
-    u.DEPTH = 16
-    return u
+    m = FifoDrop()
+    m.DATA_WIDTH = 8
+    m.EXPORT_SIZE = True
+    m.EXPORT_SPACE = True
+    m.DEPTH = 16
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_FifoDrop()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_FifoDrop()
+    print(to_rtl_str(m))

@@ -1,17 +1,17 @@
 from math import ceil
 
-from hwt.hdl.constants import DIRECTION
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
+from hwt.constants import DIRECTION
+from hwt.hwParam import HwParam
+from hwt.hwIO import HwIO
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIORdVldSync
 from hwt.math import log2ceil
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
-from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axi4s import Axi4Stream
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class AddrSizeHs(Handshaked):
+class AddrSizeHs(HwIODataRdVld):
     """
 
     :ivar MAX_LEN: maximum value of len (number of words - 1)
@@ -20,107 +20,107 @@ class AddrSizeHs(Handshaked):
     """
 
     def _config(self):
-        self.ID_WIDTH = Param(4)
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
-        self.MAX_LEN = Param(4096 // 8 - 1)
-        self.USE_STRB = Param(True)
+        self.ID_WIDTH = HwParam(4)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(64)
+        self.MAX_LEN = HwParam(4096 // 8 - 1)
+        self.USE_STRB = HwParam(True)
 
     def _declr(self):
         if self.ID_WIDTH:
-            self.id = VectSignal(self.ID_WIDTH)
+            self.id = HwIOVectSignal(self.ID_WIDTH)
 
-        self.addr = VectSignal(self.ADDR_WIDTH)
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         assert self.MAX_LEN >= 0, self.MAX_LEN
         if self.MAX_LEN > 0:
-            self.len = VectSignal(log2ceil(self.MAX_LEN + 1))
+            self.len = HwIOVectSignal(log2ceil(self.MAX_LEN + 1))
 
         # rem is number of bytes in last word which are valid - 1
-        self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))
+        self.rem = HwIOVectSignal(log2ceil(self.DATA_WIDTH // 8))
 
-        HandshakeSync._declr(self)
+        HwIORdVldSync._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = AddrSizeHsAgent(sim, self)
 
 
-class AddrSizeHsAgent(HandshakedAgent):
+class AddrSizeHsAgent(HwIODataRdVldAgent):
 
     def get_data(self):
-        intf = self.intf
+        hwIO = self.hwIO
 
-        addr = intf.addr.read()
-        rem = intf.rem.read()
-        if intf.ID_WIDTH:
-            _id = intf.id.read()
-            if intf.MAX_LEN:
-                _len = intf.len.read()
+        addr = hwIO.addr.read()
+        rem = hwIO.rem.read()
+        if hwIO.ID_WIDTH:
+            _id = hwIO.id.read()
+            if hwIO.MAX_LEN:
+                _len = hwIO.len.read()
                 return (_id, addr, _len, rem)
             else:
                 return (_id, addr, rem)
         else:
-            if intf.MAX_LEN:
-                _len = intf.len.read()
+            if hwIO.MAX_LEN:
+                _len = hwIO.len.read()
                 return (addr, _len, rem)
             else:
                 return (addr, rem)
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
 
-        if intf.ID_WIDTH:
+        if hwIO.ID_WIDTH:
             if data is None:
                 _id, addr, _len, rem = (None for _ in range(4))
             else:
-                if intf.MAX_LEN == 0:
+                if hwIO.MAX_LEN == 0:
                     _id, addr, rem = data
                 else:
                     _id, addr, _len, rem = data
 
-            intf.id.write(_id)
+            hwIO.id.write(_id)
         else:
             if data is None:
                 addr, _len, rem = None, None, None
             else:
-                if intf.MAX_LEN == 0:
+                if hwIO.MAX_LEN == 0:
                     addr, rem = data
                 else:
                     addr, _len, rem = data
 
-        intf.addr.write(addr)
-        if intf.MAX_LEN != 0:
-            intf.len.write(_len)
-        intf.rem.write(rem)
+        hwIO.addr.write(addr)
+        if hwIO.MAX_LEN != 0:
+            hwIO.len.write(_len)
+        hwIO.rem.write(rem)
 
 
-class AxiRDatapumpIntf(Interface):
+class HwIOAxiRDatapump(HwIO):
     """
-    Interface of read datapump driver
+    HwIO of read datapump driver
 
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.ID_WIDTH = Param(0)
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
-        self.MAX_BYTES = Param(4096)
-        self.USE_STRB = Param(True)
+        self.ID_WIDTH = HwParam(0)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(64)
+        self.MAX_BYTES = HwParam(4096)
+        self.USE_STRB = HwParam(True)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             # user requests
             self.req = AddrSizeHs()
             self.req.MAX_LEN = max(ceil(self.MAX_BYTES / (self.DATA_WIDTH // 8)) - 1, 0)
-            self.r = AxiStream(masterDir=DIRECTION.IN)
+            self.r = Axi4Stream(masterDir=DIRECTION.IN)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = AxiRDatapumpIntfAgent(sim, self)
+        self._ag = HwIOAxiRDatapumpAgent(sim, self)
 
 
-class AxiRDatapumpIntfAgent(AgentBase):
+class HwIOAxiRDatapumpAgent(AgentBase):
     """
-    Composite agent with agent for every AxiRDatapumpIntf channel
+    Composite agent with agent for every HwIOAxiRDatapump channel
     enable is shared
     """
 
@@ -138,15 +138,15 @@ class AxiRDatapumpIntfAgent(AgentBase):
         for o in [self.req, self.r]:
             o.enable = v
 
-    def __init__(self, sim: HdlSimulator, intf):
+    def __init__(self, sim: HdlSimulator, hwIO):
         self.__enable = True
-        self.intf = intf
+        self.hwIO = hwIO
 
-        intf.req._initSimAgent(sim)
-        self.req = intf.req._ag
+        hwIO.req._initSimAgent(sim)
+        self.req = hwIO.req._ag
 
-        intf.r._initSimAgent(sim)
-        self.r = intf.r._ag
+        hwIO.r._initSimAgent(sim)
+        self.r = hwIO.r._ag
 
     def getDrivers(self):
         yield from self.req.getDrivers()
@@ -157,9 +157,9 @@ class AxiRDatapumpIntfAgent(AgentBase):
         yield from self.r.getDrivers()
 
 
-class AxiWDatapumpIntf(Interface):
+class HwIOAxiWDatapump(HwIO):
     """
-    Interface of write datapump driver
+    HwIO of write datapump driver
 
     .. hwt-autodoc::
     """
@@ -168,28 +168,28 @@ class AxiWDatapumpIntf(Interface):
         AddrSizeHs._config(self)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             # user requests
             self.req = AddrSizeHs()
 
-        with self._paramsShared(exclude=({"ID_WIDTH"}, set())):
-            self.w = AxiStream()
+        with self._hwParamsShared(exclude=({"ID_WIDTH"}, set())):
+            self.w = Axi4Stream()
 
         if self.ID_WIDTH:
-            ack = Handshaked(masterDir=DIRECTION.IN)
+            ack = HwIODataRdVld(masterDir=DIRECTION.IN)
             ack.DATA_WIDTH = self.ID_WIDTH
         else:
-            ack = HandshakeSync(masterDir=DIRECTION.IN)
+            ack = HwIORdVldSync(masterDir=DIRECTION.IN)
 
         self.ack = ack
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = AxiWDatapumpIntfAgent(sim, self)
+        self._ag = HwIOAxiWDatapumpAgent(sim, self)
 
 
-class AxiWDatapumpIntfAgent(AgentBase):
+class HwIOAxiWDatapumpAgent(AgentBase):
     """
-    Composite agent with agent for every AxiRDatapumpIntf channel
+    Composite agent with agent for every HwIOAxiRDatapump channel
     enable is shared
     """
 
@@ -207,18 +207,18 @@ class AxiWDatapumpIntfAgent(AgentBase):
         for o in [self.req, self.w, self.ack]:
             o.enable = v
 
-    def __init__(self, sim: HdlSimulator, intf):
+    def __init__(self, sim: HdlSimulator, hwIO):
         self.__enable = True
-        self.intf = intf
+        self.hwIO = hwIO
 
-        intf.req._initSimAgent(sim)
-        self.req = intf.req._ag
+        hwIO.req._initSimAgent(sim)
+        self.req = hwIO.req._ag
 
-        intf.w._initSimAgent(sim)
-        self.w = intf.w._ag
+        hwIO.w._initSimAgent(sim)
+        self.w = hwIO.w._ag
 
-        intf.ack._initSimAgent(sim)
-        self.ack = intf.ack._ag
+        hwIO.ack._initSimAgent(sim)
+        self.ack = hwIO.ack._ag
 
     def getDrivers(self):
         yield from self.req.getDrivers()

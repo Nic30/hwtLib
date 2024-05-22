@@ -1,42 +1,42 @@
 from typing import List, Optional, Tuple, Union, Dict
 
 from hwt.code import And, Or
+from hwt.constants import NOT_SPECIFIED
+from hwt.hdl.const import HConst
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.types.defs import BIT
-from hwt.hdl.value import HValue
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
+from hwt.hwIO import HwIO
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
 ValidReadyTuple = Tuple[Union[RtlSignal, int], Union[RtlSignal, int]]
-InterfaceOrValidReadyTuple = Union[Interface, ValidReadyTuple]
+HwIOOrValidReadyTuple = Union[HwIO, ValidReadyTuple]
 
 
-def _get_ready_signal(intf: InterfaceOrValidReadyTuple) -> RtlSignal:
+def _get_ready_signal(hwIO: HwIOOrValidReadyTuple) -> RtlSignal:
     try:
-        return intf.rd
+        return hwIO.rd
     except AttributeError:
         pass
 
-    if isinstance(intf, Tuple):
-        _, rd = intf
+    if isinstance(hwIO, Tuple):
+        _, rd = hwIO
         return rd
 
-    return intf.ready
+    return hwIO.ready
 
 
-def _get_valid_signal(intf: InterfaceOrValidReadyTuple) -> RtlSignal:
+def _get_valid_signal(hwIO: HwIOOrValidReadyTuple) -> RtlSignal:
     try:
-        return intf.vld
+        return hwIO.vld
     except AttributeError:
         pass
 
-    if isinstance(intf, Tuple):
-        vld, _ = intf
+    if isinstance(hwIO, Tuple):
+        vld, _ = hwIO
         return vld
 
-    return intf.valid
+    return hwIO.valid
 
 
 def _exStreamMemberAck(m) -> RtlSignal:
@@ -101,10 +101,10 @@ class StreamNode():
     """
 
     def __init__(self,
-                 masters: Optional[List[InterfaceOrValidReadyTuple]]=None,
-                 slaves: Optional[List[InterfaceOrValidReadyTuple]]=None,
-                 extraConds: Optional[Dict[InterfaceOrValidReadyTuple, RtlSignal]]=None,
-                 skipWhen: Optional[Dict[InterfaceOrValidReadyTuple, RtlSignal]]=None):
+                 masters: Optional[List[HwIOOrValidReadyTuple]]=None,
+                 slaves: Optional[List[HwIOOrValidReadyTuple]]=None,
+                 extraConds: Optional[Dict[HwIOOrValidReadyTuple, RtlSignal]]=None,
+                 skipWhen: Optional[Dict[HwIOOrValidReadyTuple, RtlSignal]]=None):
         if masters is None:
             masters = []
         if slaves is None:
@@ -197,7 +197,7 @@ class StreamNode():
             else:
                 a = _get_valid_signal(m)
 
-            if isinstance(a, (int, HValue)):
+            if isinstance(a, (int, HConst)):
                 assert int(a) == 1, (m, a)
                 continue
             else:
@@ -216,7 +216,7 @@ class StreamNode():
             else:
                 a = _get_ready_signal(s)
 
-            if isinstance(a, (int, HValue)):
+            if isinstance(a, (int, HConst)):
                 assert int(a) == 1, (s, a)
                 continue
             else:
@@ -233,36 +233,36 @@ class StreamNode():
         else:
             return True
 
-    def getExtraAndSkip(self, intf: InterfaceOrValidReadyTuple) -> Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
+    def getExtraAndSkip(self, hwIO: HwIOOrValidReadyTuple) -> Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
         """
         :return: optional extraCond and skip flags for interface
         """
         try:
-            extra = [self.extraConds[intf], ]
+            extra = [self.extraConds[hwIO], ]
         except KeyError:
             extra = []
 
         try:
-            skip = self.skipWhen[intf]
+            skip = self.skipWhen[hwIO]
         except KeyError:
             skip = None
 
         return extra, skip
 
-    def vld(self, intf: InterfaceOrValidReadyTuple) -> RtlSignal:
+    def vld(self, hwIO: HwIOOrValidReadyTuple) -> RtlSignal:
         """
         :return: valid signal of master interface for synchronization of othres
         """
         try:
-            s = self.skipWhen[intf]
+            s = self.skipWhen[hwIO]
             assert s is not None
         except KeyError:
             s = None
 
-        if isinstance(intf, ExclusiveStreamGroups):
-            v = intf.ack()
+        if isinstance(hwIO, ExclusiveStreamGroups):
+            v = hwIO.ack()
         else:
-            v = _get_valid_signal(intf)
+            v = _get_valid_signal(hwIO)
 
         if isinstance(v, int):
             assert v == 1, v
@@ -273,20 +273,20 @@ class StreamNode():
         else:
             return v | s
 
-    def rd(self, intf: InterfaceOrValidReadyTuple) -> RtlSignal:
+    def rd(self, hwIO: HwIOOrValidReadyTuple) -> RtlSignal:
         """
         :return: ready signal of slave interface for synchronization of othres
         """
         try:
-            s = self.skipWhen[intf]
+            s = self.skipWhen[hwIO]
             assert s is not None
         except KeyError:
             s = None
 
-        if isinstance(intf, ExclusiveStreamGroups):
-            r = intf.ack()
+        if isinstance(hwIO, ExclusiveStreamGroups):
+            r = hwIO.ack()
         else:
-            r = _get_ready_signal(intf)
+            r = _get_ready_signal(hwIO)
 
         if isinstance(r, int):
             assert r == 1, r
@@ -297,7 +297,7 @@ class StreamNode():
         else:
             return r | s
 
-    def ackForMaster(self, master: InterfaceOrValidReadyTuple) -> RtlSignal:
+    def ackForMaster(self, master: HwIOOrValidReadyTuple) -> RtlSignal:
         """
         :return: driver of ready signal for master
         """
@@ -318,7 +318,7 @@ class StreamNode():
 
         return r
 
-    def ackForSlave(self, slave: InterfaceOrValidReadyTuple) -> RtlSignal:
+    def ackForSlave(self, slave: HwIOOrValidReadyTuple) -> RtlSignal:
         """
         :return: driver of valid signal for slave
         """
@@ -339,9 +339,9 @@ class StreamNode():
 
         return v
 
-    def __repr__format_intf_list(self, intf_list):
+    def __repr__format_HwIO_list(self, hwIO_list):
         res = []
-        for i in intf_list:
+        for i in hwIO_list:
             extraCond = self.extraConds.get(i, NOT_SPECIFIED)
             skipWhen = self.skipWhen.get(i, NOT_SPECIFIED)
             if extraCond is not NOT_SPECIFIED and skipWhen is not NOT_SPECIFIED:
@@ -356,8 +356,8 @@ class StreamNode():
         return ',\n        '.join(res)
 
     def __repr__(self):
-        masters = self.__repr__format_intf_list(self.masters)
-        slaves = self.__repr__format_intf_list(self.slaves)
+        masters = self.__repr__format_HwIO_list(self.masters)
+        slaves = self.__repr__format_HwIO_list(self.slaves)
         return f"""<{self.__class__.__name__}
     masters=[
         {masters:s}],

@@ -1,26 +1,27 @@
-from hwt.synthesizer.interface import Interface
-from hwt.interfaces.std import Clk
-from hwt.interfaces.tristate import TristateSig
-from pyMathBitPrecise.bit_utils import mask, get_bit
-from hwt.synthesizer.param import Param
-from hwt.simulator.agentBase import SyncAgentBase
-from hwtSimApi.hdlSimulator import HdlSimulator
-from hwtSimApi.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from collections import deque
 from typing import Deque, Tuple
+
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOClk
+from hwt.hwIOs.hwIOTristate import HwIOTristateSig
+from hwt.simulator.agentBase import SyncAgentBase
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
+from hwtSimApi.constants import Time
+from hwtSimApi.hdlSimulator import HdlSimulator
+from hwtSimApi.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
+from hwtSimApi.simCalendar import DONE
 from hwtSimApi.triggers import WaitWriteOnly, WaitCombStable, \
     Edge, Timer
-from hwtSimApi.constants import Time
-from hwtSimApi.simCalendar import DONE
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from hwt.hdl.types.bits import Bits
+from pyMathBitPrecise.bit_utils import mask, get_bit
 
 
-class Mdio(Interface):
+class Mdio(HwIO):
     """
-    Management Data Input/Output (MDIO), also known as Serial Management Interface (SMI)
-    or Media Independent Interface Management (MIIM), is a serial bus defined
-    for the Ethernet family of IEEE 802.3 standards for the Media Independent Interface,
+    Management Data Input/Output (MDIO), also known as Serial Management HwIO (SMI)
+    or Media Independent HwIO Management (MIIM), is a serial bus defined
+    for the Ethernet family of IEEE 802.3 standards for the Media Independent HwIO,
 
     :note: Typical clock frequency is 2.5 MHz
 
@@ -49,9 +50,9 @@ class Mdio(Interface):
     ADDR_BLOCK_W = ST_W + OP_W + PA_W + RA_W
     D_W = 16
 
-    PRE = Bits(PRE_W).from_py(mask(PRE_W))
-    ST = Bits(ST_W).from_py(0b01)
-    TA = Bits(TA_W).from_py(0b10)
+    PRE = HBits(PRE_W).from_py(mask(PRE_W))
+    ST = HBits(ST_W).from_py(0b01)
+    TA = HBits(TA_W).from_py(0b10)
 
     class OP:
         READ = 0b10
@@ -60,13 +61,13 @@ class Mdio(Interface):
     DEFAULT_FREQ = int(2.5e6)
 
     def _config(self):
-        self.FREQ = Param(self.DEFAULT_FREQ)
+        self.FREQ = HwParam(self.DEFAULT_FREQ)
 
     def _declr(self):
-        self.c = Clk()
+        self.c = HwIOClk()
         self.c.FREQ = self.FREQ
         with self._associated(clk=self.c):
-            self.io = TristateSig()
+            self.io = HwIOTristateSig()
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = MdioAgent(sim, self)
@@ -87,9 +88,9 @@ def pop_int(bits: Deque[int], bit_cnt: int):
 class MdioAgent(SyncAgentBase):
     PULL = 1
 
-    def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
-        super(MdioAgent, self).__init__(sim, intf, allowNoReset=allowNoReset)
-        self.intf.io._initSimAgent(sim)
+    def __init__(self, sim: HdlSimulator, hwIO, allowNoReset=False):
+        super(MdioAgent, self).__init__(sim, hwIO, allowNoReset=allowNoReset)
+        self.hwIO.io._initSimAgent(sim)
 
         self.rx_bits_tmp = deque()
         self.tx_bits_tmp = deque()
@@ -106,7 +107,7 @@ class MdioAgent(SyncAgentBase):
 
     def on_read(self, phyaddr, regaddr):
         data = self.data[(phyaddr, regaddr)]
-        D_W = self.intf.D_W
+        D_W = self.hwIO.D_W
         tx_bits = self.tx_bits_tmp
         # turn arround (1 is actually Z but due to open-drain...)
         tx_bits.append(1)
@@ -130,18 +131,18 @@ class MdioAgent(SyncAgentBase):
         tx_bits = self.tx_bits_tmp
         if tx_bits:
             b = tx_bits.popleft()
-            self.intf.io.i.write(b)
+            self.hwIO.io.i.write(b)
             if not tx_bits:
-                yield Edge(self.intf.c)
+                yield Edge(self.hwIO.c)
                 self.reset_state()
                 # release the io bus
                 if self.sim._current_time_slot.write_only is DONE:
                     yield Timer(1)
-                    yield self.intf.io._ag.monitor()
+                    yield self.hwIO.io._ag.monitor()
 
     def unpack_addr(self, rx_bits) -> Tuple[int, int, int]:
         # <OP><PA><RA>
-        mdio = self.intf
+        mdio = self.hwIO
         op = pop_int(rx_bits, mdio.OP_W)
         pa = pop_int(rx_bits, mdio.PA_W)
         ra = pop_int(rx_bits, mdio.RA_W)
@@ -153,7 +154,7 @@ class MdioAgent(SyncAgentBase):
         """
         yield WaitCombStable()
         rx_bits = self.rx_bits_tmp
-        mdio = self.intf
+        mdio = self.hwIO
         b = mdio.io._ag._read()
         b = int(b)
         # print(self.sim.now/ Time.ns, b)
@@ -221,10 +222,10 @@ class MdioAgent(SyncAgentBase):
 
     def getMonitors(self):
         self.rx_bits = OnRisingCallbackLoop(
-            self.sim, self.intf.c, self.rx_bits, lambda: True)
+            self.sim, self.hwIO.c, self.rx_bits, lambda: True)
         self.tx_bits = OnFallingCallbackLoop(
-            self.sim, self.intf.c, self.tx_bits, lambda: True)
-        yield from self.intf.io._ag.getMonitors()
+            self.sim, self.hwIO.c, self.tx_bits, lambda: True)
+        yield from self.hwIO.io._ag.getMonitors()
         yield self.rx_bits()
         yield self.tx_bits()
 

@@ -1,40 +1,40 @@
 from typing import Union, Tuple
 
 from hwt.code import If
-from hwt.hdl.types.bitsVal import BitsVal
+from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.hdlType import HdlType
-from hwt.interfaces.structIntf import StructIntf
+from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.cdc import AxiSCdc
-from hwtLib.amba.axis_comp.fifo import AxiSFifo
-from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
-from hwtLib.amba.axis_comp.fifo_async import AxiSFifoAsync
-from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
-from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
-from hwtLib.amba.axis_comp.joinPrioritized import AxiSJoinPrioritized
-from hwtLib.amba.axis_comp.reg import AxiSReg
-from hwtLib.amba.axis_comp.resizer import AxiS_resizer
-from hwtLib.amba.axis_comp.splitCopy import AxiSSplitCopy
-from hwtLib.amba.axis_comp.splitSelect import AxiSSpliSelect
-from hwtLib.amba.axis_comp.storedBurst import AxiSStoredBurst
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.cdc import Axi4SCdc
+from hwtLib.amba.axis_comp.fifo import Axi4SFifo
+from hwtLib.amba.axis_comp.fifoDrop import Axi4SFifoDrop
+from hwtLib.amba.axis_comp.fifo_async import Axi4SFifoAsync
+from hwtLib.amba.axis_comp.frame_deparser import Axi4S_frameDeparser
+from hwtLib.amba.axis_comp.frame_parser import Axi4S_frameParser
+from hwtLib.amba.axis_comp.joinPrioritized import Axi4SJoinPrioritized
+from hwtLib.amba.axis_comp.reg import Axi4SReg
+from hwtLib.amba.axis_comp.resizer import Axi4S_resizer
+from hwtLib.amba.axis_comp.splitCopy import Axi4SSplitCopy
+from hwtLib.amba.axis_comp.splitSelect import Axi4SSpliSelect
+from hwtLib.amba.axis_comp.storedBurst import Axi4SStoredBurst
 
 
-class AxiSBuilder(AbstractStreamBuilder):
+class Axi4SBuilder(AbstractStreamBuilder):
     """
     Helper class which simplifies building of large stream paths
     """
-    FifoCls = AxiSFifo
-    FifoAsyncCls = AxiSFifoAsync
-    FifoDropCls = AxiSFifoDrop
-    RegCdcCls = AxiSCdc
-    RegCls = AxiSReg
-    SplitCopyCls = AxiSSplitCopy
-    SplitSelectCls = AxiSSpliSelect
-    ResizerCls = AxiS_resizer
-    JoinPrioritizedCls = AxiSJoinPrioritized
+    FifoCls = Axi4SFifo
+    FifoAsyncCls = Axi4SFifoAsync
+    FifoDropCls = Axi4SFifoDrop
+    RegCdcCls = Axi4SCdc
+    RegCls = Axi4SReg
+    SplitCopyCls = Axi4SSplitCopy
+    SplitSelectCls = Axi4SSpliSelect
+    ResizerCls = Axi4S_resizer
+    JoinPrioritizedCls = Axi4SJoinPrioritized
 
     def resize(self, newDataWidth):
         """
@@ -48,7 +48,7 @@ class AxiSBuilder(AbstractStreamBuilder):
                 u.DATA_WIDTH = newDataWidth
                 u.OUT_DATA_WIDTH = self.end.DATA_WIDTH
 
-        return self._genericInstance(AxiS_resizer,
+        return self._genericInstance(Axi4S_resizer,
                                      "resize",
                                      set_OUT_DATA_WIDTH)
 
@@ -57,64 +57,64 @@ class AxiSBuilder(AbstractStreamBuilder):
         generate start of frame signal, high when we expect new frame to start
         """
         lastseen = self.parent._reg(self.name + "_sof_lastseen", def_val=1)
-        intf = self.end
+        hwIO = self.end
 
-        ack = intf.valid & intf.ready
+        ack = hwIO.valid & hwIO.ready
         If(ack,
-           lastseen(intf.last)
+           lastseen(hwIO.last)
         )
 
         return lastseen
 
-    def parse(self, typeToParse) -> StructIntf:
+    def parse(self, typeToParse) -> HwIOStruct:
         """
         :param typeToParse: structuralized type to parse
-        :return: interface with parsed data (e.g. StructIntf for HStruct)
+        :return: interface with parsed data (e.g. HwIOStruct for HStruct)
         """
         assert self.master_to_slave
-        u = AxiS_frameParser(typeToParse)
-        u._updateParamsFrom(self.end)
+        m = Axi4S_frameParser(typeToParse)
+        m._updateParamsFrom(self.end)
 
-        setattr(self.parent, self._findSuitableName("parser"), u)
-        self._propagateClkRstn(u)
+        setattr(self.parent, self._findSuitableName("parser"), m)
+        self._propagateClkRstn(m)
 
-        u.dataIn(self.end)
+        m.dataIn(self.end)
 
-        self.lastComp = u
+        self.lastComp = m
         self.end = None
 
-        return u.dataOut
+        return m.dataOut
 
     @classmethod
-    def deparse(cls, parent: Unit, typeToForge: HdlType, intfCls: AxiStream,
-                setupFn=None, name:str=None) -> Tuple["AxiSBuilder", StructIntf]:
+    def deparse(cls, parent: HwModule, typeToForge: HdlType, hwIO: Axi4Stream,
+                setupFn=None, name:str=None) -> Tuple["Axi4SBuilder", HwIOStruct]:
         """
         generate frame assembler for specified type
         :note: you can set endianity and others in setupFn
 
-        :param parent: unit where generated units should be instantiated
+        :param parent: HwModule where generated units should be instantiated
         :param typeToForge: instance of HType used as template for frame to assembly
-        :param intfCls: class for output interface
+        :param hwIO: class for output interface
         :param setupFn: setup function for output interface
         :param name: name prefix for generated units
         :return: tuple (builder, interface with deparsed frame)
         """
-        u = AxiS_frameDeparser(typeToForge)
+        m = Axi4S_frameDeparser(typeToForge)
         if setupFn:
-            setupFn(u)
+            setupFn(m)
 
         if name is None:
-            # name can not be empty due AxiSBuilder initialization without interface
+            # name can not be empty due Axi4SBuilder initialization without interface
             name = "deparsed"
 
         self = cls(parent, None, name)
-        setattr(parent, self._findSuitableName("deparser"), u)
-        self._propagateClkRstn(u)
-        self.end = u.dataOut
+        setattr(parent, self._findSuitableName("deparser"), m)
+        self._propagateClkRstn(m)
+        self.end = m.dataOut
 
-        self.lastComp = u
-        self.end = u.dataOut
-        return self, u.dataIn
+        self.lastComp = m
+        self.end = m.dataOut
+        return self, m.dataIn
 
     def buff_drop(self, items:int, export_size=False, export_space=False):
         """
@@ -122,7 +122,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         (use "dataIn_discard" signal)
         """
 
-        def set_params(u: AxiSFifoDrop):
+        def set_params(u: Axi4SFifoDrop):
             u.DEPTH = items
             u.EXPORT_SIZE = export_size
             u.EXPORT_SPACE = export_space
@@ -131,32 +131,32 @@ class AxiSBuilder(AbstractStreamBuilder):
 
     @classmethod
     def constant_frame(cls,
-                       parent: Unit,
-                       value: Union[bytes, Tuple[Union[int, BitsVal, None], ...]],
+                       parent: HwModule,
+                       value: Union[bytes, Tuple[Union[int, HBitsConst, None], ...]],
                        data_width: int,
                        use_strb:bool=False,
                        use_keep:bool=False,
                        repeat=True,
-                       name=None) -> "AxiSBuilder":
+                       name=None) -> "Axi4SBuilder":
         """
         Instantiate a constant buffer which wil produce the frame of specified data
         """
-        u = AxiSStoredBurst()
-        u.DATA = value
-        u.DATA_WIDTH = data_width
-        u.USE_STRB = use_strb
-        u.USE_KEEP = use_keep
-        u.REPEAT = repeat
+        m = Axi4SStoredBurst()
+        m.DATA = value
+        m.DATA_WIDTH = data_width
+        m.USE_STRB = use_strb
+        m.USE_KEEP = use_keep
+        m.REPEAT = repeat
 
         if name is None:
-            # name can not be empty due AxiSBuilder initialization without interface
+            # name can not be empty due Axi4SBuilder initialization without interface
             name = "stored_burst"
 
         self = cls(parent, None, name)
-        setattr(parent, self._findSuitableName("stored_burst"), u)
-        self._propagateClkRstn(u)
-        self.end = u.dataOut
+        setattr(parent, self._findSuitableName("stored_burst"), m)
+        self._propagateClkRstn(m)
+        self.end = m.dataOut
 
-        self.lastComp = u
-        self.end = u.dataOut
+        self.lastComp = m
+        self.end = m.dataOut
         return self

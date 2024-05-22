@@ -8,10 +8,10 @@ class MdioMasterTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = MdioMaster()
-        u.FREQ = int(10e6)
-        cls.MDIO_CLK = int((1e9 / u.MDIO_FREQ) * Time.ns)
-        cls.compileSim(u)
+        dut = cls.dut = MdioMaster()
+        dut.FREQ = int(10e6)
+        cls.MDIO_CLK = int((1e9 / dut.MDIO_FREQ) * Time.ns)
+        cls.compileSim(dut)
 
     def test_nop(self):
         MDIO_CLK = self.MDIO_CLK
@@ -19,27 +19,27 @@ class MdioMasterTC(SimTestCase):
 
     def test_read(self):
         MDIO_CLK = self.MDIO_CLK
-        u = self.u
+        dut = self.dut
         # opcode, (phyaddr, regaddr), wdata
         addr = (0x1, 0x13)
         MAGIC = 0xab12
-        u.md._ag.data[addr] = MAGIC
-        u.req._ag.data.append((Mdio.OP.READ, addr, None))
+        dut.md._ag.data[addr] = MAGIC
+        dut.req._ag.data.append((Mdio.OP.READ, addr, None))
         self.runSim(MDIO_CLK * 100)
 
-        self.assertValSequenceEqual(u.rdata._ag.data, [MAGIC, ])
+        self.assertValSequenceEqual(dut.rdata._ag.data, [MAGIC, ])
 
     def test_write(self):
         MDIO_CLK = self.MDIO_CLK
-        u = self.u
+        dut = self.dut
         # opcode, (phyaddr, regaddr), wdata
         addr = (0x1, 0x13)
         MAGIC = 0xab12
-        u.md._ag.data[addr] = MAGIC
-        u.req._ag.data.append((Mdio.OP.WRITE, addr, MAGIC))
+        dut.md._ag.data[addr] = MAGIC
+        dut.req._ag.data.append((Mdio.OP.WRITE, addr, MAGIC))
         self.runSim(MDIO_CLK * 100)
 
-        self.assertValEqual(u.md._ag.data[addr], MAGIC)
+        self.assertValEqual(dut.md._ag.data[addr], MAGIC)
 
 
 if __name__ == "__main__":

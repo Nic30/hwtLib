@@ -6,25 +6,25 @@ from typing import Optional, List, Callable, Tuple
 
 from hwt.code import If, Switch, SwitchLogic, Or, And
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils
 from hwtLib.abstract.frame_utils.join.fsm import input_B_dst_to_fsm
 from hwtLib.abstract.frame_utils.join.state_trans_item import StateTransItem
-from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.frame_join.input_reg import FrameJoinInputReg, \
     UnalignedJoinRegIntf
 from pyMathBitPrecise.bit_utils import bit_list_to_int
 
 
-class AxiS_FrameJoin(Unit):
+class Axi4S_FrameJoin(HwModule):
     """
     Join frames from multiple input streams and use keep signal
     to remove invalid bytes from body of the final packet.
@@ -32,27 +32,27 @@ class AxiS_FrameJoin(Unit):
 
     :note: delay=0
     :note: This component generates different frame joining logic
-        for each specific case of data alignment, cunk size, frame lens, etc.
+        for each specific case of data alignment, chunk size, frame lens, etc.
         which can happen based on configuration. This means that the implementation
         can be just straight wire or very complicated pipelined shift logic.
 
-    :note: The figure is ilustrative
+    :note: The figure is illustrative
 
-    .. figure:: ./_static/AxiS_FrameJoin.png
+    .. figure:: ./_static/Axi4S_FrameJoin.png
 
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.T = Param(HStruct(
-            (HStream(Bits(8), frame_len=(1, inf),
+        self.T = HwParam(HStruct(
+            (HStream(HBits(8), frame_len=(1, inf),
                      start_offsets=[0]), "f0"),
-            (HStream(Bits(16), frame_len=(1, 1)), "f1"),
+            (HStream(HBits(16), frame_len=(1, 1)), "f1"),
         ))
-        AxiStream._config(self)
+        Axi4Stream._config(self)
         self.DATA_WIDTH = 16
         self.USE_KEEP = True
-        self.OUT_OFFSET = Param(0)
+        self.OUT_OFFSET = HwParam(0)
 
     def _declr(self):
         assert self.USE_KEEP
@@ -67,9 +67,9 @@ class AxiS_FrameJoin(Unit):
         self.state_trans_table = input_B_dst_to_fsm(
             word_bytes, input_cnt, input_B_dst, fju.can_produce_zero_len_frame(streams))
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataOut = AxiStream()._m()
-            self.dataIn = HObjList(AxiStream() for _ in range(self.input_cnt))
+        with self._hwParamsShared():
+            self.dataOut = Axi4Stream()._m()
+            self.dataIn = HObjList(Axi4Stream() for _ in range(self.input_cnt))
 
     def generate_input_register(self, input_i: int, reg_cnt: int) -> Tuple[List[UnalignedJoinRegIntf], List[RtlSignal], RtlSignal]:
         in_reg = FrameJoinInputReg()
@@ -110,10 +110,10 @@ class AxiS_FrameJoin(Unit):
         for out_B_i, out_byte_mux_vals in enumerate(out_mux_values):
             # +1 because last value is used to invalidate data
             sel_w = log2ceil(len(out_byte_mux_vals) + 1)
-            sel = self._sig(f"out_byte{out_B_i:d}_sel", Bits(sel_w))
+            sel = self._sig(f"out_byte{out_B_i:d}_sel", HBits(sel_w))
             out_byte_sel.append(sel)
 
-            out_B = self._sig(f"out_byte{out_B_i:d}", Bits(8))
+            out_B = self._sig(f"out_byte{out_B_i:d}", HBits(8))
             index_byte(self.dataOut.data, out_B_i)(out_B)
 
             if self.USE_STRB:
@@ -227,7 +227,7 @@ class AxiS_FrameJoin(Unit):
         st_cnt = len(state_trans)
         assert st_cnt > 0
         if st_cnt > 1:
-            state = self._reg("state", Bits(log2ceil(st_cnt)), def_val=0)
+            state = self._reg("state", HBits(log2ceil(st_cnt)), def_val=0)
             # state next logic
             If(self.dataOut.ready,
                 self.generate_driver_for_state_trans_dependent_out(
@@ -312,18 +312,18 @@ class AxiS_FrameJoin(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AxiS_FrameJoin()
+    from hwt.synth import to_rtl_str
+    m = Axi4S_FrameJoin()
     D_B = 2
-    u.DATA_WIDTH = 8 * D_B
+    m.DATA_WIDTH = 8 * D_B
     #u.USE_STRB = True
-    u.T = HStruct(
-        (HStream(Bits(8 * 1), (1, inf), [0, 1, 2, 3]), "frame0"),
-        (HStream(Bits(8 * 4), (1, 1), [0]), "frame1"),
+    m.T = HStruct(
+        (HStream(HBits(8 * 1), (1, inf), [0, 1, 2, 3]), "frame0"),
+        (HStream(HBits(8 * 4), (1, 1), [0]), "frame1"),
     )
-    u.T = HStruct(
-        (HStream(Bits(8 * 1), (0, inf), [0]), "frame0"),
-        (HStream(Bits(8 * 1), (0, inf), [0]), "frame1"),
-        (HStream(Bits(8 * 1), (0, inf), [0]), "frame2"),
+    m.T = HStruct(
+        (HStream(HBits(8 * 1), (0, inf), [0]), "frame0"),
+        (HStream(HBits(8 * 1), (0, inf), [0]), "frame1"),
+        (HStream(HBits(8 * 1), (0, inf), [0]), "frame2"),
     )
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

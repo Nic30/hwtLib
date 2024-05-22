@@ -1,9 +1,9 @@
 from inspect import isgenerator
 
-from hwtLib.amba.datapump.r import Axi_rDatapump
-from hwtLib.amba.datapump.w import Axi_wDatapump
 from hwtLib.amba.datapump.interconnect.rStricOrder import RStrictOrderInterconnect
 from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwtLib.amba.datapump.r import Axi_rDatapump
+from hwtLib.amba.datapump.w import Axi_wDatapump
 
 
 def connectDp(parent, controller, datapump, axi, exclude=None):

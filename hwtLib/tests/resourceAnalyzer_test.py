@@ -4,19 +4,19 @@
 import unittest
 
 from hwt.code import Switch
-from hwt.hdl.operatorDefs import AllOps
-from hwt.interfaces.std import VectSignal, Signal
+from hwt.hdl.operatorDefs import HwtOps
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceLatch
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import synthesised
+from hwt.hwModule import HwModule
+from hwt.synth import synthesised
 
 
-class LatchInSwitchTest(Unit):
+class LatchInSwitchTest(HwModule):
     def _declr(self):
-        self.a = VectSignal(4)
-        self.b = VectSignal(4)._m()
+        self.a = HwIOVectSignal(4)
+        self.b = HwIOVectSignal(4)._m()
 
     def _impl(self):
         Switch(self.a).add_cases([(i, self.b(i)) for i in range(6)])
@@ -25,18 +25,18 @@ class LatchInSwitchTest(Unit):
 class DualLatchInSwitchTest(LatchInSwitchTest):
     def _declr(self):
         super(DualLatchInSwitchTest, self)._declr()
-        self.c = VectSignal(4)._m()
+        self.c = HwIOVectSignal(4)._m()
 
     def _impl(self):
         super(DualLatchInSwitchTest, self)._impl()
         Switch(self.a).add_cases([(i, self.c(i)) for i in range(4)])
 
 
-class BoolToBitTest(Unit):
+class BoolToBitTest(HwModule):
     def _declr(self):
-        self.a = VectSignal(4)
-        self.b = VectSignal(4)
-        self.c = Signal()._m()
+        self.a = HwIOVectSignal(4)
+        self.b = HwIOVectSignal(4)
+        self.c = HwIOSignal()._m()
 
     def _impl(self):
         self.c(self.a._eq(self.b))
@@ -44,10 +44,10 @@ class BoolToBitTest(Unit):
 
 class ResourceAnalyzer_TC(unittest.TestCase):
     def test_latch_in_switch(self):
-        u = LatchInSwitchTest()
+        dut = LatchInSwitchTest()
         ra = ResourceAnalyzer()
-        synthesised(u)
-        ra.visit_Unit(u)
+        synthesised(dut)
+        ra.visit_HwModule(dut)
         res = ra.report()
         expected = {
             (ResourceMUX, 4, 6): 1,
@@ -56,10 +56,10 @@ class ResourceAnalyzer_TC(unittest.TestCase):
         self.assertDictEqual(res, expected)
 
     def test_dualLatch_in_switch(self):
-        u = DualLatchInSwitchTest()
+        dut = DualLatchInSwitchTest()
         ra = ResourceAnalyzer()
-        synthesised(u)
-        ra.visit_Unit(u)
+        synthesised(dut)
+        ra.visit_HwModule(dut)
         res = ra.report()
         expected = {
             (ResourceMUX, 4, 4): 1,
@@ -69,13 +69,13 @@ class ResourceAnalyzer_TC(unittest.TestCase):
         self.assertDictEqual(res, expected)
 
     def test_BoolToBits(self):
-        u = BoolToBitTest()
+        dut = BoolToBitTest()
         ra = ResourceAnalyzer()
-        synthesised(u)
-        ra.visit_Unit(u)
+        synthesised(dut)
+        ra.visit_HwModule(dut)
         res = ra.report()
         expected = {
-            (AllOps.EQ, 4): 1,
+            (HwtOps.EQ, 4): 1,
             }
         self.assertDictEqual(res, expected)
 

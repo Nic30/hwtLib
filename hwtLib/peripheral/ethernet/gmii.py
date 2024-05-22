@@ -1,32 +1,32 @@
-from hwt.interfaces.std import VectSignal, Signal, Clk
-from hwt.synthesizer.interface import Interface
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, HwIOClk
+from hwt.hwIO import HwIO
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
-class GmiiTxChannel(Interface):
+class GmiiTxChannel(HwIO):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.d = VectSignal(8)
-        self.en = Signal()
-        self.er = Signal()
+        self.d = HwIOVectSignal(8)
+        self.en = HwIOSignal()
+        self.er = HwIOSignal()
 
 
-class GmiiRxChannel(Interface):
+class GmiiRxChannel(HwIO):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.d = VectSignal(8)
-        self.dv = Signal()
-        self.er = Signal()
+        self.d = HwIOVectSignal(8)
+        self.dv = HwIOSignal()
+        self.er = HwIOSignal()
 
 
-class Gmii(Interface):
+class Gmii(HwIO):
     """
     Gigabit media independent interface
     Used to connect 1G Ethernet MAC and PHY
@@ -36,10 +36,10 @@ class Gmii(Interface):
     """
 
     def _declr(self):
-        self.rx_clk = Clk(masterDir=DIRECTION.IN)
+        self.rx_clk = HwIOClk(masterDir=DIRECTION.IN)
         with self._associated(clk=self.rx_clk):
             self.rx = GmiiRxChannel(masterDir=DIRECTION.IN)
-        self.tx_clk = Clk()
+        self.tx_clk = HwIOClk()
         with self._associated(clk=self.tx_clk):
             self.tx = GmiiTxChannel()
 

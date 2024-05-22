@@ -1,4 +1,4 @@
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
 
 
@@ -30,9 +30,9 @@ class USB_REQUEST_TYPE_RECIPIENT:
 
 
 usb_request_type_t = HStruct(
-    (Bits(5), "recipient"), # :see: :class:`~.USB_REQUEST_TYPE_RECIPIENT`
-    (Bits(2), "type"),  # :see: :class:`~.USB_REQUEST_TYPE_TYPE`
-    (Bits(1), "data_transfer_direction"), # :see: :class:`~.USB_REQUEST_TYPE_DIRECTION`
+    (HBits(5), "recipient"), # :see: :class:`~.USB_REQUEST_TYPE_RECIPIENT`
+    (HBits(2), "type"),  # :see: :class:`~.USB_REQUEST_TYPE_TYPE`
+    (HBits(1), "data_transfer_direction"), # :see: :class:`~.USB_REQUEST_TYPE_DIRECTION`
 )
 
 
@@ -56,14 +56,14 @@ class USB_REQUEST:
 # used as a data for setup transactions
 usb_device_request_t = HStruct(
     (usb_request_type_t, "bmRequestType"),
-    (Bits(1 * 8), "bRequest"),
+    (HBits(1 * 8), "bRequest"),
     # Word-sized field that varies according to request
-    (Bits(2 * 8), "wValue"),
+    (HBits(2 * 8), "wValue"),
     # Word-sized field that varies according to
     # request; typically used to pass an index or offset
-    (Bits(2 * 8), "wIndex"),
+    (HBits(2 * 8), "wIndex"),
     # Number of bytes to transfer if there is a Data stage
-    (Bits(2 * 8), "wLength"),
+    (HBits(2 * 8), "wLength"),
 )
 
 

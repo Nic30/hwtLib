@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdl.constants import CLK_PERIOD
+from hwt.constants import CLK_PERIOD
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.arithmetic.selfRefCntr import SelfRefCntr
 
@@ -12,14 +12,14 @@ class SelfRefCntrTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = SelfRefCntr()
-        cls.compileSim(cls.u)
+        cls.dut = SelfRefCntr()
+        cls.compileSim(cls.dut)
 
     def test_overflow(self):
-        u = self.u
+        dut = self.dut
 
         self.runSim(9 * CLK_PERIOD)
-        self.assertSequenceEqual(u.dout._ag.data,
+        self.assertSequenceEqual(dut.dout._ag.data,
                                  [0, 1, 2, 3, 4, 0, 1, 2])
 
 

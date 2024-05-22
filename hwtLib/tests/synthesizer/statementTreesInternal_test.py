@@ -4,8 +4,8 @@
 import unittest
 
 from hwt.doc_markers import internal
-from hwt.hdl.operator import Operator
-from hwt.hdl.operatorDefs import AllOps
+from hwt.hdl.operator import HOperatorNode
+from hwt.hdl.operatorDefs import HwtOps
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
@@ -22,7 +22,7 @@ def getBaseCond(c):
 
     if len(drivers) == 1:
         d = list(c.drivers)[0]
-        if isinstance(d, Operator) and d.operator == AllOps.NOT:
+        if isinstance(d, HOperatorNode) and d.operator == HwtOps.NOT:
             c = d.operands[0]
             isNegated = True
 

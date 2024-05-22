@@ -1,36 +1,36 @@
 from typing import Union, List
 
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
 
-vlan_t = Bits(12)
-eth_mac_t = Bits(6 * 8)
+vlan_t = HBits(12)
+eth_mac_t = HBits(6 * 8)
 
 eth_syncword = 0b1010101010101010101010101010101010101010101010101010101010101011
 
 EthPreamble_t = HStruct(
-    (Bits(7 * 8), "preambule"),
-    (Bits(8), "startOfFrameDelimiter"),
+    (HBits(7 * 8), "preambule"),
+    (HBits(8), "startOfFrameDelimiter"),
     name="EthPreamble_t"
 )
 
 Eth2Header_t = HStruct(
     (eth_mac_t, "dst"),
     (eth_mac_t, "src"),
-    (Bits(2 * 8), "type"), # :see: :class:`~.ETHER_TYPE`
+    (HBits(2 * 8), "type"), # :see: :class:`~.ETHER_TYPE`
     name="Eth2Header_t"
 )
 
 Tag802_1q = HStruct(
-    (Bits(16), "tpid"),
-    (Bits(16), "tci")
+    (HBits(16), "tpid"),
+    (HBits(16), "tci")
 )
 
 Eth802_1qHeader_t = HStruct(
     (eth_mac_t, "dst"),
     (eth_mac_t, "src"),
     (Tag802_1q, "tag"),
-    (Bits(2 * 8), "type"),
+    (HBits(2 * 8), "type"),
     name="Eth802_1qHeader_t"
 )
 

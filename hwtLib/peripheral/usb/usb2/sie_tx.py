@@ -3,24 +3,24 @@
 
 from hwt.code import Concat, If
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.frame_deparser import Axi4S_frameDeparser
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crc import Crc
 from hwtLib.logic.crcPoly import CRC_16_USB
 from hwtLib.peripheral.usb.constants import usb_pid_t, USB_PID
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b_tx
-from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecified
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecifiedError
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 
 
-class Usb2SieDeviceTxInput(AxiStream):
+class Usb2SieDeviceTxInput(Axi4Stream):
     """
     :attention: The valid must not go low in the middle of the packet
 
@@ -28,20 +28,20 @@ class Usb2SieDeviceTxInput(AxiStream):
     """
 
     def _config(self):
-        AxiStream._config(self)
+        Axi4Stream._config(self)
         self.USE_KEEP = True
         self.DATA_WIDTH = 8
 
     def _declr(self):
-        self.pid = Signal(usb_pid_t)
-        self.chirp = Signal()
-        AxiStream._declr(self)
+        self.pid = HwIOSignal(usb_pid_t)
+        self.chirp = HwIOSignal()
+        Axi4Stream._declr(self)
 
     def _getIpCoreIntfClass(self):
-        raise IntfIpMetaNotSpecified()
+        raise IntfIpMetaNotSpecifiedError()
 
 
-class Usb2SieDeviceTx(Unit):
+class Usb2SieDeviceTx(HwModule):
     """
     UTMI Tx packet CRC appender and chirp inserter, (SIE stands for serial interface engine)
 
@@ -59,17 +59,17 @@ class Usb2SieDeviceTx(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.enable = Signal()
+        self.enable = HwIOSignal()
 
         self.tx_cmd = Usb2SieDeviceTxInput()
 
         self.tx = Utmi_8b_tx()._m()
 
-    def _AxiStream_to_Utmi_8b_tx(self, axis: AxiStream, tx: Utmi_8b_tx):
+    def _Axi4Stream_to_Utmi_8b_tx(self, axis: Axi4Stream, tx: Utmi_8b_tx):
         """
         Convert last signal to a space between packets
         """
-        last_delayed = self._reg("_AxiStream_to_Utmi_8b_tx_last_delayed", def_val=0)
+        last_delayed = self._reg("_Axi4Stream_to_Utmi_8b_tx_last_delayed", def_val=0)
         StreamNode([axis], [tx]).sync(~last_delayed)
         If(last_delayed & tx.rd,
             last_delayed(0),
@@ -79,16 +79,16 @@ class Usb2SieDeviceTx(Unit):
         tx.data(axis.data)
 
     def _impl(self):
-        deparser_hs = AxiS_frameDeparser(
+        deparser_hs = Axi4S_frameDeparser(
             HStruct(
-                (Bits(8), "pid"),
+                (HBits(8), "pid"),
             )
         )
-        deparser_data = AxiS_frameDeparser(
+        deparser_data = Axi4S_frameDeparser(
             HStruct(
-                (Bits(8), "pid"),
-                (HStream(Bits(8), frame_len=(0, 1024)), "data"),
-                (Bits(16), "crc16"),
+                (HBits(8), "pid"),
+                (HStream(HBits(8), frame_len=(0, 1024)), "data"),
+                (HBits(16), "crc16"),
             )
         )
         for d in [deparser_hs, deparser_data]:
@@ -99,7 +99,7 @@ class Usb2SieDeviceTx(Unit):
         self.deparser_hs = deparser_hs
         self.deparser_data = deparser_data
 
-        tx_cmd: Usb2SieDeviceTxInput = AxiSBuilder(self, self.tx_cmd).buff(items=1).end
+        tx_cmd: Usb2SieDeviceTxInput = Axi4SBuilder(self, self.tx_cmd).buff(items=1).end
         pid_is_hs = rename_signal(self, tx_cmd.valid & ~tx_cmd.chirp & USB_PID.is_hs(tx_cmd.pid), "pid_is_hs")
         pid_has_data = rename_signal(self, tx_cmd.valid & ~tx_cmd.chirp & USB_PID.is_data(tx_cmd.pid), "pid_has_data")
         # pid_has_data_non_zero_len = rename_signal(self, pid_has_data & (tx_cmd.keep != 0), "pid_has_data_non_zero_len")
@@ -130,7 +130,7 @@ class Usb2SieDeviceTx(Unit):
             }
         ).sync(tx_cmd.valid & self.enable & is_sof_of_command & ~crc16_valid)
 
-        payload_in: AxiStream = deparser_data.dataIn.data
+        payload_in: Axi4Stream = deparser_data.dataIn.data
         StreamNode(
             [], [payload_in],
         ).sync(pid_has_data & tx_cmd.valid & ~crc16_valid)
@@ -166,10 +166,10 @@ class Usb2SieDeviceTx(Unit):
         deparser_data.dataIn.crc16.data(Concat(*(b for b in crc16.dataOut)))
         deparser_data.dataIn.crc16.vld(crc16_valid | pid_has_data_zero_len)
 
-        axis_tx = AxiStream()
+        axis_tx = Axi4Stream()
         axis_tx.DATA_WIDTH = tx_cmd.DATA_WIDTH
         self.axis_tx = axis_tx
-        _axis_tx = AxiSBuilder.join_prioritized(self, [deparser_hs.dataOut, deparser_data.dataOut]).end
+        _axis_tx = Axi4SBuilder.join_prioritized(self, [deparser_hs.dataOut, deparser_data.dataOut]).end
         If(tx_cmd.valid & tx_cmd.chirp,
            axis_tx.data(0),
            axis_tx.last(0),
@@ -179,12 +179,13 @@ class Usb2SieDeviceTx(Unit):
            axis_tx(_axis_tx, exclude=[_axis_tx.keep, ])
         )
 
-        self._AxiStream_to_Utmi_8b_tx(axis_tx, self.tx)
+        self._Axi4Stream_to_Utmi_8b_tx(axis_tx, self.tx)
 
         propagateClkRstn(self)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Usb2SieDeviceTx()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = Usb2SieDeviceTx()
+    print(to_rtl_str(m))

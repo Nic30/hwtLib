@@ -6,22 +6,21 @@ from hwt.hdl.transPart import TransPart
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStructField
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.unionIntf import UnionSource, UnionSink
-from hwt.synthesizer.byteOrder import reverseByteOrder
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOUnion import HwIOUnionSource, HwIOUnionSink
+from hwt.hwModule import HwModule
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.frame_parser.out_containers import ListOfOutNodeInfos, \
     ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutStreamNodeGroup, \
     OutStreamNodeInfo, OutNodeInfo
 from hwtLib.handshaked.builder import HsBuilder
-from pyMathBitPrecise.bit_utils import mask
+from pyMathBitPrecise.bit_utils import mask, reverse_byte_order
 
 
-def get_byte_order_modifier(axis: AxiStream):
+def get_byte_order_modifier(axis: Axi4Stream):
     if axis.IS_BIGENDIAN:
-        return reverseByteOrder
+        return reverse_byte_order
     else:
 
         def byteOrderCare(sig):
@@ -30,9 +29,9 @@ def get_byte_order_modifier(axis: AxiStream):
         return byteOrderCare
 
 
-class AxiS_frameParserFieldConnector():
+class Axi4S_frameParserFieldConnector():
 
-    def __init__(self, parent: Unit, dataIn: AxiStream, dataOut: Union[StructIntf, UnionSource]):
+    def __init__(self, parent: HwModule, dataIn: Axi4Stream, dataOut: Union[HwIOStruct, HwIOUnionSource]):
         self.parent = parent
         self.dataIn = dataIn
         self.dataOut = dataOut
@@ -40,7 +39,7 @@ class AxiS_frameParserFieldConnector():
         self._tmpRegsForSelect = {}
         # TransTmpl: List[RtlSignal]
         self._signalsOfParts = {}
-        # AxiStream: OutStreamNodeInfo
+        # Axi4Stream: OutStreamNodeInfo
         self._streamNodes = {}
 
     def getInDataSignal(self, transPart: TransPart):
@@ -49,14 +48,14 @@ class AxiS_frameParserFieldConnector():
         return busDataSignal[high:low]
 
     def choiceIsSelected(self,
-                         interfaceOfChoice: Union[UnionSource, UnionSink]):
+                         interfaceOfChoice: Union[HwIOUnionSource, HwIOUnionSink]):
         """
         Check if union member is selected by _select interface
         in union interface
         """
         parent = interfaceOfChoice._parent
         r = self._tmpRegsForSelect[parent]
-        i = parent._interfaces.index(interfaceOfChoice)
+        i = parent._hwIOs.index(interfaceOfChoice)
         return i, r.data._eq(i), r.vld
 
     def connectParts(self,
@@ -84,20 +83,20 @@ class AxiS_frameParserFieldConnector():
             exclusiveEn: Optional[RtlSignal],
             wordIndex: Optional[RtlSignal],
             currentWordIndex: int):
-        tToIntf = self.dataOut._fieldsToInterfaces
-        parentIntf = tToIntf[part.origin.parent.getFieldPath()]
+        tToHwIO = self.dataOut._fieldsToHwIOs
+        parentHwIO = tToHwIO[part.origin.parent.getFieldPath()]
         try:
-            sel = self._tmpRegsForSelect[parentIntf]
+            sel = self._tmpRegsForSelect[parentHwIO]
         except KeyError:
-            sel = HsBuilder(self.parent, parentIntf._select).buff().end
-            self._tmpRegsForSelect[parentIntf] = sel
+            sel = HsBuilder(self.parent, parentHwIO._select).buff().end
+            self._tmpRegsForSelect[parentHwIO] = sel
         unionGroup = ExclusieveListOfHsNodes(sel)
 
         # for unions
         for choice in part:
             # connect data signals of choices and collect info about
             # streams
-            intfOfChoice = tToIntf[choice.tmpl.getFieldPath()]
+            intfOfChoice = tToHwIO[choice.tmpl.getFieldPath()]
             selIndex, isSelected, isSelectValid = self.choiceIsSelected(
                 intfOfChoice)
             _exclusiveEn = isSelectValid & isSelected & exclusiveEn
@@ -130,7 +129,7 @@ class AxiS_frameParserFieldConnector():
         # use tmpl.parent because part is actually a chunk of data
         # in the stream
         path_to_stream_port = part.tmpl.parent.getFieldPath()
-        dout = self.dataOut._fieldsToInterfaces[path_to_stream_port]
+        dout = self.dataOut._fieldsToHwIOs[path_to_stream_port]
         if isinstance(orig, HStructField):
             orig = orig.dtype
         assert isinstance(orig, HStream), orig
@@ -274,14 +273,14 @@ class AxiS_frameParserFieldConnector():
         if part.isLastPart():
             # connect all parts in this group to output stream
             signalsOfParts.append(fPartSig)
-            tToIntf = self.dataOut._fieldsToInterfaces
-            intf = tToIntf[part.tmpl.getFieldPath()]
-            intf.data(self.byteOrderCare(
+            tToHwIO = self.dataOut._fieldsToHwIOs
+            hwIO = tToHwIO[part.tmpl.getFieldPath()]
+            hwIO.data(self.byteOrderCare(
                 Concat(
                     *reversed(signalsOfParts)
                 ))
             )
-            on = OutNodeInfo(self.parent, intf, en, exclusiveEn)
+            on = OutNodeInfo(self.parent, hwIO, en, exclusiveEn)
             hsNondes.append(on)
         else:
             # part is not in same word as last part, we have to store it's value

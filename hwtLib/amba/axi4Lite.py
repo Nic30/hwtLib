@@ -1,7 +1,7 @@
-from hwt.interfaces.std import VectSignal
+from hwt.hwIOs.std import HwIOVectSignal
 from hwtLib.amba.axi3Lite import IP_Axi3Lite, Axi3Lite, Axi3Lite_r, \
     Axi3Lite_b, Axi3Lite_w, Axi3Lite_addr, Axi3Lite_addrAgent
-from hwtLib.amba.axi_intf_common import AxiMap
+from hwtLib.amba.axi_common import AxiMap
 from hwtLib.amba.constants import PROT_DEFAULT
 from hwtSimApi.hdlSimulator import HdlSimulator
 
@@ -15,7 +15,7 @@ class Axi4Lite_addr(Axi3Lite_addr):
 
     def _declr(self):
         super(Axi4Lite_addr, self)._declr()
-        self.prot = VectSignal(3)
+        self.prot = HwIOVectSignal(3)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi4Lite_addrAgent(sim, self)
@@ -27,7 +27,7 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
     """
 
     def get_data(self):
-        return self.intf.addr.read(), self.intf.prot.read()
+        return self.hwIO.addr.read(), self.hwIO.prot.read()
 
     def set_data(self, data):
         if data is None:
@@ -35,8 +35,8 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
         else:
             addr, prot = data
 
-        self.intf.addr.write(addr)
-        self.intf.prot.write(prot)
+        self.hwIO.addr.write(addr)
+        self.hwIO.prot.write(prot)
 
     def create_addr_req(self, addr, prot=PROT_DEFAULT):
         return (addr, prot)

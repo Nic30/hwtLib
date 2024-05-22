@@ -1,29 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import VectSignal, Signal
-from hwt.synthesizer.unit import Unit
-from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwt.code import Concat, If
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
+from hwt.hwModule import HwModule
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
-class TmpVarExample0(Unit):
+class TmpVarExample0(HwModule):
 
     def _declr(self):
-        self.a = VectSignal(32)
-        self.b = VectSignal(32)._m()
+        self.a = HwIOVectSignal(32)
+        self.b = HwIOVectSignal(32)._m()
 
     def _impl(self):
         a = self.a[8:] + 4
         self.b(a[4:], fit=True)
 
 
-class TmpVarExample1(Unit):
+class TmpVarExample1(HwModule):
 
     def _declr(self):
-        self.a = VectSignal(32)
-        self.b = VectSignal(32)._m()
+        self.a = HwIOVectSignal(32)
+        self.b = HwIOVectSignal(32)._m()
 
     def _impl(self):
         a = self.a
@@ -36,11 +36,11 @@ class TmpVarExample1(Unit):
         )
 
 
-class TmpVarExample2(Unit):
+class TmpVarExample2(HwModule):
 
     def _declr(self):
-        self.a = VectSignal(32)
-        self.b = VectSignal(32)._m()
+        self.a = HwIOVectSignal(32)
+        self.b = HwIOVectSignal(32)._m()
 
     def _impl(self):
         a = self.a
@@ -56,17 +56,17 @@ class TmpVarExample2(Unit):
         )
 
 
-class TmpVarExampleTernary(Unit):
+class TmpVarExampleTernary(HwModule):
 
     def _declr(self) -> None:
-        self.a = Signal()
-        self.b = VectSignal(1)
-        self.c = Signal()
+        self.a = HwIOSignal()
+        self.b = HwIOVectSignal(1)
+        self.c = HwIOSignal()
 
-        self.d = VectSignal(1)._m()
-        self.e = VectSignal(1)._m()
-        self.f = Signal()._m()
-        self.g = Signal()._m()
+        self.d = HwIOVectSignal(1)._m()
+        self.e = HwIOVectSignal(1)._m()
+        self.f = HwIOSignal()._m()
+        self.g = HwIOSignal()._m()
 
     def _impl(self) -> None:
         a = self.a
@@ -78,17 +78,17 @@ class TmpVarExampleTernary(Unit):
         self.g(c._ternary(b, a))
 
 
-class TmpVarSignCast(Unit):
+class TmpVarSignCast(HwModule):
 
     def _declr(self) -> None:
-        self.a = Signal()
-        self.b = Signal(dtype=Bits(1, signed=False))
-        self.c = Signal(dtype=Bits(1, signed=False))._m()
-        self.d = Signal(dtype=Bits(1, signed=False))._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal(dtype=HBits(1, signed=False))
+        self.c = HwIOSignal(dtype=HBits(1, signed=False))._m()
+        self.d = HwIOSignal(dtype=HBits(1, signed=False))._m()
 
-        self.e = VectSignal(2)
-        self.i = Signal()
-        self.o = Signal()._m()
+        self.e = HwIOVectSignal(2)
+        self.i = HwIOSignal()
+        self.o = HwIOSignal()._m()
 
     def _impl(self) -> None:
         self.c(self.a + self.b)

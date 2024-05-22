@@ -1,11 +1,11 @@
 from typing import Deque, Union, Optional, List
 
 from hwt.code import Concat
-from hwt.hdl.types.bitsVal import BitsVal
+from hwt.hdl.const import HConst
+from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.struct import HStruct
-from hwt.hdl.types.structValBase import StructValBase
-from hwt.hdl.value import HValue
-from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
+from hwt.hdl.types.structValBase import HStructConstBase
+from hwt.constants import NOT_SPECIFIED
 from hwtLib.peripheral.usb.constants import USB_PID
 from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle, \
     UsbNoSuchDescriptor
@@ -44,7 +44,7 @@ class UsbHostAgent(UsbAgent):
         self.descr = {}
         self._descriptors_downloaded = False
 
-    def parse_interface_functional_descriptor(self, interface_descr: StructValBase, data:BitsVal):
+    def parse_interface_functional_descriptor(self, interface_descr: HStructConstBase, data:HBitsConst):
         bInterfaceClass = int(interface_descr.body.bInterfaceClass)
         if bInterfaceClass == USB_DEVICE_CLASS.CDC_CONTROL:
             h_t = usb_descriptor_functional_header
@@ -66,7 +66,7 @@ class UsbHostAgent(UsbAgent):
             raise NotImplementedError()
 
     def parse_configuration_descriptor_bundle(self, data_bytes: List[int]):
-        data = [d if isinstance(d, HValue) else uint8_t.from_py(d) for d in data_bytes]
+        data = [d if isinstance(d, HConst) else uint8_t.from_py(d) for d in data_bytes]
         data = Concat(*reversed(data))
         offset = 0
         end = data._dtype.bit_length()

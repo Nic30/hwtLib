@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
+from hwt.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.examples.statements.constDriver import ConstDriverUnit
+from hwtLib.examples.statements.constDriver import ConstDriverHwModule
 
 
 class ConstDriverTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = ConstDriverUnit()
-        cls.compileSim(cls.u)
+        cls.dut = ConstDriverHwModule()
+        cls.compileSim(cls.dut)
 
     def test_simple(self):
-        u = self.u
+        dut = self.dut
         self.runSim(20 * Time.ns)
 
-        self.assertValSequenceEqual(u.out0._ag.data, [0, 0])
-        self.assertValSequenceEqual(u.out1._ag.data, [1, 1])
+        self.assertValSequenceEqual(dut.out0._ag.data, [0, 0])
+        self.assertValSequenceEqual(dut.out1._ag.data, [1, 1])
 
 
 if __name__ == "__main__":

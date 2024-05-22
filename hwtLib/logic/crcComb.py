@@ -4,31 +4,31 @@
 from collections import deque
 from typing import List, Tuple, Union
 
-from hwt.interfaces.std import VectSignal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsConst import HBitsConst
+from hwt.hdl.types.defs import BIT
+from hwt.hwIOs.std import HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.logic.crcPoly import CRC_5_USB
 from hwtLib.logic.crcUtils import parsePolyStr
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_bits_in_bytes, \
     bit_list_reversed_endianity
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.hdl.types.bitsVal import BitsVal
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import BIT
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
 # http://www.easics.be/webtools/crctool
 # http://www.ijsret.org/pdf/121757.pdf
-class CrcComb(Unit):
+class CrcComb(HwModule):
     """
     CRC generator,
     polynomial can be string in usual format or integer ("x^3+x+1" or 0b1011)
 
     :ivar ~.DATA_WIDTH: width of data in signal
-    :ivar ~.POLY: specified CRC polynome, str, int or Bits value
+    :ivar ~.POLY: specified CRC polynome, str, int or HBits value
     :ivar ~.POLY_WIDTH: width of POLY
     :ivar ~.REFIN: This is a boolean parameter. If it is FALSE,
         input bytes are processed with bit 7 being treated
@@ -42,15 +42,15 @@ class CrcComb(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(7 + 4)
-        self.IN_IS_BIGENDIAN = Param(False)
+        self.DATA_WIDTH = HwParam(7 + 4)
+        self.IN_IS_BIGENDIAN = HwParam(False)
         self.setConfig(CRC_5_USB)
 
     def setConfig(self, crcConfigCls):
         """
         Apply configuration from CRC configuration class
         """
-        word_t = Bits(crcConfigCls.WIDTH)
+        word_t = HBits(crcConfigCls.WIDTH)
         self.POLY = word_t.from_py(crcConfigCls.POLY)
         self.POLY_WIDTH = crcConfigCls.WIDTH
         self.REFIN = crcConfigCls.REFIN
@@ -60,9 +60,9 @@ class CrcComb(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = VectSignal(self.DATA_WIDTH)
-            self.dataOut = VectSignal(self.POLY_WIDTH)._m()
+        with self._hwParamsShared():
+            self.dataIn = HwIOVectSignal(self.DATA_WIDTH)
+            self.dataOut = HwIOVectSignal(self.POLY_WIDTH)._m()
 
     @staticmethod
     def parsePoly(POLY, POLY_WIDTH) -> List[int]:
@@ -131,7 +131,7 @@ class CrcComb(Unit):
 
     @classmethod
     def applyCrcXorMatrix(cls, crcMatrix: List[List[List[int]]],
-                          inBits: List[RtlSignal], stateBits: List[Union[RtlSignal, BitsVal]],
+                          inBits: List[RtlSignal], stateBits: List[Union[RtlSignal, HBitsConst]],
                           refin: bool) -> List:
         if refin:
             inBits = bit_list_reversed_bits_in_bytes(inBits, extend=False)
@@ -187,7 +187,7 @@ class CrcComb(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     # from hwtLib.logic.crcPoly import CRC_32
     # https://github.com/hdl4fpga/hdl4fpga/blob/2a18e546cfcd1f1c38e19705842243e776e019d1/library/usb/usbhost/usbh_crc5.v
     # https://superjameszou.wordpress.com/2010/09/06/a-real-example-for-usb-packets-transferring/
@@ -195,15 +195,15 @@ if __name__ == "__main__":
     # http://www.rayslogic.com/Propeller/USB.htm
     # http://outputlogic.com/?page_id=321
     # https://github.com/boostorg/crc/blob/develop/include/boost/crc.hpp
-    u = CrcComb()
+    m = CrcComb()
     # https://github.com/hdl4fpga/hdl4fpga/blob/2a18e546cfcd1f1c38e19705842243e776e019d1/library/usb/usbhost/usbh_crc5.v
-    u.setConfig(CRC_5_USB)
-    u.DATA_WIDTH = 7 + 4
-    # u.REFIN = u.REFOUT = False
-    # u.IN_IS_BIGENDIAN = True
+    m.setConfig(CRC_5_USB)
+    m.DATA_WIDTH = 7 + 4
+    # m.REFIN = m.REFOUT = False
+    # m.IN_IS_BIGENDIAN = True
     # https://github.com/nandland/nandland/blob/master/CRC/Verilog/source/CRC_16_CCITT_Parallel.v
     #from hwtLib.logic.crcPoly import CRC_16_CCITT
-    #u.setConfig(CRC_16_CCITT)
-    #u.DATA_WIDTH = 16
+    #m.setConfig(CRC_16_CCITT)
+    #m.DATA_WIDTH = 16
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

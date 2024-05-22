@@ -6,7 +6,7 @@ from hwtLib.amba.axi3Lite import Axi3Lite
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
-from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.datapump.r import Axi_rDatapump
 from hwtLib.amba.datapump.test import Axi_datapumpTC
@@ -22,37 +22,37 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = Axi_rDatapump(axiCls=Axi4)
-        u.DATA_WIDTH = cls.DATA_WIDTH
-        u.CHUNK_WIDTH = cls.CHUNK_WIDTH
+        dut = cls.dut = Axi_rDatapump(axiCls=Axi4)
+        dut.DATA_WIDTH = cls.DATA_WIDTH
+        dut.CHUNK_WIDTH = cls.CHUNK_WIDTH
         assert cls.CHUNK_WIDTH == cls.DATA_WIDTH
-        u.MAX_CHUNKS = cls.LEN_MAX_VAL + 1
-        u.ALIGNAS = cls.ALIGNAS
-        cls.compileSim(u)
+        dut.MAX_CHUNKS = cls.LEN_MAX_VAL + 1
+        dut.ALIGNAS = cls.ALIGNAS
+        cls.compileSim(dut)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.runSim(20 * CLK_PERIOD)
 
-        self.assertEmpty(u.axi.ar._ag.data)
-        self.assertEmpty(u.driver.r._ag.data)
+        self.assertEmpty(dut.axi.ar._ag.data)
+        self.assertEmpty(dut.driver.r._ag.data)
 
     def test_notSplitedReq(self):
-        u = self.u
+        dut = self.dut
 
-        req = u.driver._ag.req
+        req = dut.driver._ag.req
 
         # download one word from addr 0x100
         req.data.append(self.mkReq(0x100, 0))
         self.runSim((self.LEN_MAX_VAL + 3) * CLK_PERIOD)
 
         self.assertEqual(len(req.data), 0)
-        self.assertEqual(len(u.axi.ar._ag.data), 1)
-        self.assertEqual(len(u.driver._ag.r.data), 0)
+        self.assertEqual(len(dut.axi.ar._ag.data), 1)
+        self.assertEqual(len(dut.driver._ag.r.data), 0)
 
     def test_notSplitedReqWithData(self):
-        u = self.u
-        r = u.axi.r._ag
+        dut = self.dut
+        r = dut.axi.r._ag
 
         ar_ref, driver_r_ref = self.spotReadMemcpyTransactions(0x100, 0, None)
         # extra data without any request
@@ -61,16 +61,16 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
 
         self.runSim((self.LEN_MAX_VAL + 7) * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.axi.ar._ag.data, ar_ref)
-        self.assertValSequenceEqual(u.driver.r._ag.data, driver_r_ref)
+        self.assertValSequenceEqual(dut.axi.ar._ag.data, ar_ref)
+        self.assertValSequenceEqual(dut.driver.r._ag.data, driver_r_ref)
         # 2. is now beeing sended (but it should not finish as there is not a request for it)
         self.assertEqual(len(r.data), 2 - 1)
 
     def test_maxNotSplitedReqWithData(self):
-        u = self.u
+        dut = self.dut
 
-        req = u.driver.req._ag
-        r = u.axi.r._ag
+        req = dut.driver.req._ag
+        r = dut.axi.r._ag
 
         ar_ref, driver_r_ref = self.spotReadMemcpyTransactions(0x100, self.LEN_MAX_VAL, None)
 
@@ -82,8 +82,8 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
         self.runSim((self.LEN_MAX_VAL + 6) * CLK_PERIOD)
 
         self.assertEmpty(req.data)
-        self.assertValSequenceEqual(u.axi.ar._ag.data, ar_ref)
-        self.assertValSequenceEqual(u.driver.r._ag.data, driver_r_ref)
+        self.assertValSequenceEqual(dut.axi.ar._ag.data, ar_ref)
+        self.assertValSequenceEqual(dut.driver.r._ag.data, driver_r_ref)
 
         # 2. is now beeing sended (but it should not finish as there is not a request for it)
         self.assertEqual(len(r.data), 2 - 1)
@@ -95,17 +95,17 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
         self.check_r_trans(ar_ref, driver_r_ref)
 
     def test_maxOverlap(self):
-        u = self.u
-        MAX_TRANS_OVERLAP = u.MAX_TRANS_OVERLAP
+        dut = self.dut
+        MAX_TRANS_OVERLAP = dut.MAX_TRANS_OVERLAP
 
         ar_ref, _ = self.spotReadMemcpyTransactions(0x100, 2 * MAX_TRANS_OVERLAP, 0, addData=False)
 
         self.runSim((2 * MAX_TRANS_OVERLAP + 6) * CLK_PERIOD)
 
-        self.assertEqual(len(u.driver._ag.req.data), MAX_TRANS_OVERLAP)
-        self.assertEqual(len(u.driver.r._ag.data), 0)
-        self.assertValSequenceEqual(u.axi.ar._ag.data, ar_ref[:16])
-        self.assertEqual(len(u.axi.r._ag.data), 0)
+        self.assertEqual(len(dut.driver._ag.req.data), MAX_TRANS_OVERLAP)
+        self.assertEqual(len(dut.driver.r._ag.data), 0)
+        self.assertValSequenceEqual(dut.axi.ar._ag.data, ar_ref[:16])
+        self.assertEqual(len(dut.axi.r._ag.data), 0)
 
     def test_multipleShortest(self, N=64):
         ar_ref, driver_r_ref = self.spotReadMemcpyTransactions(0x0, N - 1, 0)
@@ -136,48 +136,48 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
         self.check_r_trans(ar_ref, driver_r_ref)
 
     def test_randomized(self, N=24):
-        u = self.u
+        dut = self.dut
 
-        if u.AXI_CLS in (Axi3Lite, Axi4Lite):
-            m = Axi4LiteSimRam(axi=u.axi)
+        if dut.AXI_CLS in (Axi3Lite, Axi4Lite):
+            m = Axi4LiteSimRam(axi=dut.axi)
         else:
-            m = AxiSimRam(axi=u.axi)
+            m = Axi4SimRam(axi=dut.axi)
 
         MAGIC = 99
-        self.randomize(u.driver.r)
-        self.randomize(u.driver.req)
+        self.randomize(dut.driver.r)
+        self.randomize(dut.driver.req)
 
-        self.randomize(u.axi.ar)
-        self.randomize(u.axi.r)
+        self.randomize(dut.axi.ar)
+        self.randomize(dut.axi.r)
 
         r_ref = []
         for _ in range(N):
             size = int(self._rand.random() * self.LEN_MAX_VAL) + 1
             data = [MAGIC + i2 for i2 in range(size)]
-            a = m.calloc(size, u.DATA_WIDTH // 8, initValues=data)
+            a = m.calloc(size, dut.DATA_WIDTH // 8, initValues=data)
             _, _r_ref = self.spotReadMemcpyTransactions(a, size - 1, None, data=data)
             r_ref.extend(_r_ref)
             MAGIC += size
 
         self.runSim(len(r_ref) * 5 * CLK_PERIOD)
 
-        self.assertEmpty(u.driver.req._ag.data)
-        self.assertValSequenceEqual(u.driver.r._ag.data, r_ref)
+        self.assertEmpty(dut.driver.req._ag.data)
+        self.assertValSequenceEqual(dut.driver.r._ag.data, r_ref)
 
     def test_simpleUnalignedWithData(self, N=1, WORDS=1, OFFSET_B=None, randomize=False):
-        u = self.u
+        dut = self.dut
 
-        req = u.driver._ag.req
+        req = dut.driver._ag.req
         if randomize:
-            self.randomize(u.driver.req)
-            self.randomize(u.driver.r)
-            self.randomize(u.axi.ar)
-            self.randomize(u.axi.r)
+            self.randomize(dut.driver.req)
+            self.randomize(dut.driver.r)
+            self.randomize(dut.axi.ar)
+            self.randomize(dut.axi.r)
 
-        if u.AXI_CLS in (Axi3Lite, Axi4Lite):
-            m = Axi4LiteSimRam(axi=u.axi)
+        if dut.AXI_CLS in (Axi3Lite, Axi4Lite):
+            m = Axi4LiteSimRam(axi=dut.axi)
         else:
-            m = AxiSimRam(axi=u.axi)
+            m = Axi4SimRam(axi=dut.axi)
 
         if OFFSET_B is None:
             if self.ALIGNAS == self.DATA_WIDTH:
@@ -186,7 +186,7 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
             else:
                 OFFSET_B = self.ALIGNAS // 8
 
-        addr_step = u.DATA_WIDTH // 8
+        addr_step = dut.DATA_WIDTH // 8
         offset = 8
         ref_r_frames = []
         for i in range(N):
@@ -202,17 +202,17 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
         if randomize:
             t *= 6
         self.runSim(t)
-        if u.ALIGNAS == u.DATA_WIDTH:
+        if dut.ALIGNAS == dut.DATA_WIDTH:
             # unsupported alignment check if error is set
-            self.assertValEqual(u.errorAlignment._ag.data[-1], 1)
+            self.assertValEqual(dut.errorAlignment._ag.data[-1], 1)
 
         else:
-            if u.ALIGNAS != 8:
+            if dut.ALIGNAS != 8:
                 # if alignment is on 1B the but the errorAlignment can not happen
-                self.assertValEqual(u.errorAlignment._ag.data[-1], 0)
+                self.assertValEqual(dut.errorAlignment._ag.data[-1], 0)
 
             ar_ref = []
-            if u.axi.LEN_WIDTH == 0:
+            if dut.axi.LEN_WIDTH == 0:
                 for i in range(N):
                     for w_i in range(WORDS + 1):
                         ar_ref.append(
@@ -224,7 +224,7 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
                         self.aTrans(0x100 + i * addr_step, WORDS, 0)
                     )
 
-            driver_r = u.driver.r._ag.data
+            driver_r = dut.driver.r._ag.data
             for ref_frame in ref_r_frames:
                 offset = None
                 r_data = []
@@ -242,8 +242,8 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
                 self.assertEqual(offset, 0)
                 self.assertSequenceEqual(r_data, ref_frame)
 
-        self.assertEmpty(u.axi.ar._ag.data)
-        self.assertEmpty(u.axi.r._ag.data)
+        self.assertEmpty(dut.axi.ar._ag.data)
+        self.assertEmpty(dut.axi.r._ag.data)
 
 
 class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
@@ -251,13 +251,13 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
 
     @classmethod
     def setUpClass(cls):
-        u = Axi_rDatapump(axiCls=Axi3)
-        u.DATA_WIDTH = cls.DATA_WIDTH
-        u.CHUNK_WIDTH = cls.CHUNK_WIDTH
+        dut = Axi_rDatapump(axiCls=Axi3)
+        dut.DATA_WIDTH = cls.DATA_WIDTH
+        dut.CHUNK_WIDTH = cls.CHUNK_WIDTH
         assert cls.CHUNK_WIDTH == cls.DATA_WIDTH
-        u.MAX_CHUNKS = cls.LEN_MAX_VAL + 1
-        u.ALIGNAS = cls.ALIGNAS
-        cls.compileSim(u)
+        dut.MAX_CHUNKS = cls.LEN_MAX_VAL + 1
+        dut.ALIGNAS = cls.ALIGNAS
+        cls.compileSim(dut)
 
 
 class Axi3Lite_rDatapumpTC(Axi4_rDatapumpTC):
@@ -268,13 +268,13 @@ class Axi3Lite_rDatapumpTC(Axi4_rDatapumpTC):
 
     @classmethod
     def setUpClass(cls):
-        u = Axi_rDatapump(axiCls=Axi3Lite)
-        u.DATA_WIDTH = cls.DATA_WIDTH
-        u.CHUNK_WIDTH = cls.CHUNK_WIDTH
+        dut = Axi_rDatapump(axiCls=Axi3Lite)
+        dut.DATA_WIDTH = cls.DATA_WIDTH
+        dut.CHUNK_WIDTH = cls.CHUNK_WIDTH
         assert cls.CHUNK_WIDTH == cls.DATA_WIDTH
-        u.MAX_CHUNKS = cls.LEN_MAX_VAL + 1
-        u.ALIGNAS = cls.ALIGNAS
-        cls.compileSim(u)
+        dut.MAX_CHUNKS = cls.LEN_MAX_VAL + 1
+        dut.ALIGNAS = cls.ALIGNAS
+        cls.compileSim(dut)
 
     def rTrans(self, data, _id=0, resp=RESP_OKAY, last=True):
         assert last

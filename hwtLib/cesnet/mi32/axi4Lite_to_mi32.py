@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.constants import READ
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
+from hwt.constants import READ
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import RESP_OKAY
@@ -20,12 +20,12 @@ class Axi4Lite_to_Mi32(BusBridge):
 
     def _config(self) -> None:
         Mi32._config(self)
-        self.RW_PRIORITY = Param(READ)
+        self.RW_PRIORITY = HwParam(READ)
 
     def _declr(self) -> None:
         addClkRstn(self)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = Axi4Lite()
             self.m = Mi32()._m()
 
@@ -129,6 +129,7 @@ class Axi4Lite_to_Mi32(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Axi4Lite_to_Mi32()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = Axi4Lite_to_Mi32()
+    print(to_rtl_str(m))

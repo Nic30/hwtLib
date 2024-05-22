@@ -1,11 +1,11 @@
+from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
-from hwt.hdl.types.bits import Bits
 
 
 class ETH:
-    PREAMBLE_1B = Bits(8).from_py(0x55)
-    PREAMBLE = Bits(7 * 8).from_py(0x55555555555555)  # (7* 0x55)
-    SFD = Bits(8).from_py(0xD5)  # frame delimiter
+    PREAMBLE_1B = HBits(8).from_py(0x55)
+    PREAMBLE = HBits(7 * 8).from_py(0x55555555555555)  # (7* 0x55)
+    SFD = HBits(8).from_py(0xD5)  # frame delimiter
 
 
 ETH_ZLEN = 60  # Min. octets in frame sans FCS

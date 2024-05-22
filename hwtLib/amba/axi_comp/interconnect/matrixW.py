@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import propagateClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.math import log2ceil
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
 
 
 class AxiInterconnectMatrixCrossbarB(AxiInterconnectMatrixCrossbar):
 
-    def get_last(self, intf):
+    def get_last(self, hwIO):
         return 1
 
 
@@ -31,7 +31,7 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
 
     def _config(self):
         AxiInterconnectCommon._config(self)
-        self.AW_AND_W_WORD_TOGETHER = Param(True)
+        self.AW_AND_W_WORD_TOGETHER = HwParam(True)
 
     def _declr(self):
         AxiInterconnectCommon._declr(self, has_r=False, has_w=True)
@@ -44,8 +44,8 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         order_m_index_for_s_b = HObjList()
         for connected_masters in masters_for_slave:
             if len(connected_masters) > 1:
-                f_w = HandshakedFifo(Handshaked)
-                f_b = HandshakedFifo(Handshaked)
+                f_w = HandshakedFifo(HwIODataRdVld)
+                f_b = HandshakedFifo(HwIODataRdVld)
                 for _f in [f_w, f_b]:
                     _f.DEPTH = self.MAX_TRANS_OVERLAP
                     _f.DATA_WIDTH = log2ceil(len(self.MASTERS))
@@ -61,8 +61,8 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         order_s_index_for_m_b = HObjList()
         for connected_slaves in self.MASTERS:
             if len(connected_slaves) > 1:
-                f_w = HandshakedFifo(Handshaked)
-                f_b = HandshakedFifo(Handshaked)
+                f_w = HandshakedFifo(HwIODataRdVld)
+                f_b = HandshakedFifo(HwIODataRdVld)
 
                 for f in [f_w, f_b]:
                     f.DEPTH = self.MAX_TRANS_OVERLAP
@@ -74,12 +74,12 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         self.order_s_index_for_m_data = order_s_index_for_m_data
         self.order_s_index_for_m_b = order_s_index_for_m_b
 
-        AXI = self.intfCls
-        with self._paramsShared():
+        AXI = self.hwIOCls
+        with self._hwParamsShared():
             self.addr_crossbar = AxiInterconnectMatrixAddrCrossbar(
                 AXI.AW_CLS)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             c = self.data_crossbar = AxiInterconnectMatrixCrossbar(
                 AXI.W_CLS)
             c.INPUT_CNT = len(self.MASTERS)
@@ -89,7 +89,7 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
                     W_OUTPUTS[s_i].add(m_i)
             c.OUTPUTS = W_OUTPUTS
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             c = self.b_crossbar = AxiInterconnectMatrixCrossbarB(
                 AXI.B_CLS)
             c.INPUT_CNT = len(self.SLAVES)
@@ -104,14 +104,14 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         master_addr_channels = HObjList([m.aw for m in self.s])
         slave_addr_channels = HObjList([s.aw for s in self.m])
         if self.AW_AND_W_WORD_TOGETHER:
-            slave_addr_channels = HObjList([AxiSBuilder(self, aw, master_to_slave=False).buff(1).end for aw in slave_addr_channels])
+            slave_addr_channels = HObjList([Axi4SBuilder(self, aw, master_to_slave=False).buff(1).end for aw in slave_addr_channels])
 
         addr_crossbar.s(master_addr_channels)
         slave_addr_channels(addr_crossbar.m)
 
         master_w_channels = HObjList([m.w for m in self.s])
         if self.AW_AND_W_WORD_TOGETHER:
-            master_w_channels = HObjList([AxiSBuilder(self, w).buff(1).end for w in master_w_channels])
+            master_w_channels = HObjList([Axi4SBuilder(self, w).buff(1).end for w in master_w_channels])
 
         data_crossbar.dataIn(master_w_channels)
         slave_w_channels = HObjList([s.w for s in self.m])
@@ -169,27 +169,27 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
 
 
 def example_AxiInterconnectMatrixW():
-    u = AxiInterconnectMatrixW(Axi4)
-    # u.MASTERS = ({0}, )
-    # u.MASTERS = ({0, 1}, )
-    u.MASTERS = ({0, 1}, {0, 1})
-    # u.MASTERS = ({0, 1, 2}, )
-    # u.MASTERS = ({0}, {0}, {0}]
-    # u.SLAVES = ((0x1000, 0x1000),
+    m = AxiInterconnectMatrixW(Axi4)
+    # m.MASTERS = ({0}, )
+    # m.MASTERS = ({0, 1}, )
+    m.MASTERS = ({0, 1}, {0, 1})
+    # m.MASTERS = ({0, 1, 2}, )
+    # m.MASTERS = ({0}, {0}, {0}]
+    # m.SLAVES = ((0x1000, 0x1000),
     #            (0x2000, 0x1000),
     #            (0x3000, 0x1000),
     #          )
-    # u.SLAVES = ((0x1000, 0x1000), )
+    # m.SLAVES = ((0x1000, 0x1000), )
 
-    # u.MASTERS = ({0, 1}, {0, 1})
-    u.SLAVES = ((0x1000, 0x1000),
+    # m.MASTERS = ({0, 1}, {0, 1})
+    m.SLAVES = ((0x1000, 0x1000),
                 (0x2000, 0x1000),
                 )
 
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = example_AxiInterconnectMatrixW()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = example_AxiInterconnectMatrixW()
+    print(to_rtl_str(m))

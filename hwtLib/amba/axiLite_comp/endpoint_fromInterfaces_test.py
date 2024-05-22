@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.intf_map import IntfMap
-from hwt.interfaces.std import BramPort_withoutClk, VldSynced, RegCntrl, \
-    VectSignal, Signal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.constants import Time
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.hwIO_map import HwIOObjMap
+from hwt.hwIOs.std import HwIOBramPort_noClk, HwIODataVld, HwIORegCntrl, \
+    HwIOVectSignal, HwIOSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
@@ -18,7 +18,7 @@ from hwtLib.amba.axiLite_comp.sim.memSpaceMaster import AxiLiteMemSpaceMaster
 from hwtLib.amba.constants import RESP_OKAY
 
 
-class Loop(Unit):
+class Loop(HwModule):
     """
     Simple loop for any interface
     """
@@ -31,7 +31,7 @@ class Loop(Unit):
         self.interfaceCls._config(self)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.din = self.interfaceCls()
             self.dout = self.interfaceCls()._m()
 
@@ -39,47 +39,47 @@ class Loop(Unit):
         self.dout(self.din)
 
 
-class SigLoop(Unit):
+class SigLoop(HwModule):
 
     def _config(self):
-        self.DATA_WIDTH = Param(32)
+        self.DATA_WIDTH = HwParam(32)
 
     def _declr(self):
-        self.din = VectSignal(self.DATA_WIDTH)
-        self.dout = VectSignal(self.DATA_WIDTH)._m()
+        self.din = HwIOVectSignal(self.DATA_WIDTH)
+        self.dout = HwIOVectSignal(self.DATA_WIDTH)._m()
 
     def _impl(self):
         self.dout(self.din)
 
 
-class TestUnittWithChilds(Unit):
+class TestHwModuleWithChilds(HwModule):
     """
-    Container of AxiLiteEndpoint constructed by fromInterfaceMap
+    Container of AxiLiteEndpoint constructed by fromHwIOMap
     """
 
     def _config(self):
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(32)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(32)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.bus = Axi4Lite()
 
             self.signalLoop = SigLoop()
-            self.signalIn = VectSignal(self.DATA_WIDTH)
+            self.signalIn = HwIOVectSignal(self.DATA_WIDTH)
 
-            self.regCntrlLoop = Loop(RegCntrl)
-            self.regCntrlOut = RegCntrl()._m()
+            self.regCntrlLoop = Loop(HwIORegCntrl)
+            self.regCntrlOut = HwIORegCntrl()._m()
 
-            self.vldSyncedLoop = Loop(VldSynced)
-            self.vldSyncedOut = VldSynced()._m()
+            self.vldSyncedLoop = Loop(HwIODataVld)
+            self.vldSyncedOut = HwIODataVld()._m()
 
-        with self._paramsShared(exclude=({"ADDR_WIDTH"}, set())):
-            self.bramLoop = Loop(BramPort_withoutClk)
+        with self._hwParamsShared(exclude=({"ADDR_WIDTH"}, set())):
+            self.bramLoop = Loop(HwIOBramPort_noClk)
             self.bramLoop.ADDR_WIDTH = 2
 
-            self.bramOut = BramPort_withoutClk()._m()
+            self.bramOut = HwIOBramPort_noClk()._m()
             self.bramOut.ADDR_WIDTH = 2
 
     def _impl(self):
@@ -91,17 +91,17 @@ class TestUnittWithChilds(Unit):
         def configEp(ep):
             ep._updateParamsFrom(self)
 
-        rltSig10 = self._sig("sig", Bits(self.DATA_WIDTH), def_val=10)
-        interfaceMap = IntfMap([
+        rltSig10 = self._sig("sig", HBits(self.DATA_WIDTH), def_val=10)
+        interfaceMap = HwIOObjMap([
             (rltSig10, "rltSig10"),
             (self.signalLoop.dout, "signal"),
             (self.regCntrlLoop.din, "regCntrl"),
             (self.vldSyncedLoop.din, "vldSynced"),
             (self.bramLoop.din, "bram"),
-            (Bits(self.DATA_WIDTH), None),
+            (HBits(self.DATA_WIDTH), None),
         ])
 
-        axiLiteConv = AxiLiteEndpoint.fromInterfaceMap(interfaceMap)
+        axiLiteConv = AxiLiteEndpoint.fromHwIOMap(interfaceMap)
         axiLiteConv._updateParamsFrom(self)
         self.conv = axiLiteConv
 
@@ -112,39 +112,39 @@ class TestUnittWithChilds(Unit):
         propagateClkRstn(self)
 
 
-TestUnittWithChilds_add_space_str = """\
+TestHwModuleWithChilds_add_space_str = """\
 struct {
-    <Bits, 32bits> rltSig10 // start:0x0(bit) 0x0(byte)
-    <Bits, 32bits> signal // start:0x20(bit) 0x4(byte)
-    <Bits, 32bits> regCntrl // start:0x40(bit) 0x8(byte)
-    <Bits, 32bits> vldSynced // start:0x60(bit) 0xc(byte)
-    <Bits, 32bits>[4] bram // start:0x80(bit) 0x10(byte)
-    //<Bits, 32bits> empty space // start:0x100(bit) 0x20(byte)
+    <HBits, 32bits> rltSig10 // start:0x0(bit) 0x0(byte)
+    <HBits, 32bits> signal // start:0x20(bit) 0x4(byte)
+    <HBits, 32bits> regCntrl // start:0x40(bit) 0x8(byte)
+    <HBits, 32bits> vldSynced // start:0x60(bit) 0xc(byte)
+    <HBits, 32bits>[4] bram // start:0x80(bit) 0x10(byte)
+    //<HBits, 32bits> empty space // start:0x100(bit) 0x20(byte)
 }"""
 
 
-class TestUnittWithArr(Unit):
+class TestHwModuleWithArr(HwModule):
     """
-    Container of AxiLiteEndpoint constructed by fromInterfaceMap
+    Container of AxiLiteEndpoint constructed by fromHwIOMap
     """
 
     def _config(self):
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(32)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(32)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.bus = Axi4Lite()
 
-            self.regCntrlLoop0 = Loop(RegCntrl)
-            self.regCntrlOut0 = RegCntrl()._m()
+            self.regCntrlLoop0 = Loop(HwIORegCntrl)
+            self.regCntrlOut0 = HwIORegCntrl()._m()
 
-            self.regCntrlLoop1 = Loop(RegCntrl)
-            self.regCntrlOut1 = RegCntrl()._m()
+            self.regCntrlLoop1 = Loop(HwIORegCntrl)
+            self.regCntrlOut1 = HwIORegCntrl()._m()
 
-            self.regCntrlLoop2 = Loop(RegCntrl)
-            self.regCntrlOut2 = RegCntrl()._m()
+            self.regCntrlLoop2 = Loop(HwIORegCntrl)
+            self.regCntrlOut2 = HwIORegCntrl()._m()
 
     def _impl(self):
         self.regCntrlOut0(self.regCntrlLoop0.dout)
@@ -154,14 +154,14 @@ class TestUnittWithArr(Unit):
         def configEp(ep):
             ep._updateParamsFrom(self)
 
-        interfaceMap = IntfMap([
+        interfaceMap = HwIOObjMap([
                 ([self.regCntrlLoop0.din,
                   self.regCntrlLoop1.din,
                   self.regCntrlLoop2.din,
                   ], "regCntrl"),
             ])
 
-        axiLiteConv = AxiLiteEndpoint.fromInterfaceMap(interfaceMap)
+        axiLiteConv = AxiLiteEndpoint.fromHwIOMap(interfaceMap)
         axiLiteConv._updateParamsFrom(self)
         self.conv = axiLiteConv
 
@@ -171,9 +171,9 @@ class TestUnittWithArr(Unit):
         propagateClkRstn(self)
 
 
-TestUnittWithArr_addr_space_str = """\
+TestHwModuleWithArr_addr_space_str = """\
 struct {
-    <Bits, 32bits>[3] regCntrl // start:0x0(bit) 0x0(byte)
+    <HBits, 32bits>[3] regCntrl // start:0x0(bit) 0x0(byte)
 }"""
 
 
@@ -188,62 +188,62 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         self.regs = AxiLiteMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
     def randomizeAll(self):
-        u = self.u
-        for intf in u._interfaces:
-            if u not in (u.clk, u.rst_n, u.bus)\
-                    and not isinstance(intf, (BramPort_withoutClk, VldSynced, Signal)):
-                self.randomize(intf)
+        dut = self.dut
+        for hwIO in dut._hwIOs:
+            if dut not in (dut.clk, dut.rst_n, dut.bus)\
+                    and not isinstance(hwIO, (HwIOBramPort_noClk, HwIODataVld, HwIOSignal)):
+                self.randomize(hwIO)
 
-        self.randomize(u.bus.ar)
-        self.randomize(u.bus.aw)
-        self.randomize(u.bus.r)
-        self.randomize(u.bus.w)
-        self.randomize(u.bus.b)
+        self.randomize(dut.bus.ar)
+        self.randomize(dut.bus.aw)
+        self.randomize(dut.bus.r)
+        self.randomize(dut.bus.w)
+        self.randomize(dut.bus.b)
 
     def mySetUp(self, data_width=32):
-        u = self.u = TestUnittWithChilds()
+        dut = self.dut = TestHwModuleWithChilds()
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH = self.DATA_WIDTH
+        dut.DATA_WIDTH = self.DATA_WIDTH
 
-        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
+        self.compileSimAndStart(self.dut, onAfterToRtl=self.mkRegisterMap)
+        return dut
 
     def test_nop(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
 
         self.randomizeAll()
         self.runSim(100 * Time.ns)
 
-        self.assertEmpty(u.bus._ag.r.data)
-        self.assertEmpty(u.bus._ag.b.data)
-        self.assertEmpty(u.regCntrlOut._ag.dout)
-        self.assertEmpty(u.vldSyncedOut._ag.data)
-        self.assertEqual(u.bramOut._ag.mem, {})
+        self.assertEmpty(dut.bus._ag.r.data)
+        self.assertEmpty(dut.bus._ag.b.data)
+        self.assertEmpty(dut.regCntrlOut._ag.dout)
+        self.assertEmpty(dut.vldSyncedOut._ag.data)
+        self.assertEqual(dut.bramOut._ag.mem, {})
 
     def test_read(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         r = self.regs
 
         r.rltSig10.read()
 
-        u.signalIn._ag.data.append(MAGIC)
+        dut.signalIn._ag.data.append(MAGIC)
         r.signal.read()
 
-        u.regCntrlOut._ag.din.extend([MAGIC + 1])
+        dut.regCntrlOut._ag.din.extend([MAGIC + 1])
         r.regCntrl.read()
         r.vldSynced.read()
 
         for i in range(4):
-            u.bramOut._ag.mem[i] = MAGIC + 2 + i
+            dut.bramOut._ag.mem[i] = MAGIC + 2 + i
             r.bram[i].read()
 
         self.randomizeAll()
         self.runSim(600 * Time.ns)
 
         self.assertValSequenceEqual(
-            u.bus.r._ag.data, [
+            dut.bus.r._ag.data, [
                 (10, RESP_OKAY),
                 (MAGIC, RESP_OKAY),
                 (MAGIC + 1, RESP_OKAY),
@@ -253,7 +253,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
             ])
 
     def test_write(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         r = self.regs
 
@@ -265,67 +265,67 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         self.randomizeAll()
         self.runSim(800 * Time.ns)
 
-        self.assertValSequenceEqual(u.regCntrlOut._ag.dout,
+        self.assertValSequenceEqual(dut.regCntrlOut._ag.dout,
                                     [MAGIC, ])
-        self.assertValSequenceEqual(u.vldSyncedOut._ag.data,
+        self.assertValSequenceEqual(dut.vldSyncedOut._ag.data,
                                     [MAGIC + 1, ])
-        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(6)])
+        self.assertValSequenceEqual(dut.bus.b._ag.data, [RESP_OKAY for _ in range(6)])
 
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        self.assertEqual(s, TestUnittWithChilds_add_space_str)
+        self.assertEqual(s, TestHwModuleWithChilds_add_space_str)
 
 
 class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
 
     def mySetUp(self, data_width=32):
-        u = self.u = TestUnittWithArr()
+        dut = self.dut = TestHwModuleWithArr()
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH = self.DATA_WIDTH
+        dut.DATA_WIDTH = self.DATA_WIDTH
 
-        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
+        self.compileSimAndStart(self.dut, onAfterToRtl=self.mkRegisterMap)
+        return dut
 
     def test_nop(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
 
         self.randomizeAll()
         self.runSim(100 * Time.ns)
 
-        self.assertEmpty(u.bus._ag.r.data)
-        self.assertEmpty(u.bus._ag.b.data)
-        self.assertEmpty(u.regCntrlOut0._ag.dout)
-        self.assertEmpty(u.regCntrlOut1._ag.dout)
-        self.assertEmpty(u.regCntrlOut2._ag.dout)
+        self.assertEmpty(dut.bus._ag.r.data)
+        self.assertEmpty(dut.bus._ag.b.data)
+        self.assertEmpty(dut.regCntrlOut0._ag.dout)
+        self.assertEmpty(dut.regCntrlOut1._ag.dout)
+        self.assertEmpty(dut.regCntrlOut2._ag.dout)
 
     def test_read(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         r = self.regs
 
-        u.regCntrlOut0._ag.din.extend([MAGIC])
+        dut.regCntrlOut0._ag.din.extend([MAGIC])
         r.regCntrl[0].read()
 
-        u.regCntrlOut1._ag.din.extend([MAGIC + 1])
+        dut.regCntrlOut1._ag.din.extend([MAGIC + 1])
         r.regCntrl[1].read()
 
-        u.regCntrlOut2._ag.din.extend([MAGIC + 2])
+        dut.regCntrlOut2._ag.din.extend([MAGIC + 2])
         r.regCntrl[2].read()
 
         self.randomizeAll()
         self.runSim(600 * Time.ns)
 
         self.assertValSequenceEqual(
-            u.bus.r._ag.data, [
+            dut.bus.r._ag.data, [
                 (MAGIC, RESP_OKAY),
                 (MAGIC + 1, RESP_OKAY),
                 (MAGIC + 2, RESP_OKAY)
             ])
 
     def test_write(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         r = self.regs
 
@@ -336,17 +336,17 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         self.runSim(800 * Time.ns)
 
         for i in range(3):
-            intf = getattr(u, f"regCntrlOut{i:d}")
-        self.assertValSequenceEqual(intf._ag.dout,
-                                    [MAGIC + i, ])
+            hwIO = getattr(dut, f"regCntrlOut{i:d}")
+            self.assertValSequenceEqual(hwIO._ag.dout,
+                                        [MAGIC + i, ])
         self.assertValSequenceEqual(
-            u.bus.b._ag.data,
+            dut.bus.b._ag.data,
             [RESP_OKAY for _ in range(3)])
 
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        self.assertEqual(s, TestUnittWithArr_addr_space_str)
+        self.assertEqual(s, TestHwModuleWithArr_addr_space_str)
 
 
 if __name__ == "__main__":

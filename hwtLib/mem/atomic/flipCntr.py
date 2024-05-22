@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.interfaces.std import Signal, HandshakeSync, \
-    RegCntrl
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIOSignal, HwIORdVldSync, \
+    HwIORegCntrl
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeOnce
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.param import Param
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwtLib.mem.atomic.flipReg import FlipRegister
 
 
 @serializeOnce
-class FlipCntr(Unit):
+class FlipCntr(HwModule):
     """
     Counter with FlipRegister which is form memory with atomic access
 
@@ -23,14 +23,14 @@ class FlipCntr(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(18)
+        self.DATA_WIDTH = HwParam(18)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             addClkRstn(self)
-            self.doIncr = Signal()
-            self.doFlip = HandshakeSync()
-            self.data = RegCntrl()
+            self.doIncr = HwIOSignal()
+            self.doFlip = HwIORdVldSync()
+            self.data = HwIORegCntrl()
             self.cntr = FlipRegister()
 
     def flipHandler(self):
@@ -56,6 +56,7 @@ class FlipCntr(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = FlipCntr()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = FlipCntr()
+    print(to_rtl_str(m))

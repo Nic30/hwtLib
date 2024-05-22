@@ -3,17 +3,11 @@
 
 import unittest
 
-from hwt.interfaces.std import Handshaked
+from hwt.hwIOs.std import HwIODataRdVld
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.cdc import HandshakedCdc
-from hwtSimApi.constants import CLK_PERIOD, Time
-
-
-def T_to_f(time):
-    """
-    Period to frequency
-    """
-    return 1e9 / (time / Time.ns)
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.utils import period_to_freq
 
 
 class HandshakedCdc_slow_to_fast_TC(SimTestCase):
@@ -28,30 +22,30 @@ class HandshakedCdc_slow_to_fast_TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = HandshakedCdc(Handshaked)
-        u.DATA_WIDTH = 8
-        u.IN_FREQ = T_to_f(cls.IN_CLK)
-        u.OUT_FREQ = T_to_f(cls.OUT_CLK)
-        cls.compileSim(u)
+        dut = cls.dut = HandshakedCdc(HwIODataRdVld)
+        dut.DATA_WIDTH = 8
+        dut.IN_FREQ = period_to_freq(cls.IN_CLK)
+        dut.OUT_FREQ = period_to_freq(cls.OUT_CLK)
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
-        u = self.u
-        u.dataIn_clk._ag.period = self.IN_CLK
-        for rst in [u.dataIn_rst_n, u.dataOut_rst_n]:
+        dut = self.dut
+        dut.dataIn_clk._ag.period = self.IN_CLK
+        for rst in [dut.dataIn_rst_n, dut.dataOut_rst_n]:
             rst._ag.initDelay += self.IN_CLK
 
     def test_normalOp(self):
-        u = self.u
+        dut = self.dut
         REF = [1, 2, 3, 4, 5]
-        u.dataIn._ag.data.extend(REF)
+        dut.dataIn._ag.data.extend(REF)
         self.runSim(self.slowest_clk() * 40)
-        self.assertValSequenceEqual(u.dataOut._ag.data, REF)
+        self.assertValSequenceEqual(dut.dataOut._ag.data, REF)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.runSim(self.slowest_clk() * 40)
-        self.assertEmpty(u.dataOut._ag.data)
+        self.assertEmpty(dut.dataOut._ag.data)
 
 
 class HandshakedCdc_fast_to_slow_TC(HandshakedCdc_slow_to_fast_TC):

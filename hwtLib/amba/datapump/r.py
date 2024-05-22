@@ -2,48 +2,48 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Switch, SwitchLogic
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.const import HConst
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.hdl.value import HValue
-from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
-from hwt.interfaces.utils import propagateClkRstn
+from hwt.hwIOs.std import HwIOSignal, HwIORdVldSync, HwIOVectSignal
+from hwt.hwIOs.utils import propagateClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
+from hwtLib.amba.axis_comp.frame_join import Axi4S_FrameJoin
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.datapump.base import AxiDatapumpBase
-from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
+from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.types.defs import BIT
 
 
-class TransEndInfo(HandshakeSync):
+class TransEndInfo(HwIORdVldSync):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.ID_WIDTH = Param(0)
-        self.DATA_WIDTH = Param(64)
-        self.HAS_PROPAGATE_LAST = Param(True)
-        self.SHIFT_OPTIONS = Param((0,))
+        self.ID_WIDTH = HwParam(0)
+        self.DATA_WIDTH = HwParam(64)
+        self.HAS_PROPAGATE_LAST = HwParam(True)
+        self.SHIFT_OPTIONS = HwParam((0,))
 
     def _declr(self):
         if self.ID_WIDTH:
-            self.id = VectSignal(self.ID_WIDTH)
+            self.id = HwIOVectSignal(self.ID_WIDTH)
         # rem is number of bits in last word which is valid - 1,
         # if rem == 0 it means all bytes are valid
-        self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))
+        self.rem = HwIOVectSignal(log2ceil(self.DATA_WIDTH // 8))
         if self.SHIFT_OPTIONS != (0,):
-            self.shift = VectSignal(log2ceil(len(self.SHIFT_OPTIONS)))
+            self.shift = HwIOVectSignal(log2ceil(len(self.SHIFT_OPTIONS)))
         if self.HAS_PROPAGATE_LAST:
-            self.propagateLast = Signal()
-        HandshakeSync._declr(self)
+            self.propagateLast = HwIOSignal()
+        HwIORdVldSync._declr(self)
 
 
 @serializeParamsUniq
@@ -73,13 +73,13 @@ class Axi_rDatapump(AxiDatapumpBase):
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel
 
-        self.errorRead = Signal()._m()
+        self.errorRead = HwIOSignal()._m()
         if self.ALIGNAS != 8:
-            self.errorAlignment = Signal()._m()
+            self.errorAlignment = HwIOSignal()._m()
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.axi.HAS_W = False
-            d = self.driver = AxiRDatapumpIntf()
+            d = self.driver = HwIOAxiRDatapump()
             d.ID_WIDTH = 0
             d.MAX_BYTES = self.MAX_CHUNKS * (self.CHUNK_WIDTH // 8)
 
@@ -117,7 +117,7 @@ class Axi_rDatapump(AxiDatapumpBase):
                 ).Default(
                     strb(None)
                 )
-            if isinstance(isLastWord, (bool, int, HValue)):
+            if isinstance(isLastWord, (bool, int, HConst)):
                 if isLastWord:
                     return strbSwitch
                 else:
@@ -201,9 +201,9 @@ class Axi_rDatapump(AxiDatapumpBase):
 
         else:
             # align shifted incoming read data and optionally merge frames
-            aligner = AxiS_FrameJoin()
+            aligner = Axi4S_FrameJoin()
             aligner.T = HStruct(
-                (HStream(Bits(self.CHUNK_WIDTH),
+                (HStream(HBits(self.CHUNK_WIDTH),
                          start_offsets=[i // 8 for i in self.getShiftOptions()],
                          frame_len=(1, self.MAX_CHUNKS)
                          ), "f0"),
@@ -274,12 +274,12 @@ class Axi_rDatapump(AxiDatapumpBase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     # import sys
     # sys.setrecursionlimit(5000)
-    u = Axi_rDatapump()
-    u.DATA_WIDTH = 512
-    u.MAX_CHUNKS = 1
-    u.CHUNK_WIDTH = 32
-    u.ALIGNAS = 32
-    print(to_rtl_str(u))
+    m = Axi_rDatapump()
+    m.DATA_WIDTH = 512
+    m.MAX_CHUNKS = 1
+    m.CHUNK_WIDTH = 32
+    m.ALIGNAS = 32
+    print(to_rtl_str(m))

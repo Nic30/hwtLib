@@ -3,9 +3,9 @@
 
 from hwt.code import If
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import FifoWriter, FifoReader, VldSynced
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOFifoWriter, HwIOFifoReader, HwIODataVld
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.mem.fifo import Fifo
@@ -31,10 +31,10 @@ class FifoCopy(Fifo):
             "Use register instead"
 
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = FifoWriter()
-            self.dataOut = FifoReader()._m()
-        fc = self.dataOut_copy_frame = VldSynced()
+        with self._hwParamsShared():
+            self.dataIn = HwIOFifoWriter()
+            self.dataOut = HwIOFifoReader()._m()
+        fc = self.dataOut_copy_frame = HwIODataVld()
         fc.DATA_WIDTH = 1
 
         self._declr_size_and_space()
@@ -45,11 +45,11 @@ class FifoCopy(Fifo):
     def _impl(self):
         DEPTH = self.DEPTH
 
-        index_t = Bits(log2ceil(DEPTH), signed=False)
+        index_t = HBits(log2ceil(DEPTH), signed=False)
         s = self._sig
         r = self._reg
 
-        mem = self.mem = s("memory", Bits(self.DATA_WIDTH)[self.DEPTH + 1])
+        mem = self.mem = s("memory", HBits(self.DATA_WIDTH)[self.DEPTH + 1])
         # write pointer which is seen by reader
         wr_ptr = r("wr_ptr", index_t, 0)
         # read pointer which is used by reader and can be potentially
@@ -132,15 +132,16 @@ class FifoCopy(Fifo):
 
 
 def _example_FifoCopy():
-    u = FifoCopy()
-    u.DATA_WIDTH = 8
-    # u.EXPORT_SIZE = True
-    # u.EXPORT_SPACE = True
-    u.DEPTH = 16
-    return u
+    m = FifoCopy()
+    m.DATA_WIDTH = 8
+    # m.EXPORT_SIZE = True
+    # m.EXPORT_SPACE = True
+    m.DEPTH = 16
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_FifoCopy()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_FifoCopy()
+    print(to_rtl_str(m))

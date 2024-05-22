@@ -63,11 +63,11 @@ class TransTmpl_TC(unittest.TestCase):
                     (uint8_t, "b"),
                     (uint8_t, "c"))
         trans = TransTmpl(t)
-        self.assertEqual(len(list(trans.walkFlatten())), 3)
+        self.assertEqual(len(list(trans.HwIO_walkFlatten())), 3)
 
     def test_walkFlatten_stream_const_len(self):
         trans = TransTmpl(stream_const_len)
-        self.assertEqual(len(list(trans.walkFlatten())), 3)
+        self.assertEqual(len(list(trans.HwIO_walkFlatten())), 3)
 
     def test__repr__stream_const_len(self):
         trans = TransTmpl(stream_const_len)
@@ -76,7 +76,7 @@ class TransTmpl_TC(unittest.TestCase):
 
     def test_walkFlatten_stream_const_len2(self):
         trans = TransTmpl(stream_const_len2)
-        self.assertEqual(len(list(trans.walkFlatten())), 4)
+        self.assertEqual(len(list(trans.HwIO_walkFlatten())), 4)
 
     def test__repr__stream_const_len2(self):
         trans = TransTmpl(stream_const_len2)
@@ -86,7 +86,7 @@ class TransTmpl_TC(unittest.TestCase):
     def test_walkFlatten_arr(self):
         t = HStruct((uint8_t[4], "a"))
         trans = TransTmpl(t)
-        self.assertEqual(len(list(trans.walkFlatten())), 4)
+        self.assertEqual(len(list(trans.HwIO_walkFlatten())), 4)
 
     def test__repr__union(self):
         s = repr(TransTmpl(union0))
@@ -94,7 +94,7 @@ class TransTmpl_TC(unittest.TestCase):
 
     def test_walkFlatten_union(self):
         trans = TransTmpl(union0)
-        fl = list(trans.walkFlatten())
+        fl = list(trans.HwIO_walkFlatten())
         self.assertEqual(len(fl), 1)
         children = list(fl[0].walkFlattenChilds())
         self.assertEqual(len(children), 2)

@@ -1,15 +1,15 @@
 from typing import Tuple
 
 from hwt.code import Concat
-from hwt.hdl.types.bits import Bits
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
 from pyMathBitPrecise.bit_utils import mask
 
 
-class CacheAddrTypeConfig(Unit):
+class CacheAddrTypeConfig(HwModule):
     """
     A container of address type configuration
     and address parsing utils.
@@ -33,9 +33,9 @@ class CacheAddrTypeConfig(Unit):
 
     def _config(self):
         if not hasattr(self, "ADDR_WIDTH"):
-            self.ADDR_WIDTH = Param(32)
-        self.CACHE_LINE_SIZE = Param(64)
-        self.CACHE_LINE_CNT = Param(4096)
+            self.ADDR_WIDTH = HwParam(32)
+        self.CACHE_LINE_SIZE = HwParam(64)
+        self.CACHE_LINE_CNT = HwParam(4096)
 
     def _compupte_tag_index_offset_widths(self):
         self.OFFSET_W = log2ceil(self.CACHE_LINE_SIZE)
@@ -61,17 +61,17 @@ class CacheAddrTypeConfig(Unit):
 
     def deparse_addr(self, tag, index, offset) -> Tuple[RtlSignal, RtlSignal, RtlSignal]:
         if isinstance(tag, int):
-            tag = Bits(self.TAG_W).from_py(tag)
+            tag = HBits(self.TAG_W).from_py(tag)
         else:
             assert tag._dtype.bit_length() == self.TAG_W, (tag._dtype, self.TAG_W)
 
         if isinstance(offset, int):
-            offset = Bits(self.OFFSET_W).from_py(offset)
+            offset = HBits(self.OFFSET_W).from_py(offset)
         else:
             assert offset._dtype.bit_length() == self.OFFSET_W, (self.OFFSET_W, offset._dtype)
 
         if isinstance(index, int):
-            index = Bits(self.INDEX_W).from_py(index)
+            index = HBits(self.INDEX_W).from_py(index)
         else:
             assert index._dtype.bit_length() == self.INDEX_W, (self.INDEX_W, index._dtype)
 

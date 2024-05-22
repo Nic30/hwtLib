@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
 from hwtLib.abstract.hwExceptionCtx import HwExceptionCtx, InHwError
 from hwtLib.handshaked.streamNode import StreamNode
 
@@ -23,7 +23,7 @@ class ExampleHwException1(InHwError):
     pass
 
 
-class HwExceptionRaise(Unit):
+class HwExceptionRaise(HwModule):
     """
     An example of :class:`hwtLib.abstract.hwExceptionCtx.HwExceptionCtx` usage.
 
@@ -37,8 +37,8 @@ class HwExceptionRaise(Unit):
         # clock and reset is required because the status
         # of the exception handling needs to be stored in register
         addClkRstn(self)
-        self.dataIn = Handshaked()
-        self.dataOut = Handshaked()._m()
+        self.dataIn = HwIODataRdVld()
+        self.dataOut = HwIODataRdVld()._m()
 
 
     def _impl(self):
@@ -94,7 +94,7 @@ class HwExceptionRaise(Unit):
         ).sync()
 
 
-class HwExceptionCatch(Unit):
+class HwExceptionCatch(HwModule):
     """
     An example of :class:`hwtLib.abstract.hwExceptionCtx.HwExceptionCtx` usage.
 
@@ -162,6 +162,7 @@ class HwExceptionCatch(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = HwExceptionCatch()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = HwExceptionCatch()
+    print(to_rtl_str(m))

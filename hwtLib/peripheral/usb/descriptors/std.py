@@ -1,14 +1,3 @@
-from typing import List, Optional
-
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import BIT
-from hwt.hdl.types.struct import HStruct
-from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
-from hwtLib.peripheral.usb.constants import USB_VER
-from hwtLib.peripheral.usb.device_request import USB_REQUEST_TYPE_RECIPIENT, \
-    USB_REQUEST_TYPE_TYPE, USB_REQUEST_TYPE_DIRECTION, USB_REQUEST, make_usb_device_request
-from hwtLib.types.ctypes import uint8_t, uint16_t
-
 """
 This module contains a definition of standard USB descriptor types
 and constants.
@@ -18,10 +7,21 @@ Each class-specific descriptor is defined as a concatenation ofall
 of the functional descriptors for the Interface.  The first functional descriptor
 returned by the device for the interfaceshall be a header functional descriptor.
 """
-
-
 # https://beyondlogic.org/usbnutshell/usb6.shtml
 # https://www.engineersgarage.com/featured-contributions/usb-descriptors-and-their-types-part-3-6/
+
+from typing import List, Optional
+
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.struct import HStruct
+from hwt.constants import NOT_SPECIFIED
+from hwtLib.peripheral.usb.constants import USB_VER
+from hwtLib.peripheral.usb.device_request import USB_REQUEST_TYPE_RECIPIENT, \
+    USB_REQUEST_TYPE_TYPE, USB_REQUEST_TYPE_DIRECTION, USB_REQUEST, make_usb_device_request
+from hwtLib.types.ctypes import uint8_t, uint16_t
+
+
 class USB_DEVICE_CLASS():
     """
     https://www.usb.org/defined-class-codes
@@ -189,10 +189,10 @@ def make_usb_descriptor_device_qualifier(
 
 
 usb_configuration_body_bmAttributes_t = HStruct(
-    (Bits(5), "reserved0"),  # has to be set to 0
-    (Bits(1), "remoteWakeup"),
-    (Bits(1), "selfPowered"),
-    (Bits(1), "reserved1"),  # has to be set to 1
+    (HBits(5), "reserved0"),  # has to be set to 0
+    (HBits(1), "remoteWakeup"),
+    (HBits(1), "selfPowered"),
+    (HBits(1), "reserved1"),  # has to be set to 1
     name="usb_configuration_body_bmAttributes_t"
 )
 
@@ -339,16 +339,16 @@ class USB_ENDPOINT_ATTRIBUTES_USAGE_TYPE:
 
 
 usb_configuration_body_bmAttributes_t = HStruct(
-    (Bits(2), "transferType"),  # :note: :class:`~.USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE`
-    (Bits(2), "synchronisationType"),  # :note: :class:`~.USB_ENDPOINT_ATTRIBUTES_SYNCHRONISATION_TYPE`
-    (Bits(2), "usageType"),  # :note: :class:`~.USB_ENDPOINT_ATTRIBUTES_USAGE_TYPE`
-    (Bits(2), "reserved0"),  # has to be set to 0
+    (HBits(2), "transferType"),  # :note: :class:`~.USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE`
+    (HBits(2), "synchronisationType"),  # :note: :class:`~.USB_ENDPOINT_ATTRIBUTES_SYNCHRONISATION_TYPE`
+    (HBits(2), "usageType"),  # :note: :class:`~.USB_ENDPOINT_ATTRIBUTES_USAGE_TYPE`
+    (HBits(2), "reserved0"),  # has to be set to 0
     name="usb_configuration_body_bmAttributes_t",
 )
 
 usb_descriptor_endpoint_body_t = HStruct(
     # The address of this endpoint within the device.
-    (Bits(7), "bEndpointAddress"),
+    (HBits(7), "bEndpointAddress"),
     (BIT, "bEndpointAddressDir"),  # :note: :class:`~.USB_ENDPOINT_DIR`
     (usb_configuration_body_bmAttributes_t, "bmAttributes"),
     (uint16_t, "wMaxPacketSize"),

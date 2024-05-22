@@ -4,17 +4,18 @@
 from typing import Dict, Set, Optional
 
 from hwt.code import Or, Switch
-from hwt.math import log2ceil
 from hwt.code_utils import rename_signal
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
 from hwtLib.amba.axi4 import Axi4
+from hwt.hwIO import HwIO
 
 
-class AxiInterconnectMatrixCrossbar(Unit):
+class AxiInterconnectMatrixCrossbar(HwModule):
     """
     Crossbar for AXI-Stream like interfaces where internal switch box
     can be driven by
@@ -22,8 +23,8 @@ class AxiInterconnectMatrixCrossbar(Unit):
     .. hwt-autodoc:: example_AxiInterconnectMatrixCrossbar
     """
 
-    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
-        self.intfCls = intfCls
+    def __init__(self, hwIOCls, hdl_name_override:Optional[str]=None):
+        self.hwIOCls = hwIOCls
         super(AxiInterconnectMatrixCrossbar, self).__init__(hdl_name_override=hdl_name_override)
 
     @staticmethod
@@ -35,27 +36,27 @@ class AxiInterconnectMatrixCrossbar(Unit):
         return masters_for_slave
 
     def _config(self):
-        self.INTF_CLS = Param(self.intfCls)
-        self.INPUT_CNT = Param(1)
+        self.HWIO_CLS = HwParam(self.hwIOCls)
+        self.INPUT_CNT = HwParam(1)
         # set of input indexes for each output
-        self.OUTPUTS = Param([{0}])
-        self.intfCls._config(self)
+        self.OUTPUTS = HwParam([{0}])
+        self.hwIOCls._config(self)
 
     def _declr(self):
         addClkRstn(self)
-        INTF_CLS = self.intfCls
+        HWIO_CLS = self.hwIOCls
         INPUT_CNT = self.INPUT_CNT
         OUTPUT_CNT = len(self.OUTPUTS)
         self.OUTS_FOR_IN = self._masters_for_slave(self.OUTPUTS, self.INPUT_CNT)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.dataIn = HObjList([
-                INTF_CLS()
+                HWIO_CLS()
                 for _ in range(INPUT_CNT)])
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.dataOut = HObjList([
-                INTF_CLS()._m()
+                HWIO_CLS()._m()
                 for _ in range(OUTPUT_CNT)])
 
         # master index for each slave so slave knows
@@ -63,7 +64,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
         order_dout_index_for_din_in = HObjList()
         for connected_outs in self.OUTS_FOR_IN:
             if len(connected_outs) > 1:
-                f = Handshaked()
+                f = HwIODataRdVld()
                 f.DATA_WIDTH = log2ceil(OUTPUT_CNT)
             else:
                 f = None
@@ -75,15 +76,15 @@ class AxiInterconnectMatrixCrossbar(Unit):
         # so master knows where it should expect the data
         for connected_ins in self.OUTPUTS:
             if len(connected_ins) > 1:
-                f = Handshaked()
+                f = HwIODataRdVld()
                 f.DATA_WIDTH = log2ceil(INPUT_CNT)
             else:
                 f = None
             order_din_index_for_dout_in.append(f)
         self.order_din_index_for_dout_in = order_din_index_for_dout_in
 
-    def get_last(self, intf):
-        return intf.last
+    def get_last(self, hwIO: HwIO):
+        return hwIO.last
 
     def handler_din_rd(self, dataOut_channels,
                        dataIn_channels,
@@ -188,7 +189,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
                     .add_cases(cases)\
                     .Default(
                     s(None)
-                    for s in dataOut._interfaces
+                    for s in dataOut._hwIOs
                     if s not in {dataOut.valid, dataOut.ready}
                 )
 
@@ -228,13 +229,13 @@ class AxiInterconnectMatrixCrossbar(Unit):
 
 
 def example_AxiInterconnectMatrixCrossbar():
-    u = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
-    u.INPUT_CNT = 2
-    u.OUTPUTS = [{0, 1}, {0, 1}]
-    return u
+    dut = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
+    dut.INPUT_CNT = 2
+    dut.OUTPUTS = [{0, 1}, {0, 1}]
+    return dut
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = example_AxiInterconnectMatrixCrossbar()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = example_AxiInterconnectMatrixCrossbar()
+    print(to_rtl_str(m))

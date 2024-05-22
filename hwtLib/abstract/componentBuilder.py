@@ -1,11 +1,11 @@
 from typing import Optional, Union
 
-from hwt.hdl.types.bits import Bits
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.interface import Interface
+from hwt.hdl.types.bits import HBits
+from hwt.hObjList import HObjList
+from hwt.hwIO import HwIO
 from hwt.synthesizer.interfaceLevel.getDefaultClkRts import getClk, getRst
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
+from hwt.hwModule import HwModule
 
 
 class AbstractComponentBuilder(object):
@@ -20,9 +20,9 @@ class AbstractComponentBuilder(object):
     :attention: input port is taken from self.end
     """
 
-    def __init__(self, parent: Unit, srcInterface: Union[Interface, HObjList], name: Optional[str]=None, master_to_slave:bool=True):
+    def __init__(self, parent: HwModule, srcInterface: Union[HwIO, HObjList], name: Optional[str]=None, master_to_slave:bool=True):
         """
-        :param parent: unit in which will be all units created by this builder instantiated
+        :param parent: HwModule where all submodules created by this builder will be instantiated
         :param name: prefix for all instantiated units
         :param srcInterface: start of data-path
         :param master_to_slave: if True the circuit is build in natural direction
@@ -58,25 +58,25 @@ class AbstractComponentBuilder(object):
         else:
             rst = end._getAssociatedRst()
 
-        if isinstance(rst._dtype, Bits) and rst._dtype.negated:
+        if isinstance(rst._dtype, HBits) and rst._dtype.negated:
             return rst
         else:
             return ~rst
 
-    def getInfCls(self):
+    def getHwIOCls(self):
         """
         Get class of interface which this builder is currently using.
         """
-        return self._getIntfCls(self.end)
+        return self._getHwIOCls(self.end)
 
-    def _getIntfCls(self, intf: Union[Interface, HObjList]):
+    def _getHwIOCls(self, hwIO: Union[HwIO, HObjList]):
         """
-        Get real interface class of interface
+        Get real HwIO class of interface
         """
-        if isinstance(intf, HObjList):
-            return self._getIntfCls(intf[0])
+        if isinstance(hwIO, HObjList):
+            return self._getHwIOCls(hwIO[0])
 
-        return intf.__class__
+        return hwIO.__class__
 
     def _findSuitableName(self, name: str, firstWithoutCntrSuffix=False):
         """

@@ -5,25 +5,25 @@ from typing import List
 
 from hwt.code import Or, SwitchLogic, If
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOStruct import HwIOStructRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.hsStructIntf import HsStructIntf
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil, isPow2
-from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4 import Axi4, Axi4_r, Axi4_addr, Axi4_w, Axi4_b
 from hwtLib.amba.axi_comp.cache.addrTypeConfig import CacheAddrTypeConfig
-from hwtLib.amba.axi_comp.cache.lru_array import AxiCacheLruArray, IndexWayHs
+from hwtLib.amba.axi_comp.cache.lru_array import AxiCacheLruArray, HwIOIndexWayRdVld
 from hwtLib.amba.axi_comp.cache.tag_array import AxiCacheTagArray, \
-    AxiCacheTagArrayLookupResIntf, AxiCacheTagArrayUpdateIntf
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+    HwIOAxiCacheTagArrayLookupRes, HwIOAxiCacheTagArrayUpdate
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.amba.constants import RESP_OKAY, BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, BYTES_IN_TRANS, PROT_DEFAULT, QOS_DEFAULT
-from hwtLib.common_nonstd_interfaces.addr_hs import AddrHs
+from hwtLib.commonHwIO.addr import HwIOAddrRdVld
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
@@ -83,9 +83,9 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
 
     def _config(self):
         Axi4._config(self)
-        self.WAY_CNT = Param(4)
-        self.MAX_BLOCK_DATA_WIDTH = Param(None)
-        self.IS_PREINITIALIZED = Param(False)
+        self.WAY_CNT = HwParam(4)
+        self.MAX_BLOCK_DATA_WIDTH = HwParam(None)
+        self.IS_PREINITIALIZED = HwParam(False)
         CacheAddrTypeConfig._config(self)
 
     def _declr(self):
@@ -97,11 +97,11 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         self._compupte_tag_index_offset_widths()
 
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = Axi4()
             self.m = Axi4()._m()
 
-            rc = self.read_cancel = AddrHs()._m()
+            rc = self.read_cancel = HwIOAddrRdVld()._m()
             rc.ID_WIDTH = 0
 
             self.tag_array = AxiCacheTagArray()
@@ -117,8 +117,8 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         da.R_ID_WIDTH = self.ID_WIDTH
         da.W_PRIV_T = HStruct(
             # used to construct an address for flush of original item in cache which is beeing replaced
-            (Bits(self.TAG_W), "victim_tag"),  # index part of address is an address on flush_data.addr channel
-            (Bits(self.ID_WIDTH), "id"),
+            (HBits(self.TAG_W), "victim_tag"),  # index part of address is an address on flush_data.addr channel
+            (HBits(self.ID_WIDTH), "id"),
         )
         self.data_array = da
 
@@ -149,17 +149,17 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                 StreamNode([a], [tag_lookup]).sync(~init_in_progress)
 
     def incr_lru_on_hit(self,
-                        lru_incr: IndexWayHs,
-                        tag_res: AxiCacheTagArrayLookupResIntf):
+                        lru_incr: HwIOIndexWayRdVld,
+                        tag_res: HwIOAxiCacheTagArrayLookupRes):
         index = self.parse_addr(tag_res.addr)[1]
         lru_incr.vld(tag_res.vld & tag_res.found)
         lru_incr.way(tag_res.way)
         lru_incr.index(index)
 
     def read_handler(self,
-                     ar_tagRes: AxiCacheTagArrayLookupResIntf,  # in
+                     ar_tagRes: HwIOAxiCacheTagArrayLookupRes,  # in
                      axi_s_r: Axi4_r,  # out
-                     ar_lru_incr: IndexWayHs,  # out
+                     ar_lru_incr: HwIOIndexWayRdVld,  # out
                      da_r: TransRamHsR,  # in
                      axi_m_ar: Axi4_addr,  # out
                      axi_m_r: Axi4_r  # in
@@ -214,11 +214,11 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         data_arr_read(da_r.data, exclude=[data_arr_read.resp])
         data_arr_read.resp(RESP_OKAY)
 
-        data_arr_read = AxiSBuilder(self, data_arr_read)\
+        data_arr_read = Axi4SBuilder(self, data_arr_read)\
             .buff(1, latency=(1, 2))\
             .end
 
-        s_r = AxiSBuilder.join_prioritized(self, [
+        s_r = Axi4SBuilder.join_prioritized(self, [
             data_arr_read,
             axi_m_r,
         ]).end
@@ -226,11 +226,11 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
 
     def resolve_victim(self, st0_o_tag_found: RtlSignal,  # in
                        st0_o_found_way: RtlSignal,  # in
-                       st0_o_tags: List[StructIntf],  # in
-                       victim_way: Handshaked  # in
+                       st0_o_tags: List[HwIOStruct],  # in
+                       victim_way: HwIODataRdVld  # in
                        ):
-        _victim_way = self._sig("victim_way_tmp", Bits(log2ceil(self.WAY_CNT)))
-        _victim_tag = self._sig("victim_tag_tmp", Bits(self.TAG_W))
+        _victim_way = self._sig("victim_way_tmp", HBits(log2ceil(self.WAY_CNT)))
+        _victim_tag = self._sig("victim_tag_tmp", HBits(self.TAG_W))
         SwitchLogic(
             [
                 # select first empty tag
@@ -254,12 +254,12 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         return _victim_way, _victim_tag
 
     def write_handler(self,
-                      aw_tagRes: AxiCacheTagArrayLookupResIntf,  # in
+                      aw_tagRes: HwIOAxiCacheTagArrayLookupRes,  # in
                       axi_s_b: Axi4_b,  # out
-                      aw_lru_incr: IndexWayHs,  # out
-                      victim_way_req: AddrHs, victim_way_resp: Handshaked,  # out, in
+                      aw_lru_incr: HwIOIndexWayRdVld,  # out
+                      victim_way_req: HwIOAddrRdVld, victim_way_resp: HwIODataRdVld,  # out, in
                       da_w: TransRamHsW,  # in
-                      tag_update: AxiCacheTagArrayUpdateIntf,  # out
+                      tag_update: HwIOAxiCacheTagArrayUpdate,  # out
                       init_in_progress: RtlSignal,  # in
                       ):
         """
@@ -278,7 +278,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         # of the cahceline
         self.incr_lru_on_hit(aw_lru_incr, aw_tagRes)
 
-        st0 = HandshakedReg(HsStructIntf)
+        st0 = HandshakedReg(HwIOStructRdVld)
         st0.T = HStruct(
             # the original id and address of a write transaction
             (self.s.aw.id._dtype, "write_id"),
@@ -330,7 +330,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
 
         MULTI_WORD = self.data_array.ITEM_WORDS > 1
         if MULTI_WORD:
-            st1_id = HandshakedReg(Handshaked)
+            st1_id = HandshakedReg(HwIODataRdVld)
             st1_id.LATENCY = (1, 2)
             st1_id.DATA_WIDTH = self.ID_WIDTH
             self.victim_load_status1 = st1_id
@@ -347,7 +347,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
             }
         ).sync()
 
-        in_w = AxiSBuilder(self, self.s.w)\
+        in_w = Axi4SBuilder(self, self.s.w)\
             .buff(self.tag_array.LOOKUP_LATENCY + 4)\
             .end
         if MULTI_WORD:
@@ -479,27 +479,27 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
 
 
 def _example_AxiCacheWriteAllocWawOnlyWritePropagating():
-    u = AxiCacheWriteAllocWawOnlyWritePropagating()
-    u.DATA_WIDTH = 16
-    u.CACHE_LINE_SIZE = 2
-    u.WAY_CNT = 2
-    u.CACHE_LINE_CNT = 16
-    u.MAX_BLOCK_DATA_WIDTH = 8
-    return u
+    m = AxiCacheWriteAllocWawOnlyWritePropagating()
+    m.DATA_WIDTH = 16
+    m.CACHE_LINE_SIZE = 2
+    m.WAY_CNT = 2
+    m.CACHE_LINE_CNT = 16
+    m.MAX_BLOCK_DATA_WIDTH = 8
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     from hwtLib.xilinx.constants import XILINX_VIVADO_MAX_DATA_WIDTH
-    u = AxiCacheWriteAllocWawOnlyWritePropagating()
-    u.DATA_WIDTH = 512
-    u.CACHE_LINE_SIZE = u.DATA_WIDTH // 8
-    u.WAY_CNT = 4
-    u.CACHE_LINE_CNT = u.WAY_CNT * 4096
-    u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
-    # u.CACHE_LINE_SIZE = 64
-    # u.DATA_WIDTH = 512
-    # u.WAY_CNT = 2
-    # u.CACHE_LINE_CNT = u.WAY_CNT * 4096
-    # u = _example_AxiCacheWriteAllocWawOnlyWritePropagating()
-    print(to_rtl_str(u))
+    m = AxiCacheWriteAllocWawOnlyWritePropagating()
+    m.DATA_WIDTH = 512
+    m.CACHE_LINE_SIZE = m.DATA_WIDTH // 8
+    m.WAY_CNT = 4
+    m.CACHE_LINE_CNT = m.WAY_CNT * 4096
+    m.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
+    # m.CACHE_LINE_SIZE = 64
+    # m.DATA_WIDTH = 512
+    # m.WAY_CNT = 2
+    # m.CACHE_LINE_CNT = m.WAY_CNT * 4096
+    # m = _example_AxiCacheWriteAllocWawOnlyWritePropagating()
+    print(to_rtl_str(m))

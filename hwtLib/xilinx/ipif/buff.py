@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.constants import DIRECTION
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
+from hwt.constants import DIRECTION
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busBridge import BusBridge
-from hwtLib.xilinx.ipif.intf import Ipif
+from hwtLib.xilinx.ipif.hIOIpif import Ipif
 
 
 class IpifBuff(BusBridge):
@@ -18,38 +18,38 @@ class IpifBuff(BusBridge):
     """
     def _config(self):
         Ipif._config(self)
-        self.ADDR_BUFF_DEPTH = Param(1)
-        self.DATA_BUFF_DEPTH = Param(1)
+        self.ADDR_BUFF_DEPTH = HwParam(1)
+        self.DATA_BUFF_DEPTH = HwParam(1)
 
     def _declr(self):
         if self.ADDR_BUFF_DEPTH != 1 or self.DATA_BUFF_DEPTH != 1:
             raise NotImplementedError()
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             addClkRstn(self)
             self.s = Ipif()
             self.m = Ipif()._m()
 
-    def connectRegistered(self, intfFrom, intfTo):
-        r = self._reg(intfFrom._name + "_reg", intfFrom._dtype)
-        intfFrom._reg = r
-        r(intfFrom)
-        intfTo(r)
+    def connectRegistered(self, hwIOFrom: Ipif, hwIOTo: Ipif):
+        r = self._reg(hwIOFrom._name + "_reg", hwIOFrom._dtype)
+        hwIOFrom._reg = r
+        r(hwIOFrom)
+        hwIOTo(r)
 
     def _impl(self):
         din = self.s
         dout = self.m
-        for i in din._interfaces:
+        for hwIO in din._hwIOs:
             # exclude bus2ip_cs because it needs special care
-            if i is din.bus2ip_cs:
+            if hwIO is din.bus2ip_cs:
                 continue
 
-            if i._masterDir == DIRECTION.OUT:
-                _din = i
-                _dout = getattr(dout, i._name)
+            if hwIO._masterDir == DIRECTION.OUT:
+                _din = hwIO
+                _dout = getattr(dout, hwIO._name)
             else:
-                _dout = i
-                _din = getattr(dout, i._name)
+                _dout = hwIO
+                _din = getattr(dout, hwIO._name)
 
             self.connectRegistered(_din, _dout)
 
@@ -67,7 +67,7 @@ class IpifBuff(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = IpifBuff()
-
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = IpifBuff()
+    print(to_rtl_str(m))

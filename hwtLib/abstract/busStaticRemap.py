@@ -1,21 +1,21 @@
 from hwt.code import SwitchLogic, Concat
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwt.math import inRange, isPow2
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 
 
-class BusStaticRemap(Unit):
+class BusStaticRemap(HwModule):
     """
     Abstract class for component which remaps memory regions on bus interfaces
 
     :ivar ~.MEM_MAP: list of tuples (addr_from, size, addr_to) for each memory region on second interface
-    :ivar ~.m: slave interface of first interface class where master should be connected
-    :ivar ~.s: slave interface of second interface class where master slave be connected
+    :ivar ~.m: slave interface of first HwIO class where master should be connected
+    :ivar ~.s: slave interface of second HwIO class where master slave be connected
     """
 
     def _config(self):
-        self.MEM_MAP = Param([])
+        self.MEM_MAP = HwParam([])
 
     def _normalize_mem_map(self, mem_map):
         assert mem_map, "This would mean that second interface is entirely disconnected"
@@ -51,9 +51,9 @@ class BusStaticRemap(Unit):
                 _sig_in = sig_in[L:]
                 if out_is_aligned:
                     addr_drive = Concat(
-                        Bits(AW - L).from_py(offset_out), _sig_in)
+                        HBits(AW - L).from_py(offset_out), _sig_in)
                 else:
-                    addr_drive = Concat(Bits(AW - L).from_py(0),
+                    addr_drive = Concat(HBits(AW - L).from_py(0),
                                         _sig_in) + offset_out
             else:
                 en_sig = inRange(sig_in, offset_in, offset_in + size)
@@ -68,8 +68,8 @@ class BusStaticRemap(Unit):
         SwitchLogic(cases, default=sig_out(sig_in))
 
     def _declr(self):
-        with self._paramsShared():
-            self.m = self.intfCls()._m()
-            self.s = self.intfCls()
+        with self._hwParamsShared():
+            self.m = self.hwIOCls()._m()
+            self.s = self.hwIOCls()
 
         self.MEM_MAP = self._normalize_mem_map(self.MEM_MAP)

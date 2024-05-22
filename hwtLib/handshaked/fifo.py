@@ -4,13 +4,13 @@
 from typing import Optional, Tuple, Union
 
 from hwt.code import If
-from hwt.interfaces.std import VectSignal, Clk, Rst_n, Rst
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIOVectSignal, HwIOClk, HwIORst_n, HwIORst
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf, \
-    connectPacked
-from hwt.synthesizer.param import Param
+from hwt.synthesizer.interfaceLevel.utils import HwIO_pack, \
+    HwIO_connectPacked
+from hwt.hwParam import HwParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.mem.fifo import Fifo
 
@@ -28,24 +28,24 @@ class HandshakedFifo(HandshakedCompBase):
     NON_DATA_BITS_CNT = 2  # 2 for control (valid, ready)
 
     def _config(self):
-        self.DEPTH:int = Param(0)
-        self.EXPORT_SIZE: bool = Param(False)
-        self.EXPORT_SPACE: bool = Param(False)
-        self.INIT_DATA: tuple = Param(())
+        self.DEPTH:int = HwParam(0)
+        self.EXPORT_SIZE: bool = HwParam(False)
+        self.EXPORT_SPACE: bool = HwParam(False)
+        self.INIT_DATA: tuple = HwParam(())
         super()._config()
 
     def _declr_io(self):
         addClkRstn(self)
 
-        with self._paramsShared():
-            self.dataIn = self.intfCls()
-            self.dataOut = self.intfCls()._m()
+        with self._hwParamsShared():
+            self.dataIn = self.hwIOCls()
+            self.dataOut = self.hwIOCls()._m()
 
         SIZE_W = log2ceil(self.DEPTH + 1 + 1)
         if self.EXPORT_SIZE:
-            self.size:VectSignal = VectSignal(SIZE_W, signed=False)._m()
+            self.size:HwIOVectSignal = HwIOVectSignal(SIZE_W, signed=False)._m()
         if self.EXPORT_SPACE:
-            self.space:VectSignal = VectSignal(SIZE_W, signed=False)._m()
+            self.space:HwIOVectSignal = HwIOVectSignal(SIZE_W, signed=False)._m()
 
     def _declr(self):
         assert self.DEPTH > 0, \
@@ -98,7 +98,7 @@ class HandshakedFifo(HandshakedCompBase):
         wr_en = ~fIn.wait
         rd(din)(wr_en)
         if fIn.DATA_WIDTH > 0:
-            fIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
+            fIn.data(HwIO_pack(din, exclude=[vld(din), rd(din)]))
         fIn.en(vld(din) & wr_en)
 
     def _connect_fifo_out(self, out_clk, out_rst):
@@ -111,7 +111,7 @@ class HandshakedFifo(HandshakedCompBase):
         vld(dout)(out_vld)
 
         if fOut.DATA_WIDTH > 0:
-            connectPacked(fOut.data,
+            HwIO_connectPacked(fOut.data,
                           dout,
                           exclude=[vld(dout), rd(dout)])
         fOut.en((rd(dout) | ~out_vld) & ~fOut.wait)
@@ -122,8 +122,8 @@ class HandshakedFifo(HandshakedCompBase):
 
     def _impl(self,
               clk_rst: Optional[Tuple[
-                  Tuple[Clk, Union[Rst, Rst_n]],
-                  Tuple[Clk, Union[Rst, Rst_n]]]]=None):
+                  Tuple[HwIOClk, Union[HwIORst, HwIORst_n]],
+                  Tuple[HwIOClk, Union[HwIORst, HwIORst_n]]]]=None):
         """
         :param clk_rst: optional tuple ((inClk, inRst), (outClk, outRst))
         """
@@ -146,16 +146,17 @@ class HandshakedFifo(HandshakedCompBase):
 
 
 def _example_HandshakedFifo():
-    from hwt.interfaces.std import Handshaked
-    u = HandshakedFifo(Handshaked)
-    u.DEPTH = 8
-    u.DATA_WIDTH = 4
-    #u.EXPORT_SIZE = True
-    #u.EXPORT_SPACE = True
-    return u
+    from hwt.hwIOs.std import HwIODataRdVld
+    m = HandshakedFifo(HwIODataRdVld)
+    m.DEPTH = 8
+    m.DATA_WIDTH = 4
+    #m.EXPORT_SIZE = True
+    #m.EXPORT_SPACE = True
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HandshakedFifo()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_HandshakedFifo()
+    print(to_rtl_str(m))

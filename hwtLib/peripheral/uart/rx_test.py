@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import valToInt
+from hwt.simulator.utils import Bits3valToInt
 from hwtLib.peripheral.uart.rx import UartRx
 from hwtSimApi.utils import freq_to_period
 from pyMathBitPrecise.bit_utils import get_bit
@@ -12,17 +12,17 @@ class UartRxBasicTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = UartRx()
-        u.OVERSAMPLING = cls.OVERSAMPLING = 16
-        u.FREQ = cls.FREQ = 115200 * cls.OVERSAMPLING
-        u.BAUD = cls.BAUD = 115200
-        cls.CLK_PERIOD = int(freq_to_period(u.FREQ))
-        cls.compileSim(u)
+        dut = cls.dut = UartRx()
+        dut.OVERSAMPLING = cls.OVERSAMPLING = 16
+        dut.FREQ = cls.FREQ = 115200 * cls.OVERSAMPLING
+        dut.BAUD = cls.BAUD = 115200
+        cls.CLK_PERIOD = int(freq_to_period(dut.FREQ))
+        cls.compileSim(dut)
 
     def getStr(self):
         s = ""
-        for d in self.u.dataOut._ag.data:
-            ch = valToInt(d)
+        for d in self.dut.dataOut._ag.data:
+            ch = Bits3valToInt(d)
             s += chr(ch)
 
         return s
@@ -31,7 +31,7 @@ class UartRxBasicTC(SimTestCase):
         START_BIT = 0
         STOP_BIT = 1
 
-        rx = self.u.rxd._ag.data
+        rx = self.dut.rxd._ag.data
         os = self.FREQ // self.BAUD
         for ch in string:
             rx.extend([START_BIT for _ in range(os)])
@@ -41,7 +41,7 @@ class UartRxBasicTC(SimTestCase):
             rx.extend([STOP_BIT for _ in range(os)])
 
     def test_nop(self):
-        self.u.rxd._ag.data.append(1)
+        self.dut.rxd._ag.data.append(1)
         self.runSim(20 * self.CLK_PERIOD)
         self.assertEqual(self.getStr(), "")
 
@@ -61,12 +61,12 @@ class UartRxTC(UartRxBasicTC):
         cls.FREQ = 115200 * cls.OVERSAMPLING * 4
         cls.BAUD = 115200
 
-        u = cls.u = UartRx()
-        u.BAUD = cls.BAUD
-        u.FREQ = cls.FREQ
-        u.OVERSAMPLING = cls.OVERSAMPLING
-        cls.CLK_PERIOD = int(freq_to_period(u.FREQ))
-        cls.compileSim(u)
+        dut = cls.dut = UartRx()
+        dut.BAUD = cls.BAUD
+        dut.FREQ = cls.FREQ
+        dut.OVERSAMPLING = cls.OVERSAMPLING
+        cls.CLK_PERIOD = int(freq_to_period(dut.FREQ))
+        cls.compileSim(dut)
 
 
 if __name__ == "__main__":

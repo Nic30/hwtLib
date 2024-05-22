@@ -1,34 +1,34 @@
 from math import ceil
 
 from hwt.code import If, Switch
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.handshaked.streamNode import StreamNode
 
 
-class AxiS_eq(Unit):
+class Axi4S_eq(HwModule):
     """
-    Comparator of const size value provided as a AxiStream
+    Comparator of const size value provided as a Axi4Stream
 
     .. hwt-autodoc::
     """
 
 
     def _config(self):
-        AxiStream._config(self)
-        self.VAL = Param(Bits(64).from_py(0))
+        Axi4Stream._config(self)
+        self.VAL = HwParam(HBits(64).from_py(0))
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = AxiStream()
-        self.dataOut = Handshaked()._m()
+        with self._hwParamsShared():
+            self.dataIn = Axi4Stream()
+        self.dataOut = HwIODataRdVld()._m()
         self.dataOut.DATA_WIDTH = 1
 
     def _impl(self):
@@ -46,7 +46,7 @@ class AxiS_eq(Unit):
         else:
             # build fsm for comparing
             word_cnt = ceil(VAL_W / D_W)
-            word_index = self._reg("word_index", Bits(log2ceil(word_cnt - 1)),
+            word_index = self._reg("word_index", HBits(log2ceil(word_cnt - 1)),
                                    def_val=0)
             # true if all previous words were matching
             state = self._reg("state", def_val=1)

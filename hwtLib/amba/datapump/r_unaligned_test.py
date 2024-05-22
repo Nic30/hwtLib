@@ -14,12 +14,12 @@ class Axi4Lite_rDatapump_alignas8TC(Axi3Lite_rDatapumpTC):
 
     @classmethod
     def setUpClass(cls):
-        u = Axi_rDatapump(axiCls=Axi4Lite)
-        u.DATA_WIDTH = cls.DATA_WIDTH
-        u.CHUNK_WIDTH = cls.CHUNK_WIDTH
-        u.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
-        u.ALIGNAS = cls.ALIGNAS
-        cls.compileSim(u)
+        dut = Axi_rDatapump(axiCls=Axi4Lite)
+        dut.DATA_WIDTH = cls.DATA_WIDTH
+        dut.CHUNK_WIDTH = cls.CHUNK_WIDTH
+        dut.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
+        dut.ALIGNAS = cls.ALIGNAS
+        cls.compileSim(dut)
 
 
 class Axi4Lite_rDatapump_16b_from_64bTC(Axi4Lite_rDatapump_alignas8TC):
@@ -34,13 +34,13 @@ class Axi3_rDatapump_alignas8_TC(Axi3_rDatapumpTC):
 
     @classmethod
     def setUpClass(cls):
-        u = Axi_rDatapump(axiCls=Axi3)
-        u.ALIGNAS = cls.ALIGNAS
-        u.DATA_WIDTH = cls.DATA_WIDTH
-        u.CHUNK_WIDTH = cls.CHUNK_WIDTH
-        u.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
-        u.ALIGNAS = cls.ALIGNAS
-        cls.compileSim(u)
+        dut = Axi_rDatapump(axiCls=Axi3)
+        dut.ALIGNAS = cls.ALIGNAS
+        dut.DATA_WIDTH = cls.DATA_WIDTH
+        dut.CHUNK_WIDTH = cls.CHUNK_WIDTH
+        dut.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
+        dut.ALIGNAS = cls.ALIGNAS
+        cls.compileSim(dut)
 
 
 Axi_rDatapump_unalignedTCs = [

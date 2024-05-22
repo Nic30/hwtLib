@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT, BOOL, STR
-from hwt.interfaces.std import Signal
+from hwt.hwIOs.std import HwIOSignal
 from hwt.serializer.mode import serializeExclude
 from hwt.serializer.verilog import VerilogSerializer
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from ipCorePackager.constants import INTF_DIRECTION
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwtLib.xilinx.platform import XilinxVivadoPlatform
+from ipCorePackager.constants import INTF_DIRECTION
 
 
 @serializeExclude
-class MMCME2_ADV(Unit):
+class MMCME2_ADV(HwModule):
     """
     Mixed-Mode Clock Manager (PLL like frequency synchronizer/clock generator) on Xilinx 7+ series
 
@@ -21,62 +21,62 @@ class MMCME2_ADV(Unit):
     """
 
     def _config(self):
-        self.BANDWIDTH = Param("OPTIMIZED")
-        self.CLKFBOUT_MULT_F = Param(5.0)
-        self.CLKFBOUT_PHASE = Param(0.0)
-        self.CLKFBOUT_USE_FINE_PS = Param(False)
-        self.CLKIN1_PERIOD = Param(0.0)
-        self.CLKIN2_PERIOD = Param(0.0)
+        self.BANDWIDTH = HwParam("OPTIMIZED")
+        self.CLKFBOUT_MULT_F = HwParam(5.0)
+        self.CLKFBOUT_PHASE = HwParam(0.0)
+        self.CLKFBOUT_USE_FINE_PS = HwParam(False)
+        self.CLKIN1_PERIOD = HwParam(0.0)
+        self.CLKIN2_PERIOD = HwParam(0.0)
 
-        self.CLKOUT0_DIVIDE_F = Param(1.0)
-        self.CLKOUT0_DUTY_CYCLE = Param(0.5)
-        self.CLKOUT0_PHASE = Param(0.0)
-        self.CLKOUT0_USE_FINE_PS = Param(False)
+        self.CLKOUT0_DIVIDE_F = HwParam(1.0)
+        self.CLKOUT0_DUTY_CYCLE = HwParam(0.5)
+        self.CLKOUT0_PHASE = HwParam(0.0)
+        self.CLKOUT0_USE_FINE_PS = HwParam(False)
 
-        self.CLKOUT1_DIVIDE = Param(1)
-        self.CLKOUT1_DUTY_CYCLE = Param(0.5)
-        self.CLKOUT1_PHASE = Param(0.0)
-        self.CLKOUT1_USE_FINE_PS = Param(False)
+        self.CLKOUT1_DIVIDE = HwParam(1)
+        self.CLKOUT1_DUTY_CYCLE = HwParam(0.5)
+        self.CLKOUT1_PHASE = HwParam(0.0)
+        self.CLKOUT1_USE_FINE_PS = HwParam(False)
 
-        self.CLKOUT2_DIVIDE = Param(1)
-        self.CLKOUT2_DUTY_CYCLE = Param(0.5)
-        self.CLKOUT2_PHASE = Param(0.0)
-        self.CLKOUT2_USE_FINE_PS = Param(False)
+        self.CLKOUT2_DIVIDE = HwParam(1)
+        self.CLKOUT2_DUTY_CYCLE = HwParam(0.5)
+        self.CLKOUT2_PHASE = HwParam(0.0)
+        self.CLKOUT2_USE_FINE_PS = HwParam(False)
 
-        self.CLKOUT3_DIVIDE = Param(1)
-        self.CLKOUT3_DUTY_CYCLE = Param(0.5)
-        self.CLKOUT3_PHASE = Param(0.0)
-        self.CLKOUT3_USE_FINE_PS = Param(False)
+        self.CLKOUT3_DIVIDE = HwParam(1)
+        self.CLKOUT3_DUTY_CYCLE = HwParam(0.5)
+        self.CLKOUT3_PHASE = HwParam(0.0)
+        self.CLKOUT3_USE_FINE_PS = HwParam(False)
 
-        self.CLKOUT4_CASCADE = Param(False)
-        self.CLKOUT4_DIVIDE = Param(1)
-        self.CLKOUT4_DUTY_CYCLE = Param(0.5)
-        self.CLKOUT4_PHASE = Param(0.0)
-        self.CLKOUT4_USE_FINE_PS = Param(False)
+        self.CLKOUT4_CASCADE = HwParam(False)
+        self.CLKOUT4_DIVIDE = HwParam(1)
+        self.CLKOUT4_DUTY_CYCLE = HwParam(0.5)
+        self.CLKOUT4_PHASE = HwParam(0.0)
+        self.CLKOUT4_USE_FINE_PS = HwParam(False)
 
-        self.CLKOUT5_DIVIDE = Param(1)
-        self.CLKOUT5_DUTY_CYCLE = Param(0.5)
-        self.CLKOUT5_PHASE = Param(0.0)
-        self.CLKOUT5_USE_FINE_PS = Param(False)
+        self.CLKOUT5_DIVIDE = HwParam(1)
+        self.CLKOUT5_DUTY_CYCLE = HwParam(0.5)
+        self.CLKOUT5_PHASE = HwParam(0.0)
+        self.CLKOUT5_USE_FINE_PS = HwParam(False)
 
-        self.CLKOUT6_DIVIDE = Param(1)
-        self.CLKOUT6_DUTY_CYCLE = Param(0.5)
-        self.CLKOUT6_PHASE = Param(0.0)
-        self.CLKOUT6_USE_FINE_PS = Param(False)
+        self.CLKOUT6_DIVIDE = HwParam(1)
+        self.CLKOUT6_DUTY_CYCLE = HwParam(0.5)
+        self.CLKOUT6_PHASE = HwParam(0.0)
+        self.CLKOUT6_USE_FINE_PS = HwParam(False)
 
-        self.COMPENSATION = Param("ZHOLD")
-        self.DIVCLK_DIVIDE = Param(1)
-        self.IS_CLKINSEL_INVERTED = Param(BIT.from_py(0b0))
-        self.IS_PSEN_INVERTED = Param(BIT.from_py(0b0))
-        self.IS_PSINCDEC_INVERTED = Param(BIT.from_py(0b0))
-        self.IS_PWRDWN_INVERTED = Param(BIT.from_py(0b0))
-        self.IS_RST_INVERTED = Param(BIT.from_py(0b0))
-        self.REF_JITTER1 = Param(0.01)
-        self.REF_JITTER2 = Param(0.01)
-        self.SS_EN = Param(False)
-        self.SS_MOD_PERIOD = Param(10000)
-        self.SS_MODE = Param("CENTER_HIGH")
-        self.STARTUP_WAIT = Param(False)
+        self.COMPENSATION = HwParam("ZHOLD")
+        self.DIVCLK_DIVIDE = HwParam(1)
+        self.IS_CLKINSEL_INVERTED = HwParam(BIT.from_py(0b0))
+        self.IS_PSEN_INVERTED = HwParam(BIT.from_py(0b0))
+        self.IS_PSINCDEC_INVERTED = HwParam(BIT.from_py(0b0))
+        self.IS_PWRDWN_INVERTED = HwParam(BIT.from_py(0b0))
+        self.IS_RST_INVERTED = HwParam(BIT.from_py(0b0))
+        self.REF_JITTER1 = HwParam(0.01)
+        self.REF_JITTER2 = HwParam(0.01)
+        self.SS_EN = HwParam(False)
+        self.SS_MOD_PERIOD = HwParam(10000)
+        self.SS_MODE = HwParam("CENTER_HIGH")
+        self.STARTUP_WAIT = HwParam(False)
 
     def clkout_duty_chk(self, CLKOUT_DIVIDE, CLKOUT_DUTY_CYCLE, CLKOUT_DUTY_CYCLE_N):
         O_MAX_HT_LT = 64
@@ -112,8 +112,8 @@ class MMCME2_ADV(Unit):
         v = getattr(self, name)
         if self._store_manager.serializer_cls == VerilogSerializer:
             # for verilog we need to convert it to  "TRUE" or "FALSE" string
-            if not isinstance(v, STR.getValueCls()):
-                if isinstance(v, (bool, BIT.getValueCls())):
+            if not isinstance(v, STR.getConstCls()):
+                if isinstance(v, (bool, BIT.getConstCls())):
                     v = "TRUE" if v else "FALSE"
                 else:
                     assert v in STR_BOOL, (name, v)
@@ -122,8 +122,8 @@ class MMCME2_ADV(Unit):
             else:
                 assert v._dtype == STR, (name, "must be of type ", STR, " or compatible, is:", v)
         else:
-            if not isinstance(v, BOOL.getValueCls()):
-                if isinstance(v, (str, STR.getValueCls())):
+            if not isinstance(v, BOOL.getConstCls()):
+                if isinstance(v, (str, STR.getConstCls())):
                     v = str(v)
                     if v == "FALSE":
                         v = False
@@ -139,55 +139,55 @@ class MMCME2_ADV(Unit):
 
     def type_check_bit_param(self, name):
         v = getattr(self, name)
-        if not isinstance(v, BIT.getValueCls()):
+        if not isinstance(v, BIT.getConstCls()):
             v = BIT.from_py(v)
             object.__setattr__(self, name, v)
         else:
             assert v._dtype == BIT, (name, "must be of type ", BIT, " or compatible, is:", v)
 
     def _declr(self):
-        self.CLKFBIN = Signal()
-        self.CLKFBOUT = Signal()._m()
-        self.CLKFBOUTB = Signal()._m()
-        self.CLKFBSTOPPED = Signal()._m()
+        self.CLKFBIN = HwIOSignal()
+        self.CLKFBOUT = HwIOSignal()._m()
+        self.CLKFBOUTB = HwIOSignal()._m()
+        self.CLKFBSTOPPED = HwIOSignal()._m()
 
-        self.CLKIN1 = Signal()
-        self.CLKIN2 = Signal()
-        self.CLKINSEL = Signal()
-        self.CLKINSTOPPED = Signal()._m()
+        self.CLKIN1 = HwIOSignal()
+        self.CLKIN2 = HwIOSignal()
+        self.CLKINSEL = HwIOSignal()
+        self.CLKINSTOPPED = HwIOSignal()._m()
 
         # B variant of clock is inverted clock
-        self.CLKOUT0 = Signal()._m()
-        self.CLKOUT0B = Signal()._m()
-        self.CLKOUT1 = Signal()._m()
-        self.CLKOUT1B = Signal()._m()
-        self.CLKOUT2 = Signal()._m()
-        self.CLKOUT2B = Signal()._m()
-        self.CLKOUT3 = Signal()._m()
-        self.CLKOUT3B = Signal()._m()
-        self.CLKOUT4 = Signal()._m()
-        self.CLKOUT5 = Signal()._m()
-        self.CLKOUT6 = Signal()._m()
+        self.CLKOUT0 = HwIOSignal()._m()
+        self.CLKOUT0B = HwIOSignal()._m()
+        self.CLKOUT1 = HwIOSignal()._m()
+        self.CLKOUT1B = HwIOSignal()._m()
+        self.CLKOUT2 = HwIOSignal()._m()
+        self.CLKOUT2B = HwIOSignal()._m()
+        self.CLKOUT3 = HwIOSignal()._m()
+        self.CLKOUT3B = HwIOSignal()._m()
+        self.CLKOUT4 = HwIOSignal()._m()
+        self.CLKOUT5 = HwIOSignal()._m()
+        self.CLKOUT6 = HwIOSignal()._m()
 
         # dynamic reconfig
-        self.DADDR = Signal(Bits(7))
-        self.DCLK = Signal()
-        self.DEN = Signal()
-        self.DI = Signal(Bits(16))
-        self.DO = Signal(Bits(16))._m()
-        self.DRDY = Signal()._m()
-        self.DWE = Signal()
+        self.DADDR = HwIOSignal(HBits(7))
+        self.DCLK = HwIOSignal()
+        self.DEN = HwIOSignal()
+        self.DI = HwIOSignal(HBits(16))
+        self.DO = HwIOSignal(HBits(16))._m()
+        self.DRDY = HwIOSignal()._m()
+        self.DWE = HwIOSignal()
 
-        self.LOCKED = Signal()._m()
+        self.LOCKED = HwIOSignal()._m()
 
         # phase shift control
-        self.PSCLK = Signal()
-        self.PSDONE = Signal()._m()
-        self.PSEN = Signal()
-        self.PSINCDEC = Signal()
+        self.PSCLK = HwIOSignal()
+        self.PSDONE = HwIOSignal()._m()
+        self.PSEN = HwIOSignal()
+        self.PSINCDEC = HwIOSignal()
 
-        self.PWRDWN = Signal()
-        self.RST = Signal()
+        self.PWRDWN = HwIOSignal()
+        self.RST = HwIOSignal()
 
         for name in ("IS_CLKINSEL_INVERTED", "IS_PSEN_INVERTED", "IS_PSINCDEC_INVERTED", "IS_PWRDWN_INVERTED", "IS_RST_INVERTED"):
             self.type_check_bit_param(name)
@@ -275,43 +275,43 @@ class MMCME2_ADV(Unit):
         assert isinstance(self._target_platform, XilinxVivadoPlatform), (self._target_platform, "This component is a hardblock of Xilinx devices only")
 
     def _impl(self):
-        for i in self._interfaces:
-            if i._direction == INTF_DIRECTION.SLAVE:
-                i(None)
+        for hwIO in self._hwIOs:
+            if hwIO._direction == INTF_DIRECTION.SLAVE:
+                hwIO(None)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = MMCME2_ADV()
-    u.BANDWIDTH = "OPTIMIZED"
-    u.CLKFBOUT_MULT_F = 10.0
-    u.CLKFBOUT_PHASE = 0.0
-    u.CLKFBOUT_USE_FINE_PS = False
-    u.CLKIN1_PERIOD = 10.0
-    u.CLKIN2_PERIOD = 0.0
-    u.CLKOUT0_DIVIDE_F = 10.0
-    u.CLKOUT0_DUTY_CYCLE = 0.5
-    u.CLKOUT0_PHASE = 0.0
-    u.CLKOUT0_USE_FINE_PS = False
+    from hwt.synth import to_rtl_str
+    m = MMCME2_ADV()
+    m.BANDWIDTH = "OPTIMIZED"
+    m.CLKFBOUT_MULT_F = 10.0
+    m.CLKFBOUT_PHASE = 0.0
+    m.CLKFBOUT_USE_FINE_PS = False
+    m.CLKIN1_PERIOD = 10.0
+    m.CLKIN2_PERIOD = 0.0
+    m.CLKOUT0_DIVIDE_F = 10.0
+    m.CLKOUT0_DUTY_CYCLE = 0.5
+    m.CLKOUT0_PHASE = 0.0
+    m.CLKOUT0_USE_FINE_PS = False
     for i in range(1, 6 + 1):
-        setattr(u, f"CLKOUT{i:d}_DIVIDE", 1)
-        setattr(u, f"CLKOUT{i:d}_DUTY_CYCLE", 0.5)
-        setattr(u, f"CLKOUT{i:d}_PHASE", 0.0)
-        setattr(u, f"CLKOUT{i:d}_USE_FINE_PS", False)
-    u.CLKOUT4_CASCADE = False
+        setattr(m, f"CLKOUT{i:d}_DIVIDE", 1)
+        setattr(m, f"CLKOUT{i:d}_DUTY_CYCLE", 0.5)
+        setattr(m, f"CLKOUT{i:d}_PHASE", 0.0)
+        setattr(m, f"CLKOUT{i:d}_USE_FINE_PS", False)
+    m.CLKOUT4_CASCADE = False
 
-    u.COMPENSATION = "ZHOLD"
-    u.DIVCLK_DIVIDE = 1
-    u.IS_CLKINSEL_INVERTED = BIT.from_py(0)
-    u.IS_PSEN_INVERTED = BIT.from_py(0)
-    u.IS_PSINCDEC_INVERTED = BIT.from_py(0)
-    u.IS_PWRDWN_INVERTED = BIT.from_py(0)
-    u.IS_RST_INVERTED = BIT.from_py(0)
-    u.REF_JITTER1 = 0.01
-    u.REF_JITTER2 = 0.01
-    u.SS_EN = "FALSE"
-    u.SS_MODE = "CENTER_HIGH"
-    u.SS_MOD_PERIOD = 10000
-    u.STARTUP_WAIT = "FALSE"
+    m.COMPENSATION = "ZHOLD"
+    m.DIVCLK_DIVIDE = 1
+    m.IS_CLKINSEL_INVERTED = BIT.from_py(0)
+    m.IS_PSEN_INVERTED = BIT.from_py(0)
+    m.IS_PSINCDEC_INVERTED = BIT.from_py(0)
+    m.IS_PWRDWN_INVERTED = BIT.from_py(0)
+    m.IS_RST_INVERTED = BIT.from_py(0)
+    m.REF_JITTER1 = 0.01
+    m.REF_JITTER2 = 0.01
+    m.SS_EN = "FALSE"
+    m.SS_MODE = "CENTER_HIGH"
+    m.SS_MOD_PERIOD = 10000
+    m.STARTUP_WAIT = "FALSE"
 
-    print(to_rtl_str(u, target_platform=XilinxVivadoPlatform()))
+    print(to_rtl_str(m, target_platform=XilinxVivadoPlatform()))

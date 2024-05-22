@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import WRITE, READ
+from hwt.constants import WRITE, READ
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.constants import RESP_OKAY
@@ -20,27 +20,27 @@ class AxiToAvalonMm_len0_prioW_TC(SimTestCase):
     @classmethod
     def setUpClass(cls):
         super(AxiToAvalonMm_len0_prioW_TC, cls).setUpClass()
-        u = cls.u = Axi4_to_AvalonMm()
-        u.R_SIZE_FIFO_DEPTH = cls.R_SIZE_FIFO_DEPTH
-        u.R_DATA_FIFO_DEPTH = cls.R_DATA_FIFO_DEPTH
-        u.RW_PRIORITY = cls.RW_PRIORITY
-        cls.compileSim(u)
+        dut = cls.dut = Axi4_to_AvalonMm()
+        dut.R_SIZE_FIFO_DEPTH = cls.R_SIZE_FIFO_DEPTH
+        dut.R_DATA_FIFO_DEPTH = cls.R_DATA_FIFO_DEPTH
+        dut.RW_PRIORITY = cls.RW_PRIORITY
+        cls.compileSim(dut)
 
     def randomize_all(self):
-        u = self.u
-        axi_randomize_per_channel(self, u.s)
+        dut = self.dut
+        axi_randomize_per_channel(self, dut.s)
 
     def test_nop(self):
         self.runSim(10 * CLK_PERIOD)
 
     def test_read(self, N=10, randomize=False):
-        u = self.u
-        ADDR_STEP = u.DATA_WIDTH // 8
+        dut = self.dut
+        ADDR_STEP = dut.DATA_WIDTH // 8
         MAX_LEN = self.MAX_LEN
         MAX_SIZE = MAX_LEN + 1
-        m = AvalonMmSimRam(u.m)
+        m = AvalonMmSimRam(dut.m)
         for i in range(0, N * MAX_SIZE, MAX_SIZE):
-            u.s.ar._ag.data.append(u.s._ag.create_addr_req(i * ADDR_STEP, MAX_LEN))
+            dut.s.ar._ag.data.append(dut.s._ag.create_addr_req(i * ADDR_STEP, MAX_LEN))
             for i2 in range(MAX_SIZE):
                 m.data[i + i2] = i + i2
 
@@ -50,7 +50,7 @@ class AxiToAvalonMm_len0_prioW_TC(SimTestCase):
             t *= 3
 
         self.runSim(t * CLK_PERIOD)
-        self.assertValSequenceEqual(u.s.r._ag.data,
+        self.assertValSequenceEqual(dut.s.r._ag.data,
                                     [(0, i, RESP_OKAY, int((i + 1) % MAX_SIZE == 0))
                                      for i in range(N * MAX_SIZE)])
 
@@ -58,16 +58,16 @@ class AxiToAvalonMm_len0_prioW_TC(SimTestCase):
         self.test_read(N=N, randomize=True)
 
     def test_write(self, N=10, randomize=False):
-        u = self.u
-        ADDR_STEP = u.DATA_WIDTH // 8
+        dut = self.dut
+        ADDR_STEP = dut.DATA_WIDTH // 8
         MAX_LEN = self.MAX_LEN
         MAX_SIZE = MAX_LEN + 1
 
-        m = AvalonMmSimRam(u.m)
+        m = AvalonMmSimRam(dut.m)
         for i in range(0, N * MAX_SIZE, MAX_SIZE):
-            u.s.aw._ag.data.append(u.s._ag.create_addr_req(i * ADDR_STEP, MAX_LEN))
+            dut.s.aw._ag.data.append(dut.s._ag.create_addr_req(i * ADDR_STEP, MAX_LEN))
             for i2 in range(MAX_SIZE):
-                u.s.w._ag.data.append((i + i2, mask(ADDR_STEP), int(i2 == MAX_LEN)))
+                dut.s.w._ag.data.append((i + i2, mask(ADDR_STEP), int(i2 == MAX_LEN)))
 
         t = 10 + N * MAX_SIZE
         if randomize:
@@ -80,7 +80,7 @@ class AxiToAvalonMm_len0_prioW_TC(SimTestCase):
             [i for i in range(N * MAX_SIZE)]
         )
         self.assertValSequenceEqual(
-            u.s.b._ag.data,
+            dut.s.b._ag.data,
             [(0, RESP_OKAY) for _ in range(N)]
         )
 

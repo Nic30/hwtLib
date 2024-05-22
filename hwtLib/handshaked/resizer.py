@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, Switch
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
+from hwt.hwIOs.std import HwIORdVldSync
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hwIO import HwIO
 
 
 class HsResizer(HandshakedCompBase):
@@ -16,18 +19,19 @@ class HsResizer(HandshakedCompBase):
 
     .. hwt-autodoc:: _example_HsResizer
     """
-    def __init__(self, hsIntfCls, scale, inIntfConfigFn, outIntfConfigFn):
+
+    def __init__(self, hshwIO: HwIORdVldSync, scale, inHwIOConfigFn, outHwIOConfigFn):
         """
-        :param hsIntfCls: class of interface which should be used
+        :param hshwIO: class of interface which should be used
             as interface of this unit
         :param scale: tuple (in scale, out scale) one of scales has to be 1,
             f. e. (1,2) means output will be 2x wider
-        :param inIntfConfigFn: function inIntfConfigFn(input interface)
+        :param inHwIOConfigFn: function inHwIOConfigFn(input interface)
             which will be applied on dataIn
-        :param outIntfConfigFn: function outIntfConfigFn(input interface)
+        :param outHwIOConfigFn: function outHwIOConfigFn(input interface)
             which will be applied on dataOut
         """
-        HandshakedCompBase.__init__(self, hsIntfCls)
+        HandshakedCompBase.__init__(self, hshwIO)
 
         assert len(scale) == 2
         scale = (int(scale[0]), int(scale[1]))
@@ -36,21 +40,21 @@ class HsResizer(HandshakedCompBase):
 
         self._scale = scale
 
-        self._inIntfConfigFn = inIntfConfigFn
-        self._outIntfConfigFn = outIntfConfigFn
+        self._inIntfConfigFn = inHwIOConfigFn
+        self._outIntfConfigFn = outHwIOConfigFn
 
     def _config(self):
         pass
 
     def _declr(self):
         addClkRstn(self)
-        self.dataIn = self.intfCls()
+        self.dataIn = self.hwIOCls()
         self._inIntfConfigFn(self.dataIn)
 
-        self.dataOut = self.intfCls()._m()
+        self.dataOut = self.hwIOCls()._m()
         self._outIntfConfigFn(self.dataOut)
 
-    def _upscaleDataPassLogic(self, inputRegs_cntr, ITEMS):
+    def _upscaleDataPassLogic(self, inputRegs_cntr: RtlSignal, ITEMS: int):
 
         # valid when all registers are loaded and input with last datapart is valid
         vld = self.get_valid_signal
@@ -68,9 +72,9 @@ class HsResizer(HandshakedCompBase):
             )
         )
 
-    def _upscale(self, factor):
+    def _upscale(self, factor: int):
         inputRegs_cntr = self._reg("inputRegs_cntr",
-                                   Bits(log2ceil(factor + 1), False),
+                                   HBits(log2ceil(factor + 1), False),
                                    def_val=0)
 
         for din, dout in zip(self.get_data(self.dataIn),
@@ -87,13 +91,13 @@ class HsResizer(HandshakedCompBase):
 
         self._upscaleDataPassLogic(inputRegs_cntr, factor)
 
-    def _downscale(self, factor):
+    def _downscale(self, factor: int):
         inputRegs_cntr = self._reg("inputRegs_cntr",
-                                   Bits(log2ceil(factor + 1), False),
+                                   HBits(log2ceil(factor + 1), False),
                                    def_val=0)
 
         # instantiate HandshakedReg, handshaked builder is not used to avoid dependencies
-        inReg = HandshakedReg(self.intfCls)
+        inReg = HandshakedReg(self.hwIOCls)
         inReg._updateParamsFrom(self.dataIn)
         self.inReg = inReg
         inReg.clk(self.clk)
@@ -134,22 +138,23 @@ class HsResizer(HandshakedCompBase):
 
 
 def _example_HsResizer():
-    from hwt.interfaces.std import Handshaked
+    from hwt.hwIOs.std import HwIODataRdVld
 
-    def set_dw_in(intf):
-        intf.DATA_WIDTH = 32
+    def set_dw_in(hwIO:HwIO):
+        hwIO.DATA_WIDTH = 32
 
-    def set_dw_out(intf):
-        intf.DATA_WIDTH = 3 * 32
+    def set_dw_out(hwIO:HwIO):
+        hwIO.DATA_WIDTH = 3 * 32
 
-    u = HsResizer(Handshaked,
+    m = HsResizer(HwIODataRdVld,
                   [1, 3],
                   set_dw_in,
                   set_dw_out)
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HsResizer()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_HsResizer()
+    print(to_rtl_str(m))

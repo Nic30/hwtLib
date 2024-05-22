@@ -3,11 +3,11 @@
 
 from hwt.code import If, Switch, Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.utils import propagateClkRst, addClkRst
+from hwt.hwIOs.utils import propagateClkRst, addClkRst
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ULPI_TX_CMD, ULPI_REG, \
     ulpi_reg_function_control_t, ulpi_reg_function_control_t_reset_default, \
     ulpi_reg_otg_control_t, ulpi_reg_otg_control_t_reset_defaults, \
@@ -16,7 +16,7 @@ from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b, utmi_interrupt_t
 from pyMathBitPrecise.bit_utils import mask
 
 
-class Utmi_to_Ulpi(Unit):
+class Utmi_to_Ulpi(HwModule):
     """
     The ULPI is an interface which reduces the number of signals for UTMI+ interface.
     This reduction is done using a register file which drives signals which are not used
@@ -129,14 +129,14 @@ class Utmi_to_Ulpi(Unit):
         # Xilinx placement pragmas:
         # synthesis attribute IOB of ulpi_data_q is "TRUE"
         # synthesis attribute IOB of ulpi_stp_q is "TRUE"
-        ulpi_data_q = self._reg("ulpi_data_q", Bits(8), def_val=0)
+        ulpi_data_q = self._reg("ulpi_data_q", HBits(8), def_val=0)
         ulpi_stp_q = self._reg("ulpi_stp_q", def_val=0)
-        data_q = self._reg("data_q", Bits(8), def_val=0)
+        data_q = self._reg("data_q", HBits(8), def_val=0)
         utmi_rxvalid_q = self._reg("utmi_rxvalid_q", def_val=0)
         utmi_rxerror_q = self._reg("utmi_rxerror_q", def_val=0)
         utmi_rxactive_q = self._reg("utmi_rxactive_q", def_val=0)
-        utmi_linestate_q = self._reg("utmi_linestate_q", Bits(2), def_val=0)
-        utmi_data_q = self._reg("utmi_data_q", Bits(8), def_val=0)
+        utmi_linestate_q = self._reg("utmi_linestate_q", HBits(2), def_val=0)
+        utmi_data_q = self._reg("utmi_data_q", HBits(8), def_val=0)
 
         # interupts are cleared once new RX CMD is recieved and it does not contain the event flag
         utmi_interrupt_q = self._reg("utmi_interrupt_q", utmi_interrupt_t,
@@ -291,6 +291,7 @@ class Utmi_to_Ulpi(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Utmi_to_Ulpi()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = Utmi_to_Ulpi()
+    print(to_rtl_str(m))

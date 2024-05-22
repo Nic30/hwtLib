@@ -5,18 +5,18 @@ from typing import Optional
 
 from hwt.code import If, Switch, CodeBlock
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import VldSynced, Signal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataVld, HwIOSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.hwParam import HwParam
+from hwt.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
+from hwt.hwModule import HwModule
+from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.peripheral.usb.constants import usb_addr_t, USB_PID, USB_VER, \
     usb_endp_t, usb_pid_t, USB_LINE_STATE
 from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle, \
@@ -31,7 +31,7 @@ from hwtLib.types.ctypes import uint8_t
 from pyMathBitPrecise.bit_utils import mask
 
 
-class Usb2DeviceCore(Unit):
+class Usb2DeviceCore(HwModule):
     """
     Based on USB descriptors build endpoint statemachines, speed negotiation logic,
     usb reset logic and transaction logic
@@ -55,9 +55,9 @@ class Usb2DeviceCore(Unit):
     """
 
     def _config(self):
-        self.DESCRIPTORS: UsbDescriptorBundle = Param(None)
-        self.CLK_FREQ = Param(int(60e6))
-        self.PRE_NEGOTIATED_TO: Optional[USB_VER] = Param(None)
+        self.DESCRIPTORS: UsbDescriptorBundle = HwParam(None)
+        self.CLK_FREQ = HwParam(int(60e6))
+        self.PRE_NEGOTIATED_TO: Optional[USB_VER] = HwParam(None)
 
     def _declr(self):
         assert isinstance(self.DESCRIPTORS, UsbDescriptorBundle), self.DESCRIPTORS
@@ -68,16 +68,16 @@ class Usb2DeviceCore(Unit):
         self.phy = Utmi_8b()
         self.ep: UsbEndpointInterface = UsbEndpointInterface()._m()
 
-        self.usb_rst: Signal = Signal()._m()
-        self.usb_speed: VldSynced = VldSynced()._m()
+        self.usb_rst: HwIOSignal = HwIOSignal()._m()
+        self.usb_speed: HwIODataVld = HwIODataVld()._m()
         self.usb_speed.DATA_WIDTH = log2ceil(len(USB_VER.values))
-        self.current_usb_addr = Signal(usb_addr_t)
+        self.current_usb_addr = HwIOSignal(usb_addr_t)
 
         self.sie_rx = Usb2SieDeviceRx()
         self.sie_tx = Usb2SieDeviceTx()
 
-    def detect_usb_rst(self, LineState: RtlSignal, usb_speed: VldSynced):
-        se0_cntr = self._reg("se0_cntr", Bits(15), def_val=0)
+    def detect_usb_rst(self, LineState: RtlSignal, usb_speed: HwIODataVld):
+        se0_cntr = self._reg("se0_cntr", HBits(15), def_val=0)
         usb_rst_detected = se0_cntr[14]
         # is_negotiated_to_HS = usb_speed.vld & usb_speed.data._eq(USB_VER.values.index(USB_VER)
 
@@ -150,9 +150,9 @@ class Usb2DeviceCore(Unit):
         return ep_out_data_bit, ep_in_data_bit, set_ep_out_data_bit, set_ep_in_data_bit, ep_is_isochronous
 
     def usb_endpoint_fsm(self, usb_rst: RtlSignal, chirp_en: RtlSignal,
-               ep_rx: AxiStream,
-               ep_tx: AxiStream,
-               ep_tx_success: VldSynced,
+               ep_rx: Axi4Stream,
+               ep_tx: Axi4Stream,
+               ep_tx_success: HwIODataVld,
                ep_rx_stall: RtlSignal,
                ep_tx_stall: RtlSignal,
                ):
@@ -322,7 +322,7 @@ class Usb2DeviceCore(Unit):
 
     def usb_linerate_negotiation(self,
                                  enable: RtlSignalBase, usb_reset: RtlSignal,
-                                 utmi: Utmi_8b, usb_speed_o:VldSynced):
+                                 utmi: Utmi_8b, usb_speed_o:HwIODataVld):
         # Default - disconnect
         st_t = HEnum("usb_linerate_negotiation_state", [
             "IDLE",
@@ -366,7 +366,7 @@ class Usb2DeviceCore(Unit):
         CHIRPK_TIME = ATTACH_FS_TIME + ms(1)  # T1 + ~1ms
         HS_RESET_TIME = DETACH_TIME + ms(9)  # T0 + 10ms = T9
         # Time since T0 (start of HS reset)
-        usb_rst_time_q = self._reg("usb_rst_time_q", Bits(log2ceil(HS_RESET_TIME)), def_val=0)
+        usb_rst_time_q = self._reg("usb_rst_time_q", HBits(log2ceil(HS_RESET_TIME)), def_val=0)
 
         If((st != st_t.WAIT_RST) & st.next._eq(st_t.WAIT_RST),
            # Entering wait for reset state
@@ -501,12 +501,12 @@ class Usb2DeviceCore(Unit):
 
 def _example_Usb2DeviceCore():
     from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
-    u = Usb2DeviceCore()
-    u.DESCRIPTORS = get_default_usb_cdc_vcp_descriptors()
-    return u
+    m = Usb2DeviceCore()
+    m.DESCRIPTORS = get_default_usb_cdc_vcp_descriptors()
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_Usb2DeviceCore()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_Usb2DeviceCore()
+    print(to_rtl_str(m))

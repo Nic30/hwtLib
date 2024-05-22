@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Switch, SwitchLogic
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.cesnet.mi32.intf import Mi32
@@ -22,9 +22,9 @@ class Mi32Endpoint(BusEndpoint):
     _getWordAddrStep = Mi32._getWordAddrStep
     _getAddrStep = Mi32._getAddrStep
 
-    def __init__(self, structTemplate, intfCls=Mi32, shouldEnterFn=None):
+    def __init__(self, structTemplate, hwIOCls=Mi32, shouldEnterFn=None):
         BusEndpoint.__init__(self, structTemplate,
-                             intfCls=intfCls,
+                             hwIOCls=hwIOCls,
                              shouldEnterFn=shouldEnterFn)
 
     def _impl(self):
@@ -47,7 +47,7 @@ class Mi32Endpoint(BusEndpoint):
         if self._bramPortMapped:
             BRAMS_CNT = len(self._bramPortMapped)
             bramIndxCases = []
-            readBramIndx = self._reg("readBramIndx", Bits(
+            readBramIndx = self._reg("readBramIndx", HBits(
                 log2ceil(BRAMS_CNT + 1), False))
             outputSwitch = Switch(readBramIndx)
 
@@ -81,16 +81,17 @@ class Mi32Endpoint(BusEndpoint):
 def _example_Mi32Endpoint():
     from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
-    u = Mi32Endpoint(
+    m = Mi32Endpoint(
             HStruct(
                 (uint32_t, "field0"),
                 (uint32_t, "field1"),
                 #(uint32_t[32], "bramMapped")
                 ))
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_Mi32Endpoint()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_Mi32Endpoint()
+    print(to_rtl_str(m))

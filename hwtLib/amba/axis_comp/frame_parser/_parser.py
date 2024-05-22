@@ -6,36 +6,36 @@ from typing import Optional, List, Union, Tuple
 from hwt.code import If, Or
 from hwt.code_utils import connect_optional, rename_signal
 from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.union import HUnion
 from hwt.hdl.types.utils import is_only_padding
-from hwt.interfaces.std import Handshaked, Signal, VldSynced
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.unionIntf import UnionSource
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal, HwIODataVld
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOUnion import HwIOUnionSource
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.frame_utils.alignment_utils import next_frame_offsets
 from hwtLib.abstract.template_configured import TemplateConfigured, \
     HdlType_separate
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.amba.axis_comp.frame_deparser.utils import drill_down_in_HStruct_fields
-from hwtLib.amba.axis_comp.frame_join._join import AxiS_FrameJoin
-from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserFieldConnector
-from hwtLib.amba.axis_comp.frame_parser.footer_split import AxiS_footerSplit
+from hwtLib.amba.axis_comp.frame_join._join import Axi4S_FrameJoin
+from hwtLib.amba.axis_comp.frame_parser.field_connector import Axi4S_frameParserFieldConnector
+from hwtLib.amba.axis_comp.frame_parser.footer_split import Axi4S_footerSplit
 from hwtLib.amba.axis_comp.frame_parser.word_factory import WordFactory
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.hdl.transPart import TransPart
-from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 
 
 def is_non_const_stream(t: HdlType):
@@ -57,7 +57,7 @@ def can_be_zero_sized(t: HdlType):
     return isinstance(t, HStruct) and not t.fields
 
 
-class _AxiS_frameParserChildMeta():
+class _Axi4S_frameParserChildMeta():
 
     def __init__(self, t: HdlType, is_padding: bool, is_const_sized: bool):
         self.t = t
@@ -75,7 +75,7 @@ def connect_with_clear(clear: RtlSignal, din: RtlSignal, dout: RtlSignal):
 
 
 @serializeParamsUniq
-class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
+class Axi4S_frameParser(Axi4SCompBase, TemplateConfigured):
     """
     Parse frame specified by HType (HStruct, HUnion, ...) into fields
 
@@ -83,17 +83,17 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         it can be specified by TransTmpl instance and list of FrameTmpl
         (Output data structure can be splited into multiple frames as required)
 
-    .. figure:: ./_static/AxiS_frameParser.png
+    .. figure:: ./_static/Axi4S_frameParser.png
 
     :note: names in the figure are just illustrative
 
-    :ivar ~.dataIn: the AxiStream interface for input frame
+    :ivar ~.dataIn: the Axi4Stream interface for input frame
     :ivar ~.dataOut: output field interface generated from input type description
-    :ivar ~.children: List[AxiS_frameParser] which contains a list of children components
+    :ivar ~.children: List[Axi4S_frameParser] which contains a list of children components
         in the cases where this component works only as a wrapper of pipeline composed from actual parsers
-    :ivar ~.children_meta: List[_AxiS_frameParserChildMeta] additional info for children list
+    :ivar ~.children_meta: List[_Axi4S_frameParserChildMeta] additional info for children list
 
-    .. hwt-autodoc:: _example_AxiS_frameParser
+    .. hwt-autodoc:: _example_Axi4S_frameParser
     """
 
     def __init__(self, structT: HdlType,
@@ -112,24 +112,24 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             like HStream
         """
         TemplateConfigured.__init__(self, structT, tmpl, frames)
-        AxiSCompBase.__init__(self)
+        Axi4SCompBase.__init__(self)
 
     def _config(self):
-        self.intfCls._config(self)
-        self.T = Param(self._structT)
-        self.TRANSACTION_TEMPLATE = Param(self._tmpl)
-        self.FRAME_TEMPLATES = Param(None if self._frames is None else tuple(self._frames))
-        # if this is true field interfaces will be of type VldSynced
+        self.hwIOCls._config(self)
+        self.T = HwParam(self._structT)
+        self.TRANSACTION_TEMPLATE = HwParam(self._tmpl)
+        self.FRAME_TEMPLATES = HwParam(None if self._frames is None else tuple(self._frames))
+        # if this is true field interfaces will be of type HwIODataVld
         # and single ready signal will be used for all
-        # else every interface will be instance of Handshaked and it will
+        # else every interface will be instance of HwIODataRdVld and it will
         # have it's own ready(rd) signal
-        self.SHARED_READY = Param(False)
+        self.SHARED_READY = HwParam(False)
         # if true, a new state for overflow will be created in FSM
-        self.OVERFLOW_SUPPORT = Param(False)
+        self.OVERFLOW_SUPPORT = HwParam(False)
         # if True, a frame shorter than expected will cause the reset of main FSM
-        self.UNDERFLOW_SUPPORT = Param(False)
+        self.UNDERFLOW_SUPPORT = HwParam(False)
 
-    def _mkFieldIntf(self, parent: Union[StructIntf, UnionSource],
+    def _mkFieldHwIO(self, parent: Union[HwIOStruct, HwIOUnionSource],
                      structField: HStructField):
         """
         Create an interface to export the data specified by the member of the structure
@@ -137,25 +137,25 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         t = structField.dtype
         path = parent._field_path / structField.name
         if isinstance(t, HUnion):
-            i = UnionSource(t, path, parent._instantiateFieldFn)
-            i._fieldsToInterfaces = parent._fieldsToInterfaces
+            i = HwIOUnionSource(t, path, parent._instantiateFieldFn)
+            i._fieldsToHwIOs = parent._fieldsToHwIOs
             return i
         elif isinstance(t, HStruct):
-            i = StructIntf(t, path, parent._instantiateFieldFn)
-            i._fieldsToInterfaces = parent._fieldsToInterfaces
+            i = HwIOStruct(t, path, parent._instantiateFieldFn)
+            i._fieldsToHwIOs = parent._fieldsToHwIOs
             return i
         elif isinstance(t, HStream):
             if self.SHARED_READY:
                 raise NotImplementedError("SHARED_READY=True and HStream field", structField)
             else:
-                i = AxiStream()
+                i = Axi4Stream()
                 i._updateParamsFrom(self)
                 return i
         else:
             if self.SHARED_READY:
-                i = VldSynced()
+                i = HwIODataVld()
             else:
-                i = Handshaked()
+                i = HwIODataRdVld()
             i.DATA_WIDTH = structField.dtype.bit_length()
             return i
 
@@ -169,23 +169,23 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
 
         t = self._structT
         if isinstance(t, HStruct):
-            intfCls = StructIntf
+            hwIOCls = HwIOStruct
         elif isinstance(t, HUnion):
-            intfCls = UnionSource
+            hwIOCls = HwIOUnionSource
         else:
             raise TypeError(t)
 
         # input stream
-        with self._paramsShared():
-            self.dataIn = self.intfCls()
+        with self._hwParamsShared():
+            self.dataIn = self.hwIOCls()
             if self.SHARED_READY:
-                self.dataOut_ready = Signal()
+                self.dataOut_ready = HwIOSignal()
 
         # parsed data
         if is_only_padding(t):
             self.dataOut = None
         else:
-            self.dataOut = intfCls(t, tuple(), self._mkFieldIntf)._m()
+            self.dataOut = hwIOCls(t, tuple(), self._mkFieldHwIO)._m()
 
         self.parseTemplate()
         if self.OVERFLOW_SUPPORT:
@@ -193,12 +193,12 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             # we described by type in configuration
             # :note: if the data is unaligned this may be 1 in last parsed word
             #        as well
-            self.parsing_overflow: Signal = Signal()._m()
+            self.parsing_overflow: HwIOSignal = HwIOSignal()._m()
 
         if self.UNDERFLOW_SUPPORT:
             # flag which is 1 if the input stream ended prematurely
             # and main FSM will be restarted
-            self.error_underflow: Signal = Signal()._m()
+            self.error_underflow: HwIOSignal = HwIOSignal()._m()
 
     def parseTemplate(self):
         """
@@ -211,10 +211,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         except TypeError:
             is_const_size_frame = False
 
-        self.children_meta: List[_AxiS_frameParserChildMeta] = []
+        self.children_meta: List[_Axi4S_frameParserChildMeta] = []
         if is_const_size_frame:
             self.children = []
-            super(AxiS_frameParser, self).parseTemplate()
+            super(Axi4S_frameParser, self).parseTemplate()
         else:
             if self._tmpl or self._frames:
                 raise NotImplementedError("Dynamic input size and the redefinition of the placement of fields in the data")
@@ -238,7 +238,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
 
                     first = False
                     children.append(c)
-                    cmeta = _AxiS_frameParserChildMeta(s_t, _is_padding, not is_non_const_sized)
+                    cmeta = _Axi4S_frameParserChildMeta(s_t, _is_padding, not is_non_const_sized)
                     children_meta.append(cmeta)
 
                 if len(children_meta) >= 2 and \
@@ -248,7 +248,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     # then there will be a variable size suffix
                     children[0].OVERFLOW_SUPPORT = True
 
-                with self._paramsShared(exclude=({"OVERFLOW_SUPPORT", "T"}, {})):
+                with self._hwParamsShared(exclude=({"OVERFLOW_SUPPORT", "T"}, {})):
                     self.children = children
 
     def parser_fsm(self, words: List[Tuple[int, List[Union[TransPart, ChoicesOfFrameParts]], bool]]):
@@ -260,14 +260,14 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             word_index_max_val += 1
         hasMultipleWords = word_index_max_val > 0
         if hasMultipleWords:
-            wordIndex = self._reg("wordIndex", Bits(
+            wordIndex = self._reg("wordIndex", HBits(
                 log2ceil(word_index_max_val + 1)), 0)
         else:
             wordIndex = None
 
         allOutNodes = WordFactory(wordIndex)
         if not is_only_padding(self._structT):
-            fc = AxiS_frameParserFieldConnector(self, self.dataIn, self.dataOut)
+            fc = Axi4S_frameParserFieldConnector(self, self.dataIn, self.dataOut)
             fc.connectParts(allOutNodes, words, wordIndex)
 
         in_vld = din.valid
@@ -342,9 +342,9 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             if not cm0.is_const_sized and cm1.is_const_sized:
                 # suffix parser, split suffix and parse it in child sub component
                 if cm0.can_be_zero_len:
-                    assert self.USE_KEEP or self.USE_STRB, "keep or strb signal on AxiStream is required to mark 0 length packets"
+                    assert self.USE_KEEP or self.USE_STRB, "keep or strb signal on Axi4Stream is required to mark 0 length packets"
 
-                fs = AxiS_footerSplit()
+                fs = Axi4S_footerSplit()
                 fs._updateParamsFrom(self)
                 fs.FOOTER_WIDTH = cm1.t.bit_length()
                 self.footer_split = fs
@@ -368,7 +368,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     suffix_offsets = next_frame_offsets(prefix_t, self.DATA_WIDTH)
                     if suffix_offsets != [0, ]:
                         # add aligment logic
-                        align = AxiS_FrameJoin()
+                        align = Axi4S_FrameJoin()
                         align._updateParamsFrom(
                             self,
                             exclude=({"T"}, {}))
@@ -409,7 +409,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     if t1_offset == 0:
                         slaves = [c0.dataIn, suffix]
                         if cm1.can_be_zero_len:
-                            assert suffix.USE_KEEP or suffix.USE_STRB, "keep or strb signal on AxiStream is required to mark 0 length packets"
+                            assert suffix.USE_KEEP or suffix.USE_STRB, "keep or strb signal on Axi4Stream is required to mark 0 length packets"
                             is_zero_len = ~c0.parsing_overflow & din.valid & din.last
                             # this is a stream after some header, we need to assert that we
                             # output the 0B packet (valid=1, ready=1, last=1, keep=0) at the end
@@ -477,10 +477,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             self.parser_fsm(words)
 
 
-def _example_AxiS_frameParser():
+def _example_Axi4S_frameParser():
     from hwtLib.types.ctypes import uint8_t, uint16_t, uint32_t, uint64_t
     # t = HStruct(
-    #  (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
+    #  (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of HBits type
     #  (uint64_t, None),  # name = None means this field will be ignored
     #  (uint64_t, "item1"),
     #  (uint64_t, None),
@@ -524,14 +524,14 @@ def _example_AxiS_frameParser():
         (uint16_t, "footer")
     )
 
-    u = AxiS_frameParser(t)
-    u.USE_STRB = True
-    u.DATA_WIDTH = 32
-    return u
+    m = Axi4S_frameParser(t)
+    m.USE_STRB = True
+    m.DATA_WIDTH = 32
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiS_frameParser()
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4S_frameParser()
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

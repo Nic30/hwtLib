@@ -3,11 +3,11 @@
 
 from typing import Optional
 
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 
 
 @serializeParamsUniq
@@ -18,24 +18,24 @@ class AxiBuff(BusBridge):
     .. hwt-autodoc:: _example_AxiBuff
     """
 
-    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
-        self.intfCls = intfCls
+    def __init__(self, hwIOCls, hdl_name_override:Optional[str]=None):
+        self.hwIOCls = hwIOCls
         super(AxiBuff, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
-        self.INTF_CLS = Param(self.intfCls)
-        self.intfCls._config(self)
-        self.ADDR_BUFF_DEPTH = Param(4)
-        self.DATA_BUFF_DEPTH = Param(4)
+        self.HWIO_CLS = HwParam(self.hwIOCls)
+        self.hwIOCls._config(self)
+        self.ADDR_BUFF_DEPTH = HwParam(4)
+        self.DATA_BUFF_DEPTH = HwParam(4)
 
     def _declr(self):
         addClkRstn(self)
 
-        with self._paramsShared():
-            self.s = self.intfCls()
+        with self._hwParamsShared():
+            self.s = self.hwIOCls()
 
-        with self._paramsShared():
-            self.m = self.intfCls()._m()
+        with self._hwParamsShared():
+            self.m = self.hwIOCls()._m()
 
         assert self.ADDR_BUFF_DEPTH > 0 or self.DATA_BUFF_DEPTH > 0, (
             "This buffer is completely disabled,"
@@ -49,14 +49,14 @@ class AxiBuff(BusBridge):
         for name, m, s, depth in [("ar", self.s.ar, self.m.ar, ADDR_DEPTH),
                                   ("aw", self.s.aw, self.m.aw, ADDR_DEPTH),
                                   ("w", self.s.w, self.m.w, DATA_DEPTH)]:
-            i = AxiSBuilder(self, m, name).buff(
+            i = Axi4SBuilder(self, m, name).buff(
                 items=depth
             ).end
             s(i)
 
         for name, m, s, depth in [("r", self.m.r, self.s.r, DATA_DEPTH),
                                   ("b", self.m.b, self.s.b, ADDR_DEPTH)]:
-            i = AxiSBuilder(self, m, name).buff(
+            i = Axi4SBuilder(self, m, name).buff(
                 items=depth,
             ).end
             s(i)
@@ -64,11 +64,11 @@ class AxiBuff(BusBridge):
 
 def _example_AxiBuff():
     from hwtLib.amba.axi4 import Axi4
-    u = AxiBuff(Axi4)
-    return u
+    m = AxiBuff(Axi4)
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiBuff()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_AxiBuff()
+    print(to_rtl_str(m))

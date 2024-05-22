@@ -1,12 +1,12 @@
-from hwt.interfaces.agents.handshaked import HandshakedAgent
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 
 
-class BaseAxiAgent(HandshakedAgent):
-
-    @classmethod
-    def get_ready_signal(cls, intf):
-        return intf.ready._sigInside
+class BaseAxiAgent(HwIODataRdVldAgent):
 
     @classmethod
-    def get_valid_signal(cls, intf):
-        return intf.valid._sigInside
+    def get_ready_signal(cls, hwIO):
+        return hwIO.ready._sigInside
+
+    @classmethod
+    def get_valid_signal(cls, hwIO):
+        return hwIO.valid._sigInside

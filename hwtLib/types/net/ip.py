@@ -1,4 +1,4 @@
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint8_t, uint16_t
 
@@ -7,10 +7,10 @@ IPv6 = 6
 
 IHL_DEFAULT = 5
 
-l4port_t = Bits(16)
-ipv4_t = Bits(4 * 8)
-ipv6_t = Bits(128)
-ipver_t = Bits(4)
+l4port_t = HBits(16)
+ipv4_t = HBits(4 * 8)
+ipv6_t = HBits(128)
+ipver_t = HBits(4)
 
 
 class IP_FLAGS():
@@ -44,17 +44,17 @@ class IP_PROTOCOL():
 
 
 IPv4Header_t = HStruct(
-    (Bits(4), "ihl"), (Bits(4), "version"), (Bits(2), "ecn"), (Bits(6), "dscp"), (uint16_t, "totalLen"),
-    (Bits(16), "id"), (Bits(13), "fragmentOffset"), (Bits(3), "flags"),
-    (uint8_t, "ttl"), (uint8_t, "protocol"), (Bits(16), "headerChecksum"),
+    (HBits(4), "ihl"), (HBits(4), "version"), (HBits(2), "ecn"), (HBits(6), "dscp"), (uint16_t, "totalLen"),
+    (HBits(16), "id"), (HBits(13), "fragmentOffset"), (HBits(3), "flags"),
+    (uint8_t, "ttl"), (uint8_t, "protocol"), (HBits(16), "headerChecksum"),
     (ipv4_t, "src"),
     (ipv4_t, "dst"),
     name="IPv4Header_t"
 )
 
 IPv6Header_t = HStruct(
-    (Bits(4), "version"), (Bits(8), "trafficClass"), (Bits(20), "flowLabel"),
-    (uint16_t, "payloadLen"), (Bits(8), "nextHeader"), (Bits(8), "hopLimit"),
+    (HBits(4), "version"), (HBits(8), "trafficClass"), (HBits(20), "flowLabel"),
+    (uint16_t, "payloadLen"), (HBits(8), "nextHeader"), (HBits(8), "hopLimit"),
     (ipv6_t, "src"),
     (ipv6_t, "dst"),
     name="IPv6Header_t"

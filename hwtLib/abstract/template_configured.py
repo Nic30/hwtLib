@@ -5,7 +5,7 @@ from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
@@ -111,17 +111,17 @@ def separate_streams(t: HdlType):
     Split HStruct type hierarchy on the fields of HStream type.
 
     :note: e.g. in HStruct(
-        (HStream(Bits(8)), "data"),
-        (Bits(32), "fcs"),
-        ) is split to HStruct((HStream(Bits(8)), "data"),) and
-        HStruct((Bits(32), "fcs"),)
+        (HStream(HBits(8)), "data"),
+        (HBits(32), "fcs"),
+        ) is split to HStruct((HStream(HBits(8)), "data"),) and
+        HStruct((HBits(32), "fcs"),)
     """
     yield from HdlType_separate(t, lambda x: isinstance(x, HStream))
 
 
 def to_primitive_stream_t(t: HdlType):
     """
-    Convert type to a HStream of Bits
+    Convert type to a HStream of HBits
     With proper frame len, offset etc.
     """
     if isinstance(t, HStruct) and len(t.fields) == 1:
@@ -130,7 +130,7 @@ def to_primitive_stream_t(t: HdlType):
     start_offsets = [0, ]
     if isinstance(t, HStream):
         e_t = t.element_t
-        if isinstance(e_t, Bits):
+        if isinstance(e_t, HBits):
             return t
         else:
             frame_len = t.frame_len
@@ -143,7 +143,7 @@ def to_primitive_stream_t(t: HdlType):
         bit_len = None
 
     if bit_len is not None:
-        return HStream(Bits(bit_len),
+        return HStream(HBits(bit_len),
                        frame_len=frame_len,
                        start_offsets=start_offsets)
     else:

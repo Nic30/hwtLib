@@ -2,22 +2,23 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, If
-from hwt.hdl.types.bits import Bits
+from hwt.hwIOs.std import HwIOVldSync
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
-from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
-from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
-from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axi4s_fullduplex import Axi4StreamFullDuplex
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
+from hwtLib.amba.axis_comp.fifoDrop import Axi4SFifoDrop
+from hwtLib.amba.axis_comp.frame_deparser import Axi4S_frameDeparser
+from hwtLib.amba.axis_comp.frame_parser import Axi4S_frameParser
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crc import Crc
 from hwtLib.logic.crcPoly import CRC_32
-from hwtLib.peripheral.ethernet._axis_eq import AxiS_eq
+from hwtLib.peripheral.ethernet._axis_eq import Axi4S_eq
 from hwtLib.peripheral.ethernet.constants import ETH_BITRATE
 from hwtLib.peripheral.ethernet.vldsynced_data_err_last import VldSyncedDataErrLast
 from hwtLib.types.net.ethernet import eth_mac_t, eth_addr_parse
@@ -26,16 +27,16 @@ from hwtLib.types.net.ethernet import eth_mac_t, eth_addr_parse
 CRC32_RESIDUE = 0x2144df1c
 
 
-def vldSyncedReg(parent, intf):
-    reg = parent._reg(intf._name + "_reg", HStruct(
-        *((i._dtype, i._name) for i in intf._interfaces)
+def vldSyncedReg(parent: HwModule, hwIO: HwIOVldSync):
+    reg = parent._reg(hwIO._name + "_reg", HStruct(
+        *((cHwIO._dtype, cHwIO._name) for cHwIO in hwIO._hwIOs)
     ))
-    for i in intf._interfaces:
-        getattr(reg, i._name)(i)
+    for cHwIO in hwIO._hwIOs:
+        getattr(reg, cHwIO._name)(cHwIO)
     return reg
 
 
-class EthernetMac(Unit):
+class EthernetMac(HwModule):
     """
     Media independent Ethernet MAC (Media Access Control)
     Manages frame dropping, error handling and FCSs,
@@ -55,33 +56,33 @@ class EthernetMac(Unit):
 
 
     def _config(self):
-        self.FREQ = Param(int(100e6))
-        self.BITRATE = Param(ETH_BITRATE.M_100M)
-        self.DATA_WIDTH = Param(8)
-        self.DEFAULT_MAC_ADDR = Param("01:23:45:67:89:AB")
-        self.HAS_TX = Param(True)
-        self.HAS_RX = Param(True)
+        self.FREQ = HwParam(int(100e6))
+        self.BITRATE = HwParam(ETH_BITRATE.M_100M)
+        self.DATA_WIDTH = HwParam(8)
+        self.DEFAULT_MAC_ADDR = HwParam("01:23:45:67:89:AB")
+        self.HAS_TX = HwParam(True)
+        self.HAS_RX = HwParam(True)
         # number of fifo items (size[B] = *DATA_WIDTH/8)
-        self.RX_FIFO_DEPTH = Param(2048)
+        self.RX_FIFO_DEPTH = HwParam(2048)
 
     def _declr(self):
         addClkRstn(self)
         self.USE_STRB = self.DATA_WIDTH > 8
-        with self._paramsShared():
+        with self._hwParamsShared():
             if self.HAS_TX:
-                self.phy_tx = AxiStream()._m()
+                self.phy_tx = Axi4Stream()._m()
 
             if self.HAS_RX:
                 self.phy_rx = VldSyncedDataErrLast()
 
-            self.eth = AxiStreamFullDuplex()
+            self.eth = Axi4StreamFullDuplex()
             self.eth.USE_STRB = self.USE_STRB
             self.eth.IS_BIGENDIAN = True
 
     def _rx_mac_filter(self):
         def_mac = eth_addr_parse(self.DEFAULT_MAC_ADDR)
         def_mac = int.from_bytes(def_mac, 'little')
-        mac_eq = AxiS_eq()
+        mac_eq = Axi4S_eq()
         mac_eq._updateParamsFrom(self)
         mac_eq.VAL = eth_mac_t.from_py(def_mac)
         self.rx_mac_filter = mac_eq
@@ -116,16 +117,16 @@ class EthernetMac(Unit):
             u.DATA_WIDTH = self.DATA_WIDTH
             u.USE_STRB = self.USE_STRB
 
-        dst_mac_parser = AxiS_frameParser(HStruct(
+        dst_mac_parser = Axi4S_frameParser(HStruct(
             (HStream(eth_mac_t, frame_len=(1, 1)), "dst"),
-            (HStream(Bits(8)), None),  # ignore data at the end
+            (HStream(HBits(8)), None),  # ignore data at the end
         ))
         propagate_config(dst_mac_parser)
         self.rx_mac_parser = dst_mac_parser
 
-        fcs_cutter = AxiS_frameParser(HStruct(
-            (HStream(Bits(8)), "data"),
-            (Bits(32), None),  # fcs to cut off
+        fcs_cutter = Axi4S_frameParser(HStruct(
+            (HStream(HBits(8)), "data"),
+            (HBits(32), None),  # fcs to cut off
         ))
         propagate_config(fcs_cutter)
         self.tx_fcs_cutter = fcs_cutter
@@ -160,13 +161,13 @@ class EthernetMac(Unit):
         # drop fcs, was checked on original stream
 
         # output fifo for dropping of invalid frames
-        out_fifo = AxiSFifoDrop()
+        out_fifo = Axi4SFifoDrop()
         out_fifo.DEPTH = self.RX_FIFO_DEPTH
         propagate_config(out_fifo)
         self.rx_out_fifo = out_fifo
 
         out_fifo.dataIn(fcs_cutter.dataOut.data)
-        data = AxiSBuilder(self, out_fifo.dataOut).buff(4).end
+        data = Axi4SBuilder(self, out_fifo.dataOut).buff(4).end
 
         err_in_this_frame = self._reg("rx_err_in_this_frame", def_val=0)
         fcs_good_in_this_frame = self._reg("rx_fcs_good_in_this_frame", def_val=0)
@@ -205,11 +206,11 @@ class EthernetMac(Unit):
         """
         # underflow = self.err_tx_underflow = self._sig("err_tx_underflow")
         Eth_frame_t = HStruct(
-            (HStream(Bits(8)), "data"),
-            (Bits(32), "fcs"),
+            (HStream(HBits(8)), "data"),
+            (HBits(32), "fcs"),
         )
 
-        ff = AxiS_frameDeparser(Eth_frame_t)
+        ff = Axi4S_frameDeparser(Eth_frame_t)
         crc = Crc()
         crc.setConfig(CRC_32)
         crc.MASK_GRANULARITY = 8
@@ -270,9 +271,10 @@ class EthernetMac(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = EthernetMac()
-    u.DATA_WIDTH = 16
-    # u.HAS_TX = False
-    # u.HAS_RX = False
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = EthernetMac()
+    m.DATA_WIDTH = 16
+    # m.HAS_TX = False
+    # m.HAS_RX = False
+    print(to_rtl_str(m))

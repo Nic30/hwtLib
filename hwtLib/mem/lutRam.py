@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, Clk
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIOClk
 from hwt.serializer.mode import serializeExclude
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwt.hdl.types.defs import BIT
 
 
@@ -16,31 +16,31 @@ def mkLutRamCls(DATA_WIDTH):
     hdl code will be excluded from serialization because we expect vendor library to contains it
     """
 
-    class RAMnX1S(Unit):
+    class RAMnX1S(HwModule):
 
         def _config(self):
-            self.INIT = Param(Bits(DATA_WIDTH).from_py(0))
-            self.IS_WCLK_INVERTED = Param(BIT.from_py(0))
+            self.INIT = HwParam(HBits(DATA_WIDTH).from_py(0))
+            self.IS_WCLK_INVERTED = HwParam(BIT.from_py(0))
 
         def _declr(self):
-            self.a0 = Signal()
-            self.a1 = Signal()
-            self.a2 = Signal()
-            self.a3 = Signal()
-            self.a4 = Signal()
-            self.a5 = Signal()
-            self.d = Signal()  # in
+            self.a0 = HwIOSignal()
+            self.a1 = HwIOSignal()
+            self.a2 = HwIOSignal()
+            self.a3 = HwIOSignal()
+            self.a4 = HwIOSignal()
+            self.a5 = HwIOSignal()
+            self.d = HwIOSignal()  # in
 
-            self.wclk = Clk()
-            self.o = Signal()._m()  # out
-            self.we = Signal()
+            self.wclk = HwIOClk()
+            self.o = HwIOSignal()._m()  # out
+            self.we = HwIOSignal()
 
         def _impl(self):
             s = self._sig
             wclk_in = s("wclk_in")
-            mem = self._ctx.sig("mem", Bits(DATA_WIDTH),
+            mem = self._ctx.sig("mem", HBits(DATA_WIDTH),
                                 def_val=self.INIT)
-            a_in = s("a_in", Bits(6))
+            a_in = s("a_in", HBits(6))
             d_in = s("d_in")
             we_in = s("we_in")
 
@@ -66,8 +66,9 @@ RAM64X1S = serializeExclude(mkLutRamCls(64))
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = RAM64X1S()
+    from hwt.synth import to_rtl_str
+    
+    m = RAM64X1S()
     # note that this will not produce any code as the serialization
-    # is dissabled using serializeExclude
-    print(to_rtl_str(u))
+    # is disabled using serializeExclude
+    print(to_rtl_str(m))

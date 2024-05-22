@@ -42,14 +42,14 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = Axi_to_AxiLite()
-        cls.compileSim(cls.u)
+        cls.dut = Axi_to_AxiLite()
+        cls.compileSim(cls.dut)
 
     def create_w_frame(self, words: List[int]):
         """
         :param words: list of frame data words
         """
-        strb = mask(self.u.DATA_WIDTH // 8)
+        strb = mask(self.dut.DATA_WIDTH // 8)
         axis_data = []
         assert words, words
         for last, w in iter_with_last(words):
@@ -66,29 +66,29 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
 
     def test_read(self):
         N = 0
-        u = self.u
+        dut = self.dut
         self.randomize_all()
-        # u.m.ar._ag._debugOutput = sys.stdout
-        # u.s.ar._ag._debugOutput = sys.stdout
+        # dut.m.ar._ag._debugOutput = sys.stdout
+        # dut.s.ar._ag._debugOutput = sys.stdout
 
-        m = Axi4LiteSimRam(u.m)
+        m = Axi4LiteSimRam(dut.m)
 
         expected_frames = []
         for _ in range(self.TRANSACTION_CNT):
-            id_ = self._rand.getrandbits(u.ID_WIDTH)
+            id_ = self._rand.getrandbits(dut.ID_WIDTH)
             len_ = self.get_rand_in_range(self.MAX_LEN)
             N += len_ + 1 + 1
-            rand_data = [self._rand.getrandbits(u.DATA_WIDTH)
+            rand_data = [self._rand.getrandbits(dut.DATA_WIDTH)
                          for _ in range(len_ + 1)]
             # rand_data = [i + 1 for i in range(len_ + 1)]
-            addr = m.calloc(len_ + 1, u.DATA_WIDTH // 8, initValues=rand_data)
+            addr = m.calloc(len_ + 1, dut.DATA_WIDTH // 8, initValues=rand_data)
             # print(f"{id_:d}, 0x{addr:x}, {len_:d}", rand_data)
-            a_t = u.s.ar._ag.create_addr_req(addr, len_, id_)
-            u.s.ar._ag.data.append(a_t)
+            a_t = dut.s.ar._ag.create_addr_req(addr, len_, id_)
+            dut.s.ar._ag.data.append(a_t)
             expected_frames.append((addr, id_, rand_data))
 
         self.runSim(N * 3 * CLK_PERIOD)
-        r_data = split_frames(u.s.r._ag.data)
+        r_data = split_frames(dut.s.r._ag.data)
         self.assertEqual(len(expected_frames), len(r_data), msg=[
             # expected id, len, seen id, len
             ((d0[1], len(d0[2])), (int(d1[0][0]), len(d1[0])))
@@ -103,27 +103,27 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
 
     def test_write(self):
         N = self.TRANSACTION_CNT
-        u = self.u
+        dut = self.dut
 
-        m = Axi4LiteSimRam(u.m)
+        m = Axi4LiteSimRam(dut.m)
 
         expected_data = []
         for _ in range(self.TRANSACTION_CNT):
-            id_ = self._rand.getrandbits(u.ID_WIDTH)
+            id_ = self._rand.getrandbits(dut.ID_WIDTH)
             len_ = self.get_rand_in_range(self.MAX_LEN)
             N += len_ + 3
-            rand_data = [self._rand.getrandbits(u.DATA_WIDTH)
+            rand_data = [self._rand.getrandbits(dut.DATA_WIDTH)
                          for _ in range(len_ + 1)]
             # rand_data = [i + 1 for i in range(len_ + 1)]
-            addr = m.malloc((len_ + 1) * u.DATA_WIDTH // 8)
+            addr = m.malloc((len_ + 1) * dut.DATA_WIDTH // 8)
             # print(f"{id_:d}, 0x{addr:x}, {len_:d}", rand_data)
-            a_t = u.s.aw._ag.create_addr_req(addr, len_, id_)
-            u.s.aw._ag.data.append(a_t)
+            a_t = dut.s.aw._ag.create_addr_req(addr, len_, id_)
+            dut.s.aw._ag.data.append(a_t)
 
             w_frame = self.create_w_frame(rand_data)
-            u.s.w._ag.data.extend(w_frame)
+            dut.s.w._ag.data.extend(w_frame)
 
-            word_i = addr // (u.DATA_WIDTH // 8)
+            word_i = addr // (dut.DATA_WIDTH // 8)
             for i, d in enumerate(rand_data):
                 expected_data.append((word_i + i, d))
 

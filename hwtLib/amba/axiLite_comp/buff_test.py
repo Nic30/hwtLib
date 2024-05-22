@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.utils import propagateClkRstn
+from hwt.hwModule import HwModule
 from hwt.hdl.types.struct import HStructField
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import propagateClkRstn
-from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
@@ -12,21 +12,21 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
 from hwtLib.amba.axi_comp.builder import AxiBuilder
 
 
-class AxiLiteEpWithReg(Unit):
+class AxiLiteEpWithReg(HwModule):
     """
-    :class:`hwt.synthesizer.unit.Unit` with AxiLiteEndpoint and AxiLiteReg together
+    :class:`hwt.hwModule.HwModule` with AxiLiteEndpoint and AxiLiteReg together
     """
 
-    def __init__(self, structTemplate, intfCls=Axi4Lite, shouldEnterFn=None):
+    def __init__(self, structTemplate, hwIOCls=Axi4Lite, shouldEnterFn=None):
         BusEndpoint.__init__(self, structTemplate,
-                             intfCls=intfCls,
+                             hwIOCls=hwIOCls,
                              shouldEnterFn=shouldEnterFn)
 
     def _config(self):
         BusEndpoint._config(self)
 
-    def _mkFieldInterface(self, structIntf: StructIntf, field: HStructField):
-        return BusEndpoint._mkFieldInterface(self, structIntf, field)
+    def _mkFieldInterface(self, structHwIO: HwIOStruct, field: HStructField):
+        return BusEndpoint._mkFieldInterface(self, structHwIO, field)
 
     @staticmethod
     def _defaultShouldEnterFn(root, field_path):
@@ -34,7 +34,7 @@ class AxiLiteEpWithReg(Unit):
 
     def _declr(self):
         BusEndpoint._declr(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.ep = AxiLiteEndpoint(self.STRUCT_TEMPLATE)
 
     def _impl(self):
@@ -46,13 +46,13 @@ class AxiLiteEpWithReg(Unit):
 
 class AxiRegTC(AxiLiteEndpointTC):
     def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteEpWithReg(self.STRUCT_TEMPLATE)
+        dut = self.dut = AxiLiteEpWithReg(self.STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH = self.DATA_WIDTH
+        dut.DATA_WIDTH = self.DATA_WIDTH
 
-        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
+        self.compileSimAndStart(self.dut, onAfterToRtl=self.mkRegisterMap)
+        return dut
 
 
 if __name__ == "__main__":

@@ -22,9 +22,9 @@ class AvalonMmEndpoint(BusEndpoint):
     _getWordAddrStep = AvalonMM._getWordAddrStep
     _getAddrStep = AvalonMM._getAddrStep
 
-    def __init__(self, structTemplate, intfCls=AvalonMM, shouldEnterFn=None):
+    def __init__(self, structTemplate, hwIOCls=AvalonMM, shouldEnterFn=None):
         BusEndpoint.__init__(self, structTemplate,
-                             intfCls=intfCls,
+                             hwIOCls=hwIOCls,
                              shouldEnterFn=shouldEnterFn)
 
     def _impl(self):
@@ -89,16 +89,17 @@ class AvalonMmEndpoint(BusEndpoint):
 def _example_AvalonMmEndpoint():
     from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
-    u = AvalonMmEndpoint(
+    m = AvalonMmEndpoint(
         HStruct(
             (uint32_t, "field0"),
             (uint32_t, "field1"),
             (uint32_t[32], "bramMapped")
         ))
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AvalonMmEndpoint
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_AvalonMmEndpoint
+    print(to_rtl_str(n))

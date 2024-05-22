@@ -1,11 +1,11 @@
 from typing import Optional, Union
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.value import HValue
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.const import HConst
 from hwt.math import log2ceil, isPow2
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 
 
 class TimerInfo(object):
@@ -60,10 +60,10 @@ class TimerInfo(object):
                         break
 
     @staticmethod
-    def _instantiateTimerWithParent(parentUnit, timer, parent, enableSig, rstSig):
+    def _instantiateTimerWithParent(parentHwModule: HwModule, timer, parent, enableSig, rstSig):
         p = parent
         if not hasattr(p, "tick"):
-            TimerInfo._instantiateTimer(parentUnit, p, enableSig, rstSig)
+            TimerInfo._instantiateTimer(parentHwModule, p, enableSig, rstSig)
         assert hasattr(p, "tick")
 
         if p.maxVal == timer.maxVal:
@@ -73,12 +73,12 @@ class TimerInfo(object):
         elif p.maxVal < timer.maxVal:
             maxVal = (timer.maxVal // p.maxVal) - 1
             assert maxVal >= 0
-            timer.tick = parentUnit._sig(
+            timer.tick = parentHwModule._sig(
                  f"{timer.name:s}timerTick{timer.maxVal:d}")
 
-            timer.cntrRegister = parentUnit._reg(
+            timer.cntrRegister = parentHwModule._reg(
                 f"{timer.name:s}timerCntr{timer.maxVal:d}",
-                Bits(log2ceil(maxVal + 1)),
+                HBits(log2ceil(maxVal + 1)),
                 maxVal
             )
 
@@ -87,7 +87,7 @@ class TimerInfo(object):
                 en = en & enableSig
 
             tick = TimerInfo._instantiateTimerTickLogic(
-                parentUnit,
+                parentHwModule,
                 timer,
                 (timer.maxValOriginal // p.maxValOriginal) - 1,
                 en,
@@ -107,8 +107,8 @@ class TimerInfo(object):
                 timer.tick = timer.tick & enableSig
 
     @staticmethod
-    def _instantiateTimerTickLogic(parentUnit: Unit, timer: RtlSignal,
-                                   origMaxVal: Union[int, RtlSignal, HValue],
+    def _instantiateTimerTickLogic(parentHwModule: HwModule, timer: RtlSignal,
+                                   origMaxVal: Union[int, RtlSignal, HConst],
                                    enableSig: Optional[RtlSignal],
                                    rstSig: Optional[RtlSignal]) -> RtlSignal:
         """
@@ -156,14 +156,14 @@ class TimerInfo(object):
 
         if timer.name:
             # wrap tick in signal
-            s = parentUnit._sig(timer.name)
+            s = parentHwModule._sig(timer.name)
             s(tick)
             tick = s
 
         return tick
 
     @staticmethod
-    def _instantiateTimer(parentUnit, timer, enableSig=None, rstSig=None):
+    def _instantiateTimer(parentHwModule, timer, enableSig=None, rstSig=None):
         """
         :param enableSig: enable signal for all counters
         :param rstSig: reset signal for all counters
@@ -181,35 +181,35 @@ class TimerInfo(object):
                 else:
                     tick = enableSig
             else:
-                timer.cntrRegister = parentUnit._reg(
+                timer.cntrRegister = parentHwModule._reg(
                     f"{timer.name:s}timerCntr{timer.maxVal:d}",
-                    Bits(log2ceil(maxVal + 1)),
+                    HBits(log2ceil(maxVal + 1)),
                     maxVal
                 )
-                tick = TimerInfo._instantiateTimerTickLogic(parentUnit,
+                tick = TimerInfo._instantiateTimerTickLogic(parentHwModule,
                                                             timer,
                                                             origMaxVal,
                                                             enableSig,
                                                             rstSig)
 
-            timer.tick = parentUnit._sig(
+            timer.tick = parentHwModule._sig(
                 f"{timer.name:s}timerTick{timer.maxVal:d}",
             )
             timer.tick(tick)
         else:
             TimerInfo._instantiateTimerWithParent(
-                parentUnit, timer,
+                parentHwModule, timer,
                 timer.parent, enableSig, rstSig)
 
     @staticmethod
-    def instantiate(parentUnit, timers, enableSig=None, rstSig=None):
+    def instantiate(parentHwModule, timers, enableSig=None, rstSig=None):
         """
         :param enableSig: enable signal for all counters
         :param rstSig: reset signal for all counters
         """
         for timer in timers:
             if not hasattr(timer, "tick"):
-                TimerInfo._instantiateTimer(parentUnit, timer,
+                TimerInfo._instantiateTimer(parentHwModule, timer,
                                             enableSig=enableSig, rstSig=rstSig)
 
     def __repr__(self):

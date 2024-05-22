@@ -2,19 +2,19 @@
 # -*- coding: utf-8 -
 
 from hwt.code import If, In, Concat
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIODataRdVld, HwIORegCntrl, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
+from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 
 
-class CLinkedListReader(Unit):
+class CLinkedListReader(HwModule):
     """
     This unit reads items from (circular) linked list like structure
 
@@ -33,41 +33,41 @@ class CLinkedListReader(Unit):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.ID_WIDTH = Param(4)
-        self.ID = Param(3)
+        self.ID_WIDTH = HwParam(4)
+        self.ID = HwParam(3)
         # id of packet where last item is next addr
-        self.ID_LAST = Param(4)
+        self.ID_LAST = HwParam(4)
 
-        self.BUFFER_CAPACITY = Param(32)
-        self.ITEMS_IN_BLOCK = Param(4096 // 8 - 1)
+        self.BUFFER_CAPACITY = HwParam(32)
+        self.ITEMS_IN_BLOCK = HwParam(4096 // 8 - 1)
 
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
-        self.PTR_WIDTH = Param(16)
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(64)
+        self.PTR_WIDTH = HwParam(16)
 
     def _declr(self):
         addClkRstn(self)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             # interface which sending requests to download data
             # and interface which is collecting all data and only data with specified id are processed
-            self.rDatapump = AxiRDatapumpIntf()._m()
+            self.rDatapump = HwIOAxiRDatapump()._m()
             self.rDatapump.MAX_BYTES = self.BUFFER_CAPACITY // 2 * self.DATA_WIDTH // 8
 
-            self.dataOut = Handshaked()._m()
+            self.dataOut = HwIODataRdVld()._m()
 
         # (how much of items remains in block)
-        self.inBlockRemain = VectSignal(log2ceil(self.ITEMS_IN_BLOCK + 1))._m()
+        self.inBlockRemain = HwIOVectSignal(log2ceil(self.ITEMS_IN_BLOCK + 1))._m()
 
         # interface to control internal register
-        a = self.baseAddr = RegCntrl()
+        a = self.baseAddr = HwIORegCntrl()
         a.DATA_WIDTH = self.ADDR_WIDTH
-        self.rdPtr = RegCntrl()
-        self.wrPtr = RegCntrl()
+        self.rdPtr = HwIORegCntrl()
+        self.wrPtr = HwIORegCntrl()
         for ptr in [self.rdPtr, self.wrPtr]:
             ptr.DATA_WIDTH = self.PTR_WIDTH
 
-        f = self.dataFifo = HandshakedFifo(Handshaked)
+        f = self.dataFifo = HandshakedFifo(HwIODataRdVld)
         f.EXPORT_SIZE = True
         f.DATA_WIDTH = self.DATA_WIDTH
         f.DEPTH = self.BUFFER_CAPACITY
@@ -91,12 +91,12 @@ class CLinkedListReader(Unit):
         bufferHasSpace = s("bufferHasSpace")
         bufferHasSpace(f.size < (BURST_LEN + 1))
         # we are counting base next addr as item as well
-        inBlock_t = Bits(log2ceil(self.ITEMS_IN_BLOCK + 1))
-        ringSpace_t = Bits(self.PTR_WIDTH)
+        inBlock_t = HBits(log2ceil(self.ITEMS_IN_BLOCK + 1))
+        ringSpace_t = HBits(self.PTR_WIDTH)
 
         downloadPending = r("downloadPending", def_val=0)
 
-        baseIndex = r("baseIndex", Bits(self.ADDR_WIDTH - ALIGN_BITS))
+        baseIndex = r("baseIndex", HBits(self.ADDR_WIDTH - ALIGN_BITS))
         inBlockRemain = r("inBlockRemain_reg", inBlock_t, def_val=self.ITEMS_IN_BLOCK)
         self.inBlockRemain(inBlockRemain)
 
@@ -118,7 +118,7 @@ class CLinkedListReader(Unit):
         self.dataOut(f.dataOut)
 
         # logic of baseAddr and baseIndex
-        baseAddr = Concat(baseIndex, Bits(ALIGN_BITS).from_py(0))
+        baseAddr = Concat(baseIndex, HBits(ALIGN_BITS).from_py(0))
         req.addr(baseAddr)
         self.baseAddr.din(baseAddr)
         dataAck = dIn.valid & In(dIn.id, [ID, ID_LAST]) & dBuffIn.rd
@@ -208,9 +208,10 @@ class CLinkedListReader(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = CLinkedListReader()
-    u.BUFFER_CAPACITY = 8
-    u.ITEMS_IN_BLOCK = 31
-    u.PTR_WIDTH = 8
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = CLinkedListReader()
+    m.BUFFER_CAPACITY = 8
+    m.ITEMS_IN_BLOCK = 31
+    m.PTR_WIDTH = 8
+    print(to_rtl_str(m))

@@ -1,16 +1,16 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 from hwt.code import If, Concat, FsmBuilder, In
-from hwt.hdl.constants import DIRECTION
-from hwt.hdl.types.bits import Bits
+from hwt.constants import DIRECTION
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.agents.rdSynced import RdSyncedAgent
-from hwt.interfaces.std import Signal, RdSynced, VectSignal
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.agents.rdSync import HwIODataRdAgent
+from hwt.hwIOs.std import HwIOSignal, HwIODataRd, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.peripheral.i2c.intf import I2c
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -27,7 +27,7 @@ def hasFallen(last, actual):
     return last & ~actual
 
 
-class I2cBitCntrlCmd(RdSynced):
+class I2cBitCntrlCmd(HwIODataRd):
     """
     .. hwt-autodoc::
     """
@@ -37,19 +37,19 @@ class I2cBitCntrlCmd(RdSynced):
         pass
 
     def _declr(self):
-        self.din = Signal()
-        self.cmd = VectSignal(log2ceil(5))
-        self.rd = Signal(masterDir=DIRECTION.IN)
+        self.din = HwIOSignal()
+        self.cmd = HwIOVectSignal(log2ceil(5))
+        self.rd = HwIOSignal(masterDir=DIRECTION.IN)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = I2cBitCntrlCmdAgent(sim, self)
 
 
-class I2cBitCntrlCmdAgent(RdSyncedAgent):
+class I2cBitCntrlCmdAgent(HwIODataRdAgent):
 
     def get_data(self):
         """extract data from interface"""
-        return (self.intf.cmd.read(), self.intf.din.read())
+        return (self.hwIO.cmd.read(), self.hwIO.din.read())
 
     def set_data(self, data):
         """write data to interface"""
@@ -57,11 +57,11 @@ class I2cBitCntrlCmdAgent(RdSyncedAgent):
             cmd, d = None, None
         else:
             cmd, d = data
-        self.intf.din.write(d)
-        self.intf.cmd.write(cmd)
+        self.hwIO.din.write(d)
+        self.hwIO.cmd.write(cmd)
 
 
-class I2cMasterBitCtrl(Unit):
+class I2cMasterBitCtrl(HwModule):
     """
     Translate simple commands into SCL/SDA transitions
     Each command has 5 states, 0/1/2/3/idle
@@ -102,16 +102,16 @@ class I2cMasterBitCtrl(Unit):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.CLK_CNTR_WIDTH = Param(16)
+        self.CLK_CNTR_WIDTH = HwParam(16)
 
     def _declr(self):
         addClkRstn(self)
-        self.clk_cnt_initVal = VectSignal(16)
+        self.clk_cnt_initVal = HwIOVectSignal(16)
         self.i2c = I2c()._m()
 
         self.cntrl = I2cBitCntrlCmd()
-        self.arbitrationLost = Signal()._m()  # arbitration lost
-        self.dout = Signal()._m()
+        self.arbitrationLost = HwIOSignal()._m()  # arbitration lost
+        self.dout = HwIOSignal()._m()
 
     def stateClkGen(self, scl_sync, scl_t, scl):
         # whenever the slave is not ready it can delay the cycle by pulling SCL low
@@ -126,7 +126,7 @@ class I2cMasterBitCtrl(Unit):
         slave_wait((~scl_t & delayedScl_t & ~scl) | (slave_wait & ~scl))
 
         clkCntr = self._reg("clkCntr",
-                            Bits(self.CLK_CNTR_WIDTH, False),
+                            HBits(self.CLK_CNTR_WIDTH, False),
                             def_val=self.clk_cnt_initVal)
         stateClkEn = self._reg("stateClkEn", def_val=1)
 
@@ -153,7 +153,7 @@ class I2cMasterBitCtrl(Unit):
         except AttributeError:
             filter_clk_cntr = self.filter_clk_cntr = self._reg(
                 "filter_clk_cntr",
-                Bits(self.CLK_CNTR_WIDTH),
+                HBits(self.CLK_CNTR_WIDTH),
                 def_val=self.clk_cnt_initVal)
 
             If(filter_clk_cntr._eq(0),
@@ -162,7 +162,7 @@ class I2cMasterBitCtrl(Unit):
                filter_clk_cntr(filter_clk_cntr - 1)
             )
 
-        filter1 = self._reg(name + "_filter1", dtype=Bits(3), def_val=0b111)
+        filter1 = self._reg(name + "_filter1", dtype=HBits(3), def_val=0b111)
         If(filter_clk_cntr._eq(0),
            filter1(Concat(filter1[2:], filter0))
         )
@@ -309,6 +309,7 @@ class I2cMasterBitCtrl(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = I2cMasterBitCtrl()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = I2cMasterBitCtrl()
+    print(to_rtl_str(m))

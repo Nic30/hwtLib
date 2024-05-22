@@ -3,45 +3,45 @@
 
 from hwt.code import If
 from hwt.code_utils import rename_signal
-from hwt.hdl.constants import READ
-from hwt.interfaces.std import Signal, VectSignal, Handshaked
-from hwt.interfaces.utils import propagateClkRstn
+from hwt.constants import READ
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIODataRdVld
+from hwt.hwIOs.utils import propagateClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4_r
 from hwtLib.amba.axi_comp.lsu.write_aggregator import AxiWriteAggregator
 from hwtLib.amba.constants import RESP_OKAY, RESP_EXOKAY
-from hwtLib.common_nonstd_interfaces.addr_hs import AddrHs
+from hwtLib.commonHwIO.addr import HwIOAddrRdVld
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
 
 
-class AxiWriteAggregatorWriteTmpIntf(Handshaked):
+class HwIOAxiWriteAggregatorWriteTmp(HwIODataRdVld):
 
     def _config(self):
-        Handshaked._config(self)
-        self.ADDR_WIDTH = Param(32)
-        self.ID_WIDTH = Param(4)
+        HwIODataRdVld._config(self)
+        self.ADDR_WIDTH = HwParam(32)
+        self.ID_WIDTH = HwParam(4)
 
     def _declr(self):
-        Handshaked._declr(self)
-        self.addr = VectSignal(self.ADDR_WIDTH)
+        HwIODataRdVld._declr(self)
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         # a flag which tells if the data was valid when the time of snapshot of the original register
-        self.valid = Signal()
+        self.valid = HwIOSignal()
 
-        self.orig_request_addr = VectSignal(self.ADDR_WIDTH)
-        self.orig_request_id = VectSignal(self.ID_WIDTH)
+        self.orig_request_addr = HwIOVectSignal(self.ADDR_WIDTH)
+        self.orig_request_id = HwIOVectSignal(self.ID_WIDTH)
         # a flag which tells if the request address equals the addres in orginal register during the time of the snapshot
-        self.orig_request_addr_eq = Signal()
+        self.orig_request_addr_eq = HwIOSignal()
         # a flag which tells if this record is generated from input request or if this is a pipeline flush
-        self.orig_request_valid = Signal()
+        self.orig_request_valid = HwIOSignal()
 
 
 @serializeParamsUniq
-class AxiStoreQueueWritePropagating(AxiWriteAggregator):
+class Axi4StoreQueueWritePropagating(AxiWriteAggregator):
     """
     An extension of :class:`hwtLib.amba.axi_comp.lsu.write_aggregator.AxiWriteAggregator`
     with an IO for a communication with an :class:`hwtLib.amba.axi_comp.lsu.load_queue.AxiLoadQueue`
@@ -58,8 +58,8 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
 
     def _declr(self):
         AxiWriteAggregator._declr(self)
-        with self._paramsShared():
-            self.speculative_read_addr = AddrHs()
+        with self._hwParamsShared():
+            self.speculative_read_addr = HwIOAddrRdVld()
             self.speculative_read_data = Axi4_r()._m()
 
         self.ooo_fifo.HAS_READ_LOOKUP = True
@@ -87,7 +87,7 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
            we can not blok other channel and we need to have a buffer for 1 transaction to prevent data loose
            where we would need to ask main memory
 
-        .. figure:: ./_static/AxiStoreQueueWritePropagating_speculativeRead.png
+        .. figure:: ./_static/Axi4StoreQueueWritePropagating_speculativeRead.png
 
         :note: speculative read never block the write channel and thus data may be invalid if the speculative read data is stalled.
             This should be handled in master of speculative read port (Other component which is using this component).
@@ -99,7 +99,7 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
         ooo_fifo.read_lookup.data(sra.addr[:self.CACHE_LINE_OFFSET_BITS])
 
         w_in_reg = self.w_in_reg.dataOut
-        w_in_reg_tmp = HObjList(HandshakedReg(AxiWriteAggregatorWriteTmpIntf) for _ in range(2))
+        w_in_reg_tmp = HObjList(HandshakedReg(HwIOAxiWriteAggregatorWriteTmp) for _ in range(2))
         for r in w_in_reg_tmp:
             r._updateParamsFrom(w_in_reg)
             r.ID_WIDTH = self.ID_WIDTH
@@ -205,11 +205,11 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     from hwtLib.xilinx.constants import XILINX_VIVADO_MAX_DATA_WIDTH
 
-    u = AxiStoreQueueWritePropagating()
-    u.DATA_WIDTH = 512
-    u.CACHE_LINE_SIZE = 64
-    u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
-    print(to_rtl_str(u))
+    m = Axi4StoreQueueWritePropagating()
+    m.DATA_WIDTH = 512
+    m.CACHE_LINE_SIZE = 64
+    m.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
+    print(to_rtl_str(m))

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.logic.crcPoly import CRC_32, CRC_32C
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwtLib.mem.hashTableCoreWithRam import HashTableCoreWithRam
-from hwtLib.mem.hashTable_intf import HashTableIntf
+from hwtLib.mem.hashTable_intf import HwIOHashTable
 
 
 class CuckooHashTableWithRam(CuckooHashTable):
@@ -24,7 +24,7 @@ class CuckooHashTableWithRam(CuckooHashTable):
     def _config(self):
         CuckooHashTable._config(self)
         self.TABLE_CNT = len(self.polynomials)
-        self.POLYNOMIALS = Param(tuple(self.polynomials))
+        self.POLYNOMIALS = HwParam(tuple(self.polynomials))
 
     def _declr(self):
         self._declr_outer_io()
@@ -33,7 +33,7 @@ class CuckooHashTableWithRam(CuckooHashTable):
         self.table_cores = tables
 
     def _impl(self):
-        self.tables_tmp = HObjList([HashTableIntf()._updateParamsFrom(t.io) for t in self.table_cores])
+        self.tables_tmp = HObjList([HwIOHashTable()._updateParamsFrom(t.io) for t in self.table_cores])
 
         for t_io, t in zip(self.tables_tmp, self.table_cores):
             t.io(t_io, exclude={t.io.lookupRes})
@@ -48,6 +48,7 @@ def _example_CuckooHashTableWithRam():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_CuckooHashTableWithRam()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_CuckooHashTableWithRam()
+    print(to_rtl_str(m))

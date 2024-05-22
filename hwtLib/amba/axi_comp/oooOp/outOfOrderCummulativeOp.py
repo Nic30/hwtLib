@@ -6,20 +6,20 @@ from typing import List, Optional, Union
 
 from hwt.code import If, Concat, SwitchLogic, Switch
 from hwt.code_utils import rename_signal
-from hwt.hdl.constants import WRITE, READ
-from hwt.hdl.types.bits import Bits
+from hwt.constants import WRITE, READ
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.hdlType import HdlType
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf
-from hwt.synthesizer.param import Param
+from hwt.synthesizer.interfaceLevel.utils import HwIO_pack
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4, Axi4_addr, Axi4_r, Axi4_w
 from hwtLib.amba.axi_comp.lsu.fifo_oooread import FifoOutOfOrderRead
-from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpIntf, \
+from hwtLib.amba.axi_comp.oooOp.utils import HwIOOutOfOrderCummulativeOp, \
     OOOOpPipelineStage, OutOfOrderCummulativeOpPipelineConfig
 from hwtLib.amba.constants import BURST_INCR, PROT_DEFAULT, BYTES_IN_TRANS, \
     LOCK_DEFAULT, CACHE_DEFAULT, QOS_DEFAULT
@@ -30,7 +30,7 @@ from hwtLib.types.ctypes import uint32_t, uint8_t
 from pyMathBitPrecise.bit_utils import mask
 
 
-class OutOfOrderCummulativeOp(Unit):
+class OutOfOrderCummulativeOp(HwModule):
     """
     Out of order container of read-modify-write cummulative operation.
 
@@ -74,9 +74,9 @@ class OutOfOrderCummulativeOp(Unit):
     def _config(self):
         # number of items in main array is resolved from ADDR_WIDTH and size of STATE_T
         # number of concurent thread is resolved as 2**ID_WIDTH
-        self.MAIN_STATE_T: Optional[HdlType] = Param(uint32_t)
-        self.TRANSACTION_STATE_T: Optional[HdlType] = Param(uint8_t)
-        self.PIPELINE_CONFIG: OutOfOrderCummulativeOpPipelineConfig = Param(
+        self.MAIN_STATE_T: Optional[HdlType] = HwParam(uint32_t)
+        self.TRANSACTION_STATE_T: Optional[HdlType] = HwParam(uint8_t)
+        self.PIPELINE_CONFIG: OutOfOrderCummulativeOpPipelineConfig = HwParam(
             OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=1,
                 WRITE_ACK_TO_READ_DATA_LATENCY=1)
@@ -95,7 +95,7 @@ class OutOfOrderCummulativeOp(Unit):
         addClkRstn(self)
         self._init_constants()
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.m = Axi4()._m()
 
         self.ooo_fifo = FifoOutOfOrderRead()
@@ -116,8 +116,8 @@ class OutOfOrderCummulativeOp(Unit):
 
     def _declr_io(self):
         # index of the item to increment
-        din = self.dataIn = OutOfOrderCummulativeOpIntf()
-        dout = self.dataOut = OutOfOrderCummulativeOpIntf()._m()
+        din = self.dataIn = HwIOOutOfOrderCummulativeOp()
+        dout = self.dataOut = HwIOOutOfOrderCummulativeOp()._m()
         for i in [din, dout]:
             i.MAIN_STATE_INDEX_WIDTH = self.MAIN_STATE_INDEX_WIDTH
             i.TRANSACTION_STATE_T = self.TRANSACTION_STATE_T
@@ -173,10 +173,10 @@ class OutOfOrderCummulativeOp(Unit):
 
         din_data = dataIn_reg.dataOut
 
-        state_write.din(packIntf(din_data, exclude=[din_data.rd, din_data.vld]))
+        state_write.din(HwIO_pack(din_data, exclude=[din_data.rd, din_data.vld]))
 
         ar.id(ooo_fifo.read_execute.index)
-        ar.addr(Concat(din_data.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
+        ar.addr(Concat(din_data.addr, HBits(self.ADDR_OFFSET_W).from_py(0)))
         self._axi_addr_defaults(ar)
 
     def can_write_forward(self, src_st: OOOOpPipelineStage, dst_st: OOOOpPipelineStage):
@@ -284,7 +284,7 @@ class OutOfOrderCummulativeOp(Unit):
         """
         if self.BUS_WORD_CNT > 1:
             LD_CNTR_MAX = self.BUS_WORD_CNT - 1
-            cntr = self._reg("r_load_cntr", Bits(log2ceil(self.BUS_WORD_CNT)), def_val=0)
+            cntr = self._reg("r_load_cntr", HBits(log2ceil(self.BUS_WORD_CNT)), def_val=0)
             If(r.valid & r.ready,
                 If(cntr._eq(LD_CNTR_MAX),
                     cntr(0)
@@ -299,7 +299,7 @@ class OutOfOrderCummulativeOp(Unit):
         st_w = self.MAIN_STATE_T.bit_length()
         offset = 0
         cases = []
-        st_data_flat = st0.data._reinterpret_cast(Bits(st_w))
+        st_data_flat = st0.data._reinterpret_cast(HBits(st_w))
         while offset < st_w:
             i = offset // data_w
             end = min(st_w, offset + data_w)
@@ -321,22 +321,22 @@ class OutOfOrderCummulativeOp(Unit):
            ld_stm
         )
 
-    def data_store(self, st_data: Union[StructIntf, RtlSignal], w: Axi4_w, ack: RtlSignal):
+    def data_store(self, st_data: Union[HwIOStruct, RtlSignal], w: Axi4_w, ack: RtlSignal):
         """
         Transceive all data words from stage of pipeline to the bus.
 
         :param ack: signal which is 1 if the data word is transfered on this write channel
         """
         if not isinstance(st_data, RtlSignal):
-            st_data = packIntf(st_data)
+            st_data = HwIO_pack(st_data)
 
         data_w = self.DATA_WIDTH
         w.strb(mask(self.DATA_WIDTH // 8))
         st_w = self.MAIN_STATE_T.bit_length()
         word_cnt = self.BUS_WORD_CNT
         if word_cnt > 1:
-            w_word_cntr = self._reg("w_word_cntr", Bits(log2ceil(word_cnt)), def_val=0)
-            st_data_flat = st_data._reinterpret_cast(Bits(st_w))
+            w_word_cntr = self._reg("w_word_cntr", HBits(log2ceil(word_cnt)), def_val=0)
+            st_data_flat = st_data._reinterpret_cast(HBits(st_w))
             offset = 0
             cases = []
             while offset < st_w:
@@ -346,7 +346,7 @@ class OutOfOrderCummulativeOp(Unit):
                 padding = (offset + data_w) - end
                 if padding:
                     assert padding > 0
-                    src = Concat(Bits(padding).from_py(0), src)
+                    src = Concat(HBits(padding).from_py(0), src)
                 cases.append((i, w.data(src)))
                 offset += data_w
             If(ack,
@@ -490,7 +490,7 @@ class OutOfOrderCummulativeOp(Unit):
 
                 self._axi_addr_defaults(aw)
                 aw.id(dst_st.id)
-                aw.addr(Concat(dst_st.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
+                aw.addr(Concat(dst_st.addr, HBits(self.ADDR_OFFSET_W).from_py(0)))
 
                 st_data = dst_st.data
                 w_ack = w_sync.ack() & w_channel_en

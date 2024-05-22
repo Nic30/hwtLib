@@ -19,51 +19,51 @@ class Usb2SieDeviceRxTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = Usb2SieDeviceRx()
-        cls.compileSim(cls.u)
+        cls.dut = Usb2SieDeviceRx()
+        cls.compileSim(cls.dut)
         # dummy instance of agent to just parse/deparse packets
         cls.usb = UtmiUsbHostProcAgent([], [])
 
     def setUp(self):
         SimTestCase.setUp(self)
-        u: Usb2SieDeviceRx = self.u
-        u.enable._ag.data.append(1)
-        u.current_usb_addr._ag.data.append(0x3A)
+        dut: Usb2SieDeviceRx = self.dut
+        dut.enable._ag.data.append(1)
+        dut.current_usb_addr._ag.data.append(0x3A)
 
     def test_handshake(self):
-        u: Usb2SieDeviceRx = self.u
+        dut: Usb2SieDeviceRx = self.dut
 
         p = self.usb.deparse_packet(UsbPacketHandshake(USB_PID.HS_ACK))
-        u.rx._ag.data.append(p)
+        dut.rx._ag.data.append(p)
 
         self.runSim((len(p) + 10) * CLK_PERIOD)
         ref = [(USB_PID.HS_ACK, None, None, 0)]
-        self.assertValSequenceEqual(u.rx_header._ag.data, ref)
-        self.assertValSequenceEqual(u.rx_data._ag.data, [])
+        self.assertValSequenceEqual(dut.rx_header._ag.data, ref)
+        self.assertValSequenceEqual(dut.rx_data._ag.data, [])
 
     def test_pid_err_no_data(self):
-        u: Usb2SieDeviceRx = self.u
+        dut: Usb2SieDeviceRx = self.dut
 
         p0 = deque([0])
         p1 = self.usb.deparse_packet(UsbPacketHandshake(USB_PID.HS_ACK))
         p2 = self.usb.deparse_packet(UsbPacketHandshake(USB_PID.HS_NACK))
-        u.rx._ag.data.extend([p0, p1, copy(p0), p2])
+        dut.rx._ag.data.extend([p0, p1, copy(p0), p2])
 
         self.runSim(self.time_for_rx())
         ref = [(USB_PID.HS_ACK, None, None, 0),
                (USB_PID.HS_NACK, None, None, 0)]
-        self.assertValSequenceEqual(u.rx_header._ag.data, ref)
-        self.assertValSequenceEqual(u.rx_data._ag.data, [])
+        self.assertValSequenceEqual(dut.rx_header._ag.data, ref)
+        self.assertValSequenceEqual(dut.rx_data._ag.data, [])
 
     def time_for_rx(self) -> int:
-        u: Usb2SieDeviceRx = self.u
-        return (sum(len(p) for p in u.rx._ag.data) + len(u.rx._ag.data) + 15) * CLK_PERIOD
+        dut: Usb2SieDeviceRx = self.dut
+        return (sum(len(p) for p in dut.rx._ag.data) + len(dut.rx._ag.data) + 15) * CLK_PERIOD
 
     def test_pid_err_with_data(self):
-        u: Usb2SieDeviceRx = self.u
+        dut: Usb2SieDeviceRx = self.dut
         deparse_packet = self.usb.deparse_packet
 
-        u.rx._ag.data.extend([
+        dut.rx._ag.data.extend([
             deque([0, 0, 0]),
             deparse_packet(UsbPacketHandshake(USB_PID.HS_ACK)),
             deque([0, 0, 1, 2, 3, 0x5e, 0xf7]),
@@ -78,38 +78,38 @@ class Usb2SieDeviceRxTC(SimTestCase):
             (USB_PID.DATA_0, None, None, 0),
             (USB_PID.DATA_1, None, None, 0),
         ]
-        self.assertValSequenceEqual(u.rx_header._ag.data, ref)
+        self.assertValSequenceEqual(dut.rx_header._ag.data, ref)
 
         data_ref = []
         self.packet_data_to_rx_data_format([4, 5, 6, 7], data_ref)
         self.packet_data_to_rx_data_format([12], data_ref)
-        self.assertValSequenceEqual(u.rx_data._ag.data, data_ref)
+        self.assertValSequenceEqual(dut.rx_data._ag.data, data_ref)
 
     def test_token_setup(self):
-        u: Usb2SieDeviceRx = self.u
+        dut: Usb2SieDeviceRx = self.dut
         p = self.usb.deparse_packet(UsbPacketToken(USB_PID.TOKEN_SETUP, 0x3A, 0xA))
-        u.rx._ag.data.append(p)
+        dut.rx._ag.data.append(p)
 
         self.runSim((len(p) + 10) * CLK_PERIOD)
         ref = [(USB_PID.TOKEN_SETUP, 0xA, None, 0)]
-        self.assertValSequenceEqual(u.rx_header._ag.data, ref)
-        self.assertValSequenceEqual(u.rx_data._ag.data, [])
+        self.assertValSequenceEqual(dut.rx_header._ag.data, ref)
+        self.assertValSequenceEqual(dut.rx_data._ag.data, [])
 
     def test_token_crc5_err(self):
-        u: Usb2SieDeviceRx = self.u
+        dut: Usb2SieDeviceRx = self.dut
 
         p0 = self.usb.deparse_packet(UsbPacketToken(USB_PID.TOKEN_SETUP, 0x3A, 0xA))
         p0[-1] = 0
         p1 = self.usb.deparse_packet(UsbPacketToken(USB_PID.TOKEN_SETUP, 0x3A, 0xB))
-        u.rx._ag.data.extend([p0, p1])
+        dut.rx._ag.data.extend([p0, p1])
 
         self.runSim(self.time_for_rx())
         ref = [
             (USB_PID.TOKEN_SETUP, 0, None, 1),
             (USB_PID.TOKEN_SETUP, 0xB, None, 0),
         ]
-        self.assertValSequenceEqual(u.rx_header._ag.data, ref)
-        self.assertValSequenceEqual(u.rx_data._ag.data, [])
+        self.assertValSequenceEqual(dut.rx_header._ag.data, ref)
+        self.assertValSequenceEqual(dut.rx_data._ag.data, [])
 
     def packet_data_to_rx_data_format(self, p: List[int], res: List[Tuple[int, int, int, int]], error=False):
         if p:
@@ -123,7 +123,7 @@ class Usb2SieDeviceRxTC(SimTestCase):
                                  [], [11], [12, 13, 14, 15], [16, 17, 18],
                                  [20, 21]
                                  ]):
-        u: Usb2SieDeviceRx = self.u
+        dut: Usb2SieDeviceRx = self.dut
 
         header_ref = []
         data_ref = []
@@ -140,7 +140,7 @@ class Usb2SieDeviceRxTC(SimTestCase):
                 _p.pop()
             elif inject_crc_error:
                 _p[-1] = (_p[-1] + 1) & 0xff
-            u.rx._ag.data.append(_p)
+            dut.rx._ag.data.append(_p)
 
             header_ref.append((pid, None, None, 0))
             self.packet_data_to_rx_data_format(p, data_ref, error=inject_crc_error or inject_len_error)
@@ -157,8 +157,8 @@ class Usb2SieDeviceRxTC(SimTestCase):
                 raise ValueError(pid)
 
         self.runSim((len(data_ref) + 4 * len(packets) + 20) * CLK_PERIOD)
-        self.assertValSequenceEqual(u.rx_header._ag.data, header_ref)
-        self.assertValSequenceEqual(u.rx_data._ag.data, data_ref)
+        self.assertValSequenceEqual(dut.rx_header._ag.data, header_ref)
+        self.assertValSequenceEqual(dut.rx_data._ag.data, data_ref)
 
     #def test_data_crc16_error(self):
     #    packets = [[1, 2, 3, 4], ([4], True, False), [],

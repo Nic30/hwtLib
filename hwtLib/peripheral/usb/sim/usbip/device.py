@@ -2,7 +2,7 @@ from asyncio.tasks import sleep
 from collections import deque
 from typing import Tuple, Callable, Union
 
-from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
+from hwt.constants import NOT_SPECIFIED
 from hwtLib.peripheral.usb.constants import USB_VER, USB_PID
 from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle, \
     UsbNoSuchDescriptor
@@ -325,14 +325,14 @@ class USBIPSimDeviceInterface():
 
 class USBIPSimDeviceInterfaceSetting():
 
-    def __init__(self, intf: USBIPSimDeviceInterface):
-        self.intf = intf
+    def __init__(self, hwIO: USBIPSimDeviceInterface):
+        self.hwIO = hwIO
 
     def getClass(self):
-        return int(self.intf.descr.body.bInterfaceClass)
+        return int(self.hwIO.descr.body.bInterfaceClass)
 
     def getSubClass(self):
-        return int(self.intf.descr.body.bInterfaceSubClass)
+        return int(self.hwIO.descr.body.bInterfaceSubClass)
 
     def getProtocol(self):
-        return int(self.intf.descr.body.bInterfaceProtocol)
+        return int(self.hwIO.descr.body.bInterfaceProtocol)

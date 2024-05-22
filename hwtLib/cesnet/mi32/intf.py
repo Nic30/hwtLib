@@ -1,17 +1,17 @@
-from hwt.hdl.constants import READ, WRITE, READ_WRITE
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.agents.vldSynced import VldSyncedAgent
-from hwt.interfaces.std import VectSignal, Signal
+from hwt.constants import READ, WRITE, READ_WRITE
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.agents.vldSync import HwIODataVldAgent
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.simulator.agentBase import SyncAgentBase
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
 from hwtLib.avalon.mm import AvalonMmAddrAgent
 from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class Mi32(Interface):
+class Mi32(HwIO):
     """
     Simple memory interface similar to AvalonMM
 
@@ -28,18 +28,18 @@ class Mi32(Interface):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(32)
-        self.ADDR_WIDTH = Param(32)
+        self.DATA_WIDTH = HwParam(32)
+        self.ADDR_WIDTH = HwParam(32)
 
     def _declr(self):
-        self.addr = VectSignal(self.ADDR_WIDTH)
-        self.rd = Signal()
-        self.wr = Signal()
-        self.ardy = Signal(masterDir=DIRECTION.IN)
-        self.be = VectSignal(self.DATA_WIDTH // 8)
-        self.dwr = VectSignal(self.DATA_WIDTH)
-        self.drd = VectSignal(self.DATA_WIDTH, masterDir=DIRECTION.IN)
-        self.drdy = Signal(masterDir=DIRECTION.IN)
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
+        self.rd = HwIOSignal()
+        self.wr = HwIOSignal()
+        self.ardy = HwIOSignal(masterDir=DIRECTION.IN)
+        self.be = HwIOVectSignal(self.DATA_WIDTH // 8)
+        self.dwr = HwIOVectSignal(self.DATA_WIDTH)
+        self.drd = HwIOVectSignal(self.DATA_WIDTH, masterDir=DIRECTION.IN)
+        self.drdy = HwIOSignal(masterDir=DIRECTION.IN)
 
     def _getWordAddrStep(self):
         """
@@ -67,10 +67,10 @@ class Mi32Agent(SyncAgentBase):
     :ivar ~.rData: data read from interface
     """
 
-    def __init__(self, sim: HdlSimulator, intf: Mi32, allowNoReset=False):
-        SyncAgentBase.__init__(self, sim, intf, allowNoReset=allowNoReset)
-        self.addrAg = Mi32AddrAgent(sim, intf, allowNoReset=allowNoReset)
-        self.dataAg = Mi32DataAgent(sim, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim: HdlSimulator, hwIO: Mi32, allowNoReset=False):
+        SyncAgentBase.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
+        self.addrAg = Mi32AddrAgent(sim, hwIO, allowNoReset=allowNoReset)
+        self.dataAg = Mi32DataAgent(sim, hwIO, allowNoReset=allowNoReset)
 
     def requests_get(self):
         return self.addrAg.data
@@ -99,7 +99,7 @@ class Mi32Agent(SyncAgentBase):
         yield from self.addrAg.getMonitors()
 
 
-class Mi32AddrAgent(HandshakedAgent):
+class Mi32AddrAgent(HwIODataRdVldAgent):
     """
     :ivar ~.requests: request data, items are tuples (READ, address)
         or (WRITE, address, data, be_mask)
@@ -110,12 +110,12 @@ class Mi32AddrAgent(HandshakedAgent):
     """
 
     @classmethod
-    def get_ready_signal(cls, intf):
-        return intf.ardy
+    def get_ready_signal(cls, hwIO):
+        return hwIO.ardy
 
     @classmethod
-    def get_valid_signal(cls, intf):
-        return (intf.rd, intf.wr)
+    def get_valid_signal(cls, hwIO):
+        return (hwIO.rd, hwIO.wr)
 
     def get_valid(self):
         r = self._vld[0].read()
@@ -130,12 +130,12 @@ class Mi32AddrAgent(HandshakedAgent):
         AvalonMmAddrAgent.set_valid(self, val)
 
     def get_data(self):
-        intf = self.intf
-        address = intf.addr.read()
-        byteEnable = intf.be.read()
-        read = bool(intf.rd.read())
-        write = bool(intf.wr.read())
-        wdata = intf.dwr.read()
+        hwIO = self.hwIO
+        address = hwIO.addr.read()
+        byteEnable = hwIO.be.read()
+        read = bool(hwIO.rd.read())
+        write = bool(hwIO.wr.read())
+        wdata = hwIO.dwr.read()
 
         if read and write:
             rw = READ_WRITE
@@ -150,18 +150,18 @@ class Mi32AddrAgent(HandshakedAgent):
         return (rw, address, wdata, byteEnable)
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
         if data is None:
-            intf.addr.write(None)
-            intf.be.write(None)
-            intf.rd.write(0)
-            intf.wr.write(0)
+            hwIO.addr.write(None)
+            hwIO.be.write(None)
+            hwIO.rd.write(0)
+            hwIO.wr.write(0)
         else:
             rw = data[0]
             if rw is READ:
                 _, address = data
                 rd, wr = 1, 0
-                be = mask(intf.DATA_WIDTH // 8)
+                be = mask(hwIO.DATA_WIDTH // 8)
                 wdata = None
             elif rw is WRITE:
                 rd, wr = 0, 1
@@ -172,21 +172,21 @@ class Mi32AddrAgent(HandshakedAgent):
             else:
                 raise TypeError(f"rw is in invalid format {rw}")
 
-            intf.addr.write(address)
-            intf.rd.write(rd)
-            intf.wr.write(wr)
-            intf.be.write(be)
-            intf.dwr.write(wdata)
+            hwIO.addr.write(address)
+            hwIO.rd.write(rd)
+            hwIO.wr.write(wr)
+            hwIO.be.write(be)
+            hwIO.dwr.write(wdata)
 
 
-class Mi32DataAgent(VldSyncedAgent):
+class Mi32DataAgent(HwIODataVldAgent):
 
     @classmethod
-    def get_valid_signal(cls, intf: Mi32):
-        return intf.drdy
+    def get_valid_signal(cls, hwIO: Mi32):
+        return hwIO.drdy
 
     def get_data(self):
-        return self.intf.drd.read()
+        return self.hwIO.drd.read()
 
     def set_data(self, data):
-        self.intf.drd.write(data)
+        self.hwIO.drd.write(data)

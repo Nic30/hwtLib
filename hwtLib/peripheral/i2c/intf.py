@@ -1,12 +1,12 @@
-from hwt.interfaces.tristate import TristateClk, TristateSig
+from hwt.hwIOs.hwIOTristate import HwIOTristateClk, HwIOTristateSig
 from hwt.simulator.agentBase import AgentWitReset
-from hwt.synthesizer.interface import Interface
+from hwt.hwIO import HwIO
 from ipCorePackager.intfIpMeta import IntfIpMeta
 from hwtSimApi.agents.peripheral.i2c import I2cAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class I2c(Interface):
+class I2c(HwIO):
     """
     I2C interface also known as IIC, TWI or Two Wire
 
@@ -17,8 +17,8 @@ class I2c(Interface):
 
 
     def _declr(self):
-        self.scl = TristateClk()  # serial clk
-        self.sda = TristateSig()  # serial data
+        self.scl = HwIOTristateClk()  # serial clk
+        self.sda = HwIOTristateSig()  # serial data
 
     def _getIpCoreIntfClass(self):
         return IP_IIC

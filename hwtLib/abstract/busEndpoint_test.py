@@ -3,15 +3,15 @@
 
 import unittest
 
-from hwt.hdl.types.bits import Bits
+from hwt.hwIOs.hwIO_map import HTypeFromHwIOObjMap, HwIOObjMap
+from hwt.hwIOs.std import HwIORegCntrl, HwIOVectSignal, HwIODataVld
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct, HStructFieldMeta
-from hwt.interfaces.intf_map import HTypeFromIntfMap, IntfMap
-from hwt.interfaces.std import RegCntrl, VectSignal, VldSynced
 
 
 # example methods for interface construction
 def mk_regCntr(name, width):
-    a = RegCntrl()
+    a = HwIORegCntrl()
     a.DATA_WIDTH = width
     a._name = name
     a._loadDeclarations()
@@ -19,14 +19,14 @@ def mk_regCntr(name, width):
 
 
 def mk_sig(name, width):
-    a = VectSignal(width)
+    a = HwIOVectSignal(width)
     a._name = name
     a._loadDeclarations()
     return a
 
 
 def mk_vldSynced(name, width):
-    a = VldSynced()
+    a = HwIODataVld()
     a.DATA_WIDTH = width
     a._name = name
     a._loadDeclarations()
@@ -35,18 +35,18 @@ def mk_vldSynced(name, width):
 
 class BusEndpointTC(unittest.TestCase):
 
-    def test_HTypeFromIntfMap_Struct(self):
+    def test_HTypeFromHwIOMap_Struct(self):
         DATA_WIDTH = 32
 
-        t = HTypeFromIntfMap(
-            IntfMap([
+        t = HTypeFromHwIOObjMap(
+            HwIOObjMap([
                     mk_regCntr("a", DATA_WIDTH),
                     mk_regCntr("b", DATA_WIDTH),
                     mk_sig("c", DATA_WIDTH),
                     mk_vldSynced("d", DATA_WIDTH),
             ]))
 
-        _t = Bits(DATA_WIDTH)
+        _t = HBits(DATA_WIDTH)
         self.assertEqual(t, HStruct(
                 (_t, "a"),
                 (_t, "b"),
@@ -54,133 +54,133 @@ class BusEndpointTC(unittest.TestCase):
                 (_t, "d"),
             ))
 
-    def test_HTypeFromIntfMap_Padding(self):
+    def test_HTypeFromHwIOMap_Padding(self):
         DATA_WIDTH = 32
 
-        t = HTypeFromIntfMap(
-            IntfMap([
+        t = HTypeFromHwIOObjMap(
+            HwIOObjMap([
                 mk_regCntr("a", DATA_WIDTH),
                 mk_regCntr("b", DATA_WIDTH),
                 mk_sig("c", DATA_WIDTH),
-                (Bits(4 * DATA_WIDTH), None),
+                (HBits(4 * DATA_WIDTH), None),
                 mk_vldSynced("d", DATA_WIDTH),
             ]))
-        _t = Bits(DATA_WIDTH)
+        _t = HBits(DATA_WIDTH)
         t2 = HStruct(
                 (_t, "a"),
                 (_t, "b"),
                 (_t, "c"),
-                (Bits(4 * DATA_WIDTH), None),
+                (HBits(4 * DATA_WIDTH), None),
                 (_t, "d"),
             )
 
         self.assertEqual(t, t2)
 
-    def test_HTypeFromIntfMap_Array(self):
+    def test_HTypeFromHwIOMap_Array(self):
         DATA_WIDTH = 32
 
-        t = HTypeFromIntfMap(
-            IntfMap([
+        t = HTypeFromHwIOObjMap(
+            HwIOObjMap([
                 mk_regCntr("a", DATA_WIDTH),
-                (Bits(4 * DATA_WIDTH), None),
+                (HBits(4 * DATA_WIDTH), None),
                 ([mk_vldSynced("d", DATA_WIDTH) for _ in range(4)], "ds")
             ]))
 
-        _t = Bits(DATA_WIDTH)
+        _t = HBits(DATA_WIDTH)
         t2 = HStruct(
                 (_t, "a"),
-                (Bits(4 * DATA_WIDTH), None),
+                (HBits(4 * DATA_WIDTH), None),
                 (_t[4], "ds", HStructFieldMeta(split=True)),
             )
         self.assertEqual(t, t2)
 
-    def test_HTypeFromIntfMap_ArrayOfStructs(self):
+    def test_HTypeFromHwIOMap_ArrayOfStructs(self):
         DATA_WIDTH = 32
 
-        t = HTypeFromIntfMap(
-            IntfMap([
+        t = HTypeFromHwIOObjMap(
+            HwIOObjMap([
                 mk_regCntr("a", DATA_WIDTH),
-                (Bits(4 * DATA_WIDTH), None),
-                ([IntfMap([
+                (HBits(4 * DATA_WIDTH), None),
+                ([HwIOObjMap([
                     mk_vldSynced("c", DATA_WIDTH),
                     mk_vldSynced("d", DATA_WIDTH)
                 ]) for _ in range(4)], "ds")
             ]))
 
-        _t = Bits(DATA_WIDTH)
+        _t = HBits(DATA_WIDTH)
         _t2 = HStruct(
                 (_t, "c"),
                 (_t, "d")
             )
         t2 = HStruct(
                 (_t, "a"),
-                (Bits(4 * DATA_WIDTH), None),
+                (HBits(4 * DATA_WIDTH), None),
                 (_t2[4], "ds", HStructFieldMeta(split=True)),
             )
 
         self.assertEqual(t, t2)
 
-    def test_HTypeFromIntfMap_ArrayOfStructsOfStructs(self):
+    def test_HTypeFromHwIOMap_ArrayOfStructsOfStructs(self):
         DATA_WIDTH = 32
-        m = IntfMap([
+        m = HwIOObjMap([
                 mk_regCntr("a", DATA_WIDTH),
-                (Bits(4 * DATA_WIDTH), None),
-                ([IntfMap([
-                    (IntfMap([
+                (HBits(4 * DATA_WIDTH), None),
+                ([HwIOObjMap([
+                    (HwIOObjMap([
                        mk_vldSynced("c", DATA_WIDTH),
                        mk_vldSynced("d", DATA_WIDTH)
                     ]), "nested")
                 ]) for _ in range(4)], "ds")
             ])
 
-        t = HTypeFromIntfMap(m)
+        t = HTypeFromHwIOObjMap(m)
 
-        _t = Bits(DATA_WIDTH)
+        _t = HBits(DATA_WIDTH)
         _t2 = HStruct(
             (HStruct((_t, "c"),
                      (_t, "d")), "nested", HStructFieldMeta(split=True)))
         t2 = HStruct(
                 (_t, "a"),
-                (Bits(4 * DATA_WIDTH), None),
+                (HBits(4 * DATA_WIDTH), None),
                 (_t2[4], "ds", HStructFieldMeta(split=True)),
             )
 
         self.assertEqual(t, t2)
 
-    def test_HTypeFromIntfMap_StructArray(self):
+    def test_HTypeFromHwIOMap_StructArray(self):
         DATA_WIDTH = 32
 
-        t = HTypeFromIntfMap(
-            IntfMap([
+        t = HTypeFromHwIOObjMap(
+            HwIOObjMap([
                 mk_regCntr("a", DATA_WIDTH),
-                (Bits(4 * DATA_WIDTH), None),
+                (HBits(4 * DATA_WIDTH), None),
                 ([
-                    IntfMap([
+                    HwIOObjMap([
                         mk_vldSynced("d", DATA_WIDTH),
                         mk_sig("e", DATA_WIDTH),
-                        (Bits(DATA_WIDTH * 2), None),
+                        (HBits(DATA_WIDTH * 2), None),
                         mk_sig("f", DATA_WIDTH),
                     ]) for _ in range(4)], "ds")
             ]))
 
-        _t = Bits(DATA_WIDTH)
+        _t = HBits(DATA_WIDTH)
         expected_t = HStruct(
             (_t, "a"),
-            (Bits(4 * DATA_WIDTH), None),
+            (HBits(4 * DATA_WIDTH), None),
             (HStruct(
                 (_t, "d"),
                 (_t, "e"),
-                (Bits(2 * DATA_WIDTH), None),
+                (HBits(2 * DATA_WIDTH), None),
                 (_t, "f"),
                 )[4], "ds", HStructFieldMeta(split=True)),
         )
         self.assertEqual(t, expected_t)
 
-    def test_HTypeFromIntfMap_wrongArray(self):
+    def test_HTypeFromHwIOMap_wrongArray(self):
         DATA_WIDTH = 32
         with self.assertRaises(AssertionError):
-            HTypeFromIntfMap(
-                IntfMap([
+            HTypeFromHwIOObjMap(
+                HwIOObjMap([
                     ([mk_sig("e", DATA_WIDTH),
                       mk_sig("e", 2 * DATA_WIDTH),
                       ], "ds")
@@ -189,7 +189,7 @@ class BusEndpointTC(unittest.TestCase):
 
 if __name__ == "__main__":
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([BusEndpointTC("test_HTypeFromIntfMap_ArrayOfStructsOfStructs")])
+    # suite = unittest.TestSuite([BusEndpointTC("test_HTypeFromHwIOMap_ArrayOfStructsOfStructs")])
     suite = testLoader.loadTestsFromTestCase(BusEndpointTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -1,9 +1,9 @@
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwtLib.amba.axis import AxiStream, axis_mask_propagate_best_effort
+from hwtLib.amba.axi4s import Axi4Stream, axi4s_mask_propagate_best_effort
 from hwt.code_utils import connect_optional
-from hwt.synthesizer.interface import Interface
+from hwt.hwIO import HwIO
 
 
 def _get_only_stream(t: HdlType):
@@ -20,13 +20,13 @@ def _get_only_stream(t: HdlType):
 
 def connect_optional_with_best_effort_axis_mask_propagation(src, dst):
     def check_fn(a, b):
-        if a._name in ("strb", "keep") and isinstance(a._parent, AxiStream):
+        if a._name in ("strb", "keep") and isinstance(a._parent, Axi4Stream):
             # if is srtb/keep we already connected it by 
-            # axis_mask_propagate_best_effort
+            # axi4s_mask_propagate_best_effort
             return False, []
 
-        if isinstance(a, AxiStream):
-            res = axis_mask_propagate_best_effort(a, b)
+        if isinstance(a, Axi4Stream):
+            res = axi4s_mask_propagate_best_effort(a, b)
         else:
             res = []
 
@@ -35,7 +35,7 @@ def connect_optional_with_best_effort_axis_mask_propagation(src, dst):
     return connect_optional(src, dst, check_fn)
 
 
-def drill_down_in_HStruct_fields(t: HdlType, intf: Interface):
+def drill_down_in_HStruct_fields(t: HdlType, hwIO: HwIO):
     """
     Find a base type and corresponding interface for nested HStruct with a single
     field.
@@ -44,8 +44,8 @@ def drill_down_in_HStruct_fields(t: HdlType, intf: Interface):
         assert len(t.fields) == 1, t
         f = t.fields[0]
         if f.name is None:
-            intf = None
-        elif intf is not None:
-            intf = getattr(intf, f.name)
+            hwIO = None
+        elif hwIO is not None:
+            hwIO = getattr(hwIO, f.name)
         t = f.dtype
-    return t, intf
+    return t, hwIO

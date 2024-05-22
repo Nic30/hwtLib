@@ -2,31 +2,31 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VectSignal, HandshakeSync
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIORdVldSync
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 
 
-class StaticForLoopCntrl(Unit):
+class StaticForLoopCntrl(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.ITERATIONS = Param(15)
+        self.ITERATIONS = HwParam(15)
 
     def _declr(self):
         addClkRstn(self)
 
-        self.cntrl = HandshakeSync()
+        self.cntrl = HwIORdVldSync()
 
         self.COUNTER_WIDTH = log2ceil(self.ITERATIONS)
-        self.index = VectSignal(self.COUNTER_WIDTH)._m()
-        self.body = HandshakeSync()._m()
-        self.bodyBreak = Signal()
+        self.index = HwIOVectSignal(self.COUNTER_WIDTH)._m()
+        self.body = HwIORdVldSync()._m()
+        self.bodyBreak = HwIOSignal()
 
     def _impl(self):
         ITERATIONS = int(self.ITERATIONS)
@@ -36,7 +36,7 @@ class StaticForLoopCntrl(Unit):
         break causes reset of counter
         """
 
-        counter = self._reg("counter", Bits(self.COUNTER_WIDTH), ITERATIONS - 1)
+        counter = self._reg("counter", HBits(self.COUNTER_WIDTH), ITERATIONS - 1)
 
         If(counter._eq(0),
             If(self.cntrl.vld,
@@ -58,6 +58,7 @@ class StaticForLoopCntrl(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = StaticForLoopCntrl()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = StaticForLoopCntrl()
+    print(to_rtl_str(m))

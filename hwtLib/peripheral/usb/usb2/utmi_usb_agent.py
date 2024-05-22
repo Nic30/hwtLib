@@ -1,7 +1,7 @@
 from collections  import deque
 from typing import Deque, Union
 
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
 from hwt.simulator.agentBase import SyncAgentBase
 from hwtLib.peripheral.usb.constants import usb_addr_t, usb_endp_t, \
@@ -63,7 +63,7 @@ class UtmiUsbHostProcAgent(UsbHostAgent):
                 "endp": p.endp,
                 "crc5": p.crc5(),
             })
-            v1 = v0._reinterpret_cast(Bits(8)[self.usb_packet_token_t.bit_length() // 8])
+            v1 = v0._reinterpret_cast(HBits(8)[self.usb_packet_token_t.bit_length() // 8])
             v.extend(int(_v) for _v in v1)
 
         elif cls is UsbPacketData:
@@ -100,13 +100,13 @@ class UtmiUsbAgent(Utmi_8bAgent, SyncAgentBase):
     with device host logic and USB stack
     """
 
-    def __init__(self, sim:HdlSimulator, intf:Utmi_8bAgent, allowNoReset=False):
-        Utmi_8bAgent.__init__(self, sim, intf)
+    def __init__(self, sim:HdlSimulator, hwIO:Utmi_8bAgent, allowNoReset=False):
+        Utmi_8bAgent.__init__(self, sim, hwIO)
         self.descriptors = None
         self.usb_driver = None
         self.usb_driver_proc = None
-        self.clk = self.intf._getAssociatedClk()
-        self.rst = self._discoverReset(intf, allowNoReset)
+        self.clk = self.hwIO._getAssociatedClk()
+        self.rst = self._discoverReset(hwIO, allowNoReset)
         self.monitor = CallbackLoop(sim, self.clk, self.monitor, self.getEnable)
         self.driver = CallbackLoop(sim, self.clk, self.driver, self.getEnable)
 

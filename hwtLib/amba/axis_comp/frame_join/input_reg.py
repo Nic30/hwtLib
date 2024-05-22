@@ -1,73 +1,73 @@
 from hwt.code import If
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import VectSignal, Signal
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
+from hwt.hwIOs.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
+from hwt.hObjList import HObjList
+from hwt.hwIO import HwIO
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwtLib.amba.axi4s import Axi4Stream
 from pyMathBitPrecise.bit_utils import mask
 
 
-class UnalignedJoinRegIntf(Interface):
+class UnalignedJoinRegIntf(HwIO):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        AxiStream._config(self)
+        Axi4Stream._config(self)
 
     def _declr(self):
-        self.data = VectSignal(self.DATA_WIDTH)
-        self.keep = VectSignal(self.DATA_WIDTH // 8)
+        self.data = HwIOVectSignal(self.DATA_WIDTH)
+        self.keep = HwIOVectSignal(self.DATA_WIDTH // 8)
         if self.USE_STRB:
-            self.strb = VectSignal(self.DATA_WIDTH // 8)
-        self.relict = Signal()
-        self.last = Signal()
+            self.strb = HwIOVectSignal(self.DATA_WIDTH // 8)
+        self.relict = HwIOSignal()
+        self.last = HwIOSignal()
 
 
 @serializeParamsUniq
-class FrameJoinInputReg(Unit):
+class FrameJoinInputReg(HwModule):
     """
-    Pipeline of registers for AxiStream with keep mask and flushing
+    Pipeline of registers for Axi4Stream with keep mask and flushing
 
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.REG_CNT = Param(2)
-        AxiStream._config(self)
+        self.REG_CNT = HwParam(2)
+        Axi4Stream._config(self)
         self.USE_KEEP = True
 
     def _declr(self):
         assert self.USE_KEEP
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = AxiStream()
+        with self._hwParamsShared():
+            self.dataIn = Axi4Stream()
             self.regs = HObjList(
                 UnalignedJoinRegIntf()._m()
                 for _ in range(self.REG_CNT))
         self.keep_masks = HObjList(
-            VectSignal(self.DATA_WIDTH // 8)
+            HwIOVectSignal(self.DATA_WIDTH // 8)
             for _ in range(self.REG_CNT)
         )
 
         # used to shift whole register pipeline using input keep_mask
-        self.ready = Signal()
+        self.ready = HwIOSignal()
         if self.ID_WIDTH or self.USER_WIDTH or self.DEST_WIDTH:
             raise NotImplementedError("It is not clear how id/user/dest"
                                       " should be managed between the frames")
 
     def _impl(self):
-        mask_t = Bits(self.DATA_WIDTH // 8, force_vector=True)
+        mask_t = HBits(self.DATA_WIDTH // 8, force_vector=True)
         data_fieds = [
-            (Bits(self.DATA_WIDTH), "data"),
+            (HBits(self.DATA_WIDTH), "data"),
             (mask_t, "keep"),  # valid= keep != 0
             (BIT, "relict"),  # flag for partially consumed word
             (BIT, "last"),  # flag for end of frame

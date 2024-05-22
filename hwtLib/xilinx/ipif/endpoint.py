@@ -5,7 +5,7 @@ from hwt.code import If, FsmBuilder
 from hwt.hdl.types.enum import HEnum
 from hwt.math import inRange
 from hwtLib.abstract.busEndpoint import BusEndpoint
-from hwtLib.xilinx.ipif.intf import Ipif
+from hwtLib.xilinx.ipif.hIOIpif import Ipif
 
 
 class IpifEndpoint(BusEndpoint):
@@ -22,9 +22,9 @@ class IpifEndpoint(BusEndpoint):
     _getWordAddrStep = Ipif._getWordAddrStep
     _getAddrStep = Ipif._getAddrStep
 
-    def __init__(self, structTemplate, intfCls=Ipif, shouldEnterFn=None):
+    def __init__(self, structTemplate, hwIOCls=Ipif, shouldEnterFn=None):
         BusEndpoint.__init__(self, structTemplate,
-                             intfCls=intfCls,
+                             hwIOCls=hwIOCls,
                              shouldEnterFn=shouldEnterFn)
 
     def _impl(self):
@@ -83,16 +83,17 @@ class IpifEndpoint(BusEndpoint):
 def _example_IpifEndpoint():
     from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
-    u = IpifEndpoint(
+    m = IpifEndpoint(
             HStruct(
                 (uint32_t, "field0"),
                 (uint32_t, "field1"),
                 (uint32_t[32], "bramMapped")
                 ))
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_IpifEndpoint()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_IpifEndpoint()
+    print(to_rtl_str(m))

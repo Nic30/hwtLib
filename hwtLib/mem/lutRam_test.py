@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import WRITE, READ
+from hwt.constants import WRITE, READ
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import valuesToInts
+from hwt.simulator.utils import HConstSequenceToInts
 from hwtLib.mem.lutRam import RAM64X1S
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import get_bit
@@ -38,19 +38,19 @@ class LutRamTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = RAM64X1S()
-        cls.compileSim(u)
+        dut = RAM64X1S()
+        cls.compileSim(dut)
 
     def test_writeAndRead(self):
-        u = self.u
+        dut = self.dut
 
         requests = [(WRITE, 0, 0), (WRITE, 1, 1),
                     (READ, 0), (READ, 1),
                     (READ, 2), (READ, 3), (READ, 2)]
-        applyRequests(u, requests)
+        applyRequests(dut, requests)
 
         self.runSim(8 * CLK_PERIOD)
-        self.assertSequenceEqual(valuesToInts(u.o._ag.data),
+        self.assertSequenceEqual(HConstSequenceToInts(dut.o._ag.data),
                                  [0, 0, 0, 1, 0, 0, 0, 0])
 
 

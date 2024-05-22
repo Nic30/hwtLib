@@ -2,28 +2,28 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.constants import Time
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.interfaces.utils import addClkRstn
+from hwt.constants import Time
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.mainBases import RtlSignalBase
+from hwt.hwModule import HwModule
 
 
-def binToGray(sigOrVal) -> RtlSignalBase:
+def binToGray(sigOrConst) -> RtlSignalBase:
     """
     Convert value or signal from binary encoding to gray encoding
     """
-    return (sigOrVal >> 1) ^ sigOrVal
-    #width = sigOrVal._dtype.bit_length()
-    #return Concat(sigOrVal[width - 1],
-    #              sigOrVal[width - 1:0] ^ sigOrVal[width:1])
+    return (sigOrConst >> 1) ^ sigOrConst
+    #width = sigOrConst._dtype.bit_length()
+    #return Concat(sigOrConst[width - 1],
+    #              sigOrConst[width - 1:0] ^ sigOrConst[width:1])
 
 
 @serializeParamsUniq
-class GrayCntr(Unit):
+class GrayCntr(HwModule):
     """
     Counter for gray code
 
@@ -31,14 +31,14 @@ class GrayCntr(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(4)
-        self.INIT_VAL = Param(0)  # binary
+        self.DATA_WIDTH = HwParam(4)
+        self.INIT_VAL = HwParam(0)  # binary
 
     def _declr(self):
         addClkRstn(self)
-        self.en = Signal()
+        self.en = HwIOSignal()
 
-        self.dataOut = VectSignal(self.DATA_WIDTH)._m()
+        self.dataOut = HwIOVectSignal(self.DATA_WIDTH)._m()
 
     def _impl(self):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, self.INIT_VAL)
@@ -53,16 +53,16 @@ class GrayCntr(Unit):
 class GrayCntrTC(SimTestCase):
 
     @classmethod
-    def setUpClass(cls) -> Unit:
-        cls.u = GrayCntr()
-        cls.compileSim(cls.u)
+    def setUpClass(cls) -> HwModule:
+        cls.dut = GrayCntr()
+        cls.compileSim(cls.dut)
 
     def test_count(self):
-        u = self.u
-        u.en._ag.data.append(1)
+        dut = self.dut
+        dut.en._ag.data.append(1)
 
         self.runSim(170 * Time.ns)
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [
                                         0b0000,
                                         0b0001,
@@ -90,5 +90,5 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(GrayCntr()))

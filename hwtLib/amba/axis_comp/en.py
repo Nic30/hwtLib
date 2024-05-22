@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.handshaked.streamNode import StreamNode
 
 
-class AxiS_en(AxiSCompBase):
+class Axi4S_en(Axi4SCompBase):
     """
     This component is like on-off switch for axi stream interface
     which does care about frames.
@@ -20,10 +20,10 @@ class AxiS_en(AxiSCompBase):
     """
     def _declr(self):
         addClkRstn(self)
-        self.en = Signal()
-        with self._paramsShared():
-            self.dataIn = AxiStream()
-            self.dataOut = AxiStream()._m()
+        self.en = HwIOSignal()
+        with self._hwParamsShared():
+            self.dataIn = Axi4Stream()
+            self.dataOut = Axi4Stream()._m()
 
     def _impl(self):
         din = self.dataIn
@@ -44,7 +44,7 @@ class AxiS_en(AxiSCompBase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AxiS_en()
+    from hwt.synth import to_rtl_str
+    m = Axi4S_en()
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

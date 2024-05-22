@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.types.ctypes import uint32_t
 
 
-class SimpleAxiRegs(Unit):
+class SimpleAxiRegs(HwModule):
     """
     Axi litle mapped registers example,
     0x0 - reg0
@@ -21,15 +21,15 @@ class SimpleAxiRegs(Unit):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.ADDR_WIDTH = Param(8)
-        self.DATA_WIDTH = Param(32)
+        self.ADDR_WIDTH = HwParam(8)
+        self.DATA_WIDTH = HwParam(32)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.axi = Axi4Lite()
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             # this structure is configuration of interfaces
             # fields can also be arrays and metaclass can be used
             # to specify field interface and R/W access to field
@@ -42,8 +42,8 @@ class SimpleAxiRegs(Unit):
         propagateClkRstn(self)
         self.conv.bus(self.axi, fit=True)
 
-        reg0 = self._reg("reg0", Bits(32), def_val=0)
-        reg1 = self._reg("reg1", Bits(32), def_val=1)
+        reg0 = self._reg("reg0", HBits(32), def_val=0)
+        reg1 = self._reg("reg1", HBits(32), def_val=1)
 
         conv = self.conv
 
@@ -58,6 +58,7 @@ class SimpleAxiRegs(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = SimpleAxiRegs()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = SimpleAxiRegs()
+    print(to_rtl_str(m))

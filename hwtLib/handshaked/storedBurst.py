@@ -5,38 +5,39 @@ import math
 from typing import Optional
 
 from hwt.code import If, Switch
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.bits import HBits
+from hwt.hwParam import HwParam
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
-class HandshakedStoredBurst(Unit):
+class HandshakedStoredBurst(HwModule):
     """
     This units send data stored in property DATA over axi-stream interface
 
     .. hwt-autodoc::
     """
-    def __init__(self, intfCls=Handshaked, hdl_name_override:Optional[str]=None):
-        self.intfCls = intfCls
+    def __init__(self, hwIOCls=HwIODataRdVld, hdl_name_override:Optional[str]=None):
+        self.hwIOCls = hwIOCls
         super(HandshakedStoredBurst, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
-        self.intfCls._config(self)
-        self.INTF_CLS = Param(self.intfCls)
-        self.REPEAT = Param(False)
-        self.DATA = Param(tuple(ord(c) for c in "Hello world"))
+        self.hwIOCls._config(self)
+        self.HWIO_CLS = HwParam(self.hwIOCls)
+        self.REPEAT = HwParam(False)
+        self.DATA = HwParam(tuple(ord(c) for c in "Hello world"))
 
     def dataRd(self):
         return self.dataOut.rd
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataOut = self.INTF_CLS()._m()
+        with self._hwParamsShared():
+            self.dataOut = self.HWIO_CLS()._m()
 
-    def nextWordIndexLogic(self, wordIndex):
+    def nextWordIndexLogic(self, wordIndex: RtlSignal):
         if self.REPEAT:
             return If(wordIndex < len(self.DATA),
                        wordIndex(wordIndex + 1)
@@ -48,8 +49,8 @@ class HandshakedStoredBurst(Unit):
                        wordIndex(wordIndex + 1)
                    )
 
-    def set_data(self, intf, d):
-        return [intf.data(d), ]
+    def set_data(self, hwIO: HwIODataRdVld, d):
+        return [hwIO.data(d), ]
 
     def _impl(self):
         self.DATA_WIDTH = int(self.DATA_WIDTH)
@@ -57,7 +58,7 @@ class HandshakedStoredBurst(Unit):
         DATA_LEN = len(self.DATA)
 
         wordIndex_w = int(math.log2(DATA_LEN) + 1)
-        wordIndex = self._reg("wordIndex", Bits(wordIndex_w), def_val=0)
+        wordIndex = self._reg("wordIndex", HBits(wordIndex_w), def_val=0)
 
         def set_data(d):
             return self.set_data(dout, d)
@@ -79,5 +80,5 @@ class HandshakedStoredBurst(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(HandshakedStoredBurst()))

@@ -2,33 +2,32 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VldSynced
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIODataVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
-class UartRx(Unit):
+class UartRx(HwModule):
     """
     UART Rx channel controller
 
     .. hwt-autodoc::
     """
     def _config(self):
-        self.FREQ = Param(int(100e6))
-        self.BAUD = Param(115200)
-        self.OVERSAMPLING = Param(16)
+        self.FREQ = HwParam(int(100e6))
+        self.BAUD = HwParam(115200)
+        self.OVERSAMPLING = HwParam(16)
 
     def _declr(self):
         addClkRstn(self)
 
-        self.dataOut = VldSynced()._m()
+        self.dataOut = HwIODataVld()._m()
         self.dataOut.DATA_WIDTH = 8
 
-        self.rxd = Signal()
+        self.rxd = HwIOSignal()
 
     def _impl(self):
         START_BIT = 0
@@ -46,7 +45,7 @@ class UartRx(Unit):
 
         en = self._reg("en", def_val=0)
         first = self._reg("first", def_val=1)
-        RxD_data = self._reg("RxD_data", Bits(1 + 8))
+        RxD_data = self._reg("RxD_data", HBits(1 + 8))
         startBitWasNotStartbit = self._sig("startBitWasNotStartbit")
         # it can happen that there is just glitch on wire and bit was not startbit only begin was resolved wrong
         sampleTick = clkBuilder.timer(("sampleTick", self.FREQ // self.BAUD // self.OVERSAMPLING),
@@ -87,5 +86,5 @@ class UartRx(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(UartRx()))

@@ -5,13 +5,13 @@ import unittest
 
 from pyMathBitPrecise.bit_utils import mask
 
-from hwt.hdl.operatorDefs import downtoFn, toFn, AllOps
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.operatorDefs import downtoFn, toFn, HwtOps
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import INT, STR, BOOL
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.types.ctypes import uint8_t
-from hwtLib.tests.types.hvalue_test import hBool, hBit, hInt, vec
+from hwtLib.tests.types.hConst_test import hBool, hBit, hInt, vec
 
 n = RtlNetlist()
 s0 = n.sig("s0", BOOL)
@@ -53,13 +53,30 @@ xorTable = [(None, None, None),
             (1, s0, ~s0),
             (0, s0, s0),
             ]
+eqTable = [
+    (None, None, None),
+    (None, 0, None),
+    (None, 1, None),
+    (0, None, None),
+    (0, 0, 1),
+    (0, 1, 0),
+    (1, 1, 1),
+    (s0, 1, s0._eq(1)),
+    (s0, 0, s0._eq(0)),
+    (1, s0, hBit(1)._eq(s0)),
+    (0, s0, hBit(0)._eq(s0)),
+]
 
 bitvals = {
     1: hBit(1),
     0: hBit(0),
     None: hBit(None),
     s0: s1,
-    ~s0:~s1
+    ~s0:~s1,
+    hBit(1)._eq(s0): hBit(1)._eq(s1),
+    hBit(0)._eq(s0): hBit(0)._eq(s1),
+    s0._eq(1): s1._eq(1),
+    s0._eq(0): s1._eq(0)
 }
 
 boolvals = {
@@ -71,21 +88,21 @@ boolvals = {
 }
 
 COMMON_OPS = [
-            AllOps.DIV,
-            AllOps.ADD,
-            AllOps.SUB,
-            AllOps.MUL,
-            AllOps.XOR,
-            AllOps.AND,
-            AllOps.OR,
-            AllOps.CONCAT,
-            AllOps.EQ,
-            AllOps.NE,
-            AllOps.GT,
-            AllOps.GE,
-            AllOps.LT,
-            AllOps.LE,
-            AllOps.INDEX,
+            HwtOps.DIV,
+            HwtOps.ADD,
+            HwtOps.SUB,
+            HwtOps.MUL,
+            HwtOps.XOR,
+            HwtOps.AND,
+            HwtOps.OR,
+            HwtOps.CONCAT,
+            HwtOps.EQ,
+            HwtOps.NE,
+            HwtOps.GT,
+            HwtOps.GE,
+            HwtOps.LT,
+            HwtOps.LE,
+            HwtOps.INDEX,
         ]
 
 
@@ -154,6 +171,22 @@ class OperatorTC(unittest.TestCase):
                                  "%r ^ %r  vld_mask=%r (should be %r)"
                                  % (a, b, res.vld_mask, expectedRes.vld_mask))
 
+    def _test_Eq(self, vals):
+        for a, b, expected in eqTable:
+            res = vals[a]._eq(vals[b])
+            expectedRes = vals[expected]
+
+            if isinstance(expectedRes, RtlSignalBase):
+                self.assertIs(res, expectedRes, (a, b))
+            else:
+                if expectedRes.vld_mask:
+                    self.assertEqual(expectedRes.val, res.val,
+                                     "%r._eq(%r)  val=%r (should be %r)"
+                                     % (a, b, res.val, expectedRes.val))
+                self.assertEqual(expectedRes.vld_mask, res.vld_mask,
+                                 "%r._eq(%r)  vld_mask=%r (should be %r)"
+                                 % (a, b, res.vld_mask, expectedRes.vld_mask))
+
     def test_BoolAnd(self):
         self._test_And(boolvals)
 
@@ -172,9 +205,12 @@ class OperatorTC(unittest.TestCase):
     def test_BitXor(self):
         self._test_Xor(bitvals)
 
+    def test_BitEq(self):
+        self._test_Eq(bitvals)
+
     def test_notNotIsOrigSig(self):
         a = self.n.sig("a")
-        self.assertIs(a, ~~a)
+        self.assertIs(a, ~ ~a)
 
     def test_downto(self):
         a = self.n.sig('a', dtype=INT)
@@ -268,27 +304,27 @@ class OperatorTC(unittest.TestCase):
 
     def test_bits_sig_slice_on_slice(self):
         n = RtlNetlist()
-        s = n.sig("s", Bits(16))
+        s = n.sig("s", HBits(16))
         self.assertIs(s[10:0][2:0], s[2:0])
         self.assertIs(s[10:0][4:1], s[4:1])
         self.assertIs(s[12:5][4:1], s[9:6])
 
     def test_bits_sig_slice_on_slice_of_slice(self):
         n = RtlNetlist()
-        s = n.sig("s", Bits(16))
+        s = n.sig("s", HBits(16))
         self.assertIs(s[10:0][7:0][2:0], s[2:0])
         self.assertIs(s[10:0][7:0][4:1], s[4:1])
         self.assertIs(s[12:5][7:1][4:1], s[10:7])
 
     def test_bits_mul(self):
         n = RtlNetlist()
-        s = n.sig("s", Bits(16))
+        s = n.sig("s", HBits(16))
         s * 10
         s * s
         self.assertEqual(int(INT.from_py(10) * INT.from_py(11)), 10 * 11)
 
     def test_array_eq_neq(self):
-        t = Bits(8)[5]
+        t = HBits(8)[5]
         v0 = t.from_py(range(5))
         v1 = t.from_py({0: 10, 1: 2})
         v2 = t.from_py([1, 2, 3, 4, 5])
@@ -323,7 +359,7 @@ class OperatorTC(unittest.TestCase):
     def test_bit2BoolConversion(self):
         e = self.n.sig("e")
         cond = e._auto_cast(BOOL)
-        self.assertTrue(cond.origin.operator == AllOps.EQ)
+        self.assertTrue(cond.origin.operator == HwtOps.EQ)
         self.assertEqual(cond.origin.operands[0], e, 1)
 
     def test_NotAnd(self):
@@ -332,15 +368,15 @@ class OperatorTC(unittest.TestCase):
         b = n.sig("b")
         aAndB = a & b
         notAAndB = ~aAndB
-        self.assertEqual(notAAndB.origin.operator, AllOps.NOT)
+        self.assertEqual(notAAndB.origin.operator, HwtOps.NOT)
         cond = notAAndB._auto_cast(BOOL)
 
-        self.assertEqual(cond.origin.operator, AllOps.EQ)
+        self.assertEqual(cond.origin.operator, HwtOps.EQ)
         self.assertIs(cond.origin.operands[0], aAndB)
         self.assertEqual(int(cond.origin.operands[1]), 0)
 
         andOp = notAAndB.origin.operands[0].origin
-        self.assertEqual(andOp.operator, AllOps.AND)
+        self.assertEqual(andOp.operator, HwtOps.AND)
 
         op0 = andOp.operands[0]
         op1 = andOp.operands[1]
@@ -354,25 +390,24 @@ class OperatorTC(unittest.TestCase):
         self.assertEqual(a & a, a)
         self.assertEqual(int(a & ~a), 0)
         self.assertEqual(int(~a & a), 0)
-        
+
         self.assertEqual(a | a, a)
         self.assertEqual(int(a | ~a), 1)
         self.assertEqual(int(~a | a), 1)
-        
+
         self.assertEqual(int(a ^ a), 0)
         self.assertEqual(int(a ^ ~a), 1)
         self.assertEqual(int(~a ^ a), 1)
-        
-        
+
     def test_BitsSignalTypeErrors(self):
         n = self.n
         a = n.sig("a")
         for op in COMMON_OPS + [
-                    AllOps.POW,
-                    AllOps.MOD,
-                    AllOps.DOWNTO,
-                    AllOps.TO,
-                    AllOps.CALL,
+                    HwtOps.POW,
+                    HwtOps.MOD,
+                    HwtOps.DOWNTO,
+                    HwtOps.TO,
+                    HwtOps.CALL,
                 ]:
             with self.assertRaises((TypeError, ValueError), msg=op):
                 op._evalFn(a, "xyz")

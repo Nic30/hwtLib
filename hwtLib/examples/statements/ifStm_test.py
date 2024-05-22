@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.operatorDefs import AllOps
+from hwt.hdl.operatorDefs import HwtOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
-from hwt.simulator.utils import valuesToInts
-from hwt.synthesizer.utils import synthesised
+from hwt.simulator.utils import HConstSequenceToInts, agentDataToInts
+from hwt.synth import synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.statements.ifStm import SimpleIfStatement, \
     SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c, \
@@ -17,32 +17,25 @@ from hwtLib.examples.statements.ifStm import SimpleIfStatement, \
 from hwtSimApi.constants import CLK_PERIOD
 
 
-def agInts(interface):
-    """
-    Convert all values which has agent collected in time >=0 to integer array.
-    Invalid value will be None.
-    """
-    return valuesToInts(interface._ag.data)
-
 
 class IfStmTC(BaseSerializationTC):
     __FILE__ = __file__
 
     def test_SimpleIfStatement(self):
-        u = SimpleIfStatement()
-        self.compileSimAndStart(u)
+        dut = SimpleIfStatement()
+        self.compileSimAndStart(dut)
 
-        u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 0, 0])
-        u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0])
-        u.c._ag.data.extend([0, 0, 0, 0, 1, 0, 0, 0])
+        dut.a._ag.data.extend([1, 1, 1, 0, 0, 0, 0, 0])
+        dut.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0])
+        dut.c._ag.data.extend([0, 0, 0, 0, 1, 0, 0, 0])
 
         self.runSim(8 * CLK_PERIOD)
 
-        self.assertSequenceEqual([0, 1, None, 0, 1, None, 0, 0], agInts(u.d))
+        self.assertSequenceEqual(agentDataToInts(dut.d), [0, 1, None, 0, 1, None, 0, 0])
 
     def test_SimpleIfStatement2(self):
-        u = SimpleIfStatement2()
-        self.compileSimAndStart(u)
+        dut = SimpleIfStatement2()
+        self.compileSimAndStart(dut)
 
         # If(a,
         #     If(b & c,
@@ -53,18 +46,18 @@ class IfStmTC(BaseSerializationTC):
         # )
         # d(r)
 
-        u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
-        u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
-        u.c._ag.data.extend([0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
+        dut.a._ag.data.extend([1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
+        dut.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
+        dut.c._ag.data.extend([0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
         expected_dd = [      0, 0, 0, 0, 0, 0, 0, 1, 1, 0]
 
         self.runSim(11 * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.d._ag.data, expected_dd)
+        self.assertValSequenceEqual(dut.d._ag.data, expected_dd)
 
     def test_SimpleIfStatement2b(self):
-        u = SimpleIfStatement2b()
-        self.compileSimAndStart(u)
+        dut = SimpleIfStatement2b()
+        self.compileSimAndStart(dut)
         # If(a & b,
         #     If(c,
         #        r(1),
@@ -74,18 +67,18 @@ class IfStmTC(BaseSerializationTC):
         # )
         # d(r)
 
-        u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
-        u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
-        u.c._ag.data.extend([0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
+        dut.a._ag.data.extend([1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
+        dut.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
+        dut.c._ag.data.extend([0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
         expected_dd = [   0, 0, 0, None, None, 0, 0, 1, 1, 0]
 
         self.runSim(11 * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.d._ag.data, expected_dd)
+        self.assertValSequenceEqual(dut.d._ag.data, expected_dd)
 
     def test_SimpleIfStatement2c(self):
-        u = SimpleIfStatement2c()
-        self.compileSimAndStart(u)
+        dut = SimpleIfStatement2c()
+        self.compileSimAndStart(dut)
         # If(a & b,
         #     If(c,
         #        r(0),
@@ -97,53 +90,53 @@ class IfStmTC(BaseSerializationTC):
         # )
         # d(r)
 
-        u.a._ag.data.extend([0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
-        u.b._ag.data.extend([0, 0, 1, None, 0, 1, None, 1, 0, 0, 0])
-        u.c._ag.data.extend([1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
+        dut.a._ag.data.extend([0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
+        dut.b._ag.data.extend([0, 0, 1, None, 0, 1, None, 1, 0, 0, 0])
+        dut.c._ag.data.extend([1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
         expected_dd = [0, 1, 2, 2, None, 2, 1, 2, 0, 2]
 
         self.runSim(11 * CLK_PERIOD)
-        self.assertValSequenceEqual(u.d._ag.data, expected_dd)
+        self.assertValSequenceEqual(dut.d._ag.data, expected_dd)
 
     def test_resources_SimpleIfStatement2c(self):
-        u = SimpleIfStatement2c()
+        dut = SimpleIfStatement2c()
 
         expected = {
-            (AllOps.AND, 1): 1,
-            (AllOps.EQ, 1): 1,
+            (HwtOps.AND, 1): 1,
+            (HwtOps.EQ, 1): 1,
             (ResourceMUX, 2, 2): 1,
             (ResourceMUX, 2, 4): 1,
             ResourceFF: 2,
         }
 
         s = ResourceAnalyzer()
-        synthesised(u)
-        s.visit_Unit(u)
+        synthesised(dut)
+        s.visit_HwModule(dut)
         r = s.report()
         self.assertDictEqual(r, expected)
 
     def test_SimpleIfStatement3(self):
-        u = SimpleIfStatement3()
-        self.compileSimAndStart(u)
+        dut = SimpleIfStatement3()
+        self.compileSimAndStart(dut)
 
-        u.a._ag.data.extend([0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
-        u.b._ag.data.extend([0, 0, 1, None, 0, 1, None, 1, 0, 0, 0])
-        u.c._ag.data.extend([1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
+        dut.a._ag.data.extend([0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
+        dut.b._ag.data.extend([0, 0, 1, None, 0, 1, None, 1, 0, 0, 0])
+        dut.c._ag.data.extend([1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
         expected_dd = [0 for _ in range(11)]
 
         self.runSim(11 * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.d._ag.data, expected_dd)
+        self.assertValSequenceEqual(dut.d._ag.data, expected_dd)
 
     def test_resources_SimpleIfStatement3(self):
-        u = SimpleIfStatement3()
+        m = SimpleIfStatement3()
 
         expected = {
         }
 
         s = ResourceAnalyzer()
-        synthesised(u)
-        s.visit_Unit(u)
+        synthesised(m)
+        s.visit_HwModule(m)
         r = s.report()
         self.assertDictEqual(r, expected)
 

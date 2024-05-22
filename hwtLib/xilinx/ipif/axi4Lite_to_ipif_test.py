@@ -17,13 +17,13 @@ class Axi4Lite_to_IpifTC(SimTestCase):
         SimTestCase.tearDown(self)
 
     def mySetUp(self, read_latency=0, write_latency=0):
-        u = self.u = Axi4Lite_to_Ipif()
+        dut = self.dut = Axi4Lite_to_Ipif()
         DW = 32
-        u.DATA_WIDTH = DW
-        u.ADDR_WIDTH = 32
+        dut.DATA_WIDTH = DW
+        dut.ADDR_WIDTH = 32
         self.m = mask(DW // 8)
-        self.compileSimAndStart(u)
-        ipif = u.s._ag
+        self.compileSimAndStart(dut)
+        ipif = dut.s._ag
         ipif.READ_LATENCY = read_latency
         ipif.WRITE_LATENCY = write_latency
         SimTestCase.setUp(self)
@@ -34,11 +34,11 @@ class Axi4Lite_to_IpifTC(SimTestCase):
 
     def test_read(self, randomize_axi=False, read_latency=0):
         self.mySetUp(read_latency=read_latency)
-        axi = self.u.s
+        axi = self.dut.s
         if randomize_axi:
             self.randomize(axi)
 
-        ipif = self.u.m._ag
+        ipif = self.dut.m._ag
         MAGIC = 10
         ipif.mem[0] = MAGIC + 0
         ipif.mem[1] = MAGIC + 1
@@ -61,8 +61,8 @@ class Axi4Lite_to_IpifTC(SimTestCase):
 
     def test_write(self, randomize_axi=False, write_latency=0, data_delay=0):
         self.mySetUp(write_latency=write_latency)
-        axi = self.u.s
-        ipif = self.u.m
+        axi = self.dut.s
+        ipif = self.dut.m
         if randomize_axi:
             self.randomize(axi)
 
@@ -96,11 +96,11 @@ class Axi4Lite_to_IpifTC(SimTestCase):
                           data_delay=0):
         self.mySetUp(read_latency=read_latency,
                      write_latency=write_latency)
-        axi = self.u.s
+        axi = self.dut.s
         if randomize_axi:
             self.randomize(axi)
 
-        ipif = self.u.m._ag
+        ipif = self.dut.m._ag
         MAGIC_R = 10
         MAGIC_W = 100
 

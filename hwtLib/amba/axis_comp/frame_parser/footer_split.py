@@ -6,15 +6,15 @@ from typing import Tuple, List
 
 from hwt.code import If, SwitchLogic, Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit_range
 
 
@@ -87,7 +87,7 @@ from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit_range
 #        +------------------+----+----+----+
 #        | last    (reg[0]) | d  | d  | f  |
 #        +------------------+----+----+----+
-class AxiS_footerSplit(AxiSCompBase):
+class Axi4S_footerSplit(Axi4SCompBase):
     """
     Split a constant size footer and prefix data from a input frame.
 
@@ -97,7 +97,7 @@ class AxiS_footerSplit(AxiSCompBase):
 
         HStruct(
             (HStream(uint8_t, frame_len=(1, inf)), "dataIn[0]"),
-            (HStream(Bits(self.FOOTER_SIZE), , frame_len=1), "dataIn[1]"),
+            (HStream(HBits(self.FOOTER_SIZE), , frame_len=1), "dataIn[1]"),
         )
 
     Functionality:
@@ -112,27 +112,27 @@ class AxiS_footerSplit(AxiSCompBase):
         in to internal registers imediadetely as soon as there is some space.
         There is no inter-frame delay.
 
-    .. hwt-autodoc:: _example_AxiS_footerSplit
+    .. hwt-autodoc:: _example_Axi4S_footerSplit
     """
 
     def _config(self):
-        AxiSCompBase._config(self)
-        self.FOOTER_WIDTH = Param(32)
+        Axi4SCompBase._config(self)
+        self.FOOTER_WIDTH = HwParam(32)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = self.intfCls()
+        with self._hwParamsShared():
+            self.dataIn = self.hwIOCls()
             self.dataOut = HObjList([
-                self.intfCls()._m(),
-                self.intfCls()._m()
+                self.hwIOCls()._m(),
+                self.hwIOCls()._m()
             ])
 
     def generate_regs(self, LOOK_AHEAD: int) -> List[Tuple[RtlSignal, RtlSignal,
                                                            RtlSignal, RtlSignal,
                                                            RtlSignal]]:
         din = self.dataIn
-        mask_t = Bits(self.DATA_WIDTH // 8, force_vector=True)
+        mask_t = HBits(self.DATA_WIDTH // 8, force_vector=True)
         data_fieds = [
             (din.data._dtype, "data"),
             # flag for end of input frame
@@ -261,7 +261,7 @@ class AxiS_footerSplit(AxiSCompBase):
         if FOOTER_WIDTH % 8 != 0:
             raise NotImplementedError()
         if not (self.USE_KEEP or self.USE_STRB):
-            assert D_W == 8, ("AxiStream is configured not to use KEEP/STRB"
+            assert D_W == 8, ("Axi4Stream is configured not to use KEEP/STRB"
                               " but is required to resolve frame end", D_W)
         dout = self.dataOut
         regs = self.generate_regs(LOOK_AHEAD)
@@ -361,15 +361,15 @@ class AxiS_footerSplit(AxiSCompBase):
                )
 
 
-def _example_AxiS_footerSplit():
-    u = AxiS_footerSplit()
-    u.DATA_WIDTH = 8
-    u.FOOTER_WIDTH = 8
-    u.USE_STRB = True
-    return u
+def _example_Axi4S_footerSplit():
+    m = Axi4S_footerSplit()
+    m.DATA_WIDTH = 8
+    m.FOOTER_WIDTH = 8
+    m.USE_STRB = True
+    return m
 
 
 if __name__ == '__main__':
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiS_footerSplit()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4S_footerSplit()
+    print(to_rtl_str(m))

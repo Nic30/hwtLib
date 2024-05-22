@@ -1,32 +1,32 @@
 from math import ceil
 
 from hwt.code import FsmBuilder, Concat, If, In
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import VectSignal, HandshakeSync, \
-    Handshaked
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.std import HwIOVectSignal, HwIORdVldSync, \
+    HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.peripheral.mdio.intf import Mdio
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class MdioAddr(Interface):
+class MdioAddr(HwIO):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.phy = VectSignal(5)
-        self.reg = VectSignal(5)
+        self.phy = HwIOVectSignal(5)
+        self.reg = HwIOVectSignal(5)
 
 
-class MdioReq(HandshakeSync):
+class MdioReq(HwIORdVldSync):
     """
     MDIO transaction request interface
 
@@ -34,21 +34,21 @@ class MdioReq(HandshakeSync):
     """
 
     def _declr(self):
-        self.opcode = VectSignal(Mdio.OP_W)  # R/W
+        self.opcode = HwIOVectSignal(Mdio.OP_W)  # R/W
         self.addr = MdioAddr()
-        self.wdata = VectSignal(Mdio.D_W)
-        HandshakeSync._declr(self)
+        self.wdata = HwIOVectSignal(Mdio.D_W)
+        HwIORdVldSync._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = MdioReqAgent(sim, self)
 
 
-class MdioReqAgent(HandshakedAgent):
+class MdioReqAgent(HwIODataRdVldAgent):
     """
     Simulation agent for :class:`.MdioReq` interface
     """
     def set_data(self, data):
-        i = self.intf
+        i = self.hwIO
         if data is None:
             i.opcode.write(None)
             i.addr.phy.write(None)
@@ -62,7 +62,7 @@ class MdioReqAgent(HandshakedAgent):
             i.wdata.write(wdata)
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         return (i.opcode.read(),
                 (i.addr.phy.read(), i.addr.reg.read()),
                 i.wdata.read())
@@ -77,7 +77,7 @@ def shift_in_msb_first(reg, sig_in):
     return reg(Concat(reg[w-w_in:], sig_in))
 
 
-class MdioMaster(Unit):
+class MdioMaster(HwModule):
     """
     Master for MDIO interface.
 
@@ -93,13 +93,13 @@ class MdioMaster(Unit):
 
 
     def _config(self):
-        self.FREQ = Param(int(100e6))
-        self.MDIO_FREQ = Param(int(2.5e6))
+        self.FREQ = HwParam(int(100e6))
+        self.MDIO_FREQ = HwParam(int(2.5e6))
 
     def _declr(self):
         addClkRstn(self)
         self.md = Mdio()._m()
-        self.rdata = Handshaked()._m()
+        self.rdata = HwIODataRdVld()._m()
         self.rdata.DATA_WIDTH = Mdio.D_W
         self.req = MdioReq()
 
@@ -119,7 +119,7 @@ class MdioMaster(Unit):
 
         CNTR_MAX = PRE_W + ADDR_BLOCK_W + TA_W + Mdio.D_W - 1
         timer = self._reg("packet_sequence_timer",
-                          dtype=Bits(log2ceil(CNTR_MAX)),
+                          dtype=HBits(log2ceil(CNTR_MAX)),
                           def_val=0, rst=self.rst_n & rst_n)
         If(mdio_clk_falling,
            timer(timer + 1)
@@ -170,7 +170,7 @@ class MdioMaster(Unit):
         # TX logic
         md = self.md
         TX_W = md.ST_W + md.OP_W + md.PA_W + md.RA_W + md.TA_W + md.D_W
-        tx_reg = self._reg("tx_reg", Bits(TX_W))
+        tx_reg = self._reg("tx_reg", HBits(TX_W))
         If(idle & req.vld,
             tx_reg(Concat(Mdio.ST, req.opcode, req.addr.phy,
                           req.addr.reg, Mdio.TA, req.wdata))
@@ -187,7 +187,7 @@ class MdioMaster(Unit):
         )
 
         # RX logic
-        rx_reg = self._reg("rx_reg", Bits(md.D_W))
+        rx_reg = self._reg("rx_reg", HBits(md.D_W))
         If(st._eq(st_t.data) & is_rx & mdio_clk_rising,
            shift_in_msb_first(rx_reg, self.md.io.i)
         )
@@ -202,6 +202,7 @@ class MdioMaster(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = MdioMaster()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = MdioMaster()
+    print(to_rtl_str(m))

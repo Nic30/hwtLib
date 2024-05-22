@@ -5,13 +5,13 @@ from itertools import chain
 from math import inf
 import unittest
 
-from hwt.hdl.constants import Time
+from hwt.constants import Time
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
-from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
+from hwtLib.amba.axi4s import axi4s_send_bytes, axi4s_recieve_bytes
+from hwtLib.amba.axis_comp.frame_deparser import Axi4S_frameDeparser
 from hwtLib.amba.axis_comp.frame_deparser.test_types import s1field, \
     s1field_composit0, s3field, s2Pading, unionOfStructs, unionSimple, \
     structStream64, structStream64before, structStream64after, struct2xStream64, \
@@ -22,7 +22,7 @@ from hwtSimApi.triggers import Timer
 from pyMathBitPrecise.bit_utils import mask
 
 
-class AxiS_frameDeparser_TC(SimTestCase):
+class Axi4S_frameDeparser_TC(SimTestCase):
 
     def tearDown(self):
         self.rmSim()
@@ -53,16 +53,16 @@ class AxiS_frameDeparser_TC(SimTestCase):
             tmpl = None
             frames = None
 
-        u = self.u = AxiS_frameDeparser(structT, tmpl, frames)
-        u.DATA_WIDTH = self.DATA_WIDTH = DATA_WIDTH
-        u.USE_STRB = use_strb
-        u.USE_KEEP = use_keep
+        dut = self.dut = Axi4S_frameDeparser(structT, tmpl, frames)
+        dut.DATA_WIDTH = self.DATA_WIDTH = DATA_WIDTH
+        dut.USE_STRB = use_strb
+        dut.USE_KEEP = use_keep
         self.m = mask(self.DATA_WIDTH // 8)
 
-        self.compileSimAndStart(self.u)
+        self.compileSimAndStart(self.dut)
         if randomized:
-            self.randomize(u.dataOut)
-            for intf in u.dataIn._fieldsToInterfaces.values():
+            self.randomize(dut.dataOut)
+            for intf in dut.dataIn._fieldsToHwIOs.values():
                 self.randomize(intf)
 
     def formatStream(self, data):
@@ -72,20 +72,20 @@ class AxiS_frameDeparser_TC(SimTestCase):
 
     def test_nop1Field(self, randomized=False):
         self.instantiate(s1field, randomized=randomized)
-        u = self.u
+        dut = self.dut
         t = 100
         if randomized:
             t *= 2
 
         self.runSim(t * Time.ns)
 
-        self.assertEmpty(u.dataOut._ag.data)
+        self.assertEmpty(dut.dataOut._ag.data)
 
     def test_1Field(self, randomized=False):
         self.instantiate(s1field, randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 468
-        u.dataIn.item0._ag.data.append(MAGIC)
+        dut.dataIn.item0._ag.data.append(MAGIC)
 
         t = 100
         if randomized:
@@ -93,32 +93,32 @@ class AxiS_frameDeparser_TC(SimTestCase):
 
         self.runSim(t * Time.ns)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(MAGIC, self.m, 1)])
 
     def test_1Field_halfvalid(self, randomized=False):
         self.instantiate(s1field, DATA_WIDTH=128,
                                    randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 3
-        u.dataIn.item0._ag.data.append(MAGIC)
+        dut.dataIn.item0._ag.data.append(MAGIC)
 
         t = 100
         if randomized:
             t *= 2
 
         self.runSim(t * Time.ns)
-        offset, f = axis_recieve_bytes(u.dataOut)
+        offset, f = axi4s_recieve_bytes(dut.dataOut)
         self.assertEqual(offset, 0)
         self.assertSequenceEqual(f, [MAGIC, 0, 0, 0,
                                      0, 0, 0, 0])
 
     def test_1Field_composit0(self, randomized=False):
         self.instantiate(s1field_composit0, randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 468
-        u.dataIn.item0._ag.data.append(MAGIC)
-        u.dataIn.item1._ag.data.append(MAGIC + 1)
+        dut.dataIn.item0._ag.data.append(MAGIC)
+        dut.dataIn.item1._ag.data.append(MAGIC + 1)
 
         t = 100
         if randomized:
@@ -126,23 +126,23 @@ class AxiS_frameDeparser_TC(SimTestCase):
 
         self.runSim(t * Time.ns)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(((MAGIC + 1) << 32) | MAGIC, self.m, 1)])
 
     def test_3Fields(self, randomized=False):
         self.instantiate(s3field, randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 468
-        u.dataIn.item0._ag.data.append(MAGIC)
-        u.dataIn.item1._ag.data.append(MAGIC + 1)
-        u.dataIn.item2._ag.data.append(MAGIC + 2)
+        dut.dataIn.item0._ag.data.append(MAGIC)
+        dut.dataIn.item1._ag.data.append(MAGIC + 1)
+        dut.dataIn.item2._ag.data.append(MAGIC + 2)
         t = 200
         if randomized:
             t *= 3
         self.runSim(t * Time.ns)
 
         m = self.m
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(MAGIC, m, 0),
                                      (MAGIC + 1, m, 0),
                                      (MAGIC + 2, m, 1),
@@ -161,59 +161,59 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.test_1Field_composit0(randomized=True)
 
     def test_3Fields_outOccupiedAtStart(self):
-        u = self.u = AxiS_frameDeparser(s3field)
-        u.USE_STRB = u.USE_KEEP = True
-        u.DATA_WIDTH = self.DATA_WIDTH = 64
+        dut = self.dut = Axi4S_frameDeparser(s3field)
+        dut.USE_STRB = dut.USE_KEEP = True
+        dut.DATA_WIDTH = self.DATA_WIDTH = 64
         m = mask(self.DATA_WIDTH // 8)
 
-        self.compileSimAndStart(self.u)
+        self.compileSimAndStart(self.dut)
 
         def enDataOut():
-            u.dataOut._ag.enable = False
+            dut.dataOut._ag.enable = False
             yield Timer(50 * Time.ns)
-            u.dataOut._ag.enable = True
+            dut.dataOut._ag.enable = True
 
         self.procs.append(enDataOut())
 
         MAGIC = 468
-        u.dataIn.item0._ag.data.append(MAGIC)
-        u.dataIn.item1._ag.data.append(MAGIC + 1)
-        u.dataIn.item2._ag.data.append(MAGIC + 2)
+        dut.dataIn.item0._ag.data.append(MAGIC)
+        dut.dataIn.item1._ag.data.append(MAGIC + 1)
+        dut.dataIn.item2._ag.data.append(MAGIC + 2)
 
         t = 200
         self.runSim(t * Time.ns)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(MAGIC, m, m, 0),
                                      (MAGIC + 1, m, m, 0),
                                      (MAGIC + 2, m, m, 1),
                                      ])
 
     def test_s2Pading_normal(self):
-        u = self.u = AxiS_frameDeparser(s2Pading)
+        self.dut = dut = Axi4S_frameDeparser(s2Pading)
         self.DATA_WIDTH = 64
-        u.USE_STRB = u.USE_KEEP = True
-        u.DATA_WIDTH = self.DATA_WIDTH
+        dut.USE_STRB = dut.USE_KEEP = True
+        dut.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
-        self.compileSimAndStart(self.u)
+        self.compileSimAndStart(self.dut)
 
         def enDataOut():
-            u.dataOut._ag.enable = False
+            dut.dataOut._ag.enable = False
             yield Timer(50 * Time.ns)
-            u.dataOut._ag.enable = True
+            dut.dataOut._ag.enable = True
 
         self.procs.append(enDataOut())
 
         MAGIC = 468
-        u.dataIn.item0_0._ag.data.append(MAGIC)
-        u.dataIn.item0_1._ag.data.append(MAGIC + 1)
-        u.dataIn.item1_0._ag.data.append(MAGIC + 2)
-        u.dataIn.item1_1._ag.data.append(MAGIC + 3)
+        dut.dataIn.item0_0._ag.data.append(MAGIC)
+        dut.dataIn.item0_1._ag.data.append(MAGIC + 1)
+        dut.dataIn.item1_0._ag.data.append(MAGIC + 2)
+        dut.dataIn.item1_1._ag.data.append(MAGIC + 3)
 
         t = 200
         self.runSim(t * Time.ns)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(MAGIC, m, m, 0),
                                      (MAGIC + 1, m, m, 0),
                                      (None, 0, m, 0),
@@ -232,29 +232,29 @@ class AxiS_frameDeparser_TC(SimTestCase):
                                      maxPaddingWords=0,
                                      trimPaddingWordsOnStart=True,
                                      trimPaddingWordsOnEnd=True))
-        u = self.u = AxiS_frameDeparser(structT,
+        self.dut = dut = Axi4S_frameDeparser(structT,
                                      tmpl, frames)
-        u.DATA_WIDTH = self.DATA_WIDTH
+        dut.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
-        self.compileSimAndStart(self.u)
+        self.compileSimAndStart(self.dut)
 
         def enDataOut():
-            u.dataOut._ag.enable = False
+            dut.dataOut._ag.enable = False
             yield Timer(50 * Time.ns)
-            u.dataOut._ag.enable = True
+            dut.dataOut._ag.enable = True
 
         self.procs.append(enDataOut())
 
         MAGIC = 468
-        u.dataIn.item0_0._ag.data.append(MAGIC)
-        u.dataIn.item0_1._ag.data.append(MAGIC + 1)
-        u.dataIn.item1_0._ag.data.append(MAGIC + 2)
-        u.dataIn.item1_1._ag.data.append(MAGIC + 3)
+        dut.dataIn.item0_0._ag.data.append(MAGIC)
+        dut.dataIn.item0_1._ag.data.append(MAGIC + 1)
+        dut.dataIn.item1_0._ag.data.append(MAGIC + 2)
+        dut.dataIn.item1_1._ag.data.append(MAGIC + 3)
 
         t = 200
         self.runSim(t * Time.ns)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(MAGIC, m, 0),
                                      (MAGIC + 1, m, 1),
                                      (MAGIC + 2, m, 0),
@@ -263,33 +263,33 @@ class AxiS_frameDeparser_TC(SimTestCase):
 
     def test_unionOfStructs_nop(self, randomized=False):
         self.instantiate(unionOfStructs, randomized=randomized)
-        u = self.u
+        dut = self.dut
         t = 60
         if randomized:
             t *= 3
         self.runSim(t * Time.ns)
 
-        self.assertEmpty(u.dataOut._ag.data)
+        self.assertEmpty(dut.dataOut._ag.data)
 
     def test_r_unionOfStructs_nop(self):
         self.test_unionOfStructs_nop(randomized=True)
 
     def test_unionOfStructs_frameA(self, randomized=False):
         self.instantiate(unionOfStructs, randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 498
         t = 120
         if randomized:
             t *= 8
 
-        u.dataIn.frameA.itemA0._ag.data.extend([MAGIC + 1, MAGIC + 3])
-        u.dataIn.frameA.itemA1._ag.data.extend([MAGIC + 2, MAGIC + 4])
-        u.dataIn._select._ag.data.extend([0, 0])
+        dut.dataIn.frameA.itemA0._ag.data.extend([MAGIC + 1, MAGIC + 3])
+        dut.dataIn.frameA.itemA1._ag.data.extend([MAGIC + 2, MAGIC + 4])
+        dut.dataIn._select._ag.data.extend([0, 0])
 
         self.runSim(t * Time.ns)
 
         m = self.m
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(MAGIC + 1, m, 0),
                                      (MAGIC + 2, m, 1),
                                      (MAGIC + 3, m, 0),
@@ -303,20 +303,20 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.instantiate(unionSimple,
                          DATA_WIDTH=32,
                          randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 498
         t = 50
         if randomized:
             t *= 6
 
-        u.dataIn.a._ag.data.extend([MAGIC + 1, MAGIC + 3])
-        u.dataIn.b._ag.data.extend([MAGIC + 2])
-        u.dataIn._select._ag.data.extend([0, 1, 0])
+        dut.dataIn.a._ag.data.extend([MAGIC + 1, MAGIC + 3])
+        dut.dataIn.b._ag.data.extend([MAGIC + 2])
+        dut.dataIn._select._ag.data.extend([0, 1, 0])
 
         self.runSim(t * Time.ns)
 
         m = self.m
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(MAGIC + 1, m, 1),
                                      (MAGIC + 2, m, 1),
                                      (MAGIC + 3, m, 1),
@@ -329,13 +329,13 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.instantiate(structStream64,
                          DATA_WIDTH=64,
                          randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 498
         t = 100
         if randomized:
             t *= 3
 
-        u.dataIn.streamIn._ag.data.extend(
+        dut.dataIn.streamIn._ag.data.extend(
             self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
             self.formatStream([MAGIC + 4, MAGIC + 5, MAGIC + 6])
         )
@@ -343,7 +343,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.runSim(t * Time.ns)
 
         m = self.m
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(MAGIC + 1, m, 0),
                                      (MAGIC + 2, m, 0),
                                      (MAGIC + 3, m, 1),
@@ -359,22 +359,22 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.instantiate(structStream64before,
                          DATA_WIDTH=64,
                          randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 498
         t = 120
         if randomized:
             t *= 3
 
-        u.dataIn.streamIn._ag.data.extend(
+        dut.dataIn.streamIn._ag.data.extend(
             self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
             self.formatStream([MAGIC + 5, MAGIC + 6, MAGIC + 7])
         )
-        u.dataIn.item0._ag.data.extend([MAGIC + 4, MAGIC + 8])
+        dut.dataIn.item0._ag.data.extend([MAGIC + 4, MAGIC + 8])
 
         self.runSim(t * Time.ns)
 
         m = self.m
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [(MAGIC + 1, m, 0),
                                      (MAGIC + 2, m, 0),
                                      (MAGIC + 3, m, 0),
@@ -392,22 +392,22 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.instantiate(structStream64after,
                          DATA_WIDTH=64,
                          randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 498
         t = 100
         if randomized:
             t *= 3
 
-        u.dataIn.streamIn._ag.data.extend(
+        dut.dataIn.streamIn._ag.data.extend(
             self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
             self.formatStream([MAGIC + 5, MAGIC + 6, MAGIC + 7])
         )
-        u.dataIn.item0._ag.data.extend([MAGIC + 4, MAGIC + 8])
+        dut.dataIn.item0._ag.data.extend([MAGIC + 4, MAGIC + 8])
 
         self.runSim(t * Time.ns)
 
         m = self.m
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [
                                      (MAGIC + 4, m, 0),
                                      (MAGIC + 1, m, 0),
@@ -426,7 +426,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.instantiate(struct2xStream64,
                          DATA_WIDTH=64,
                          randomized=randomized)
-        u = self.u
+        dut = self.dut
         MAGIC = 400
         t = 10 + (2 * N * 3)
         if randomized:
@@ -434,10 +434,10 @@ class AxiS_frameDeparser_TC(SimTestCase):
 
         for i in range(N):
             o = MAGIC + i * 6
-            u.dataIn.streamIn0._ag.data.extend(
+            dut.dataIn.streamIn0._ag.data.extend(
                 self.formatStream([o + 1, o + 2, o + 3])
             )
-            u.dataIn.streamIn1._ag.data.extend(
+            dut.dataIn.streamIn1._ag.data.extend(
                 self.formatStream([o + 4, o + 5, o + 6])
             )
 
@@ -449,7 +449,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
             for i in range(1, N * 6 + 1)
         ]
         self.assertValSequenceEqual(
-            u.dataOut._ag.data, ref)
+            dut.dataOut._ag.data, ref)
 
     def test_r_struct2xStream64(self):
         self.test_struct2xStream64(randomized=True)
@@ -458,7 +458,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.instantiate(structStreamAndFooter,
                          DATA_WIDTH=16,
                          randomized=randomized)
-        u = self.u
+        dut = self.dut
 
         def mk_footer(d):
             v = 0
@@ -466,21 +466,21 @@ class AxiS_frameDeparser_TC(SimTestCase):
                 v |= (d + i) << (8 * i)
             return v
 
-        axis_send_bytes(u.dataIn.data, [1, 2])
-        u.dataIn.footer._ag.data.append(mk_footer(3))
-        axis_send_bytes(u.dataIn.data, [8, 9, 10, 11])
-        u.dataIn.footer._ag.data.append(mk_footer(12))
+        axi4s_send_bytes(dut.dataIn.data, [1, 2])
+        dut.dataIn.footer._ag.data.append(mk_footer(3))
+        axi4s_send_bytes(dut.dataIn.data, [8, 9, 10, 11])
+        dut.dataIn.footer._ag.data.append(mk_footer(12))
         t = 170
         if randomized:
             t *= 3
         self.runSim(t * Time.ns)
-        offset, f = axis_recieve_bytes(u.dataOut)
+        offset, f = axi4s_recieve_bytes(dut.dataOut)
         self.assertEqual(offset, 0)
         self.assertValSequenceEqual(f, list(range(1, 3 + 4)))
-        offset, f = axis_recieve_bytes(u.dataOut)
+        offset, f = axi4s_recieve_bytes(dut.dataOut)
         self.assertEqual(offset, 0)
         self.assertValSequenceEqual(f, list(range(8, 12 + 4)))
-        self.assertEmpty(u.dataOut._ag.data)
+        self.assertEmpty(dut.dataOut._ag.data)
 
     def test_r_footer(self):
         self.test_footer(randomized=True)
@@ -493,12 +493,12 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.instantiate(T,
                          DATA_WIDTH=16,
                          randomized=randomized)
-        # for i, stg in enumerate(self.u.frame_join.state_trans_table.state_trans):
+        # for i, stg in enumerate(self.dut.frame_join.state_trans_table.state_trans):
         #     print(f"{i:d}:")
         #     for stt in stg:
         #         print(stt)
 
-        u = self.u
+        dut = self.dut
         MAGIC = 0  # 13
         t = 10 + (2 * sum(sum(x) for x in sizes) * 3)
         if randomized:
@@ -508,13 +508,13 @@ class AxiS_frameDeparser_TC(SimTestCase):
         for i, size in enumerate(sizes):
             o = MAGIC + i * 6 + 1
             d0 = [o + i for i in range(size[0])]
-            axis_send_bytes(u.dataIn.streamIn0, d0)
+            axi4s_send_bytes(dut.dataIn.streamIn0, d0)
             d1 = [o + i + size[0] for i in range(size[1])]
-            axis_send_bytes(u.dataIn.streamIn1, d1)
+            axi4s_send_bytes(dut.dataIn.streamIn1, d1)
             ref.append(list(chain(d0, d1)))
         self.runSim(t * CLK_PERIOD)
         for i, ref_f in enumerate(ref):
-            f_offset, f = axis_recieve_bytes(u.dataOut)
+            f_offset, f = axi4s_recieve_bytes(dut.dataOut)
             self.assertValEqual(f_offset, 0)
             self.assertValSequenceEqual(f, ref_f, i)
 
@@ -540,7 +540,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
                          randomized=randomized,
                          use_keep=False,
                          use_strb=True)
-        u = self.u
+        dut = self.dut
         MAGIC = 0  # 13
         t = 10 + N
         if randomized:
@@ -550,17 +550,17 @@ class AxiS_frameDeparser_TC(SimTestCase):
             i += MAGIC
             if self._rand.getrandbits(1):
                 d = (1, [i, ])
-                u.dataIn.u1.data._ag.data.append(i)
-                u.dataIn._select._ag.data.append(1)
+                dut.dataIn.u1.data._ag.data.append(i)
+                dut.dataIn._select._ag.data.append(1)
             else:
                 d = (0, [i, ])
-                u.dataIn.u0.data._ag.data.append(i)
-                u.dataIn._select._ag.data.append(0)
+                dut.dataIn.u0.data._ag.data.append(i)
+                dut.dataIn._select._ag.data.append(0)
             ref.append(d)
         self.runSim(t * CLK_PERIOD)
         for i, ref_f in enumerate(ref):
             ref_offset, ref_data = ref_f
-            f_offset, f = axis_recieve_bytes(u.dataOut)
+            f_offset, f = axi4s_recieve_bytes(dut.dataOut)
             self.assertEqual(f_offset, ref_offset)
             self.assertValSequenceEqual(f, ref_data)
 
@@ -571,8 +571,8 @@ class AxiS_frameDeparser_TC(SimTestCase):
 if __name__ == "__main__":
 
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([AxiS_frameDeparser_TC("test_struct2xStream8_0B")])
-    suite = testLoader.loadTestsFromTestCase(AxiS_frameDeparser_TC)
+    # suite = unittest.TestSuite([Axi4S_frameDeparser_TC("test_struct2xStream8_0B")])
+    suite = testLoader.loadTestsFromTestCase(Axi4S_frameDeparser_TC)
     runner = unittest.TextTestRunner(verbosity=3)
 
     runner.run(suite)

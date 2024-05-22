@@ -5,10 +5,10 @@
 from typing import Union
 
 from hwt.code import In
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.mainBases import RtlSignalBase
 
 
 class USB_LINE_STATE():
@@ -145,11 +145,11 @@ class USB_PID:
     PING = 0b0100  # 0x4
 
 
-usb_addr_t = Bits(7)
-usb_endp_t = Bits(4)
-usb_crc5_t = Bits(5)
-usb_crc16_t = Bits(16)
-usb_pid_t = Bits(4)
+usb_addr_t = HBits(7)
+usb_endp_t = HBits(4)
+usb_crc5_t = HBits(5)
+usb_crc16_t = HBits(16)
+usb_pid_t = HBits(4)
 
 """
 :attention: every packet starts with sync and ends in EOP,
@@ -172,18 +172,18 @@ usb_packet_token_t = HStruct(
 
 usb1_0_packet_data_t = HStruct(
     (usb_pid_t, "pid"),
-    (HStream(Bits(8), frame_len=(1, 8)), "data"),
+    (HStream(HBits(8), frame_len=(1, 8)), "data"),
     (usb_crc16_t, "crc"),  # :note: not involves USB_PID, only data
 )
 
 usb1_1_packet_data_t = HStruct(
     (usb_pid_t, "pid"),
-    (HStream(Bits(8), frame_len=(1, 1023)), "data"),
+    (HStream(HBits(8), frame_len=(1, 1023)), "data"),
     (usb_crc16_t, "crc"),  # :note: not involves USB_PID, only data
 )
 usb2_0_packet_data_t = HStruct(
     (usb_pid_t, "pid"),
-    (HStream(Bits(8), frame_len=(1, 1024)), "data"),
+    (HStream(HBits(8), frame_len=(1, 1024)), "data"),
     (usb_crc16_t, "crc"),  # :note: not involves USB_PID, only data
 )
 
@@ -203,7 +203,7 @@ usb_packet_hs_t = HStruct(
 The SOF (Start of Frame) packet consisting of an 11-bit frame number is sent by the host
 every 1ms ± 500ns on a full speed bus or every 125 µs ± 0.0625 µs on a high speed bus.
 """
-usb_frame_number_t = Bits(11)
+usb_frame_number_t = HBits(11)
 usb_packet_sof_t = HStruct(
     (usb_pid_t, "pid"),
     (usb_frame_number_t, "frame_number"),

@@ -1,5 +1,5 @@
 from hwt.code import Concat
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.math import isPow2, log2ceil
 
 
@@ -41,7 +41,7 @@ class AddressStepTranslation():
                 assert src_w + self.align_bits <= dst_w, (
                     "Destination address space is smaller than required",
                     src_addr_sig, dst_addr_sig, src_w, self.align_bits, dst_w)
-                padding = Bits(self.align_bits).from_py(0)
+                padding = HBits(self.align_bits).from_py(0)
                 src_addr_sig = Concat(src_addr_sig, padding)
             else:
                 # cut src address

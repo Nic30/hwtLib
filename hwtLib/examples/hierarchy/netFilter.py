@@ -1,45 +1,45 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
+from hwtLib.abstract.emptyHwModule import EmptyHwModule
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 
 
-class HeadFieldExtractor(EmptyUnit):
+class HeadFieldExtractor(EmptyHwModule):
     def _declr(self):
-        self.din = AxiStream()
-        self.dout = AxiStream()._m()
-        self.headers = AxiStream()._m()
+        self.din = Axi4Stream()
+        self.dout = Axi4Stream()._m()
+        self.headers = Axi4Stream()._m()
 
 
-class PatternMatch(EmptyUnit):
+class PatternMatch(EmptyHwModule):
     def _declr(self):
-        self.din = AxiStream()
-        self.match = AxiStream()._m()
+        self.din = Axi4Stream()
+        self.match = Axi4Stream()._m()
 
 
-class Filter(EmptyUnit):
+class Filter(EmptyHwModule):
     def _declr(self):
-        self.headers = AxiStream()
-        self.patternMatch = AxiStream()
+        self.headers = Axi4Stream()
+        self.patternMatch = Axi4Stream()
 
-        self.din = AxiStream()
-        self.dout = AxiStream()._m()
+        self.din = Axi4Stream()
+        self.dout = Axi4Stream()._m()
         self.cfg = Axi4Lite()
 
 
-class Exporter(EmptyUnit):
+class Exporter(EmptyHwModule):
     def _declr(self):
-        self.din = AxiStream()
-        self.dout = AxiStream()._m()
+        self.din = Axi4Stream()
+        self.dout = Axi4Stream()._m()
 
 
-class NetFilter(Unit):
+class NetFilter(HwModule):
     """
     This unit has actually no functionality it is just example
     of hierarchical design.
@@ -48,13 +48,13 @@ class NetFilter(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
+        self.DATA_WIDTH = HwParam(64)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.din = AxiStream()
-            self.export = AxiStream()._m()
+        with self._hwParamsShared():
+            self.din = Axi4Stream()
+            self.export = Axi4Stream()._m()
             self.cfg = Axi4Lite()
 
             self.hfe = HeadFieldExtractor()
@@ -65,7 +65,7 @@ class NetFilter(Unit):
     def _impl(self):
         s = self
         propagateClkRstn(s)
-        AxiSBuilder(self, s.hfe.dout).split_copy_to(s.patternMatch.din,
+        Axi4SBuilder(self, s.hfe.dout).split_copy_to(s.patternMatch.din,
                                                     s.filter.din)
 
         s.hfe.din(s.din)
@@ -77,10 +77,10 @@ class NetFilter(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     # from hwt.serializer.ip_packager import IpPackager
 
-    u = NetFilter()
-    print(to_rtl_str(u))
-    # p = IpPackager(u)
+    m = NetFilter()
+    print(to_rtl_str(m))
+    # p = IpPackager(m)
     # p.createPackage("project/ip/")

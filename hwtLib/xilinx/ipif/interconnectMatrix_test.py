@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import READ, WRITE, Time
+from hwt.constants import READ, WRITE, Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.busInterconnect import AUTO_ADDR, ALL
 from hwtLib.xilinx.ipif.interconnectMatrix import IpifInterconnectMatrix
@@ -20,9 +20,9 @@ class IpifInterconnectMatrixTC(SimTestCase):
 
         AUTO = AUTO_ADDR
 
-        u = IpifInterconnectMatrix()
-        u.MASTERS = (ALL,)
-        u.SLAVES = (
+        dut = IpifInterconnectMatrix()
+        dut.MASTERS = (ALL,)
+        dut.SLAVES = (
             (0x0000, 0x0100),
             (0x0100, 0x0100),
             (AUTO, 0x0100),
@@ -30,25 +30,26 @@ class IpifInterconnectMatrixTC(SimTestCase):
         )
         self.DW = 32
         self.wordSize = self.DW // 8
-        u.DATA_WIDTH = self.DW
-        u.ADDR_WIDTH = u.getOptimalAddrSize()
+        dut.DATA_WIDTH = self.DW
+        dut.ADDR_WIDTH = dut.getOptimalAddrSize()
         self.m = mask(self.wordSize)
-        self.u = u
-        self.compileSimAndStart(u)
-        for s in u.m:
+        self.dut = dut
+        self.compileSimAndStart(dut)
+        for s in dut.m:
             s._ag.READ_LATENCY = read_latency
             s._ag.WRITE_LATENCY = write_latency
-
+        
+        return dut
+        
     def test_readAndWrite(self, read_latency=0, write_latency=0, N=2):
-        self.mySetUp(read_latency=read_latency,
-                     write_latency=write_latency)
-        u = self.u
+        dut = self.mySetUp(read_latency=read_latency,
+                           write_latency=write_latency)
         offsets = [0x0, 0x100, 0x200, 0x1000]
-        for s, o in zip(u._slaves, offsets):
+        for s, o in zip(dut._slaves, offsets):
             self.assertEqual(s[0], o)
 
-        m = self.u.s[0]._ag
-        s = [_s._ag for _s in self.u.m]
+        m = self.dut.s[0]._ag
+        s = [_s._ag for _s in self.dut.m]
         MAGIC_R = 10
         MAGIC_W = 100
 

@@ -3,8 +3,7 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.constants import Time
 from hwtLib.mem.fifoAsync import FifoAsync
 from hwtLib.mem.fifo_test import FifoTC
 
@@ -16,18 +15,18 @@ class FifoAsyncTC(FifoTC):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = FifoAsync()
-        u.DATA_WIDTH = 8
-        u.DEPTH = cls.ITEMS
-        cls.compileSim(u)
+        dut = cls.dut = FifoAsync()
+        dut.DATA_WIDTH = 8
+        dut.DEPTH = cls.ITEMS
+        cls.compileSim(dut)
 
     def setUp(self):
         FifoTC.setUp(self)
-        self.u.dataIn_clk._ag.period = self.IN_CLK
-        OUT_CLK = self.u.dataOut_clk._ag.period
+        self.dut.dataIn_clk._ag.period = self.IN_CLK
+        OUT_CLK = self.dut.dataOut_clk._ag.period
         RST_DELAY = int(max(self.IN_CLK, OUT_CLK) * 1.6)
-        self.u.dataIn_rst_n._ag.initDelay = \
-            self.u.dataOut_rst_n._ag.initDelay = RST_DELAY
+        self.dut.dataIn_rst_n._ag.initDelay = \
+            self.dut.dataOut_rst_n._ag.initDelay = RST_DELAY
 
     def test_tryMore2(self, capturedOffset=0):
         FifoTC.test_tryMore2(self, capturedOffset=capturedOffset)

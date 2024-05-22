@@ -4,13 +4,13 @@
 from io import StringIO
 import re
 
-from hwt.interfaces.utils import addClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwIO import HwIO
+from hwt.hwIOs.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import pprintInterface, pprintAgents
-from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
+from hwt.simulator.utils import pprintHwIO, pprintAgents
+from hwtLib.abstract.emptyHwModule import EmptyHwModule
 from hwtLib.amba.axi3Lite import Axi3Lite
-from hwt.synthesizer.hObjList import HObjList
-
 
 axi_str = """\
 'axi'
@@ -85,9 +85,7 @@ axi_str = """\
             'axi_2.b.valid'
 """
 
-
-
-clk_ag_str = """clk:<hwt.interfaces.agents.clk.ClockAgent object at 0x7f51335e5f60>
+clk_ag_str = """clk:<hwt.hwIOs.agents.clk.ClockAgent object at 0x7f51335e5f60>
 """
 axi_ag_str = """axi:
     p0:<hwtLib.amba.axiLite.AxiLiteAgent object at 0x7f5133600208>
@@ -110,8 +108,8 @@ axi_ag_str = """axi:
         <hwtLib.amba.axiLite.AxiLite_bAgent object at 0x7f5133600c18>
 """
 
-u_ag_str = """<hwt.interfaces.agents.clk.ClockAgent object at 0x7f2c812d4ef0>
-    <hwt.interfaces.agents.rst.PullUpAgent object at 0x7f2c812d4f28>
+u_ag_str = """<hwt.hwIOs.agents.clk.ClockAgent object at 0x7f2c812d4ef0>
+    <hwt.hwIOs.agents.rst.PullUpAgent object at 0x7f2c812d4f28>
     axi:
         p0:<hwtLib.amba.axiLite.AxiLiteAgent object at 0x7f2c812f0198>
             <hwtLib.amba.axiLite.AxiLite_addrAgent object at 0x7f2c812f00f0>
@@ -134,42 +132,44 @@ u_ag_str = """<hwt.interfaces.agents.clk.ClockAgent object at 0x7f2c812d4ef0>
 """
 
 
-class ExampleWithArrayAxi3Lite(EmptyUnit):
+class ExampleWithArrayAxi3Lite(EmptyHwModule):
+
     def _declr(self):
         addClkRstn(self)
         self.axi = HObjList(Axi3Lite() for _ in range(3))
 
 
 class SimulatorUtilsTC(SimTestCase):
+
     @classmethod
     def setUpClass(cls):
-        cls.u = ExampleWithArrayAxi3Lite()
-        cls.compileSim(cls.u)
+        cls.dut = ExampleWithArrayAxi3Lite()
+        cls.compileSim(cls.dut)
 
     def test_pprintInterface(self):
-        u = self.u
+        dut = self.dut
         o = StringIO()
-        pprintInterface(u.clk, file=o)
+        pprintHwIO(dut.clk, file=o)
         self.assertEqual(o.getvalue(), "'clk'\n")
 
         o = StringIO()
-        pprintInterface(u.axi, file=o)
+        pprintHwIO(dut.axi, file=o)
         self.assertEqual(o.getvalue(), axi_str)
 
-    def _test_pprintAgent(self, intf, expectedStr):
+    def _test_pprintAgent(self, hwIO: HwIO, expectedStr: str):
         pointerRe = re.compile("0x[a-f0-9]*")
         o = StringIO()
-        pprintAgents(intf, file=o)
+        pprintAgents(hwIO, file=o)
         self.assertEqual(pointerRe.sub(o.getvalue(), ""),
                          pointerRe.sub(expectedStr, ""))
 
     def test_pprintAgents(self):
-        u = self.u
+        dut = self.dut
         self.runSim(1)
 
-        self._test_pprintAgent(u.clk, clk_ag_str)
-        self._test_pprintAgent(u.axi, axi_ag_str)
-        self._test_pprintAgent(u, u_ag_str)
+        self._test_pprintAgent(dut.clk, clk_ag_str)
+        self._test_pprintAgent(dut.axi, axi_ag_str)
+        self._test_pprintAgent(dut, u_ag_str)
 
 
 if __name__ == "__main__":

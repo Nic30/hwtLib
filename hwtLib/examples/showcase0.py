@@ -23,16 +23,16 @@ There are several examples:
 
 .. literalinclude:: /../hwtLib/examples/showcase0.hwt.py
    :language: python
-   :caption: HWT :class:`hwt.synthesizer.unit.Unit` class definition
+   :caption: HWT :class:`hwt.hwModule.HwModule` class definition
    :linenos:
 """
 
 from hwt.code import If, Concat, Switch
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwModule import HwModule
 from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 
 
@@ -49,9 +49,9 @@ def foo(condition0, statements, condition1, fallback0, fallback1):
            )
 
 
-class Showcase0(Unit):
+class Showcase0(HwModule):
     """
-    Every HW component class has to be derived from :class:`hwt.synthesizer.unit.Unit` class
+    Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
 
     .. hwt-autodoc::
     """
@@ -64,50 +64,50 @@ class Showcase0(Unit):
     def _declr(self):
         """
         In this function collecting of public interfaces is performed
-        on every attribute assignment. Instances of Interface or :class:`hwt.synthesizer.unit.Unit` are recognized
-        by :class:`hwt.synthesizer.unit.Unit` instance and are used as public interface of this unit.
+        on every attribute assignment. Instances of Interface or :class:`hwt.hwModule.HwModule` are recognized
+        by :class:`hwt.hwModule.HwModule` instance and are used as public interface of this unit.
 
         Master interfaces are marked by "._m()", meaning of master direction
-        is specified in interface class. For simple signal master direction means output.
+        is specified in HwIO class. For simple signal master direction means output.
         """
-        self.a = Signal(dtype=uint32_t)
-        self.b = Signal(dtype=int32_t)
+        self.a = HwIOSignal(dtype=uint32_t)
+        self.b = HwIOSignal(dtype=int32_t)
 
-        # behavior same as uint32_t (which is Bits(32, signed=False))
-        self.c = Signal(dtype=Bits(32))._m()
-        # VectSignal is just shortcut for Signal(dtype=Bits(...))
-        self.fitted = VectSignal(16)._m()
-        self.contOut = VectSignal(32)._m()
+        # behavior same as uint32_t (which is HBits(32, signed=False))
+        self.c = HwIOSignal(dtype=HBits(32))._m()
+        # VectSignal is just shortcut for Signal(dtype=HBits(...))
+        self.fitted = HwIOVectSignal(16)._m()
+        self.contOut = HwIOVectSignal(32)._m()
 
         # this signal will have no driver and it will be considered to be an input
-        self.d = VectSignal(32)
+        self.d = HwIOVectSignal(32)
 
         # names of public ports can not be same because they need to be accessible from parent
-        self.e = Signal()
-        self.f = Signal()._m()
-        self.g = VectSignal(8)._m()
+        self.e = HwIOSignal()
+        self.f = HwIOSignal()._m()
+        self.g = HwIOVectSignal(8)._m()
 
         # this function just instantiate clk and rstn interface
         # main purpose is to unify names of clock and reset signals
         addClkRstn(self)
 
-        # HObjList is just regular list, it is used to tell Unit/Interface
-        # to look inside while searching for nested Interface/Unit instances
+        # HObjList is just regular list, it is used to tell HwModule/Interface
+        # to look inside while searching for nested Interface/HwModule instances
         self.cmp = HObjList(
-            Signal() for _ in range(6)
+            HwIOSignal() for _ in range(6)
         )._m()
 
-        self.h = VectSignal(8)._m()
-        self.i = VectSignal(2)
-        self.j = VectSignal(8)._m()
+        self.h = HwIOVectSignal(8)._m()
+        self.i = HwIOVectSignal(2)
+        self.j = HwIOVectSignal(8)._m()
 
         # collision with hdl keywords are automatically resolved and fixed
         # as well as case sensitivity care and other collisions in target HDL
-        self.out = Signal()._m()
-        self.output = Signal()._m()
-        self.sc_signal = VectSignal(8)._m()
+        self.out = HwIOSignal()._m()
+        self.output = HwIOSignal()._m()
+        self.sc_signal = HwIOVectSignal(8)._m()
 
-        self.k = VectSignal(32)._m()
+        self.k = HwIOVectSignal(32)._m()
 
     def _impl(self):
         """
@@ -125,7 +125,7 @@ class Showcase0(Unit):
         self.c(a + b._auto_cast(a._dtype))
 
         # width of signals is not same, this would raise TypeError on regular assignment,
-        # this behavior can be overriden by calling connect with fit=True
+        # this behavior can be overridden by calling connect with fit=True
         self.fitted(a, fit=True)
 
         # every signal/value has _dtype attribute which is parent type
@@ -194,8 +194,8 @@ class Showcase0(Unit):
         # all statements like If, Switch, For and others are in hwt.code
 
         # names of generated signals are patched to avoid collisions automatically
-        r0 = self._reg("r", Bits(2), def_val=0)
-        r1 = self._reg("r", Bits(2), def_val=0)
+        r0 = self._reg("r", HBits(2), def_val=0)
+        r1 = self._reg("r", HBits(2), def_val=0)
 
         r0(self.i)
         r1(r0)
@@ -242,14 +242,14 @@ class Showcase0(Unit):
 if __name__ == "__main__":  # alias python main function
     from pprint import pprint
 
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     from hwt.serializer.hwt import HwtSerializer
     from hwt.serializer.vhdl import Vhdl2008Serializer
     from hwt.serializer.verilog import VerilogSerializer
     from hwt.serializer.systemC import SystemCSerializer
 
     from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
-    from hwt.synthesizer.utils import synthesised
+    from hwt.synth import synthesised
 
     # * new instance has to be created every time because to_rtl_str modifies the unit
     # * serializers are using templates which can be customized
@@ -259,8 +259,8 @@ if __name__ == "__main__":  # alias python main function
     print(to_rtl_str(Showcase0(), serializer_cls=VerilogSerializer))
     print(to_rtl_str(Showcase0(), serializer_cls=SystemCSerializer))
 
-    u = Showcase0()
+    m = Showcase0()
     ra = ResourceAnalyzer()
-    synthesised(u)
-    ra.visit_Unit(u)
+    synthesised(m)
+    ra.visit_HwModule(m)
     pprint(ra.report())

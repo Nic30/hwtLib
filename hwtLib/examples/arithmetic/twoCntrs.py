@@ -2,29 +2,29 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 
 
-class TwoCntrs(Unit):
+class TwoCntrs(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
 
-        self.a_en = Signal()
-        self.b_en = Signal()
+        self.a_en = HwIOSignal()
+        self.b_en = HwIOSignal()
 
-        self.eq = Signal()._m()
-        self.ne = Signal()._m()
-        self.lt = Signal()._m()
-        self.gt = Signal()._m()
+        self.eq = HwIOSignal()._m()
+        self.ne = HwIOSignal()._m()
+        self.lt = HwIOSignal()._m()
+        self.gt = HwIOSignal()._m()
 
     def _impl(self):
-        index_t = Bits(8, signed=False)
+        index_t = HBits(8, signed=False)
 
         a = self._reg("reg_a", index_t, def_val=0)
         b = self._reg("reg_b", index_t, def_val=0)
@@ -44,7 +44,7 @@ class TwoCntrs(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
 
-    u = TwoCntrs()
-    print(to_rtl_str(u))
+    m = TwoCntrs()
+    print(to_rtl_str(m))

@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Switch
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
 from ipCorePackager.constants import DIRECTION
 
 
 def SwitchStatement():
-    t = Bits(8)
+    t = HBits(8)
     n = RtlNetlist()
 
     In = n.sig("input", t, def_val=8)

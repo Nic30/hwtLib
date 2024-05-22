@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Signal
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwModule import HwModule
 
 
-class ConstDriverUnit(Unit):
+class ConstDriverHwModule(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.out0 = Signal()._m()
-        self.out1 = Signal()._m()
+        self.out0 = HwIOSignal()._m()
+        self.out1 = HwIOSignal()._m()
 
     def _impl(self):
         self.out0(0)
@@ -19,5 +19,5 @@ class ConstDriverUnit(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    print(to_rtl_str(ConstDriverUnit()))
+    from hwt.synth import to_rtl_str
+    print(to_rtl_str(ConstDriverHwModule()))

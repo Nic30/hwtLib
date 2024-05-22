@@ -1,10 +1,10 @@
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 
 
-class BusBridge(Unit):
+class BusBridge(HwModule):
     """
-    Abstract class for bridges between two interface (not necesary different) types
+    Abstract class for bridges between two interface (not necessary different) types
 
-    :ivar ~.s: slave interface of source interface class
-    :ivar ~.m: master interface of destination interface class
+    :ivar ~.s: slave interface of source HwIO class
+    :ivar ~.m: master interface of destination HwIO class
     """

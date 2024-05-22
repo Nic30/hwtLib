@@ -2,30 +2,30 @@
 # -*- coding: utf-8 -*-
 
 from hwt.serializer.mode import serializeParamsUniq
-from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.handshaked.fifoAsync import HsFifoAsync
 
 
 @serializeParamsUniq
-class AxiSFifoAsync(AxiSCompBase, HsFifoAsync):
+class Axi4SFifoAsync(Axi4SCompBase, HsFifoAsync):
     """
     Asnchronous fifo for axi-stream interface.
 
     :see: :class:`hwtLib.handshaked.fifo.HsFifoAsync`
 
-    .. hwt-autodoc:: _example_AxiSFifoAsync
+    .. hwt-autodoc:: _example_Axi4SFifoAsync
     """
 
 
-def _example_AxiSFifoAsync():
+def _example_Axi4SFifoAsync():
 
-    u = AxiSFifoAsync()
-    u.DEPTH = 5
-    return u
+    m = Axi4SFifoAsync()
+    m.DEPTH = 5
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiSFifoAsync()
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4SFifoAsync()
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

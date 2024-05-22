@@ -4,17 +4,17 @@
 from math import ceil, log10
 
 from hwt.code import If, Switch, Concat
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 
 
-class BinToBcd(Unit):
+class BinToBcd(HwModule):
     """
     Convert binary to BCD (Binary coded decimal) format
     (BCD is a format where each 4 bites represents a single decimal digit 0-9)
@@ -25,15 +25,15 @@ class BinToBcd(Unit):
     """
 
     def _config(self):
-        self.INPUT_WIDTH = Param(64)
+        self.INPUT_WIDTH = HwParam(64)
 
     def _declr(self):
         addClkRstn(self)
         assert self.INPUT_WIDTH > 0, self.INPUT_WIDTH
         self.DECIMAL_DIGITS = self.decadic_deciamls_for_bin(self.INPUT_WIDTH)
-        self.din = Handshaked()
+        self.din = HwIODataRdVld()
         self.din.DATA_WIDTH = self.INPUT_WIDTH
-        self.dout = Handshaked()._m()
+        self.dout = HwIODataRdVld()._m()
         self.dout.DATA_WIDTH = self.DECIMAL_DIGITS * 4
 
     @staticmethod
@@ -44,8 +44,8 @@ class BinToBcd(Unit):
         INPUT_WIDTH, DECIMAL_DIGITS, din, dout = \
         self.INPUT_WIDTH, self.DECIMAL_DIGITS, self.din, self.dout
 
-        bin_r = self._reg("bin_r", Bits(INPUT_WIDTH, signed=False))
-        bitcount = self._reg("bitcount", Bits(log2ceil(INPUT_WIDTH), signed=False), def_val=0)
+        bin_r = self._reg("bin_r", HBits(INPUT_WIDTH, signed=False))
+        bitcount = self._reg("bitcount", HBits(log2ceil(INPUT_WIDTH), signed=False), def_val=0)
 
         st_t = HEnum("st_t", ["idle", "busy", "fin"])
         state = self._reg("state", st_t, def_val=st_t.idle)
@@ -83,18 +83,18 @@ class BinToBcd(Unit):
             .Default(
                 bitcount(0))
 
-        bcdp = [self._sig(f"bcdp{i:d}", Bits(4, signed=False)) for i in range(DECIMAL_DIGITS)]
+        bcdp = [self._sig(f"bcdp{i:d}", HBits(4, signed=False)) for i in range(DECIMAL_DIGITS)]
         bcd_digits = []
         for g in range(DECIMAL_DIGITS):
-            bcd = self._reg(f"bcd_{g:d}", Bits(4, signed=False), def_val=0)
+            bcd = self._reg(f"bcd_{g:d}", HBits(4, signed=False), def_val=0)
             bcdp[g]((bcd >= 5)._ternary(bcd + 3, bcd)),
-            prev = self._sig(f"prev_{g:d}", Bits(4))
+            prev = self._sig(f"prev_{g:d}", HBits(4))
             if g != 0:
                 prev(bcdp[g - 1])
             else:
-                prev(bin_r[INPUT_WIDTH-1]._concat(Bits(3).from_py(0)))
+                prev(bin_r[INPUT_WIDTH-1]._concat(HBits(3).from_py(0)))
 
-            s = self._sig(f"s_{g:d}", Bits(4))
+            s = self._sig(f"s_{g:d}", HBits(4))
             s(bcdp[g] << 1 | prev >> 3),
             Switch(state)\
                 .Case(st_t.idle,
@@ -107,6 +107,7 @@ class BinToBcd(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = BinToBcd()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = BinToBcd()
+    print(to_rtl_str(m))

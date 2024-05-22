@@ -4,60 +4,60 @@
 """
 Problem list:
 
-* next of the register should be driven from
-* all assignments to a register has to be in stame process.
-* The nop assignment should assign only a reange which corresponds to a current range assigned by statement.
+* next signal of the register should be driven from assignment source
+* all assignments to a register has to be in the same process.
+* The nop assignment should assign only a range which corresponds to a current range assigned by statement.
 
 """
 
 from hwt.code import If, Switch
-from hwt.interfaces.std import VectSignal, Signal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
-from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs, \
-    AddrDataBitMaskHs
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
+from hwtLib.commonHwIO.addr_data import HwIOAddrDataRdVld, \
+    HwIOAddrDataBitMaskRdVld
 from pyMathBitPrecise.bit_utils import mask
 
 
-class AssignToASlice0(Unit):
+class AssignToASlice0(HwModule):
     """
     Conversion between vector and bit
     """
 
     def _declr(self):
         addClkRstn(self)
-        self.data_in = Signal()
-        self.data_out = VectSignal(1)._m()
+        self.data_in = HwIOSignal()
+        self.data_out = HwIOVectSignal(1)._m()
 
     def _impl(self):
         self.data_out[0](self.data_in)
 
 
-class AssignToASlice1(Unit):
+class AssignToASlice1(HwModule):
     """
     Vector parts driven by expr
     """
 
     def _declr(self):
         addClkRstn(self)
-        self.data_in = VectSignal(3)
-        self.data_out = VectSignal(3)._m()
+        self.data_in = HwIOVectSignal(3)
+        self.data_out = HwIOVectSignal(3)._m()
 
     def _impl(self):
         for i in range(3):
             self.data_out[i](self.data_in[i])
 
 
-class AssignToASlice2(Unit):
+class AssignToASlice2(HwModule):
     """
     Vector parts driven from multi branch statement
     """
 
     def _declr(self):
         addClkRstn(self)
-        self.swap = Signal()
-        self.data_in = VectSignal(2)
-        self.data_out = VectSignal(3)._m()
+        self.swap = HwIOSignal()
+        self.data_in = HwIOVectSignal(2)
+        self.data_out = HwIOVectSignal(3)._m()
 
     def _impl(self):
         i, o = self.data_in, self.data_out
@@ -72,17 +72,17 @@ class AssignToASlice2(Unit):
         )
 
 
-class AssignToASliceOfReg0(Unit):
+class AssignToASliceOfReg0(HwModule):
     """
     Register where slices of next signal are set conditionally
     """
 
     def _declr(self):
         addClkRstn(self)
-        i = self.data_in = AddrDataHs()
+        i = self.data_in = HwIOAddrDataRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 8
-        self.data_out = VectSignal(2 * 8)._m()
+        self.data_out = HwIOVectSignal(2 * 8)._m()
 
     def _impl(self):
         i, o = self.data_in, self.data_out
@@ -96,17 +96,17 @@ class AssignToASliceOfReg0(Unit):
         o(r)
 
 
-class AssignToASliceOfReg1a(Unit):
+class AssignToASliceOfReg1a(HwModule):
     """
     Register where slices of next signal are set conditionally in multiple branches
     """
 
     def _declr(self):
         addClkRstn(self)
-        i = self.data_in = AddrDataHs()
+        i = self.data_in = HwIOAddrDataRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 16
-        self.data_out = VectSignal(2 * 8)._m()
+        self.data_out = HwIOVectSignal(2 * 8)._m()
 
     def _impl(self):
         i, o = self.data_in, self.data_out
@@ -122,17 +122,17 @@ class AssignToASliceOfReg1a(Unit):
         o(r)
 
 
-class AssignToASliceOfReg1b(Unit):
+class AssignToASliceOfReg1b(HwModule):
     """
     Register where slices of next signal are set conditionally in multiple branches, nested
     """
 
     def _declr(self):
         addClkRstn(self)
-        i = self.data_in = AddrDataHs()
+        i = self.data_in = HwIOAddrDataRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 16
-        self.data_out = VectSignal(2 * 8)._m()
+        self.data_out = HwIOVectSignal(2 * 8)._m()
 
     def _impl(self):
         i, o = self.data_in, self.data_out
@@ -150,17 +150,17 @@ class AssignToASliceOfReg1b(Unit):
         o(r)
 
 
-class AssignToASliceOfReg2a(Unit):
+class AssignToASliceOfReg2a(HwModule):
     """
     Register where an overlapping slices of next signal are set conditionally
     """
 
     def _declr(self):
         addClkRstn(self)
-        i = self.data_in = AddrDataBitMaskHs()
+        i = self.data_in = HwIOAddrDataBitMaskRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 8
-        self.data_out = VectSignal(2 * 8)._m()
+        self.data_out = HwIOVectSignal(2 * 8)._m()
 
     def _impl(self):
         i, o = self.data_in, self.data_out
@@ -178,17 +178,17 @@ class AssignToASliceOfReg2a(Unit):
         o(r)
 
 
-class AssignToASliceOfReg2b(Unit):
+class AssignToASliceOfReg2b(HwModule):
     """
     Register where an overlapping slices of next signal are set conditionally
     """
 
     def _declr(self):
         addClkRstn(self)
-        i = self.data_in = AddrDataBitMaskHs()
+        i = self.data_in = HwIOAddrDataBitMaskRdVld()
         i.ADDR_WIDTH = 1
         i.DATA_WIDTH = 8
-        self.data_out = VectSignal(2 * 8)._m()
+        self.data_out = HwIOVectSignal(2 * 8)._m()
 
     def _impl(self):
         i, o = self.data_in, self.data_out
@@ -206,17 +206,17 @@ class AssignToASliceOfReg2b(Unit):
         o(r)
 
 
-class AssignToASliceOfReg3a(Unit):
+class AssignToASliceOfReg3a(HwModule):
     """
     Something not assigned by index at the end and then whole signal assigned.
     """
 
     def _declr(self):
         addClkRstn(self)
-        i = self.data_in = AddrDataBitMaskHs()
+        i = self.data_in = HwIOAddrDataBitMaskRdVld()
         i.ADDR_WIDTH = 2
         i.DATA_WIDTH = 8
-        self.data_out = VectSignal(4 * 8)._m()
+        self.data_out = HwIOVectSignal(4 * 8)._m()
 
     def _impl(self):
         din, o = self.data_in, self.data_out
@@ -288,7 +288,7 @@ class AssignToASliceOfReg3d(AssignToASliceOfReg3a):
         o(r)
 
 if __name__ == '__main__':
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
 
     print(to_rtl_str(AssignToASliceOfReg3d()))
 

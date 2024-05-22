@@ -4,11 +4,11 @@
 from typing import Union
 
 from hwt.code import If, FsmBuilder, Or, Switch, SwitchLogic
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.const import HConst
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.hdl.value import HValue
 from hwt.math import log2ceil
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.mainBases import RtlSignalBase
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
@@ -24,12 +24,12 @@ class AxiLiteEndpoint(BusEndpoint):
     _getWordAddrStep = Axi4Lite._getWordAddrStep
     _getAddrStep = Axi4Lite._getAddrStep
 
-    def __init__(self, structTemplate, intfCls=Axi4Lite, shouldEnterFn=None):
+    def __init__(self, structTemplate, hwIOCls=Axi4Lite, shouldEnterFn=None):
         BusEndpoint.__init__(self, structTemplate,
-                             intfCls=intfCls,
+                             hwIOCls=hwIOCls,
                              shouldEnterFn=shouldEnterFn)
 
-    def driveResp(self, isInAddrRange: Union[RtlSignalBase, HValue], resp: RtlSignalBase):
+    def driveResp(self, isInAddrRange: Union[RtlSignalBase, HConst], resp: RtlSignalBase):
         if isinstance(isInAddrRange, RtlSignalBase):
             return If(isInAddrRange,
                resp(RESP_OKAY)
@@ -76,7 +76,7 @@ class AxiLiteEndpoint(BusEndpoint):
             # list of tuples (cond, rdataReg assignment)
             rregCases = []
             # index of bram from where we reads from
-            bramRdIndx = self._reg("bramRdIndx", Bits(
+            bramRdIndx = self._reg("bramRdIndx", HBits(
                 log2ceil(len(self._bramPortMapped))))
             bramRdIndxSwitch = Switch(bramRdIndx)
             for bramIndex, ((base, end), t) in enumerate(self._bramPortMapped):
@@ -197,19 +197,19 @@ def _example_AxiLiteEndpoint():
             (uint32_t, "data4c")
         ), "data4"),
     )
-    u = AxiLiteEndpoint(t)
+    m = AxiLiteEndpoint(t)
 
     # configuration
-    u.ADDR_WIDTH = 8
-    u.DATA_WIDTH = 32
-    return u
+    m.ADDR_WIDTH = 8
+    m.DATA_WIDTH = 32
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiLiteEndpoint()
+    from hwt.synth import to_rtl_str
+    m = _example_AxiLiteEndpoint()
 
-    print(to_rtl_str(u))
-    print(u.bus)
-    print(u.decoded.data3)
-    print(u.decoded.data4)
+    print(to_rtl_str(m))
+    print(m.bus)
+    print(m.decoded.data3)
+    print(m.decoded.data4)

@@ -3,12 +3,12 @@
 
 from hwt.code import If, Switch, Concat, In, And, replicate
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import  BIT
-from hwt.interfaces.std import Signal, Clk
+from hwt.hwIOs.std import HwIOSignal, HwIOClk
 from hwt.serializer.mode import serializeExclude
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.xilinx.primitive.dsp48e1_constants import LOGIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1, \
     LOGIC_MODES_DRC_deassign_xyz_mux, ARITHMETIC_MODES_DRC_deassign_xyz_mux, \
     ARITHMETIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1, CARRYIN_SEL
@@ -16,7 +16,7 @@ from pyMathBitPrecise.bit_utils import mask
 
 
 @serializeExclude
-class DSP48E1(Unit):
+class DSP48E1(HwModule):
     """
     DSP hadblock in Xilinx 7 series (2x pre adder, multiplier, ALU)
 
@@ -24,36 +24,36 @@ class DSP48E1(Unit):
     """
 
     def _config(self):
-        self.ACASCREG = Param(1)
-        self.ADREG = Param(1)
-        self.ALUMODEREG = Param(1)
-        self.AREG = Param(1)
-        self.AUTORESET_PATDET = Param("NO_RESET")
-        self.A_INPUT = Param("DIRECT")
-        self.BCASCREG = Param(1)
-        self.BREG = Param(1)
-        self.B_INPUT = Param("DIRECT")
-        self.CARRYINREG = Param(1)
-        self.CARRYINSELREG = Param(1)
-        self.CREG = Param(1)
-        self.DREG = Param(1)
-        self.INMODEREG = Param(1)
-        self.IS_ALUMODE_INVERTED = Param(Bits(4).from_py(0b0000))
-        self.IS_CARRYIN_INVERTED = Param(BIT.from_py(0b0))
-        self.IS_CLK_INVERTED = Param(BIT.from_py(0b0))
-        self.IS_INMODE_INVERTED = Param(Bits(5).from_py(0b00000))
-        self.IS_OPMODE_INVERTED = Param(Bits(7).from_py(0b0000000))
-        self.MASK = Param(Bits(48).from_py(0x3fffffffffff))
-        self.MREG = Param(1)
-        self.OPMODEREG = Param(1)
-        self.PATTERN = Param(Bits(48).from_py(0x000000000000))
-        self.PREG = Param(1)
-        self.SEL_MASK = Param("MASK")
-        self.SEL_PATTERN = Param("PATTERN")
-        self.USE_DPORT = Param("FALSE")
-        self.USE_MULT = Param("MULTIPLY")
-        self.USE_PATTERN_DETECT = Param("NO_PATDET")
-        self.USE_SIMD = Param("ONE48")
+        self.ACASCREG = HwParam(1)
+        self.ADREG = HwParam(1)
+        self.ALUMODEREG = HwParam(1)
+        self.AREG = HwParam(1)
+        self.AUTORESET_PATDET = HwParam("NO_RESET")
+        self.A_INPUT = HwParam("DIRECT")
+        self.BCASCREG = HwParam(1)
+        self.BREG = HwParam(1)
+        self.B_INPUT = HwParam("DIRECT")
+        self.CARRYINREG = HwParam(1)
+        self.CARRYINSELREG = HwParam(1)
+        self.CREG = HwParam(1)
+        self.DREG = HwParam(1)
+        self.INMODEREG = HwParam(1)
+        self.IS_ALUMODE_INVERTED = HwParam(HBits(4).from_py(0b0000))
+        self.IS_CARRYIN_INVERTED = HwParam(BIT.from_py(0b0))
+        self.IS_CLK_INVERTED = HwParam(BIT.from_py(0b0))
+        self.IS_INMODE_INVERTED = HwParam(HBits(5).from_py(0b00000))
+        self.IS_OPMODE_INVERTED = HwParam(HBits(7).from_py(0b0000000))
+        self.MASK = HwParam(HBits(48).from_py(0x3fffffffffff))
+        self.MREG = HwParam(1)
+        self.OPMODEREG = HwParam(1)
+        self.PATTERN = HwParam(HBits(48).from_py(0x000000000000))
+        self.PREG = HwParam(1)
+        self.SEL_MASK = HwParam("MASK")
+        self.SEL_PATTERN = HwParam("PATTERN")
+        self.USE_DPORT = HwParam("FALSE")
+        self.USE_MULT = HwParam("MULTIPLY")
+        self.USE_PATTERN_DETECT = HwParam("NO_PATDET")
+        self.USE_SIMD = HwParam("ONE48")
 
     def deassign_xyz_mux(self):
         return [
@@ -69,77 +69,77 @@ class DSP48E1(Unit):
         ]
 
     def _declr(self):
-        self.CLK = Clk()
+        self.CLK = HwIOClk()
 
         # inputs
-        self.A = Signal(Bits(30))
-        self.B = Signal(Bits(18))
-        self.C = Signal(Bits(48))
-        self.D = Signal(Bits(25))
+        self.A = HwIOSignal(HBits(30))
+        self.B = HwIOSignal(HBits(18))
+        self.C = HwIOSignal(HBits(48))
+        self.D = HwIOSignal(HBits(25))
         # selects the operands for main ALU
         # [2:0] X
         # [4:2] Y
         # [7:4] Z
-        self.OPMODE = Signal(Bits(7))
+        self.OPMODE = HwIOSignal(HBits(7))
         # :ivar ALUMODE: selects the operation performed by main ALU
-        self.ALUMODE = Signal(Bits(4))
-        self.CECARRYIN = Signal()
-        self.CARRYINSEL = Signal(Bits(3))
+        self.ALUMODE = HwIOSignal(HBits(4))
+        self.CECARRYIN = HwIOSignal()
+        self.CARRYINSEL = HwIOSignal(HBits(3))
         # :ivar INMODE: Select the functionality of the pre-adder, the A,
         # B, and D inputs, and the input registers. These bits should default to
         # 5’b00000 if left unconnected. These are optionally invertible,
         # providing routing flexibility.
-        self.INMODE = Signal(Bits(5))
-        self.CARRYIN = Signal()
+        self.INMODE = HwIOSignal(HBits(5))
+        self.CARRYIN = HwIOSignal()
 
         # main outputs
-        self.OVERFLOW = Signal()._m()
-        self.P = Signal(Bits(48))._m()
-        self.PATTERNBDETECT = Signal()._m()
-        self.PATTERNDETECT = Signal()._m()
-        self.UNDERFLOW = Signal()._m()
-        self.CARRYOUT = Signal(Bits(4))._m()
+        self.OVERFLOW = HwIOSignal()._m()
+        self.P = HwIOSignal(HBits(48))._m()
+        self.PATTERNBDETECT = HwIOSignal()._m()
+        self.PATTERNDETECT = HwIOSignal()._m()
+        self.UNDERFLOW = HwIOSignal()._m()
+        self.CARRYOUT = HwIOSignal(HBits(4))._m()
 
         # clock enable for internal registers
-        self.CEA1 = Signal()
-        self.CEA2 = Signal()
-        self.CEAD = Signal()
-        self.CEB1 = Signal()
-        self.CEB2 = Signal()
-        self.CEC = Signal()
-        self.CED = Signal()
-        self.CEM = Signal()
-        self.CEP = Signal()
-        self.CEALUMODE = Signal()
-        self.CECTRL = Signal()
-        self.CEINMODE = Signal()
+        self.CEA1 = HwIOSignal()
+        self.CEA2 = HwIOSignal()
+        self.CEAD = HwIOSignal()
+        self.CEB1 = HwIOSignal()
+        self.CEB2 = HwIOSignal()
+        self.CEC = HwIOSignal()
+        self.CED = HwIOSignal()
+        self.CEM = HwIOSignal()
+        self.CEP = HwIOSignal()
+        self.CEALUMODE = HwIOSignal()
+        self.CECTRL = HwIOSignal()
+        self.CEINMODE = HwIOSignal()
 
         # reset for internal registers
-        self.RSTA = Signal()
-        self.RSTALLCARRYIN = Signal()
-        self.RSTALUMODE = Signal()
-        self.RSTB = Signal()
-        self.RSTC = Signal()
-        self.RSTCTRL = Signal()
-        self.RSTD = Signal()
-        self.RSTINMODE = Signal()
-        self.RSTM = Signal()
-        self.RSTP = Signal()
+        self.RSTA = HwIOSignal()
+        self.RSTALLCARRYIN = HwIOSignal()
+        self.RSTALUMODE = HwIOSignal()
+        self.RSTB = HwIOSignal()
+        self.RSTC = HwIOSignal()
+        self.RSTCTRL = HwIOSignal()
+        self.RSTD = HwIOSignal()
+        self.RSTINMODE = HwIOSignal()
+        self.RSTM = HwIOSignal()
+        self.RSTP = HwIOSignal()
 
         # Column ports are used to connect the DSP blocks in the column
         #  and they have an equivalent port for fabric (e.g. A and ACIN).
-        self.ACIN = Signal(Bits(30))
-        self.ACOUT = Signal(Bits(30))._m()
-        self.BCIN = Signal(Bits(18))
-        self.BCOUT = Signal(Bits(18))._m()
+        self.ACIN = HwIOSignal(HBits(30))
+        self.ACOUT = HwIOSignal(HBits(30))._m()
+        self.BCIN = HwIOSignal(HBits(18))
+        self.BCOUT = HwIOSignal(HBits(18))._m()
         # cary in/out for main ALU
-        self.CARRYCASCIN = Signal()
-        self.CARRYCASCOUT = Signal()._m()
-        self.PCIN = Signal(Bits(48))
-        self.PCOUT = Signal(Bits(48))._m()
+        self.CARRYCASCIN = HwIOSignal()
+        self.CARRYCASCOUT = HwIOSignal()._m()
+        self.PCIN = HwIOSignal(HBits(48))
+        self.PCOUT = HwIOSignal(HBits(48))._m()
         # Sign of the multiplied result from the previous DSP48E1 slice for MACC extension.
-        self.MULTSIGNIN = Signal()
-        self.MULTSIGNOUT = Signal()._m()
+        self.MULTSIGNIN = HwIOSignal()
+        self.MULTSIGNOUT = HwIOSignal()._m()
 
         self.input_check()
 
@@ -219,71 +219,71 @@ class DSP48E1(Unit):
         OPMODE_W = 7
         ALU_FULL_W = 48
 
-        IS_ALUMODE_INVERTED_BIN = self._sig("IS_ALUMODE_INVERTED_BIN", Bits(4), def_val=IS_ALUMODE_INVERTED)
+        IS_ALUMODE_INVERTED_BIN = self._sig("IS_ALUMODE_INVERTED_BIN", HBits(4), def_val=IS_ALUMODE_INVERTED)
         IS_CARRYIN_INVERTED_BIN = self._sig("IS_CARRYIN_INVERTED_BIN", def_val=IS_CARRYIN_INVERTED)
         IS_CLK_INVERTED_BIN = self._sig("IS_CLK_INVERTED_BIN", def_val=IS_CLK_INVERTED)
-        IS_INMODE_INVERTED_BIN = self._sig("IS_INMODE_INVERTED_BIN", Bits(5), def_val=IS_INMODE_INVERTED)
-        IS_OPMODE_INVERTED_BIN = self._sig("IS_OPMODE_INVERTED_BIN", Bits(7), def_val=IS_OPMODE_INVERTED)
-        a_o_mux = self._sig("a_o_mux", Bits(30))
-        qa_o_mux = self._sig("qa_o_mux", Bits(30))
-        qa_o_reg1 = self._sig("qa_o_reg1", Bits(30))
-        qa_o_reg2 = self._sig("qa_o_reg2", Bits(30))
-        qacout_o_mux = self._sig("qacout_o_mux", Bits(30))
+        IS_INMODE_INVERTED_BIN = self._sig("IS_INMODE_INVERTED_BIN", HBits(5), def_val=IS_INMODE_INVERTED)
+        IS_OPMODE_INVERTED_BIN = self._sig("IS_OPMODE_INVERTED_BIN", HBits(7), def_val=IS_OPMODE_INVERTED)
+        a_o_mux = self._sig("a_o_mux", HBits(30))
+        qa_o_mux = self._sig("qa_o_mux", HBits(30))
+        qa_o_reg1 = self._sig("qa_o_reg1", HBits(30))
+        qa_o_reg2 = self._sig("qa_o_reg2", HBits(30))
+        qacout_o_mux = self._sig("qacout_o_mux", HBits(30))
         # new
-        qinmode_o_mux = self._sig("qinmode_o_mux", Bits(5))
-        qinmode_o_reg = self._sig("qinmode_o_reg", Bits(5))
+        qinmode_o_mux = self._sig("qinmode_o_mux", HBits(5))
+        qinmode_o_reg = self._sig("qinmode_o_reg", HBits(5))
         # new
-        a_preaddsub = self._sig("a_preaddsub", Bits(25))
-        b_o_mux = self._sig("b_o_mux", Bits(18))
-        qb_o_mux = self._sig("qb_o_mux", Bits(18))
-        qb_o_reg1 = self._sig("qb_o_reg1", Bits(18))
-        qb_o_reg2 = self._sig("qb_o_reg2", Bits(18))
-        qbcout_o_mux = self._sig("qbcout_o_mux", Bits(18))
-        qcarryinsel_o_mux = self._sig("qcarryinsel_o_mux", Bits(3))
-        qcarryinsel_o_reg1 = self._sig("qcarryinsel_o_reg1", Bits(3))
+        a_preaddsub = self._sig("a_preaddsub", HBits(25))
+        b_o_mux = self._sig("b_o_mux", HBits(18))
+        qb_o_mux = self._sig("qb_o_mux", HBits(18))
+        qb_o_reg1 = self._sig("qb_o_reg1", HBits(18))
+        qb_o_reg2 = self._sig("qb_o_reg2", HBits(18))
+        qbcout_o_mux = self._sig("qbcout_o_mux", HBits(18))
+        qcarryinsel_o_mux = self._sig("qcarryinsel_o_mux", HBits(3))
+        qcarryinsel_o_reg1 = self._sig("qcarryinsel_o_reg1", HBits(3))
         # new
-        #d_o_mux = self._sig("d_o_mux", Bits(D_W))
-        qd_o_mux = self._sig("qd_o_mux", Bits(D_W))
-        qd_o_reg1 = self._sig("qd_o_reg1", Bits(D_W))
-        qmult_o_mux = self._sig("qmult_o_mux", Bits(A_MULT_W + B_MULT_W))
-        qmult_o_reg = self._sig("qmult_o_reg", Bits(A_MULT_W + B_MULT_W))
+        #d_o_mux = self._sig("d_o_mux", HBits(D_W))
+        qd_o_mux = self._sig("qd_o_mux", HBits(D_W))
+        qd_o_reg1 = self._sig("qd_o_reg1", HBits(D_W))
+        qmult_o_mux = self._sig("qmult_o_mux", HBits(A_MULT_W + B_MULT_W))
+        qmult_o_reg = self._sig("qmult_o_reg", HBits(A_MULT_W + B_MULT_W))
         # 42:0
-        qc_o_mux = self._sig("qc_o_mux", Bits(48))
-        qc_o_reg1 = self._sig("qc_o_reg1", Bits(48))
-        qp_o_mux = self._sig("qp_o_mux", Bits(48))
-        qp_o_reg1 = self._sig("qp_o_reg1", Bits(48))
-        qx_o_mux = self._sig("qx_o_mux", Bits(48))
-        qy_o_mux = self._sig("qy_o_mux", Bits(48))
-        qz_o_mux = self._sig("qz_o_mux", Bits(48))
-        qopmode_o_mux = self._sig("qopmode_o_mux", Bits(7))
-        qopmode_o_reg1 = self._sig("qopmode_o_reg1", Bits(7))
+        qc_o_mux = self._sig("qc_o_mux", HBits(48))
+        qc_o_reg1 = self._sig("qc_o_reg1", HBits(48))
+        qp_o_mux = self._sig("qp_o_mux", HBits(48))
+        qp_o_reg1 = self._sig("qp_o_reg1", HBits(48))
+        qx_o_mux = self._sig("qx_o_mux", HBits(48))
+        qy_o_mux = self._sig("qy_o_mux", HBits(48))
+        qz_o_mux = self._sig("qz_o_mux", HBits(48))
+        qopmode_o_mux = self._sig("qopmode_o_mux", HBits(7))
+        qopmode_o_reg1 = self._sig("qopmode_o_reg1", HBits(7))
         qcarryin_o_mux0 = self._sig("qcarryin_o_mux0")
         qcarryin_o_reg0 = self._sig("qcarryin_o_reg0")
         qcarryin_o_mux7 = self._sig("qcarryin_o_mux7")
         qcarryin_o_reg7 = self._sig("qcarryin_o_reg7")
         qcarryin_o_mux = self._sig("qcarryin_o_mux")
-        qalumode_o_mux = self._sig("qalumode_o_mux", Bits(4))
-        qalumode_o_reg1 = self._sig("qalumode_o_reg1", Bits(4))
+        qalumode_o_mux = self._sig("qalumode_o_mux", HBits(4))
+        qalumode_o_reg1 = self._sig("qalumode_o_reg1", HBits(4))
         self.invalid_opmode = self._sig("invalid_opmode", def_val=1)
         self.opmode_valid_flag = opmode_valid_flag = self._sig("opmode_valid_flag", def_val=1)
         #   reg [47:0] alu_o;
-        alu_o = self._sig("alu_o", Bits(48))
+        alu_o = self._sig("alu_o", HBits(48))
         qmultsignout_o_reg = self._sig("qmultsignout_o_reg")
         multsignout_o_mux = self._sig("multsignout_o_mux")
         multsignout_o_opmode = self._sig("multsignout_o_opmode")
         pdet_o_mux = self._sig("pdet_o_mux")
         pdetb_o_mux = self._sig("pdetb_o_mux")
-        the_pattern = self._sig("the_pattern", Bits(48))
-        the_mask = self._sig("the_mask", Bits(48), def_val=0)
+        the_pattern = self._sig("the_pattern", HBits(48))
+        the_mask = self._sig("the_mask", HBits(48), def_val=0)
         carrycascout_o = self._sig("carrycascout_o")
         the_auto_reset_patdet = self._sig("the_auto_reset_patdet")
         carrycascout_o_reg = self._sig("carrycascout_o_reg", def_val=0)
         carrycascout_o_mux = self._sig("carrycascout_o_mux", def_val=0)
 
         # CR 588861
-        carryout_o_reg = self._sig("carryout_o_reg", Bits(4), def_val=0)
-        carryout_o_mux = self._sig("carryout_o_mux", Bits(4))
-        carryout_x_o = self._sig("carryout_x_o", Bits(4))
+        carryout_o_reg = self._sig("carryout_o_reg", HBits(4), def_val=0)
+        carryout_o_mux = self._sig("carryout_o_mux", HBits(4))
+        carryout_x_o = self._sig("carryout_x_o", HBits(4))
         pdet_o = self._sig("pdet_o")
         pdetb_o = self._sig("pdetb_o")
         pdet_o_reg1 = self._sig("pdet_o_reg1")
@@ -292,47 +292,47 @@ class DSP48E1(Unit):
         pdetb_o_reg2 = self._sig("pdetb_o_reg2")
         overflow_o = self._sig("overflow_o")
         underflow_o = self._sig("underflow_o")
-        mult_o = self._sig("mult_o", Bits(A_MULT_W + B_MULT_W))
+        mult_o = self._sig("mult_o", HBits(A_MULT_W + B_MULT_W))
         #   reg [(MSB_A_MULT+MSB_B_MULT+1):0] mult_o;  // 42:0
         # new
-        ad_addsub = self._sig("ad_addsub", Bits(A_MULT_W))
-        ad_mult = self._sig("ad_mult", Bits(A_MULT_W))
-        qad_o_reg1 = self._sig("qad_o_reg1", Bits(A_MULT_W))
-        qad_o_mux = self._sig("qad_o_mux", Bits(A_MULT_W))
-        b_mult = self._sig("b_mult", Bits(B_MULT_W))
+        ad_addsub = self._sig("ad_addsub", HBits(A_MULT_W))
+        ad_mult = self._sig("ad_mult", HBits(A_MULT_W))
+        qad_o_reg1 = self._sig("qad_o_reg1", HBits(A_MULT_W))
+        qad_o_mux = self._sig("qad_o_mux", HBits(A_MULT_W))
+        b_mult = self._sig("b_mult", HBits(B_MULT_W))
         # cci_drc_msg = self._sig("cci_drc_msg", def_val=0b0)
         # cis_drc_msg = self._sig("cis_drc_msg", def_val=0b0)
-        opmode_in = self._sig("opmode_in", Bits(OPMODE_W))
-        alumode_in = self._sig("alumode_in", Bits(ALUMODE_W))
+        opmode_in = self._sig("opmode_in", HBits(OPMODE_W))
+        alumode_in = self._sig("alumode_in", HBits(ALUMODE_W))
         carryin_in = self._sig("carryin_in")
         clk_in = self._sig("clk_in")
-        inmode_in = self._sig("inmode_in", Bits(INMODE_W))
+        inmode_in = self._sig("inmode_in", HBits(INMODE_W))
         #*** Y mux
         # 08-06-08
         # IR 478378
-        y_mac_cascd = rename_signal(self, qopmode_o_mux[7:4]._eq(0b100)._ternary(replicate(48, MULTSIGNIN), Bits(48).from_py(mask(48))), "y_mac_cascd")
+        y_mac_cascd = rename_signal(self, qopmode_o_mux[7:4]._eq(0b100)._ternary(replicate(48, MULTSIGNIN), HBits(48).from_py(mask(48))), "y_mac_cascd")
         #--####################################################################
         #--#####                         ALU                              #####
         #--####################################################################
-        co = self._sig("co", Bits(ALU_FULL_W))
-        s = self._sig("s", Bits(ALU_FULL_W))
-        comux = self._sig("comux", Bits(ALU_FULL_W))
-        smux = self._sig("smux", Bits(ALU_FULL_W))
-        carryout_o = self._sig("carryout_o", Bits(CARRYOUT_W))
+        co = self._sig("co", HBits(ALU_FULL_W))
+        s = self._sig("s", HBits(ALU_FULL_W))
+        comux = self._sig("comux", HBits(ALU_FULL_W))
+        smux = self._sig("smux", HBits(ALU_FULL_W))
+        carryout_o = self._sig("carryout_o", HBits(CARRYOUT_W))
         # FINAL ADDER
         s0 = rename_signal(self, Concat(BIT.from_py(0), comux[11:0], qcarryin_o_mux) + Concat(BIT.from_py(0), smux[12:0]), "s0")
         cout0 = rename_signal(self, comux[11] + s0[12], "cout0")
         C1 = rename_signal(self, BIT.from_py(0b0) if USE_SIMD == "FOUR12" else s0[12], "C1")
         co11_lsb = rename_signal(self, BIT.from_py(0b0) if USE_SIMD == "FOUR12" else comux[11], "co11_lsb")
-        s1 = rename_signal(self, Concat(BIT.from_py(0), comux[23:12], co11_lsb) + Concat(BIT.from_py(0), smux[24:12]) + Concat(Bits(12).from_py(0), C1), "s1")
+        s1 = rename_signal(self, Concat(BIT.from_py(0), comux[23:12], co11_lsb) + Concat(BIT.from_py(0), smux[24:12]) + Concat(HBits(12).from_py(0), C1), "s1")
         cout1 = rename_signal(self, comux[23] + s1[12], "cout1")
         C2 = rename_signal(self, BIT.from_py(0b0) if (USE_SIMD in ["TWO24", "FOUR12"]) else s1[12], "C2")
         co23_lsb = rename_signal(self, BIT.from_py(0b0) if (USE_SIMD in ["TWO24", "FOUR12"]) else comux[23], "co23_lsb")
-        s2 = rename_signal(self, Concat(BIT.from_py(0), comux[35:24], co23_lsb) + Concat(BIT.from_py(0), smux[36:24]) + Concat(Bits(12).from_py(0), C2), "s2")
+        s2 = rename_signal(self, Concat(BIT.from_py(0), comux[35:24], co23_lsb) + Concat(BIT.from_py(0), smux[36:24]) + Concat(HBits(12).from_py(0), C2), "s2")
         cout2 = rename_signal(self, comux[35] + s2[12], "cout2")
         C3 = rename_signal(self, BIT.from_py(0b0) if  USE_SIMD == "FOUR12" else s2[12], "C3")
         co35_lsb = rename_signal(self, BIT.from_py(0b0) if  USE_SIMD == "FOUR12" else comux[35], "co35_lsb")
-        s3 = rename_signal(self, Concat(BIT.from_py(0), comux[48:36], co35_lsb) + Concat(Bits(2).from_py(0), smux[48:36]) + Concat(Bits(13).from_py(0), C3), "s3")
+        s3 = rename_signal(self, Concat(BIT.from_py(0), comux[48:36], co35_lsb) + Concat(HBits(2).from_py(0), smux[48:36]) + Concat(HBits(13).from_py(0), C3), "s3")
         cout3 = rename_signal(self, s3[12], "cout3")
         #cout4 = rename_signal(self, s3[13], "cout4")
         qcarryin_o_mux_tmp = self._sig("qcarryin_o_mux_tmp")
@@ -723,7 +723,7 @@ class DSP48E1(Unit):
         )
         smux(qalumode_o_mux[3]._ternary(co, s))
 
-        carryout_o_hw = self._sig("carryout_o_hw", Bits(CARRYOUT_W))
+        carryout_o_hw = self._sig("carryout_o_hw", HBits(CARRYOUT_W))
         carryout_o_hw[0]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout0, cout0))
         carryout_o_hw[1]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout1, cout1))
         carryout_o_hw[2]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout2, cout2))
@@ -898,7 +898,8 @@ class DSP48E1(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = DSP48E1()
+    from hwt.synth import to_rtl_str
+    
+    m = DSP48E1()
     print("# note that nothing should be printed out because the DSP48E1 has dissabled serialization (because it is part of UNISIM library)")
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

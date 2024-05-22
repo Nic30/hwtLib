@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
+from hwt.constants import Time
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.struct import HStruct
@@ -53,12 +53,12 @@ class StructReaderTC(SimTestCase):
         self.rmSim()
         SimTestCase.tearDown(self)
 
-    def _test_s0(self, u):
+    def _test_s0(self, dut):
         DW = 64
         N = 3
-        self.compileSimAndStart(u)
+        self.compileSimAndStart(dut)
 
-        m = AxiDpSimRam(DW, u.clk, u.rDatapump)
+        m = AxiDpSimRam(DW, dut.clk, dut.rDatapump)
 
         # init expectedFieldValues
         expectedFieldValues = {}
@@ -78,19 +78,19 @@ class StructReaderTC(SimTestCase):
             addr = m.calloc(len(asFrame), DW // 8, initValues=asFrame)
             assert m.getStruct(addr, s0) == s0.from_py(d)
 
-            u.get._ag.data.append(addr)
+            dut.get._ag.data.append(addr)
 
         self.runSim(500 * Time.ns)
 
         for f in s0.fields:
             if f.name is not None:
                 expected = expectedFieldValues[f.name]
-                got = u.dataOut._fieldsToInterfaces[(f.name,)]._ag.data
+                got = dut.dataOut._fieldsToHwIOs[(f.name,)]._ag.data
                 self.assertValSequenceEqual(got, expected, f.name)
 
     def test_simpleFields(self):
-        u = StructReader(s0)
-        self._test_s0(u)
+        dut = StructReader(s0)
+        self._test_s0(dut)
 
     def test_multiframe(self):
         tmpl = TransTmpl(s0)
@@ -101,8 +101,8 @@ class StructReaderTC(SimTestCase):
                              maxPaddingWords=0,
                              trimPaddingWordsOnStart=True,
                              trimPaddingWordsOnEnd=True))
-        u = StructReader(s0, tmpl=tmpl, frames=frames)
-        self._test_s0(u)
+        dut = StructReader(s0, tmpl=tmpl, frames=frames)
+        self._test_s0(dut)
 
 
 if __name__ == "__main__":

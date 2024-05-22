@@ -22,44 +22,44 @@ class BcdToBinTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = BcdToBin()
-        cls.u.BCD_DIGITS = 3
-        cls.compileSim(cls.u)
+        cls.dut = BcdToBin()
+        cls.dut.BCD_DIGITS = 3
+        cls.compileSim(cls.dut)
 
     def test_0to127(self):
-        u = self.u
+        dut = self.dut
 
         N = 128
-        u.din._ag.data.extend([bin_to_bcd(i, u.BCD_DIGITS) for i in range(N)])
+        dut.din._ag.data.extend([bin_to_bcd(i, dut.BCD_DIGITS) for i in range(N)])
         self.runSim(self.CLK_PERIOD * 13 * N)
 
-        res = u.dout._ag.data
+        res = dut.dout._ag.data
         self.assertEqual(len(res), N)
         for i, d in enumerate(res):
             self.assertValEqual(d, i)
 
     def test_128to255(self):
-        u = self.u
-        u.din._ag.data.extend([bin_to_bcd(i, u.BCD_DIGITS) for i in range(128, 256)])
+        dut = self.dut
+        dut.din._ag.data.extend([bin_to_bcd(i, dut.BCD_DIGITS) for i in range(128, 256)])
         N = 256 - 128
 
         self.runSim(self.CLK_PERIOD * 13 * N)
 
-        res = u.dout._ag.data
+        res = dut.dout._ag.data
         self.assertEqual(len(res), N)
         for i, d in enumerate(res):
             i += 128
             self.assertValEqual(d, i)
 
     def test_r_96to150(self):
-        u = self.u
-        u.din._ag.data.extend([bin_to_bcd(i, u.BCD_DIGITS) for i in range(96, 150)])
+        dut = self.dut
+        dut.din._ag.data.extend([bin_to_bcd(i, dut.BCD_DIGITS) for i in range(96, 150)])
         N = 150 - 96
-        self.randomize(u.din)
-        self.randomize(u.dout)
+        self.randomize(dut.din)
+        self.randomize(dut.dout)
         self.runSim(self.CLK_PERIOD * 13 * 2 * N)
 
-        res = u.dout._ag.data
+        res = dut.dout._ag.data
         self.assertEqual(len(res), N)
         for i, d in enumerate(res):
             i += 96

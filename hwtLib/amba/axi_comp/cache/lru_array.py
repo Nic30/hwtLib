@@ -3,38 +3,38 @@
 
 from hwt.code import If, Or, Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.constants import WRITE, READ
+from hwt.constants import WRITE, READ
+from hwt.hwIOs.std import HwIOVectSignal, HwIODataRdVld, HwIORdVldSync
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import VectSignal, Handshaked, HandshakeSync
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import flatten, grouper
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_comp.cache.addrTypeConfig import CacheAddrTypeConfig
 from hwtLib.amba.axi_comp.cache.pseudo_lru import PseudoLru
-from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
-from hwtLib.common_nonstd_interfaces.addr_hs import AddrHs
+from hwtLib.commonHwIO.addr import HwIOAddrRdVld
+from hwtLib.commonHwIO.addr_data import HwIOAddrDataRdVld
 from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.mem.ramXor import RamXorSingleClock
 
 
 # extract variant with id
-class IndexWayHs(HandshakeSync):
+class HwIOIndexWayRdVld(HwIORdVldSync):
 
     def _config(self):
-        self.ID_WIDTH = Param(0)
-        self.INDEX_WIDTH = Param(10)
-        self.WAY_CNT = Param(4)
+        self.ID_WIDTH = HwParam(0)
+        self.INDEX_WIDTH = HwParam(10)
+        self.WAY_CNT = HwParam(4)
 
     def _declr(self):
         if self.ID_WIDTH:
-            self.id = VectSignal(self.ID_WIDTH)
-        self.index = VectSignal(self.INDEX_WIDTH)
+            self.id = HwIOVectSignal(self.ID_WIDTH)
+        self.index = HwIOVectSignal(self.INDEX_WIDTH)
         if self.WAY_CNT > 1:
-            self.way = VectSignal(log2ceil(self.WAY_CNT - 1))
-        HandshakeSync._declr(self)
+            self.way = HwIOVectSignal(log2ceil(self.WAY_CNT - 1))
+        HwIORdVldSync._declr(self)
 
 
 class AxiCacheLruArray(CacheAddrTypeConfig):
@@ -42,8 +42,8 @@ class AxiCacheLruArray(CacheAddrTypeConfig):
     A memory storing Tree-PLRU records with multiple ports.
     The access using various ports is merged together.
     The victim_req port also marks the way as lastly used.
-    The set port dissables all discards all pending updates
-    and it is ment to be used for an intialization of the array/cache.
+    The set port disables all discards all pending updates
+    and it is meant to be used for an initialization of the array/cache.
 
     .. figure:: ./_static/AxiCacheLruArray.png
 
@@ -52,8 +52,8 @@ class AxiCacheLruArray(CacheAddrTypeConfig):
 
     def _config(self):
         CacheAddrTypeConfig._config(self)
-        self.INCR_PORT_CNT = Param(2)
-        self.WAY_CNT = Param(4)
+        self.INCR_PORT_CNT = HwParam(2)
+        self.WAY_CNT = HwParam(4)
 
     def _compute_constants(self):
         assert self.WAY_CNT >= 1, self.WAY_CNT
@@ -65,22 +65,22 @@ class AxiCacheLruArray(CacheAddrTypeConfig):
         addClkRstn(self)
         # used to initialize the LRU data (in the case of cache reset)
         # while set port is active all other ports are blocked
-        s = self.set = AddrDataHs()
+        s = self.set = HwIOAddrDataRdVld()
         s.ADDR_WIDTH = self.INDEX_W
         s.DATA_WIDTH = self.LRU_WIDTH
 
         # used to increment the LRU data in the case of hit
-        self.incr = HObjList(IndexWayHs() for _ in range(self.INCR_PORT_CNT))
+        self.incr = HObjList(HwIOIndexWayRdVld() for _ in range(self.INCR_PORT_CNT))
         for i in self.incr:
             i.INDEX_WIDTH = self.INDEX_W
             i.WAY_CNT = self.WAY_CNT
 
         # get a victim for a selected cacheline index
         # The cacheline returned as a victim is also marked as used just now
-        vr = self.victim_req = AddrHs()
+        vr = self.victim_req = HwIOAddrRdVld()
         vr.ADDR_WIDTH = self.INDEX_W
         vr.ID_WIDTH = 0
-        vd = self.victim_data = Handshaked()._m()
+        vd = self.victim_data = HwIODataRdVld()._m()
         vd.DATA_WIDTH = log2ceil(self.WAY_CNT - 1)
 
         m = self.lru_mem = RamXorSingleClock()
@@ -204,6 +204,6 @@ class AxiCacheLruArray(CacheAddrTypeConfig):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     u = AxiCacheLruArray()
     print(to_rtl_str(u))

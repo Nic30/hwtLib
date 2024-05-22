@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked, HandshakeSync, VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi_comp.cache.utils import CamWithReadPort
-from hwtLib.common_nonstd_interfaces.index_key_hs import IndexKeyHs, \
-    IndexKeyInHs
+from hwtLib.commonHwIO.index_key_hs import HwIOIndexKeyRdVld, \
+    HwIOIndexKeyInRdVld
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.fifo import Fifo
 
 
 @serializeParamsUniq
-class FifoOutOfOrderRead(Unit):
+class FifoOutOfOrderRead(HwModule):
     """
     Container of FIFO pointers and flags where the items can be discarded in out of order manner.
 
@@ -35,26 +35,26 @@ class FifoOutOfOrderRead(Unit):
     """
 
     def _config(self):
-        self.ITEMS = Param(4)
-        self.KEY_WIDTH = Param(0)
-        self.INIT_DATA: tuple = Param(())
+        self.ITEMS = HwParam(4)
+        self.KEY_WIDTH = HwParam(0)
+        self.INIT_DATA: tuple = HwParam(())
 
     def _declr(self):
         addClkRstn(self)
         ITEM_INDEX_WIDTH = log2ceil(self.ITEMS - 1)
 
         # mark item as complete and ready to be read out
-        self.write_confirm = HandshakeSync()
+        self.write_confirm = HwIORdVldSync()
 
         # begin the read of the item
         # :note: this interface is master as it providesthe information about the read execution
-        self.read_execute: IndexKeyHs = IndexKeyHs()._m()
+        self.read_execute: HwIOIndexKeyRdVld = HwIOIndexKeyRdVld()._m()
         wl = self.read_execute
         wl.KEY_WIDTH = self.KEY_WIDTH
         wl.INDEX_WIDTH = ITEM_INDEX_WIDTH
 
         # confirm that the item was read and the item in fifo is ready to be used again
-        pc = self.read_confirm = Handshaked()
+        pc = self.read_confirm = HwIODataRdVld()
         pc.DATA_WIDTH = ITEM_INDEX_WIDTH
         if self.INIT_DATA:
             raise NotImplementedError()
@@ -64,9 +64,9 @@ class FifoOutOfOrderRead(Unit):
         ITEMS = self.ITEMS
 
         # 1 if item contains valid item which can be read
-        item_valid = self._reg("item_valid", Bits(ITEMS), def_val=0)
+        item_valid = self._reg("item_valid", HBits(ITEMS), def_val=0)
         # 1 if item can not be update any more (:note: valid=1)
-        item_write_lock = self._reg("item_write_lock", Bits(ITEMS), def_val=0)
+        item_write_lock = self._reg("item_write_lock", HBits(ITEMS), def_val=0)
 
         write_req, write_wait = self._sig("write_req"), self._sig("write_wait")
         read_req, read_wait = self._sig("read_req"), self._sig("read_wait")
@@ -142,7 +142,7 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
     def _config(self):
         super(FifoOutOfOrderReadFiltered, self)._config()
         self.KEY_WIDTH = 8
-        self.HAS_READ_LOOKUP = Param(False)
+        self.HAS_READ_LOOKUP = HwParam(False)
 
     def _declr(self) -> None:
         assert self.KEY_WIDTH > 0
@@ -150,27 +150,27 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
 
         if self.HAS_READ_LOOKUP:
             # check if item is stored in CAM
-            pl = self.read_lookup = Handshaked()
+            pl = self.read_lookup = HwIODataRdVld()
             pl.DATA_WIDTH = self.KEY_WIDTH
 
             # return one-hot encoded index of the previously searched key
-            plr = self.read_lookup_res = Handshaked()._m()
+            plr = self.read_lookup_res = HwIODataRdVld()._m()
             plr.DATA_WIDTH = self.ITEMS
 
         # check if item is stored in CAM
-        pl = self.write_pre_lookup = Handshaked()
+        pl = self.write_pre_lookup = HwIODataRdVld()
         pl.DATA_WIDTH = self.KEY_WIDTH
 
         # return one-hot encoded index of the previously searched key
-        plr = self.write_pre_lookup_res = Handshaked()._m()
+        plr = self.write_pre_lookup_res = HwIODataRdVld()._m()
         plr.DATA_WIDTH = self.ITEMS
 
-        self.item_valid = VectSignal(self.ITEMS)._m()
-        self.item_write_lock = VectSignal(self.ITEMS)._m()
+        self.item_valid = HwIOVectSignal(self.ITEMS)._m()
+        self.item_write_lock = HwIOVectSignal(self.ITEMS)._m()
 
         # write to CAM, set valid flag to allocate the item
         # :note: this interface is master as it providesthe information about the read execution
-        i = self.write_execute = IndexKeyInHs()._m()
+        i = self.write_execute = HwIOIndexKeyInRdVld()._m()
         i.INDEX_WIDTH = self.read_execute.INDEX_WIDTH
         i.KEY_WIDTH = self.KEY_WIDTH
 
@@ -215,9 +215,9 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
 
-    # u = FifoOutOfOrderRead()
-    u = FifoOutOfOrderReadFiltered()
-    u.HAS_READ_LOOKUP = True
-    print(to_rtl_str(u))
+    # m = FifoOutOfOrderRead()
+    m = FifoOutOfOrderReadFiltered()
+    m.HAS_READ_LOOKUP = True
+    print(to_rtl_str(m))

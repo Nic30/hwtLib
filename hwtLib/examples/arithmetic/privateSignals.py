@@ -1,18 +1,18 @@
-from hwt.synthesizer.unit import Unit
-from hwt.interfaces.std import VectSignal
+from hwt.hwModule import HwModule
+from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
 
 
-class PrivateSignalsOfStructType(Unit):
+class PrivateSignalsOfStructType(HwModule):
 
     def _declr(self):
         addClkRstn(self)
-        self.a = VectSignal(8)
-        self.b = VectSignal(8)._m()
+        self.a = HwIOVectSignal(8)
+        self.b = HwIOVectSignal(8)._m()
 
-        self.c = VectSignal(8)
-        self.d = VectSignal(8)._m()
+        self.c = HwIOVectSignal(8)
+        self.d = HwIOVectSignal(8)._m()
 
     def _impl(self):
         t = self.a._dtype
@@ -55,7 +55,7 @@ class PrivateSignalsOfStructType(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = PrivateSignalsOfStructType()
-    print(to_rtl_str(u))
-
+    from hwt.synth import to_rtl_str
+    
+    m = PrivateSignalsOfStructType()
+    print(to_rtl_str(m))

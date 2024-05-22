@@ -1,11 +1,11 @@
 #!/usr/bin/env python3arent
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Tuple, Optional
+from typing import Dict, Optional
 
-from hwt.interfaces.std import Clk, Rst_n, Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOClk, HwIORst_n, HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
 from hwtLib.abstract.debug_bus_monitor import DebugBusMonitor, \
     DebugBusMonitorDataRecord
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -13,7 +13,7 @@ from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.handshaked.reg import HandshakedReg
 
 
-class DebugBusMonitorExampleAxi(Unit):
+class DebugBusMonitorExampleAxi(HwModule):
     """
     An example how to use :class:`hwtLib.abstract.debug_bus_monitor.DebugBusMonitor`
 
@@ -25,28 +25,28 @@ class DebugBusMonitorExampleAxi(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = Axi4Lite()
-        self.din0 = Handshaked()
-        self.dout0 = Handshaked()._m()
-        self.reg = HandshakedReg(Handshaked)
-        self.din1 = Handshaked()
-        self.dout1 = Handshaked()._m()
+        self.din0 = HwIODataRdVld()
+        self.dout0 = HwIODataRdVld()._m()
+        self.reg = HandshakedReg(HwIODataRdVld)
+        self.din1 = HwIODataRdVld()
+        self.dout1 = HwIODataRdVld()._m()
 
-        self.other_clk = Clk()
+        self.other_clk = HwIOClk()
         self.other_clk.FREQ = self.clk.FREQ * 2
         with self._associated(clk=self.other_clk):
-            self.other_rst_n = Rst_n()
-            self.din2 = Handshaked()
-            self.dout2 = Handshaked()._m()
+            self.other_rst_n = HwIORst_n()
+            self.din2 = HwIODataRdVld()
+            self.dout2 = HwIODataRdVld()._m()
 
     def _impl(self):
 
         # spy on previously generated circuit
         db = DebugBusMonitor(Axi4Lite, AxiLiteEndpoint)
-        intf_to_dbg: Dict[Handshaked, DebugBusMonitorDataRecord] = {}
+        intf_to_dbg: Dict[HwIODataRdVld, DebugBusMonitorDataRecord] = {}
 
-        def spy_connections(i: Handshaked):
+        def spy_connections(i: HwIODataRdVld):
             """
             * Construct a record in DebugBusMonitor for a specified interface.
             * Link to other visual nodes on connections.
@@ -111,11 +111,11 @@ class DebugBusMonitorExampleAxi(Unit):
         # we need to add register for ".s" because otherwise there would be
         # a combinational loop
         # db.register(self.s, add_reg=True)
-        # for i in self.s._interfaces:
-        #    db.register(i, name="s_" + i._name + "_snapshot",
-        #                trigger=i.valid & i.ready)
+        # for hwIO in self.s._hwIOs:
+        #    db.register(hwIO, name="s_" + hwIO._name + "_snapshot",
+        #                trigger=hwIO.valid & hwIO.ready)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.db = db
         db.s(self.s)
         # there we actually connect the monitored interface
@@ -126,6 +126,7 @@ class DebugBusMonitorExampleAxi(Unit):
 
 
 if __name__ == '__main__':
-    from hwt.synthesizer.utils import to_rtl_str
-    u = DebugBusMonitorExampleAxi()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = DebugBusMonitorExampleAxi()
+    print(to_rtl_str(m))

@@ -1,5 +1,5 @@
-from hwt.interfaces.agents.handshaked import HandshakedReadListener
-from hwt.interfaces.agents.tuleWithCallback import TupleWithCallback
+from hwt.hwIOs.agents.rdVldSync import RdVldSyncReadListener
+from hwt.hwIOs.agents.tuleWithCallback import TupleWithCallback
 from hwtLib.amba.axi3Lite import Axi3Lite
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
@@ -64,6 +64,6 @@ class AxiLiteMemSpaceMaster(AbstractMemSpaceMaster):
 
         if onDone:
             if self._read_listener is None:
-                self._read_listener = HandshakedReadListener(self._bus.r._ag)
+                self._read_listener = RdVldSyncReadListener(self._bus.r._ag)
 
             self._read_listener.register(self._r_planed_words_cnt, onDone)

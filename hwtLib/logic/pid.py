@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Add
-from hwt.interfaces.std import VectSignal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 
 
-class PidController(Unit):
+class PidController(HwModule):
     """
     The PID Control block compares the input to the target
     and calculates an error. Based on this error, a output value is calculated
@@ -36,9 +36,9 @@ class PidController(Unit):
     """
 
     def _config(self):
-        self.DATAIN_WIDTH = Param(16)
-        self.DATAOUT_WIDTH = Param(16)
-        self.COEF_WIDTH = Param(16)
+        self.DATAIN_WIDTH = HwParam(16)
+        self.DATAOUT_WIDTH = HwParam(16)
+        self.COEF_WIDTH = HwParam(16)
 
     @staticmethod
     def compute_coefs(K_p, K_i, K_d, T_s):
@@ -50,11 +50,11 @@ class PidController(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.input = VectSignal(self.DATAIN_WIDTH, signed=True)
-        self.output = VectSignal(self.DATAIN_WIDTH, signed=True)._m()
-        self.target = VectSignal(self.DATAIN_WIDTH, signed=True)
+        self.input = HwIOVectSignal(self.DATAIN_WIDTH, signed=True)
+        self.output = HwIOVectSignal(self.DATAIN_WIDTH, signed=True)._m()
+        self.target = HwIOVectSignal(self.DATAIN_WIDTH, signed=True)
         self.coefs = HObjList(
-            VectSignal(self.COEF_WIDTH, signed=True)
+            HwIOVectSignal(self.COEF_WIDTH, signed=True)
             for _ in range(4)
         )
 
@@ -80,5 +80,5 @@ class PidController(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(PidController()))

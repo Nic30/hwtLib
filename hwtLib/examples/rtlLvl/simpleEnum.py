@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
@@ -10,7 +10,7 @@ from ipCorePackager.constants import DIRECTION
 
 
 def SimpleEnum():
-    t = Bits(8)
+    t = HBits(8)
     fsmT = HEnum('fsmT', ['send0', 'send1'])
 
     n = RtlNetlist()

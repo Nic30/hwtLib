@@ -1,49 +1,49 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
+from hwt.constants import Time
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX
-from hwt.synthesizer.utils import synthesised
+from hwt.synth import synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
-from hwtLib.examples.statements.switchStm import SwitchStmUnit
+from hwtLib.examples.statements.switchStm import SwitchStmHwModule
 
 
 class SwitchStmTC(BaseSerializationTC):
     __FILE__ = __file__
 
     def test_allCases(self):
-        self.u = SwitchStmUnit()
-        self.compileSimAndStart(self.u)
+        self.dut = SwitchStmHwModule()
+        self.compileSimAndStart(self.dut)
 
-        u = self.u
-        u.sel._ag.data.extend([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1])
-        u.a._ag.data.extend([0, 1, 0, 0, 0, 0, 0, 0, 1, None, 0])
-        u.b._ag.data.extend([0, 0, 0, 1, 0, 0, 0, 0, 1, None, 0])
-        u.c._ag.data.extend([0, 0, 0, 0, 0, 1, 0, 0, 1, None, 0])
+        dut = self.dut
+        dut.sel._ag.data.extend([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1])
+        dut.a._ag.data.extend([0, 1, 0, 0, 0, 0, 0, 0, 1, None, 0])
+        dut.b._ag.data.extend([0, 0, 0, 1, 0, 0, 0, 0, 1, None, 0])
+        dut.c._ag.data.extend([0, 0, 0, 0, 0, 1, 0, 0, 1, None, 0])
 
         self.runSim(110 * Time.ns)
 
-        self.assertValSequenceEqual(u.out._ag.data,
+        self.assertValSequenceEqual(dut.out._ag.data,
                                     [0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0])
 
     def test_vhdlSerialization(self):
-        self.assert_serializes_as_file(SwitchStmUnit(), "SwitchStmUnit.vhd")
+        self.assert_serializes_as_file(SwitchStmHwModule(), "SwitchStmHwModule.vhd")
 
     def test_verilogSerialization(self):
-        self.assert_serializes_as_file(SwitchStmUnit(), "SwitchStmUnit.v")
+        self.assert_serializes_as_file(SwitchStmHwModule(), "SwitchStmHwModule.v")
 
     def test_systemcSerialization(self):
-        self.assert_serializes_as_file(SwitchStmUnit(), "SwitchStmUnit.cpp")
+        self.assert_serializes_as_file(SwitchStmHwModule(), "SwitchStmHwModule.cpp")
 
     def test_resources(self):
-        u = SwitchStmUnit()
+        dut = SwitchStmHwModule()
 
         expected = {(ResourceMUX, 1, 4): 1}
 
         s = ResourceAnalyzer()
-        synthesised(u)
-        s.visit_Unit(u)
+        synthesised(dut)
+        s.visit_HwModule(dut)
         r = s.report()
         self.assertDictEqual(r, expected)
 

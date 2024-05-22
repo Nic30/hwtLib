@@ -1,10 +1,10 @@
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import Handshaked, VectSignal, Signal
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIOSignal
+from hwt.hwParam import HwParam
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class AvalonST(Handshaked):
+class AvalonST(HwIODataRdVld):
     """
     Avalon stream interface
 
@@ -14,25 +14,25 @@ class AvalonST(Handshaked):
     """
 
     def _config(self):
-        Handshaked._config(self)
-        self.CHANNEL_WIDTH = Param(1)
-        self.ERROR_WIDTH = Param(1)
+        HwIODataRdVld._config(self)
+        self.CHANNEL_WIDTH = HwParam(1)
+        self.ERROR_WIDTH = HwParam(1)
 
     def _declr(self):
         # fundamentals
-        self.channel = VectSignal(self.CHANNEL_WIDTH)
-        self.error = VectSignal(self.ERROR_WIDTH)
-        Handshaked._declr(self)
+        self.channel = HwIOVectSignal(self.CHANNEL_WIDTH)
+        self.error = HwIOVectSignal(self.ERROR_WIDTH)
+        HwIODataRdVld._declr(self)
 
         # packet transfer signals
-        self.endOfPacket = Signal()
-        self.startOfPacket = Signal()
+        self.endOfPacket = HwIOSignal()
+        self.startOfPacket = HwIOSignal()
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = AvalonSTAgent(sim, self)
 
 
-class AvalonSTAgent(HandshakedAgent):
+class AvalonSTAgent(HwIODataRdVldAgent):
     """
     Simulation Agent for AvalonST interface
     Data is stored in .data property and data format
@@ -40,22 +40,22 @@ class AvalonSTAgent(HandshakedAgent):
     """
 
     def get_data(self):
-        intf = self.intf
-        return (intf.channel.read(), intf.data.read(), intf.error.read(),
-                intf.startOfPacket.read(), intf.endOfPacket.read())
+        hwIO = self.hwIO
+        return (hwIO.channel.read(), hwIO.data.read(), hwIO.error.read(),
+                hwIO.startOfPacket.read(), hwIO.endOfPacket.read())
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
         if data is None:
-            intf.channel.write(None)
-            intf.data.write(None)
-            intf.error.write(None)
-            intf.endOfPacket.write(None)
-            intf.startOfPacket.write(None)
+            hwIO.channel.write(None)
+            hwIO.data.write(None)
+            hwIO.error.write(None)
+            hwIO.endOfPacket.write(None)
+            hwIO.startOfPacket.write(None)
         else:
             channel, data, error, startOfPacket, endOfPacket = data
-            intf.channel.write(channel)
-            intf.data.write(data)
-            intf.error.write(error)
-            intf.endOfPacket.write(endOfPacket)
-            intf.startOfPacket.write(startOfPacket)
+            hwIO.channel.write(channel)
+            hwIO.data.write(data)
+            hwIO.error.write(error)
+            hwIO.endOfPacket.write(endOfPacket)
+            hwIO.startOfPacket.write(startOfPacket)

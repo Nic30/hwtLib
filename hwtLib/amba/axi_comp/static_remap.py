@@ -3,27 +3,27 @@
 
 from typing import Optional
 
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busStaticRemap import BusStaticRemap
 from hwtLib.amba.axi4 import Axi4
 
 
-class AxiStaticRemap(BusStaticRemap):
+class Axi4StaticRemap(BusStaticRemap):
     """
     :class:`.BusStaticRemap` implementation for AXI3/4 full/lite interfaces
     :note: this component only remaps some memory regions, but it does not perform the address checking
 
-    .. hwt-autodoc:: _example_AxiStaticRemap
+    .. hwt-autodoc:: _example_Axi4StaticRemap
     """
 
-    def __init__(self, intfCls=Axi4, hdl_name_override:Optional[str]=None):
-        self.intfCls = intfCls
-        super(AxiStaticRemap, self).__init__(hdl_name_override=hdl_name_override)
+    def __init__(self, hwIOCls=Axi4, hdl_name_override:Optional[str]=None):
+        self.hwIOCls = hwIOCls
+        super(Axi4StaticRemap, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
-        self.INTF_CLS = Param(self.intfCls)
+        self.HWIO_CLS = HwParam(self.hwIOCls)
         BusStaticRemap._config(self)
-        self.intfCls._config(self)
+        self.hwIOCls._config(self)
 
     def _impl(self):
         # for each remaped region substitute the address offset
@@ -35,15 +35,15 @@ class AxiStaticRemap(BusStaticRemap):
             MM, self.s.aw.addr, self.m.aw.addr)
 
 
-def _example_AxiStaticRemap():
-    u = AxiStaticRemap()
-    u.MEM_MAP = [(0x0, 0x1000, 0x1000),
+def _example_Axi4StaticRemap():
+    m = Axi4StaticRemap()
+    m.MEM_MAP = [(0x0, 0x1000, 0x1000),
                  (0x1000, 0x1000, 0x0),
                  ]
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiStaticRemap()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4StaticRemap()
+    print(to_rtl_str(m))

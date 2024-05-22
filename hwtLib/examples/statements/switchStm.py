@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Switch
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwModule import HwModule
 
 
-class SwitchStmUnit(Unit):
+class SwitchStmHwModule(HwModule):
     """
     Example which is using switch statement to create multiplexer
 
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.sel = VectSignal(3)
-        self.out = Signal()._m()
-        self.a = Signal()
-        self.b = Signal()
-        self.c = Signal()
+        self.sel = HwIOVectSignal(3)
+        self.out = HwIOSignal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()
 
     def _impl(self):
         Switch(self.sel)\
@@ -33,5 +33,5 @@ class SwitchStmUnit(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    print(to_rtl_str(SwitchStmUnit()))
+    from hwt.synth import to_rtl_str
+    print(to_rtl_str(SwitchStmHwModule()))

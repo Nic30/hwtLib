@@ -3,11 +3,11 @@
 
 from hwt.code import If, Concat
 from hwt.constraints import set_false_path, get_clock_of, set_max_delay
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOClk, HwIORst_n, HwIOFifoWriter, HwIOFifoReader
 from hwt.math import log2ceil, isPow2
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwtLib.clocking.cdc import SignalCdcBuilder
 from hwtLib.logic.cntrGray import binToGray
 from hwtLib.mem.fifo import Fifo
@@ -16,7 +16,7 @@ from hwtLib.mem.fifo import Fifo
 @serializeParamsUniq
 class FifoAsync(Fifo):
     """
-    Asynchronous fifo using BRAM/LUT memory, based on:
+    Asynchronous FIFO using BRAM/LUT memory, based on:
     * https://github.com/ZipCPU/website/blob/master/examples/afifo.v
     * https://github.com/alexforencich/verilog-axis/blob/master/rtl/axis_async_fifo.v
 
@@ -25,8 +25,8 @@ class FifoAsync(Fifo):
 
     def _config(self):
         Fifo._config(self)
-        self.IN_FREQ = Param(int(100e6))
-        self.OUT_FREQ = Param(int(100e6))
+        self.IN_FREQ = HwParam(int(100e6))
+        self.OUT_FREQ = HwParam(int(100e6))
 
     def _declr(self):
         assert int(self.DEPTH) > 0, "FifoAsync is disabled in this case, do not use it entirely"
@@ -36,21 +36,21 @@ class FifoAsync(Fifo):
         if self.EXPORT_SIZE or self.EXPORT_SPACE:
             raise NotImplementedError()
 
-        self.dataIn_clk = Clk()
+        self.dataIn_clk = HwIOClk()
         self.dataIn_clk.FREQ = self.IN_FREQ
-        self.dataOut_clk = Clk()
+        self.dataOut_clk = HwIOClk()
         self.dataOut_clk.FREQ = self.OUT_FREQ
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             with self._associated(clk=self.dataIn_clk):
-                self.dataIn_rst_n = Rst_n()
+                self.dataIn_rst_n = HwIORst_n()
                 with self._associated(rst=self.dataIn_rst_n):
-                    self.dataIn = FifoWriter()
+                    self.dataIn = HwIOFifoWriter()
 
             with self._associated(clk=self.dataOut_clk):
-                self.dataOut_rst_n = Rst_n()
+                self.dataOut_rst_n = HwIORst_n()
                 with self._associated(rst=self.dataOut_rst_n):
-                    self.dataOut = FifoReader()._m()
+                    self.dataOut = HwIOFifoReader()._m()
         self.AW = log2ceil(self.DEPTH)
 
     def _addr_reg_and_cdc(self, reg_name, clk_in, clk_out):
@@ -59,8 +59,8 @@ class FifoAsync(Fifo):
         with gray encoded value propagated to other clock domain
         """
         AW = self.AW
-        gray_t = Bits(AW + 1)
-        index_t = Bits(AW + 1)
+        gray_t = HBits(AW + 1)
+        index_t = HBits(AW + 1)
 
         reg_bin = self._reg(reg_name + "_bin", index_t, def_val=0, **clk_in)
         reg_gray = self._reg(reg_name + "_gray", gray_t, def_val=0, **clk_in)
@@ -104,7 +104,7 @@ class FifoAsync(Fifo):
            w_bin(w_bin + 1)
         )
         if self.DATA_WIDTH:
-            memory_t = Bits(self.DATA_WIDTH)[self.DEPTH]
+            memory_t = HBits(self.DATA_WIDTH)[self.DEPTH]
             memory = self._sig("memory", memory_t)
             If(clk_in["clk"]._onRisingEdge(),
                If(w_en,
@@ -132,12 +132,13 @@ class FifoAsync(Fifo):
 
 
 def _example_FifoAsync():
-    u = FifoAsync()
-    u.DEPTH = 4
-    return u
+    m = FifoAsync()
+    m.DEPTH = 4
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_FifoAsync()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_FifoAsync()
+    print(to_rtl_str(m))

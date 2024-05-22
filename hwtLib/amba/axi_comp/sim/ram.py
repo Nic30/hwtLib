@@ -1,7 +1,7 @@
 from collections import deque
 
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.value import HValue
+from hwt.hdl.const import HConst
+from hwt.hdl.types.bits import HBits
 from hwtLib.abstract.sim_ram import SimRam
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
@@ -9,7 +9,7 @@ from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit, \
     get_bit_range
 
 
-class AxiSimRam(AxiDpSimRam):
+class Axi4SimRam(AxiDpSimRam):
     """
     Simulation memory for Axi3/4 interfaces (slave component)
     """
@@ -68,14 +68,14 @@ class AxiSimRam(AxiDpSimRam):
         assert axiAR is not None or axiAW is not None
 
         if self.wAg is not None:
-            self.HAS_W_ID = hasattr(self.wAg.intf, "id")
+            self.HAS_W_ID = hasattr(self.wAg.hwIO, "id")
         else:
             self.HAS_W_ID = False
         self.allow_unaligned_addr = allow_unaligned_addr
         SimRam.__init__(self, DW // 8, parent=parent)
 
         self.allMask = mask(self.cellSize)
-        self.word_t = Bits(self.cellSize * 8)
+        self.word_t = HBits(self.cellSize * 8)
 
         self.rPending = deque()
         self.wPending = deque()
@@ -150,7 +150,7 @@ class AxiSimRam(AxiDpSimRam):
             data, strb, last = self.wAg.data.popleft()
         return (data, strb, last)
 
-    def _write_single_word(self, data: HValue, strb: int, word_i: int):
+    def _write_single_word(self, data: HConst, strb: int, word_i: int):
         if strb == 0:
             return
         if strb != self.allMask:

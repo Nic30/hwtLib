@@ -1,47 +1,46 @@
 from collections import deque
+from itertools import chain
+from typing import List
 
-from hwt.interfaces.agents.vldSynced import VldSyncedAgent
+from hwt.hwIOs.agents.vldSync import HwIODataVldAgent
 from hwt.pyUtils.arrayQuery import grouper
+from hwtLib.peripheral.ethernet.constants import ETH
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
-from typing import List
 from pyMathBitPrecise.bit_utils import get_bit_range
-from hwtLib.peripheral.ethernet.constants import ETH
-from itertools import chain
 
 
 class RmiiAgent(AgentBase):
-    def __init__(self, sim: HdlSimulator, intf):
-        AgentBase.__init__(self, sim, intf)
-        intf.ref_clk._initSimAgent(sim)
-        intf.rx._initSimAgent(sim)
-        intf.tx._initSimAgent(sim)
+    def __init__(self, sim: HdlSimulator, hwIO):
+        AgentBase.__init__(self, sim, hwIO)
+        hwIO.ref_clk._initSimAgent(sim)
+        hwIO.rx._initSimAgent(sim)
+        hwIO.tx._initSimAgent(sim)
 
     def getDrivers(self):
         raise NotImplementedError()
 
     def getMonitors(self):
-        i = self.intf
+        i = self.hwIO
         yield from i.ref_clk._ag.getDrivers()
         yield from i.tx._ag.getMonitors()
         yield from i.rx._ag.getDrivers()
 
 
-class RmiiTxChannelAgent(VldSyncedAgent):
+class RmiiTxChannelAgent(HwIODataVldAgent):
     """
     Simulation agent for :class:`hwtLib.peripheral.ethernet.rmii.RmiiTxChannel` interface
 
-    :type intf: RmiiTxChannel
     """
-    def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
-        VldSyncedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim: HdlSimulator, hwIO: "RmiiTxChannel", allowNoReset=False):
+        HwIODataVldAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
         self.is_monitor = False
         self.actual_frame = []
         self.frames = deque()
 
     def getMonitors(self):
         self.is_monitor = True
-        return VldSyncedAgent.getMonitors(self)
+        return HwIODataVldAgent.getMonitors(self)
 
     def _pop_frame(self):
         data = self.data
@@ -53,14 +52,14 @@ class RmiiTxChannelAgent(VldSyncedAgent):
         return frame
 
     def get_data(self):
-        return self.intf.d.read()
+        return self.hwIO.d.read()
 
     def set_data(self, data):
-        self.intf.d.write(data)
+        self.hwIO.d.write(data)
 
     @classmethod
-    def get_valid_signal(cls, intf):
-        return intf.en
+    def get_valid_signal(cls, hwIO):
+        return hwIO.en
 
     def get_valid(self):
         v = self._vld.read()
@@ -76,7 +75,7 @@ class RmiiTxChannelAgent(VldSyncedAgent):
         return self._vld.write(val)
 
 
-class RmiiRxChannelAgent(VldSyncedAgent):
+class RmiiRxChannelAgent(HwIODataVldAgent):
     """
     Simulation agent for :class:`hwtLib.peripheral.ethernet.rmii.RmiiRxChannel` interface
 
@@ -101,14 +100,14 @@ class RmiiRxChannelAgent(VldSyncedAgent):
             data.extend([b01, b23, b45, b67])
 
     def get_data(self):
-        return self.intf.d.read()
+        return self.hwIO.d.read()
 
     def set_data(self, data):
-        self.intf.d.write(data)
+        self.hwIO.d.write(data)
 
     @classmethod
-    def get_valid_signal(cls, intf):
-        return intf.crs_dv
+    def get_valid_signal(cls, hwIO):
+        return hwIO.crs_dv
 
     def get_valid(self):
         return self._vld.read()

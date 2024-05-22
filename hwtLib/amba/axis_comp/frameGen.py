@@ -2,19 +2,19 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axi4s import Axi4Stream
 from pyMathBitPrecise.bit_utils import mask
 
 
-class AxisFrameGen(Unit):
+class AxisFrameGen(HwModule):
     """
     Generator of axi stream frames for testing purposes
 
@@ -22,21 +22,21 @@ class AxisFrameGen(Unit):
     """
 
     def _config(self):
-        self.MAX_LEN = Param(511)
-        self.CNTRL_ADDR_WIDTH = Param(4)
-        self.CNTRL_DATA_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
-        self.USE_STRB = Param(True)
+        self.MAX_LEN = HwParam(511)
+        self.CNTRL_ADDR_WIDTH = HwParam(4)
+        self.CNTRL_DATA_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(64)
+        self.USE_STRB = HwParam(True)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.axis_out = AxiStream()._m()
+        with self._hwParamsShared():
+            self.axis_out = Axi4Stream()._m()
 
-        with self._paramsShared(prefix="CNTRL_"):
+        with self._hwParamsShared(prefix="CNTRL_"):
             self.cntrl = Axi4Lite()
 
-            reg_t = Bits(self.CNTRL_DATA_WIDTH)
+            reg_t = HBits(self.CNTRL_DATA_WIDTH)
             self.conv = AxiLiteEndpoint(
                             HStruct((reg_t, "enable"),
                                     (reg_t, "len")
@@ -45,9 +45,9 @@ class AxisFrameGen(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        cntr = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), def_val=0)
+        cntr = self._reg("wordCntr", HBits(log2ceil(self.MAX_LEN)), def_val=0)
         en = self._reg("enable", def_val=0)
-        _len = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), def_val=0)
+        _len = self._reg("wordCntr", HBits(log2ceil(self.MAX_LEN)), def_val=0)
 
         self.conv.bus(self.cntrl)
         cEn = self.conv.decoded.enable
@@ -83,9 +83,9 @@ class AxisFrameGen(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AxisFrameGen()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = AxisFrameGen()
+    print(to_rtl_str(m))
 
     # import os
     # hwt.serializer.ip_packager import IpPackager

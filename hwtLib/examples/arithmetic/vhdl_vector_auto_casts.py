@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal
-from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwModule import HwModule
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
-class VhdlVectorAutoCastExample(Unit):
+class VhdlVectorAutoCastExample(HwModule):
 
     def _declr(self):
-        std_logic = Bits(1)
-        std_logic_vector_0 = Bits(1, force_vector=True)
+        std_logic = HBits(1)
+        std_logic_vector_0 = HBits(1, force_vector=True)
 
-        self.a = Signal(dtype=std_logic)
-        self.b = Signal(dtype=std_logic)._m()
+        self.a = HwIOSignal(dtype=std_logic)
+        self.b = HwIOSignal(dtype=std_logic)._m()
 
-        self.c = Signal(dtype=std_logic_vector_0)._m()
+        self.c = HwIOSignal(dtype=std_logic_vector_0)._m()
 
-        self.d = Signal(dtype=std_logic_vector_0)
-        self.e = Signal(dtype=std_logic)._m()
+        self.d = HwIOSignal(dtype=std_logic_vector_0)
+        self.e = HwIOSignal(dtype=std_logic)._m()
 
-        self.f = Signal(dtype=std_logic)
-        self.g = Signal(dtype=std_logic_vector_0)
+        self.f = HwIOSignal(dtype=std_logic)
+        self.g = HwIOSignal(dtype=std_logic_vector_0)
 
-        self.i = Signal(dtype=std_logic)._m()
+        self.i = HwIOSignal(dtype=std_logic)._m()
 
-        self.j = Signal(dtype=std_logic)._m()
+        self.j = HwIOSignal(dtype=std_logic)._m()
 
     def _impl(self):
         # no conversion
@@ -48,16 +48,16 @@ class VhdlVectorAutoCastExampleTC(BaseSerializationTC):
     __FILE__ = __file__
 
     def test_vhdl(self):
-        u = VhdlVectorAutoCastExample()
-        self.assert_serializes_as_file(u, "VhdlVectorAutoCastExample.vhd")
+        m = VhdlVectorAutoCastExample()
+        self.assert_serializes_as_file(m, "VhdlVectorAutoCastExample.vhd")
 
 
 if __name__ == '__main__':
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     from hwt.serializer.vhdl import Vhdl2008Serializer
 
-    u = VhdlVectorAutoCastExample()
-    print(to_rtl_str(u, Vhdl2008Serializer))
+    m = VhdlVectorAutoCastExample()
+    print(to_rtl_str(m, Vhdl2008Serializer))
 
     import unittest
     testLoader = unittest.TestLoader()

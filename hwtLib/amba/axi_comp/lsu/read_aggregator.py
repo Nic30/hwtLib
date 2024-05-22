@@ -3,17 +3,17 @@
 
 from hwt.code import If
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import VldSynced
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIODataVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtLib.amba.axi4 import Axi4, Axi4_r
 from hwtLib.amba.axi_comp.lsu.write_aggregator_write_dispatcher import AxiWriteAggregatorWriteDispatcher
-from hwtLib.amba.axis_comp.fifoCopy import AxiSFifoCopy, AxiSRegCopy
-from hwtLib.amba.axis_comp.reg import AxiSReg
+from hwtLib.amba.axis_comp.fifoCopy import Axi4SFifoCopy, Axi4SRegCopy
+from hwtLib.amba.axis_comp.reg import Axi4SReg
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.binToOneHot import binToOneHot
@@ -23,7 +23,7 @@ from pyMathBitPrecise.bit_utils import apply_set_and_clear
 
 
 @serializeParamsUniq
-class AxiReadAggregator(Unit):
+class AxiReadAggregator(HwModule):
     """
     This is a component which reduces reads from same address.
 
@@ -39,20 +39,20 @@ class AxiReadAggregator(Unit):
 
     def _config(self):
         Axi4._config(self)
-        self.CACHE_LINE_SIZE = Param(64)  # [B]
+        self.CACHE_LINE_SIZE = HwParam(64)  # [B]
 
     def _declr(self):
         AxiWriteAggregatorWriteDispatcher.precompute_constants(self)
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = Axi4()
             self.m = Axi4()._m()
 
             if self.BUS_WORDS_IN_CACHE_LINE > 1:
-                fb = AxiSFifoCopy(Axi4_r)
+                fb = Axi4SFifoCopy(Axi4_r)
                 fb.DEPTH = 2 * self.BUS_WORDS_IN_CACHE_LINE
             else:
-                fb = AxiSRegCopy(Axi4_r)
+                fb = Axi4SRegCopy(Axi4_r)
             self.frame_buff = fb
 
         ac = self.addr_cam = CamMultiPort()
@@ -67,7 +67,7 @@ class AxiReadAggregator(Unit):
     def read_data_section(self, read_ack: RtlSignal,
                           waiting_transaction_id: RtlSignal,
                           waiting_transaction_vld: RtlSignal,
-                          data_copy_override: VldSynced):
+                          data_copy_override: HwIODataVld):
         s = self.s
         m = self.m
 
@@ -109,17 +109,17 @@ class AxiReadAggregator(Unit):
                              item_vld: RtlSignal,
                              waiting_transaction_id: RtlSignal,
                              waiting_transaction_vld: RtlSignal,
-                             data_copy_override: VldSynced):
+                             data_copy_override: HwIODataVld):
         s = self.s
         m = self.m
         addr_cam = self.addr_cam
         ITEMS = addr_cam.ITEMS
         addr_cam_out = self.add_addr_cam_out_reg(item_vld)
 
-        with self._paramsShared():
-            s_ar_tmp = self.s_ar_tmp = AxiSReg(s.AR_CLS)
+        with self._hwParamsShared():
+            s_ar_tmp = self.s_ar_tmp = Axi4SReg(s.AR_CLS)
 
-        last_cam_insert_match = self._reg("last_cam_insert_match", Bits(ITEMS), def_val=0)
+        last_cam_insert_match = self._reg("last_cam_insert_match", HBits(ITEMS), def_val=0)
         match_res = rename_signal(
             self,
             item_vld &
@@ -216,12 +216,12 @@ class AxiReadAggregator(Unit):
 
     def _impl(self):
         ITEMS = self.addr_cam.ITEMS
-        item_vld = self._reg("item_vld", Bits(ITEMS), def_val=0)
+        item_vld = self._reg("item_vld", HBits(ITEMS), def_val=0)
         waiting_transaction_id = self._sig("waiting_transaction_id", self.s.ar.id._dtype[ITEMS])
-        waiting_transaction_vld = self._reg("waiting_transaction_vld", Bits(ITEMS), def_val=0)
+        waiting_transaction_vld = self._reg("waiting_transaction_vld", HBits(ITEMS), def_val=0)
         read_ack = self._sig("read_ack")
         # if the parent transaction is about to finish how we need to copy the response now
-        data_copy_override = VldSynced()
+        data_copy_override = HwIODataVld()
         data_copy_override.DATA_WIDTH = self.ID_WIDTH
         self.data_copy_override = data_copy_override
 
@@ -234,15 +234,15 @@ class AxiReadAggregator(Unit):
 
 
 def _example_AxiReadAggregator():
-    u = AxiReadAggregator()
-    u.ID_WIDTH = 2
-    return u
+    m = AxiReadAggregator()
+    m.ID_WIDTH = 2
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiReadAggregator()
-    u.DATA_WIDTH = 128
-    u.CACHE_LINE_SIZE = 16
-    u.ID_WIDTH = 6
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_AxiReadAggregator()
+    m.DATA_WIDTH = 128
+    m.CACHE_LINE_SIZE = 16
+    m.ID_WIDTH = 6
+    print(to_rtl_str(m))

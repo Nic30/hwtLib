@@ -1,4 +1,4 @@
-from hwt.hdl.constants import READ, WRITE
+from hwt.constants import READ, WRITE
 from hwtLib.abstract.sim_ram import SimRam
 from hwtLib.cesnet.mi32.intf import Mi32
 from pyMathBitPrecise.bit_utils import mask
@@ -9,7 +9,7 @@ class Mi32SimRam(SimRam):
 
     def __init__(self, mi32: Mi32, parent=None):
         super(Mi32SimRam, self).__init__(mi32.DATA_WIDTH // 8, parent=parent)
-        self.intf = mi32
+        self.hwIO = mi32
         self.clk = mi32._getAssociatedClk()
         self._word_bytes = mi32.DATA_WIDTH // 8
         self._word_mask = mask(self._word_bytes)
@@ -23,7 +23,7 @@ class Mi32SimRam(SimRam):
         Check if any request has appeared on interfaces
         """
         yield WaitWriteOnly()
-        req = self.intf._ag.requests
+        req = self.hwIO._ag.requests
         if req:
             self.on_req(req)
 
@@ -35,7 +35,7 @@ class Mi32SimRam(SimRam):
             raise NotImplementedError("Unaligned read")
 
         d = self.data[int(addr) // self._word_bytes]
-        self.intf._ag.r_data.append(d)
+        self.hwIO._ag.r_data.append(d)
 
     def on_write(self, addr, val, byteen):
         addr = int(addr)

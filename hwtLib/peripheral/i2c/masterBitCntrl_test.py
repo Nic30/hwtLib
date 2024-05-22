@@ -16,41 +16,41 @@ class I2CMasterBitCntrlTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = I2cMasterBitCtrl()
-        cls.compileSim(cls.u)
+        cls.dut = I2cMasterBitCtrl()
+        cls.compileSim(cls.dut)
 
     def test_nop(self):
-        u = self.u
-        u.cntrl._ag.data.append((NOP, 0))
-        u.clk_cnt_initVal._ag.data.append(4)
+        dut = self.dut
+        dut.cntrl._ag.data.append((NOP, 0))
+        dut.clk_cnt_initVal._ag.data.append(4)
         self.runSim(20 * CLK_PERIOD)
 
-        self.assertFalse(u.i2c._ag.hasTransactionPending())
+        self.assertFalse(dut.i2c._ag.hasTransactionPending())
 
     def test_startbit(self):
-        u = self.u
-        u.cntrl._ag.data.extend([(START, 0), (NOP, 0)])
-        u.clk_cnt_initVal._ag.data.append(4)
+        dut = self.dut
+        dut.cntrl._ag.data.extend([(START, 0), (NOP, 0)])
+        dut.clk_cnt_initVal._ag.data.append(4)
         self.runSim(60 * CLK_PERIOD)
 
-        self.assertEqual(u.i2c._ag.bit_cntrl_rx, deque([I2cAgent.START]))
+        self.assertEqual(dut.i2c._ag.bit_cntrl_rx, deque([I2cAgent.START]))
 
     def test_7bitAddr(self):
-        u = self.u
+        dut = self.dut
         addr = 13
         mode = I2cAgent.READ
-        u.cntrl._ag.data.extend(
+        dut.cntrl._ag.data.extend(
             [(START, 0), ] +
             [(WRITE, get_bit(addr, 7 - i - 1)) for i in range(7)] +
             [(WRITE, mode),
              (READ, 0),
              (NOP, 0)
             ])
-        u.clk_cnt_initVal._ag.data.append(4)
+        dut.clk_cnt_initVal._ag.data.append(4)
         self.runSim(70 * CLK_PERIOD)
 
         self.assertValSequenceEqual(
-            u.i2c._ag.bit_cntrl_rx,
+            dut.i2c._ag.bit_cntrl_rx,
             [I2cAgent.START] +
             [get_bit(addr, 7 - i - 1)
              for i in range(7)] +

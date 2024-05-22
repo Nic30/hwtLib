@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat
-from hwt.interfaces.std import Signal, VectSignal
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwtSimApi.constants import CLK_PERIOD
 
 
@@ -25,7 +25,7 @@ def binToOneHot(sig, en=1):
 
 
 @serializeParamsUniq
-class BinToOneHot(Unit):
+class BinToOneHot(HwModule):
     """
     Little endian encoded number to number in one-hot encoding
 
@@ -33,12 +33,12 @@ class BinToOneHot(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(8)
+        self.DATA_WIDTH = HwParam(8)
 
     def _declr(self):
-        self.din = VectSignal(log2ceil(self.DATA_WIDTH))
-        self.en = Signal()
-        self.dout = VectSignal(self.DATA_WIDTH)._m()
+        self.din = HwIOVectSignal(log2ceil(self.DATA_WIDTH))
+        self.en = HwIOSignal()
+        self.dout = HwIOVectSignal(self.DATA_WIDTH)._m()
 
     def _impl(self):
         en = self.en
@@ -56,23 +56,23 @@ class BinToOneHotTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = BinToOneHot()
-        cls.compileSim(cls.u)
+        cls.dut = BinToOneHot()
+        cls.compileSim(cls.dut)
 
     def test_basic(self):
-        u = self.u
-        u.en._ag.data.append(1)
-        u.din._ag.data.extend(range(8))
+        dut = self.dut
+        dut.en._ag.data.append(1)
+        dut.din._ag.data.extend(range(8))
 
         self.runSim(8 * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.dout._ag.data,
+        self.assertValSequenceEqual(dut.dout._ag.data,
                                     [1 << i for i in range(8)])
 
 
 if __name__ == "__main__":
     import unittest
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
 
     print(to_rtl_str(BinToOneHot()))
 

@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time, WRITE, NOP
+from hwt.constants import Time, WRITE, NOP
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import \
     addrGetter as axi_addrGetter, structTwoFieldsDense, \
     structTwoFieldsDenseStart, AxiLiteEndpointDenseStartTC, \
     AxiLiteEndpointDenseTC
 from hwtLib.cesnet.mi32.endpoint import Mi32Endpoint
-from hwtLib.cesnet.mi32.mi32SimMemSpaceMaster import Mi32SimMemSpaceMaster
 from hwtLib.cesnet.mi32.intf import Mi32
-from pyMathBitPrecise.bit_utils import mask
-from hwtLib.mem.bramEndpoint_test import BramPortEndpointTC,\
+from hwtLib.cesnet.mi32.mi32SimMemSpaceMaster import Mi32SimMemSpaceMaster
+from hwtLib.mem.bramEndpoint_test import BramPortEndpointTC, \
     BramPortEndpointArrayTC
+from pyMathBitPrecise.bit_utils import mask
+
 
 # [TODO] very similar to hwtLib.mem.bramEndpoint_test
-
-def addrGetter(intf):
-    if isinstance(intf, Mi32):
-        return intf.addr
+def addrGetter(hwIO):
+    if isinstance(hwIO, Mi32):
+        return hwIO.addr
     else:
-        return axi_addrGetter(intf)
+        return axi_addrGetter(hwIO)
 
 
 class Mi32EndpointTC(BramPortEndpointTC):
@@ -31,30 +31,30 @@ class Mi32EndpointTC(BramPortEndpointTC):
         self.regs = Mi32SimMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
     def mySetUp(self, data_width=32):
-        u = self.u = Mi32Endpoint(self.STRUCT_TEMPLATE)
+        dut = self.dut = Mi32Endpoint(self.STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH = self.DATA_WIDTH
+        dut.DATA_WIDTH = self.DATA_WIDTH
 
-        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
+        self.compileSimAndStart(self.dut, onAfterToRtl=self.mkRegisterMap)
+        return dut
 
     def test_nop(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
 
         self.randomizeAll()
         self.runSim(100 * Time.ns)
 
-        self.assertEmpty(u.bus._ag.r_data)
-        self.assertEmpty(u.decoded.field0._ag.dout)
-        self.assertEmpty(u.decoded.field1._ag.dout)
+        self.assertEmpty(dut.bus._ag.r_data)
+        self.assertEmpty(dut.decoded.field0._ag.dout)
+        self.assertEmpty(dut.decoded.field1._ag.dout)
 
     def test_write(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         A = self.FIELD_ADDR
         m = mask(self.DATA_WIDTH//8)
-        u.bus._ag.requests.extend([
+        dut.bus._ag.requests.extend([
             NOP,  # assert is after reset
             (WRITE, A[0], MAGIC, m),
             (WRITE, A[1], MAGIC + 1, m),
@@ -64,11 +64,11 @@ class Mi32EndpointTC(BramPortEndpointTC):
         self.randomizeAll()
         self.runSim(400 * Time.ns)
 
-        self.assertValSequenceEqual(u.decoded.field0._ag.dout,
+        self.assertValSequenceEqual(dut.decoded.field0._ag.dout,
                                     [MAGIC,
                                      MAGIC + 2],
                                     "field0")
-        self.assertValSequenceEqual(u.decoded.field1._ag.dout,
+        self.assertValSequenceEqual(dut.decoded.field1._ag.dout,
                                     [MAGIC + 1,
                                      MAGIC + 3],
                                     "field1")
@@ -96,23 +96,23 @@ class Mi32EndpointArrayTC(BramPortEndpointArrayTC):
     mySetUp = Mi32EndpointTC.mySetUp
 
     def test_write(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         regs = self.regs
         MAGIC = 100
 
         for i in range(4):
-            u.decoded.field0._ag.mem[i] = None
-            u.decoded.field1._ag.mem[i] = None
+            dut.decoded.field0._ag.mem[i] = None
+            dut.decoded.field1._ag.mem[i] = None
             regs.field0[i].write(MAGIC + i + 1)
             regs.field1[i].write(2 * MAGIC + i + 1)
 
         self.randomizeAll()
         self.runSim(200 * Time.ns)
 
-        self.assertEmpty(u.bus._ag.r_data)
+        self.assertEmpty(dut.bus._ag.r_data)
         for i in range(4):
-            self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + i + 1)
-            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1)
+            self.assertValEqual(dut.decoded.field0._ag.mem[i], MAGIC + i + 1)
+            self.assertValEqual(dut.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1)
 
 
 Mi32EndpointTCs = [

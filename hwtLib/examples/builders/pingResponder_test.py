@@ -3,13 +3,13 @@
 
 import socket
 
-from hwt.hdl.types.utils import HValue_from_words
+from hwt.hdl.types.utils import HConst_from_words
 from hwt.math import sizeof
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import valToInt
+from hwt.simulator.utils import Bits3valToInt
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.amba.axis import unpackAxiSFrame, packAxiSFrame
-from hwtLib.examples.builders.pingResponder import PingResponder, \
+from hwtLib.amba.axi4s import unpackAxi4SFrame, packAxi4SFrame
+from hwtLib.examples.builders.pingResponder import Axi4SPingResponder, \
     echoFrame_t
 from hwtLib.types.net.ethernet import eth_addr_parse, ETHER_TYPE
 from hwtLib.types.net.icmp import ICMP_TYPE, ICMP_echo_header_t
@@ -47,7 +47,7 @@ def pingResponder_model(packetStructVal):
     :param packet: struct val of packet
     """
     packet = iterBits(packetStructVal, bitsInOne=8, skipPadding=False)
-    packet = [valToInt(p) for p in packet]
+    packet = [Bits3valToInt(p) for p in packet]
     eth = 0
     # swap eht addr
     (packet[(eth + 0):(eth + 6)],
@@ -83,14 +83,14 @@ def pingResponder_model(packetStructVal):
     return bytes(packet)
 
 
-class PingResponderTC(SimTestCase):
+class Axi4SPingResponderTC(SimTestCase):
     DATA_WIDTH = 32
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = PingResponder()
-        u.DATA_WIDTH = cls.DATA_WIDTH
-        cls.compileSim(u)
+        dut = cls.dut = Axi4SPingResponder()
+        dut.DATA_WIDTH = cls.DATA_WIDTH
+        cls.compileSim(dut)
 
     def create_ICMP_echo_frame(self,
                                ethSrc="00:1:2:3:4:5", ethDst="6:7:8:9:10:11",
@@ -134,40 +134,40 @@ class PingResponderTC(SimTestCase):
     def test_struct_packUnpack(self):
         f = self.create_ICMP_echo_frame()
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
-        asBytes = [valToInt(x) for x in asBytes]
+        asBytes = [Bits3valToInt(x) for x in asBytes]
 
-        f_out = HValue_from_words(echoFrame_t, asBytes, dataWidth=8)
+        f_out = HConst_from_words(echoFrame_t, asBytes, dataWidth=8)
 
         self.assertEqual(f, f_out)
 
         _f = f
         f = f_out
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
-        asBytes = [valToInt(x) for x in asBytes]
+        asBytes = [Bits3valToInt(x) for x in asBytes]
 
-        f_out = HValue_from_words(echoFrame_t, asBytes, dataWidth=8)
+        f_out = HConst_from_words(echoFrame_t, asBytes, dataWidth=8)
 
         self.assertEqual(_f, f_out)
 
     def test_reply1x(self):
-        u = self.u
+        dut = self.dut
         f = self.create_ICMP_echo_frame()
 
-        u.rx._ag.data.extend(packAxiSFrame(self.DATA_WIDTH, f, withStrb=False))
-        u.myIp._ag.data.append(
+        dut.rx._ag.data.extend(packAxi4SFrame(self.DATA_WIDTH, f, withStrb=False))
+        dut.myIp._ag.data.append(
             int.from_bytes(socket.inet_aton("192.168.0.2"), byteorder="little")
         )
         self.runSim(50 * CLK_PERIOD)
 
-        res = unpackAxiSFrame(echoFrame_t, u.tx._ag.data)
+        res = unpackAxi4SFrame(echoFrame_t, dut.tx._ag.data)
         model_res = pingResponder_model(f)
 
         _res = iterBits(res, bitsInOne=8, skipPadding=False)
-        _res = bytes(map(valToInt, _res))
+        _res = bytes(map(Bits3valToInt, _res))
         # print("")
         # print("f", f)
         # print("res", res)
-        # print("model_res", HValue_from_words(echoFrame_t, model_res, dataWidth=8))
+        # print("model_res", HConst_from_words(echoFrame_t, model_res, dataWidth=8))
 
         self.assertEqual(_res, model_res)
 
@@ -175,7 +175,7 @@ class PingResponderTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([PingResponderTC("test_reply1x")])
-    suite = testLoader.loadTestsFromTestCase(PingResponderTC)
+    # suite = unittest.TestSuite([Axi4SPingResponderTC("test_reply1x")])
+    suite = testLoader.loadTestsFromTestCase(Axi4SPingResponderTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

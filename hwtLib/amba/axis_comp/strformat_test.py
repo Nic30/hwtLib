@@ -3,25 +3,25 @@
 
 import unittest
 
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream, axis_recieve_bytes, axis_send_bytes
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
+from hwtLib.amba.axi4s import Axi4Stream, axi4s_recieve_bytes, axi4s_send_bytes
 from hwtLib.amba.axis_comp.strformat_fn import axiS_strFormat
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class _example_AxiS_strFormat_no_args(Unit):
+class _example_Axi4S_strFormat_no_args(HwModule):
 
     def _config(self):
-        self.DATA_WIDTH = Param(8)
+        self.DATA_WIDTH = HwParam(8)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.out = AxiStream()._m()
+        with self._hwParamsShared():
+            self.out = Axi4Stream()._m()
 
     def _impl(self):
         o = axiS_strFormat(self, "f0", self.DATA_WIDTH, "test 1234")
@@ -29,11 +29,11 @@ class _example_AxiS_strFormat_no_args(Unit):
         propagateClkRstn(self)
 
 
-class _example_AxiS_strFormat_args_numbers(_example_AxiS_strFormat_no_args):
+class _example_Axi4S_strFormat_args_numbers(_example_Axi4S_strFormat_no_args):
 
     def _config(self):
-        _example_AxiS_strFormat_no_args._config(self)
-        self.FORMAT = Param("0b{0:08b}, 0o{0:04o}, {0:03d}, 0x{0:02x}, 0x{0:02X}")
+        _example_Axi4S_strFormat_no_args._config(self)
+        self.FORMAT = HwParam("0b{0:08b}, 0o{0:04o}, {0:03d}, 0x{0:02x}, 0x{0:02X}")
 
     def _impl(self):
         n = self._sig("n", dtype=uint8_t)
@@ -46,10 +46,10 @@ class _example_AxiS_strFormat_args_numbers(_example_AxiS_strFormat_no_args):
         propagateClkRstn(self)
 
 
-class _example_AxiS_strFormat_kwargs_numbers(_example_AxiS_strFormat_no_args):
+class _example_Axi4S_strFormat_kwargs_numbers(_example_Axi4S_strFormat_no_args):
 
     def _config(self):
-        _example_AxiS_strFormat_no_args._config(self)
+        _example_Axi4S_strFormat_no_args._config(self)
         self.FORMAT = "0b{arg0:08b}, 0o{arg0:04o}, {arg0:03d}, 0x{arg0:02x}, 0x{arg0:02X}"
 
     def _impl(self):
@@ -63,16 +63,16 @@ class _example_AxiS_strFormat_kwargs_numbers(_example_AxiS_strFormat_no_args):
         propagateClkRstn(self)
 
 
-class _example_AxiS_strFormat_1x_str(Unit):
+class _example_Axi4S_strFormat_1x_str(HwModule):
 
     def _config(self):
-        self.DATA_WIDTH = Param(8)
+        self.DATA_WIDTH = HwParam(8)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.out = AxiStream()._m()
-            self.str0 = AxiStream()
+        with self._hwParamsShared():
+            self.out = Axi4Stream()._m()
+            self.str0 = Axi4Stream()
 
     def _impl(self):
         o = axiS_strFormat(self, "f0", self.DATA_WIDTH, "str0:{0:s}", self.str0)
@@ -80,13 +80,13 @@ class _example_AxiS_strFormat_1x_str(Unit):
         propagateClkRstn(self)
 
 
-class _example_AxiS_strFormat_3x_str(_example_AxiS_strFormat_1x_str):
+class _example_Axi4S_strFormat_3x_str(_example_Axi4S_strFormat_1x_str):
 
     def _declr(self):
-        super(_example_AxiS_strFormat_3x_str, self)._declr()
-        with self._paramsShared():
-            self.str1 = AxiStream()
-            self.str2 = AxiStream()
+        super(_example_Axi4S_strFormat_3x_str, self)._declr()
+        with self._hwParamsShared():
+            self.str1 = Axi4Stream()
+            self.str2 = Axi4Stream()
 
     def _impl(self):
         o = axiS_strFormat(self, "f0", self.DATA_WIDTH, "{0:s}{1:s}xyz{str2:s}",
@@ -95,82 +95,82 @@ class _example_AxiS_strFormat_3x_str(_example_AxiS_strFormat_1x_str):
         propagateClkRstn(self)
 
 
-class AxiS_strFormat_TC(SimTestCase):
+class Axi4S_strFormat_TC(SimTestCase):
 
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)
 
     def test_args_numbers(self):
-        u = self.compileSimAndStart(_example_AxiS_strFormat_args_numbers())
+        dut = self.compileSimAndStart(_example_Axi4S_strFormat_args_numbers())
         self.runSim(200 * CLK_PERIOD)
 
         for _ in range(3):
-            frame = axis_recieve_bytes(u.out)
+            frame = axi4s_recieve_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, "0b{0:08b}, 0o{0:04o}, {0:03d}, 0x{0:02x}, 0x{0:02X}".format(13))
 
     def test_kwargs_numbers(self):
-        u = self.compileSimAndStart(_example_AxiS_strFormat_kwargs_numbers())
+        dut = self.compileSimAndStart(_example_Axi4S_strFormat_kwargs_numbers())
         self.runSim(200 * CLK_PERIOD)
 
         for _ in range(3):
-            frame = axis_recieve_bytes(u.out)
+            frame = axi4s_recieve_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, "0b{0:08b}, 0o{0:04o}, {0:03d}, 0x{0:02x}, 0x{0:02X}".format(13))
 
     def test_no_args(self):
-        u = self.compileSimAndStart(_example_AxiS_strFormat_no_args())
-        self.randomize(u.out)
+        dut = self.compileSimAndStart(_example_Axi4S_strFormat_no_args())
+        self.randomize(dut.out)
         self.runSim(50 * CLK_PERIOD)
 
         for _ in range(3):
-            frame = axis_recieve_bytes(u.out)
+            frame = axi4s_recieve_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, 'test 1234')
 
     def test_1x_str(self):
-        u = self.compileSimAndStart(_example_AxiS_strFormat_1x_str())
-        self.randomize(u.out)
-        self.randomize(u.str0)
+        dut = self.compileSimAndStart(_example_Axi4S_strFormat_1x_str())
+        self.randomize(dut.out)
+        self.randomize(dut.str0)
         strings = ["test0", "x", "1234567890"]
         for s in strings:
-            axis_send_bytes(u.str0, s.encode("utf-8"))
+            axi4s_send_bytes(dut.str0, s.encode("utf-8"))
         self.runSim(200 * CLK_PERIOD)
 
         for s_ref in strings:
-            frame = axis_recieve_bytes(u.out)
+            frame = axi4s_recieve_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, "str0:{0:s}".format(s_ref))
 
     def test_3x_str(self):
-        u = self.compileSimAndStart(_example_AxiS_strFormat_3x_str())
-        self.randomize(u.out)
-        self.randomize(u.str0)
-        self.randomize(u.str1)
-        self.randomize(u.str2)
+        dut = self.compileSimAndStart(_example_Axi4S_strFormat_3x_str())
+        self.randomize(dut.out)
+        self.randomize(dut.str0)
+        self.randomize(dut.str1)
+        self.randomize(dut.str2)
         strings = [("test0", "str1", "str3"),
                    ("x", "y", "z"),
                    ("1234567890", "abc", "\t\n")]
         for s0, s1, s2 in strings:
-            axis_send_bytes(u.str0, s0.encode("utf-8"))
-            axis_send_bytes(u.str1, s1.encode("utf-8"))
-            axis_send_bytes(u.str2, s2.encode("utf-8"))
+            axi4s_send_bytes(dut.str0, s0.encode("utf-8"))
+            axi4s_send_bytes(dut.str1, s1.encode("utf-8"))
+            axi4s_send_bytes(dut.str2, s2.encode("utf-8"))
         self.runSim(200 * CLK_PERIOD)
 
         for s_ref in strings:
-            frame = axis_recieve_bytes(u.out)
+            frame = axi4s_recieve_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, "{0:s}{1:s}xyz{2:s}".format(*s_ref))
 
 
 if __name__ == "__main__":
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([AxiS_strFormat_TC("test_args_numbers")])
-    suite = testLoader.loadTestsFromTestCase(AxiS_strFormat_TC)
+    # suite = unittest.TestSuite([Axi4S_strFormat_TC("test_args_numbers")])
+    suite = testLoader.loadTestsFromTestCase(Axi4S_strFormat_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    # from hwt.synthesizer.utils import to_rtl_str
-    # u = _example_AxiS_strFormat_1x_str()
-    # print(to_rtl_str(u))
+    # from hwt.synth import to_rtl_str
+    # m = _example_Axi4S_strFormat_1x_str()
+    # print(to_rtl_str(m))
 

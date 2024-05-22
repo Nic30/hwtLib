@@ -1,51 +1,51 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.synthesizer.unit import Unit
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwModule import HwModule
+from hwt.hwIOs.utils import addClkRstn
 
 
-class SimpleIndexingSplit(Unit):
+class SimpleIndexingSplit(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.a = VectSignal(2)
-        self.b = Signal()._m()
-        self.c = Signal()._m()
+        self.a = HwIOVectSignal(2)
+        self.b = HwIOSignal()._m()
+        self.c = HwIOSignal()._m()
 
     def _impl(self):
         self.b(self.a[0])
         self.c(self.a[1])
 
 
-class SimpleIndexingJoin(Unit):
+class SimpleIndexingJoin(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.a = VectSignal(2)._m()
-        self.b = Signal()
-        self.c = Signal()
+        self.a = HwIOVectSignal(2)._m()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()
 
     def _impl(self):
         self.a[0](self.b)
         self.a[1](self.c)
 
 
-class SimpleIndexingRangeJoin(Unit):
+class SimpleIndexingRangeJoin(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.a = VectSignal(4)._m()
-        self.b = VectSignal(2)
-        self.c = VectSignal(2)
+        self.a = HwIOVectSignal(4)._m()
+        self.b = HwIOVectSignal(2)
+        self.c = HwIOVectSignal(2)
 
     def _impl(self):
         self.a[2:0](self.b)
@@ -53,18 +53,18 @@ class SimpleIndexingRangeJoin(Unit):
         assert len(self.a._sig.drivers) == 2
 
 
-class IndexingInernRangeSplit(Unit):
+class IndexingInernRangeSplit(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.a = VectSignal(4)
-        self.b = VectSignal(4)._m()
+        self.a = HwIOVectSignal(4)
+        self.b = HwIOVectSignal(4)._m()
 
     def _impl(self):
-        internA = self._sig("internA", Bits(2))
-        internB = self._sig("internB", Bits(2))
+        internA = self._sig("internA", HBits(2))
+        internB = self._sig("internB", HBits(2))
 
         internA(self.a[2:])
         internB(self.a[:2])
@@ -73,14 +73,14 @@ class IndexingInernRangeSplit(Unit):
         self.b[:2](internB)
 
 
-class IndexingInternSplit(Unit):
+class IndexingInternSplit(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.a = VectSignal(2)
-        self.b = VectSignal(2)._m()
+        self.a = HwIOVectSignal(2)
+        self.b = HwIOVectSignal(2)._m()
 
     def _impl(self):
         internA = self._sig("internA")
@@ -93,19 +93,19 @@ class IndexingInternSplit(Unit):
         self.b[1](internB)
 
 
-class IndexingInernJoin(Unit):
+class IndexingInernJoin(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()
-        self.c = Signal()._m()
-        self.d = Signal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()._m()
+        self.d = HwIOSignal()._m()
 
     def _impl(self):
-        intern = self._sig("internSig", Bits(2))
+        intern = self._sig("internSig", HBits(2))
 
         intern[0](self.a)
         intern[1](self.b)
@@ -114,18 +114,18 @@ class IndexingInernJoin(Unit):
         self.d(intern[1])
 
 
-class AssignmentToRegIndex(Unit):
+class AssignmentToRegIndex(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
         addClkRstn(self)
-        self.a = VectSignal(2)
-        self.b = VectSignal(2)._m()
+        self.a = HwIOVectSignal(2)
+        self.b = HwIOVectSignal(2)._m()
 
     def _impl(self):
-        intern = self._reg("internReg", Bits(2))
+        intern = self._reg("internReg", HBits(2))
 
         intern[0](intern[0] & self.a[0])
         intern[1](intern[1] | self.a[1])
@@ -134,6 +134,7 @@ class AssignmentToRegIndex(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AssignmentToRegIndex()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = AssignmentToRegIndex()
+    print(to_rtl_str(m))

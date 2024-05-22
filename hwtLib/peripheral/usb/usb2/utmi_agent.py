@@ -1,6 +1,6 @@
 from collections import deque
 
-from hwt.hdl.constants import NOP
+from hwt.constants import NOP
 from hwt.simulator.agentBase import SyncAgentBase
 from hwtLib.peripheral.usb.constants import USB_LINE_STATE
 from hwtLib.peripheral.usb.usb2.ulpi import ulpi_reg_otg_control_t_reset_defaults, \
@@ -23,14 +23,14 @@ class Utmi_8b_rxAgent(SyncAgentBase):
     """
     USB_ERROR = "ERROR"
 
-    def __init__(self, sim:HdlSimulator, intf: Utmi_8b_rx, allowNoReset=False):
-        SyncAgentBase.__init__(self, sim, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim:HdlSimulator, hwIO: Utmi_8b_rx, allowNoReset=False):
+        SyncAgentBase.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
         self._last_active = 0
         self.data = deque()
         self.actual_packet = None
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         if i.error.read():
             d = self.USB_ERROR
         else:
@@ -38,7 +38,7 @@ class Utmi_8b_rxAgent(SyncAgentBase):
         return d
 
     def set_active(self, val):
-        self.intf.active.write(val)
+        self.hwIO.active.write(val)
         self._last_active = val
 
     def set_data(self, data):
@@ -53,33 +53,33 @@ class Utmi_8b_rxAgent(SyncAgentBase):
                 e = 0
                 d = data
 
-        i = self.intf
+        i = self.hwIO
         i.data.write(d)
         i.error.write(e)
 
     def monitor(self):
         yield WaitCombStable()
         if self.notReset():
-            intf = self.intf
-            active = int(intf.active.read())
+            hwIO = self.hwIO
+            active = int(hwIO.active.read())
             if active:
                 if not self._last_active:
                     # start of packet
                     assert self.actual_packet is None
                     self.actual_packet = deque()
 
-                vld = int(intf.valid.read())
+                vld = int(hwIO.valid.read())
                 if vld:
                     d = self.get_data()
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, read, %d: %r\n" % (
-                            intf._getFullName(),
+                            hwIO._getFullName(),
                             self.sim.now, d))
                     self.actual_packet.append(d)
 
             elif self._last_active:
                 # end of packet
-                assert self.actual_packet, (self.sim.now, intf._getFullName())
+                assert self.actual_packet, (self.sim.now, hwIO._getFullName())
                 self.data.append(self.actual_packet)
                 self.actual_packet = None
 
@@ -105,18 +105,18 @@ class Utmi_8b_rxAgent(SyncAgentBase):
                 d = NOP
 
         yield WaitWriteOnly()
-        intf = self.intf
+        hwIO = self.hwIO
         if d is NOP:
             self.set_data(None)
-            intf.valid.write(0)
+            hwIO.valid.write(0)
         else:
             self.set_data(d)
-            intf.valid.write(1)
+            hwIO.valid.write(1)
 
         self.set_active(active)
         if active and self._debugOutput is not None:
             self._debugOutput.write("%s, wrote, %d: %r\n" % (
-                intf._getFullName(),
+                hwIO._getFullName(),
                 self.sim.now, self.actualData))
 
 
@@ -129,9 +129,9 @@ class Utmi_8b_txAgent(SyncAgentBase):
     .. figure:: ./_static/utmi_rx.png
     """
 
-    def __init__(self, sim:HdlSimulator, intf, allowNoReset=False):
+    def __init__(self, sim:HdlSimulator, hwIO, allowNoReset=False):
         SyncAgentBase.__init__(
-            self, sim, intf, allowNoReset=allowNoReset)
+            self, sim, hwIO, allowNoReset=allowNoReset)
         self.data = deque()
         self.actual_packet = None
         self._last_ready = 0
@@ -154,25 +154,25 @@ class Utmi_8b_txAgent(SyncAgentBase):
                 d = self.actual_packet[0]
 
             yield WaitWriteOnly()
-            intf = self.intf
+            hwIO = self.hwIO
 
             if d is NOP:
-                intf.data.write(None)
-                intf.vld.write(0)
+                hwIO.data.write(None)
+                hwIO.vld.write(0)
             else:
-                intf.data.write(d)
-                intf.vld.write(1)
+                hwIO.data.write(d)
+                hwIO.vld.write(1)
 
             yield WaitCombStable()
 
             try:
-                rd = int(intf.rd.read())
+                rd = int(hwIO.rd.read())
             except ValidityError:
-                raise AssertionError(self.sim.now, intf._getFullName(), "invalid rd (would cause desynchronization of the channel)")
+                raise AssertionError(self.sim.now, hwIO._getFullName(), "invalid rd (would cause desynchronization of the channel)")
 
             if d is NOP:
                 if self._last_valid == 1:
-                    assert rd == 1, (self.sim.now, intf._getFullName(), rd, "Ready must be 1 or 1 clk tick after end of packet (EOP state)")
+                    assert rd == 1, (self.sim.now, hwIO._getFullName(), rd, "Ready must be 1 or 1 clk tick after end of packet (EOP state)")
 
             if rd and self.actual_packet:
                 self.actual_packet.popleft()
@@ -189,11 +189,11 @@ class Utmi_8b_txAgent(SyncAgentBase):
         if self.notReset():
             yield WaitWriteOnly()
             yield WaitCombRead()
-            intf = self.intf
+            hwIO = self.hwIO
             try:
-                vld = int(intf.vld.read())
+                vld = int(hwIO.vld.read())
             except ValidityError:
-                    raise AssertionError(self.sim.now, intf._getFullName(), "invalid vld, this would case desynchronization")
+                    raise AssertionError(self.sim.now, hwIO._getFullName(), "invalid vld, this would case desynchronization")
             if self._last_valid and not vld:
                 # end of packet
                 self.data.append(self.actual_packet)
@@ -204,9 +204,9 @@ class Utmi_8b_txAgent(SyncAgentBase):
 
             if vld:
                 try:
-                    d = int(intf.data.read())
+                    d = int(hwIO.data.read())
                 except ValidityError:
-                    raise AssertionError(self.sim.now, intf._getFullName(), "invalid data")
+                    raise AssertionError(self.sim.now, hwIO._getFullName(), "invalid data")
                 self.actual_packet.append(d)
 
             if vld or self._last_valid:
@@ -215,7 +215,7 @@ class Utmi_8b_txAgent(SyncAgentBase):
                 rd = 0
 
             yield WaitWriteOnly()
-            intf.rd.write(rd)
+            hwIO.rd.write(rd)
 
             self._last_ready = rd
             self._last_valid = vld
@@ -230,71 +230,71 @@ class Utmi_8bAgent(AgentBase):
     Simulation agent for :class:`hwtLib.peripheral.usb.usb2.utmi.Utmi_8b` interface.
     """
 
-    def __init__(self, sim:HdlSimulator, intf: Utmi_8b):
-        AgentBase.__init__(self, sim, intf)
-        for i in [intf.function_control, intf.otg_control, intf.interrupt, intf.rx, intf.tx]:
+    def __init__(self, sim:HdlSimulator, hwIO: Utmi_8b):
+        AgentBase.__init__(self, sim, hwIO)
+        for i in [hwIO.function_control, hwIO.otg_control, hwIO.interrupt, hwIO.rx, hwIO.tx]:
             i._initSimAgent(sim)
 
     @property
     def link_to_phy_packets(self):
-        return self.intf.tx._ag.data
+        return self.hwIO.tx._ag.data
 
     @link_to_phy_packets.setter
     def link_to_phy_packets_setter(self, v):
-        self.intf.tx._ag.data = v
+        self.hwIO.tx._ag.data = v
 
     @property
     def actual_link_to_phy_packet(self):
-        return self.intf.tx._ag.actual_packet
+        return self.hwIO.tx._ag.actual_packet
 
     @actual_link_to_phy_packet.setter
     def actual_link_to_phy_packet_setter(self, v):
-        self.intf.tx._ag.actual_packet = v
+        self.hwIO.tx._ag.actual_packet = v
 
     @property
     def phy_to_link_packets(self):
-        return self.intf.rx._ag.data
+        return self.hwIO.rx._ag.data
 
     @phy_to_link_packets.setter
     def phy_to_link_packets_setter(self, v):
-        self.intf.rx._ag.data = v
+        self.hwIO.rx._ag.data = v
 
     @property
     def actual_phy_to_link_packet(self):
-        return self.intf.tx._ag.actual_packet
+        return self.hwIO.tx._ag.actual_packet
 
     @actual_phy_to_link_packet.setter
     def actual_phy_to_link_packet_setter(self, v):
-        self.intf.rx._ag.actual_packet = v
+        self.hwIO.rx._ag.actual_packet = v
 
     def getMonitors(self):
-        yield from self.intf.tx._ag.getDrivers()
-        yield from self.intf.rx._ag.getMonitors()
+        yield from self.hwIO.tx._ag.getDrivers()
+        yield from self.hwIO.rx._ag.getMonitors()
         yield self.monitor()
 
     def monitor(self):
         yield WaitWriteOnly()
-        intf = self.intf
-        for i in intf.function_control._interfaces:
-            d = ulpi_reg_function_control_t_reset_default[i._name]
-            i.write(d)
+        hwIO = self.hwIO
+        for cHwIO in hwIO.function_control._hwIOs:
+            d = ulpi_reg_function_control_t_reset_default[cHwIO._name]
+            cHwIO.write(d)
 
-        for i in intf.otg_control._interfaces:
-            d = ulpi_reg_otg_control_t_reset_defaults[i._name]
-            i.write(d)
-        intf.tx.vld.write(0)
+        for cHwIO in hwIO.otg_control._hwIOs:
+            d = ulpi_reg_otg_control_t_reset_defaults[cHwIO._name]
+            cHwIO.write(d)
+        hwIO.tx.vld.write(0)
 
     def getDrivers(self):
-        yield from self.intf.tx._ag.getMonitors()
-        yield from self.intf.rx._ag.getDrivers()
+        yield from self.hwIO.tx._ag.getMonitors()
+        yield from self.hwIO.rx._ag.getDrivers()
         yield self.driver()
 
     def driver(self):
         yield WaitWriteOnly()
-        intf = self.intf
-        intf.LineState.write(USB_LINE_STATE.J)
-        intf.interrupt._ag.set_data(tuple(0 for _ in range(len(utmi_interrupt_t.fields) - 1)))
-        intf.tx.rd.write(0)
-        intf.rx.valid.write(0)
-        intf.rx.active.write(0)
+        hwIO = self.hwIO
+        hwIO.LineState.write(USB_LINE_STATE.J)
+        hwIO.interrupt._ag.set_data(tuple(0 for _ in range(len(utmi_interrupt_t.fields) - 1)))
+        hwIO.tx.rd.write(0)
+        hwIO.rx.valid.write(0)
+        hwIO.rx.active.write(0)
 

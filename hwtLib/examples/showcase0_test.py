@@ -20,7 +20,7 @@ class Showcase0TC(BaseSerializationTC):
         self.assert_serializes_as_file(Showcase0(), "showcase0.cpp")
 
     def test_hwt(self):
-        self.assert_serializes_as_file(Showcase0(), "showcase0.hwt.py")
+        self.assert_serializes_as_file(Showcase0(), "showcase0_hwt.py")
 
 
 if __name__ == "__main__":

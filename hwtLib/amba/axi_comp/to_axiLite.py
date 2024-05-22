@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.code import If
-from hwt.interfaces.std import HandshakeSync, VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIORdVldSync, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi4Lite import Axi4Lite, Axi4Lite_addr
@@ -12,22 +14,20 @@ from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.constants import PROT_DEFAULT
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from typing import Optional
 
-
-class HandshakedIdAndLen(HandshakeSync):
+class HandshakedIdAndLen(HwIORdVldSync):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.ID_WIDTH = Param(4)
-        self.LEN_WIDTH = Param(8)
+        self.ID_WIDTH = HwParam(4)
+        self.LEN_WIDTH = HwParam(8)
 
     def _declr(self):
         if self.ID_WIDTH > 0:
-            self.id = VectSignal(self.ID_WIDTH)
-        self.len = VectSignal(self.LEN_WIDTH)
+            self.id = HwIOVectSignal(self.ID_WIDTH)
+        self.len = HwIOVectSignal(self.LEN_WIDTH)
         super(HandshakedIdAndLen, self)._declr()
 
 
@@ -45,18 +45,18 @@ class Axi_to_AxiLite(BusBridge):
     .. hwt-autodoc::
     """
 
-    def __init__(self, intfCls=Axi4, hdl_name_override:Optional[str]=None):
-        self.intfCls = intfCls
+    def __init__(self, hwIOCls=Axi4, hdl_name_override:Optional[str]=None):
+        self.hwIOCls = hwIOCls
         super(Axi_to_AxiLite, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
-        self.intfCls._config(self)
-        self.MAX_TRANS_OVERLAP = Param(4)
+        self.hwIOCls._config(self)
+        self.MAX_TRANS_OVERLAP = HwParam(4)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.s = self.intfCls()
+        with self._hwParamsShared():
+            self.s = self.hwIOCls()
             self.m = Axi4Lite()._m()
 
         # *_req_fifo are used to aviod blocking during addr/data/confirmation waiting on axi channels
@@ -64,12 +64,12 @@ class Axi_to_AxiLite(BusBridge):
         w_f = self.w_req_fifo = HandshakedFifo(HandshakedIdAndLen)
         for f in [w_f, r_f]:
             f.ID_WIDTH = self.ID_WIDTH
-            f.LEN_WIDTH = self.intfCls.LEN_WIDTH
+            f.LEN_WIDTH = self.hwIOCls.LEN_WIDTH
             f.DEPTH = self.MAX_TRANS_OVERLAP
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.out_reg = AxiBuff(Axi4Lite)
-            self.in_reg = AxiBuff(self.intfCls)
+            self.in_reg = AxiBuff(self.hwIOCls)
             self.in_reg.DATA_BUFF_DEPTH = \
                 self.in_reg.ADDR_BUFF_DEPTH = \
                 self.out_reg.DATA_BUFF_DEPTH = \
@@ -199,6 +199,6 @@ class Axi_to_AxiLite(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Axi_to_AxiLite()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = Axi_to_AxiLite()
+    print(to_rtl_str(m))

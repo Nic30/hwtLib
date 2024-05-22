@@ -2,21 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, Switch
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwtLib.amba.axi_comp.interconnect.base import AxiInterconnectBase
-from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
+from hwtLib.amba.datapump.intf import HwIOAxiWDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 
 
 @serializeParamsUniq
 class WStrictOrderInterconnect(AxiInterconnectBase):
     """
-    Strict order interconnect for AxiWDatapumpIntf (N-to-1)
+    Strict order interconnect for HwIOAxiWDatapump (N-to-1)
     ensures that response on request is delivered to driver which asked for it
     while transactions can overlap
 
@@ -24,25 +24,25 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
     """
 
     def _config(self):
-        self.DRIVER_CNT = Param(2)
-        self.MAX_TRANS_OVERLAP = Param(16)
-        AxiWDatapumpIntf._config(self)
+        self.DRIVER_CNT = HwParam(2)
+        self.MAX_TRANS_OVERLAP = HwParam(16)
+        HwIOAxiWDatapump._config(self)
 
-    def getDpIntf(self, unit):
+    def getDpHwIO(self, unit):
         return unit.wDatapump
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.drivers = HObjList(
-                AxiWDatapumpIntf()
+                HwIOAxiWDatapump()
                 for _ in range(int(self.DRIVER_CNT)))
-            self.wDatapump = AxiWDatapumpIntf()._m()
+            self.wDatapump = HwIOAxiWDatapump()._m()
 
         self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT)
 
-        fW = self.orderInfoFifoW = HandshakedFifo(Handshaked)
-        fAck = self.orderInfoFifoAck = HandshakedFifo(Handshaked)
+        fW = self.orderInfoFifoW = HandshakedFifo(HwIODataRdVld)
+        fAck = self.orderInfoFifoAck = HandshakedFifo(HwIODataRdVld)
         for f in [fW, fAck]:
             f.DEPTH = self.MAX_TRANS_OVERLAP
             f.DATA_WIDTH = self.DRIVER_INDEX_WIDTH
@@ -118,6 +118,6 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = WStrictOrderInterconnect()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = WStrictOrderInterconnect()
+    print(to_rtl_str(m))

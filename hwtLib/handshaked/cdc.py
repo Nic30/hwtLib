@@ -3,28 +3,28 @@
 
 from hwt.code import If
 from hwt.constraints import set_max_delay
-from hwt.interfaces.std import Signal, Handshaked
-from hwt.interfaces.utils import addClkRst
+from hwt.hwIOs.std import HwIOSignal, HwIODataRdVld
+from hwt.hwIOs.utils import addClkRst
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.clocking.cdc import CdcPulseGen
 from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
 @serializeParamsUniq
-class HandshakeFSM(Unit):
+class HandshakeFSM(HwModule):
     """
     .. hwt-autodoc::
     """
 
     def _declr(self):
         addClkRst(self)
-        self.ack = Signal()
-        self.vld = Signal()
-        self.rd = Signal()._m()
+        self.ack = HwIOSignal()
+        self.vld = HwIOSignal()
+        self.rd = HwIOSignal()._m()
 
     def _impl(self):
         rd = self._reg("rd", def_val=1)
@@ -49,9 +49,9 @@ class HandshakedCdc(HandshakedCompBase):
 
     def _config(self):
         HandshakedCompBase._config(self)
-        self.DATA_RESET_VAL = Param(None)
-        self.IN_FREQ = Param(int(100e6))
-        self.OUT_FREQ = Param(int(100e6))
+        self.DATA_RESET_VAL = HwParam(None)
+        self.IN_FREQ = HwParam(int(100e6))
+        self.OUT_FREQ = HwParam(int(100e6))
 
     def _declr(self):
         VldSyncedCdc._declr(self)
@@ -67,17 +67,17 @@ class HandshakedCdc(HandshakedCompBase):
         self.tx_fsm = HandshakeFSM()
         self.rx_fsm = HandshakeFSM()
 
-    def propagate_clk(self, u, reverse=False):
+    def propagate_clk(self, m: CdcPulseGen, reverse=False):
         if reverse:
-            u.dataIn_clk(self.dataOut_clk)
-            u.dataIn_rst(~self.dataOut_rst_n)
-            u.dataOut_clk(self.dataIn_clk)
-            u.dataOut_rst(~self.dataIn_rst_n)
+            m.dataIn_clk(self.dataOut_clk)
+            m.dataIn_rst(~self.dataOut_rst_n)
+            m.dataOut_clk(self.dataIn_clk)
+            m.dataOut_rst(~self.dataIn_rst_n)
         else:
-            u.dataIn_clk(self.dataIn_clk)
-            u.dataIn_rst(~self.dataIn_rst_n)
-            u.dataOut_clk(self.dataOut_clk)
-            u.dataOut_rst(~self.dataOut_rst_n)
+            m.dataIn_clk(self.dataIn_clk)
+            m.dataIn_rst(~self.dataIn_rst_n)
+            m.dataOut_clk(self.dataOut_clk)
+            m.dataOut_rst(~self.dataOut_rst_n)
 
     def propagate_in_clk(self, u):
         u.clk(self.dataIn_clk)
@@ -90,7 +90,7 @@ class HandshakedCdc(HandshakedCompBase):
     def create_data_reg(self, name_prefix, clk=None, rst=None):
         """
         Create a registers for data signals with default values
-        from :class:`hwt.synthesizer.unit.Unit` parameters and with specified clk/rst
+        from :class:`hwt.hwModule.HwModule` parameters and with specified clk/rst
         """
         regs = HObjList()
         def_vals = self.DATA_RESET_VAL
@@ -172,14 +172,14 @@ class HandshakedCdc(HandshakedCompBase):
 
 
 def example_HandshakedCdc():
-    u = HandshakedCdc(Handshaked)
-    u.IN_FREQ = int(100e6)
-    u.OUT_FREQ = int(200e6)
-    return u
+    m = HandshakedCdc(HwIODataRdVld)
+    m.IN_FREQ = int(100e6)
+    m.OUT_FREQ = int(200e6)
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = example_HandshakedCdc()
-
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = example_HandshakedCdc()
+    print(to_rtl_str(m))

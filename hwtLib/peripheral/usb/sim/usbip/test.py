@@ -24,9 +24,9 @@ class UsbipTC(SimTestCase):
         SimTestCase.tearDown(self)
 
     def test_cdc_vcp(self):
-        u = Usb2CdcVcp()
-        u.PRE_NEGOTIATED_TO = USB_VER.USB2_0  # to avoid waiting at the begin of sim
-        self.compileSimAndStart(u)
+        dut = Usb2CdcVcp()
+        dut.PRE_NEGOTIATED_TO = USB_VER.USB2_0  # to avoid waiting at the begin of sim
+        self.compileSimAndStart(dut)
         lock = self.hdl_simulator.scheduler_lock = threading.Lock()
         # sched = self.hdl_simulator.schedule
         # orig_sched = self.hdl_simulator.schedule
@@ -45,14 +45,14 @@ class UsbipTC(SimTestCase):
 
         self.hdl_simulator._events.pop = pop
 
-        u.phy._ag = UtmiUsbAgent(u.phy._ag.sim, u.phy)
-        u.phy._ag.RETRY_CNTR_MAX = 100
+        dut.phy._ag = UtmiUsbAgent(dut.phy._ag.sim, dut.phy)
+        dut.phy._ag.RETRY_CNTR_MAX = 100
 
         trace_file = os.path.join(os.path.dirname(__file__), self.getTestName() + ".json")
         with open(trace_file) as f:
-            server = UsbipServerReplayer(u.phy._ag, json.load(f), debug=False)
+            server = UsbipServerReplayer(dut.phy._ag, json.load(f), debug=False)
         #
-        # server = UsbipServer(u.phy._ag, host='127.0.0.1', port=3240, debug=True)
+        # server = UsbipServer(dut.phy._ag, host='127.0.0.1', port=3240, debug=True)
         # rec = UsbipServerSessionRecorder(self.hdl_simulator)
         # server.install_session_recorder(rec)
         server.run()
@@ -62,13 +62,13 @@ class UsbipTC(SimTestCase):
             while True:
                 yield Timer(CLK_PERIOD * 1000)
                 if not msg_send:
-                    u.tx._ag.data.extend(ord(c) for c in
+                    dut.tx._ag.data.extend(ord(c) for c in
                                          "Hello word!\r\n"
                                          '0123456789\r\n'
                                          )
                     msg_send = True
 
-                rx = u.rx._ag.data
+                rx = dut.rx._ag.data
                 if rx:
                     # print("RX in sim: ", bytes([int(x) for x in rx]))
                     if "exit" == bytes([int(x) for x in rx]).decode():

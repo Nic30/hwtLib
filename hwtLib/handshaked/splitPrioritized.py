@@ -24,9 +24,9 @@ class HsSplitPrioritized(HsSplitCopy):
         dataOut = list(reversed(self.dataOut))
         self.get_ready_signal(self.dataIn)(Or(*map(lambda x: self.get_ready_signal(x), dataOut)))
         for i, out in enumerate(dataOut):
-            allWitLowerPriority = dataOut[i+1:]
+            allWitLowerPriority = dataOut[i + 1:]
             vld = self.get_valid_signal(self.dataIn)
-            for _vld in map(lambda x: ~self.get_ready_signal(x), allWitLowerPriority):
+            for _vld in map(lambda x:~self.get_ready_signal(x), allWitLowerPriority):
                 vld = vld & _vld
 
             out(self.dataIn,
@@ -35,13 +35,15 @@ class HsSplitPrioritized(HsSplitCopy):
 
 
 def _example_HsSplitPrioritized():
-    from hwt.interfaces.std import Handshaked
-    u = HsSplitPrioritized(Handshaked)
-    u.OUTPUTS = 4
-    return u
+    from hwt.hwIOs.std import HwIODataRdVld
+
+    m = HsSplitPrioritized(HwIODataRdVld)
+    m.OUTPUTS = 4
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HsSplitPrioritized()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_HsSplitPrioritized()
+    print(to_rtl_str(m))

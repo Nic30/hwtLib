@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdl.constants import Time, NOP
+from hwt.constants import Time, NOP
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.atomic.flipCntr import FlipCntr
 
@@ -12,28 +12,28 @@ class FlipCntrTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = FlipCntr()
-        cls.compileSim(cls.u)
+        cls.dut = FlipCntr()
+        cls.compileSim(cls.dut)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
 
-        u.doIncr._ag.data.extend([0, 0])
+        dut.doIncr._ag.data.extend([0, 0])
         self.runSim(90 * Time.ns)
 
-        self.assertValSequenceEqual(u.data._ag.din,
+        self.assertValSequenceEqual(dut.data._ag.din,
                                     [0 for _ in range(8)])
 
     def test_incr(self):
-        u = self.u
+        dut = self.dut
 
-        u.doIncr._ag.data.extend([0, 1, 0, 0, 0])
-        u.doFlip._ag.data.extend([NOP, NOP, 1, NOP, NOP])
+        dut.doIncr._ag.data.extend([0, 1, 0, 0, 0])
+        dut.doFlip._ag.data.extend([NOP, NOP, 1, NOP, NOP])
 
         self.runSim(90 * Time.ns)
 
         self.assertValSequenceEqual(
-            u.data._ag.din,
+            dut.data._ag.din,
             [0, 0] + [1 for _ in range(6)])
 
 

@@ -138,18 +138,18 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Stream duplicator for AxiStream interfaces
+--    Stream duplicator for Axi4Stream interfaces
 --
 --    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 --
 --    .. hwt-autodoc::
 --    
-ENTITY AxiSSplitCopy IS
+ENTITY Axi4SSplitCopy IS
     GENERIC(
         DATA_WIDTH : INTEGER := 64;
         DEST_WIDTH : INTEGER := 0;
+        HWIO_CLS : STRING := "<class 'hwtLib.amba.axi4s.Axi4Stream'>";
         ID_WIDTH : INTEGER := 0;
-        INTF_CLS : STRING := "<class 'hwtLib.amba.axis.AxiStream'>";
         IS_BIGENDIAN : BOOLEAN := FALSE;
         OUTPUTS : INTEGER := 2;
         USER_WIDTH : INTEGER := 0;
@@ -172,7 +172,7 @@ ENTITY AxiSSplitCopy IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF AxiSSplitCopy IS
+ARCHITECTURE rtl OF Axi4SSplitCopy IS
 BEGIN
     dataIn_ready <= dataOut_0_ready AND dataOut_1_ready;
     dataOut_0_data <= dataIn_data;
@@ -183,8 +183,8 @@ BEGIN
     dataOut_1_valid <= dataIn_valid AND dataOut_0_ready;
     ASSERT DATA_WIDTH = 64 REPORT "Generated only for this value" SEVERITY failure;
     ASSERT DEST_WIDTH = 0 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT HWIO_CLS = "<class 'hwtLib.amba.axi4s.Axi4Stream'>" REPORT "Generated only for this value" SEVERITY failure;
     ASSERT ID_WIDTH = 0 REPORT "Generated only for this value" SEVERITY failure;
-    ASSERT INTF_CLS = "<class 'hwtLib.amba.axis.AxiStream'>" REPORT "Generated only for this value" SEVERITY failure;
     ASSERT IS_BIGENDIAN = FALSE REPORT "Generated only for this value" SEVERITY failure;
     ASSERT OUTPUTS = 2 REPORT "Generated only for this value" SEVERITY failure;
     ASSERT USER_WIDTH = 0 REPORT "Generated only for this value" SEVERITY failure;
@@ -239,18 +239,18 @@ END ENTITY;
 
 ARCHITECTURE rtl OF NetFilter IS
     --
-    --    Stream duplicator for AxiStream interfaces
+    --    Stream duplicator for Axi4Stream interfaces
     --
     --    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
     --
     --    .. hwt-autodoc::
     --    
-    COMPONENT AxiSSplitCopy IS
+    COMPONENT Axi4SSplitCopy IS
         GENERIC(
             DATA_WIDTH : INTEGER := 64;
             DEST_WIDTH : INTEGER := 0;
+            HWIO_CLS : STRING := "<class 'hwtLib.amba.axi4s.Axi4Stream'>";
             ID_WIDTH : INTEGER := 0;
-            INTF_CLS : STRING := "<class 'hwtLib.amba.axis.AxiStream'>";
             IS_BIGENDIAN : BOOLEAN := FALSE;
             OUTPUTS : INTEGER := 2;
             USER_WIDTH : INTEGER := 0;
@@ -474,11 +474,11 @@ BEGIN
         patternMatch_ready => sig_filter_patternMatch_ready,
         patternMatch_valid => sig_filter_patternMatch_valid
     );
-    gen_dout_splitCopy_0_inst: AxiSSplitCopy GENERIC MAP(
+    gen_dout_splitCopy_0_inst: Axi4SSplitCopy GENERIC MAP(
         DATA_WIDTH => 64,
         DEST_WIDTH => 0,
+        HWIO_CLS => "<class 'hwtLib.amba.axi4s.Axi4Stream'>",
         ID_WIDTH => 0,
-        INTF_CLS => "<class 'hwtLib.amba.axis.AxiStream'>",
         IS_BIGENDIAN => FALSE,
         OUTPUTS => 2,
         USER_WIDTH => 0,

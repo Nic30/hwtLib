@@ -2,22 +2,22 @@ from math import ceil
 from typing import Tuple, Optional, List
 
 from hwt.code import Switch, In
-from hwt.interfaces.std import HandshakeSync
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.fifoCopy import AxiSFifoCopy
-from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
-from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
+from hwt.hwIOs.std import HwIORdVldSync
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.fifoCopy import Axi4SFifoCopy
+from hwtLib.amba.axis_comp.fifoDrop import Axi4SFifoDrop
+from hwtLib.amba.axi4s_fullduplex import Axi4StreamFullDuplex
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.peripheral.usb.descriptors.bundle import UsbEndpointMeta
 from hwtLib.peripheral.usb.usb2.device_core_interfaces import UsbEndpointInterface
 
 
-class UsbDeviceEpBuffers(Unit):
+class UsbDeviceEpBuffers(HwModule):
     """
     USB device endpoint buffers
     Buffers for the data transfers which are between usb core and usb function.
@@ -26,8 +26,8 @@ class UsbDeviceEpBuffers(Unit):
     """
 
     def _config(self) -> None:
-        self.ENDPOINT_META: Tuple[Tuple[Optional[UsbEndpointMeta], Optional[UsbEndpointMeta]]] = Param(None)
-        self.DATA_WIDTH = Param(8)
+        self.ENDPOINT_META: Tuple[Tuple[Optional[UsbEndpointMeta], Optional[UsbEndpointMeta]]] = HwParam(None)
+        self.DATA_WIDTH = HwParam(8)
 
     def _declr(self) -> None:
         """
@@ -41,16 +41,16 @@ class UsbDeviceEpBuffers(Unit):
             if rx is None and tx is None:
                 ep = None
             else:
-                ep = AxiStreamFullDuplex()
+                ep = Axi4StreamFullDuplex()
                 ep.USE_KEEP = True
                 ep.DATA_WIDTH = self.DATA_WIDTH
                 ep.HAS_RX = rx is not None
                 ep.HAS_TX = tx is not None
             eps.append(ep)
 
-        self.ep: HObjList[AxiStreamFullDuplex] = eps
+        self.ep: HObjList[Axi4StreamFullDuplex] = eps
 
-    def connect_rx_part(self, rx_channels: List[Tuple[int, AxiStream, UsbEndpointMeta, AxiSFifoDrop]]):
+    def connect_rx_part(self, rx_channels: List[Tuple[int, Axi4Stream, UsbEndpointMeta, Axi4SFifoDrop]]):
         if not rx_channels:
             assert not self.usb_core_io.HAS_RX
             return
@@ -79,7 +79,7 @@ class UsbDeviceEpBuffers(Unit):
 
         self.usb_core_io.rx_stall(~In(usb_endp.data, [i for (i, _, _, _) in rx_channels]))
 
-    def connect_tx_part(self, tx_channels: List[Tuple[int, AxiStream, UsbEndpointMeta, AxiSFifoCopy, HandshakedFifo]]):
+    def connect_tx_part(self, tx_channels: List[Tuple[int, Axi4Stream, UsbEndpointMeta, Axi4SFifoCopy, HandshakedFifo]]):
         if not tx_channels:
             assert not self.usb_core_io.HAS_TX
             return
@@ -134,20 +134,20 @@ class UsbDeviceEpBuffers(Unit):
         self.usb_core_io.tx_stall(~In(usb_endp.data, [i for (i, _, _, _, _) in tx_channels]))
 
     def _impl(self):
-        rx_channels: List[Tuple[int, AxiStream, UsbEndpointMeta, AxiSFifoDrop]] = []
-        tx_channels: List[Tuple[int, AxiStream, UsbEndpointMeta, AxiSFifoCopy, HandshakedFifo]] = []
+        rx_channels: List[Tuple[int, Axi4Stream, UsbEndpointMeta, Axi4SFifoDrop]] = []
+        tx_channels: List[Tuple[int, Axi4Stream, UsbEndpointMeta, Axi4SFifoCopy, HandshakedFifo]] = []
         rx_fifos = HObjList()
         tx_fifos = HObjList()
         tx_packet_buffered_fifos = HObjList()
         for i, (ep, (rx_conf, tx_conf)) in enumerate(zip(self.ep, self.ENDPOINT_META)):
-            ep: Optional[AxiStreamFullDuplex]
+            ep: Optional[Axi4StreamFullDuplex]
             rx_conf: UsbEndpointMeta
             tx_conf: UsbEndpointMeta
             if ep is None:
                 continue
             if ep.HAS_RX:
                 if rx_conf.buffer_size > 0:
-                    rx_fifo = AxiSFifoDrop()
+                    rx_fifo = Axi4SFifoDrop()
                     rx_fifo.USE_KEEP = True
                     rx_fifo.DATA_WIDTH = self.DATA_WIDTH
                     rx_fifo.DEPTH = rx_conf.buffer_size
@@ -161,9 +161,9 @@ class UsbDeviceEpBuffers(Unit):
                 if tx_conf.buffer_size > 0:
                     # if there is some buffer we also need to asssert that
                     # we are sending only fully fubbered packet
-                    tx_packet_buffered_fifo = HandshakedFifo(HandshakeSync)
+                    tx_packet_buffered_fifo = HandshakedFifo(HwIORdVldSync)
                     tx_packet_buffered_fifo.DEPTH = ceil(tx_conf.buffer_size / tx_conf.max_packet_size) + 2
-                    tx_fifo = AxiSFifoCopy()
+                    tx_fifo = Axi4SFifoCopy()
                     tx_fifo.USE_KEEP = True
                     tx_fifo.DATA_WIDTH = self.DATA_WIDTH
                     tx_fifo.DEPTH = tx_conf.buffer_size
@@ -186,14 +186,15 @@ class UsbDeviceEpBuffers(Unit):
 
 def _example_UsbDeviceEpBuffers():
     from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
-    u = UsbDeviceEpBuffers()
-    u.ENDPOINT_META = get_default_usb_cdc_vcp_descriptors().get_endpoint_meta()
-    u.ENDPOINT_META[0][0].buffer_size = 0
-    u.ENDPOINT_META[0][1].buffer_size = 0
-    return u
+    m = UsbDeviceEpBuffers()
+    m.ENDPOINT_META = get_default_usb_cdc_vcp_descriptors().get_endpoint_meta()
+    m.ENDPOINT_META[0][0].buffer_size = 0
+    m.ENDPOINT_META[0][1].buffer_size = 0
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_UsbDeviceEpBuffers()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_UsbDeviceEpBuffers()
+    print(to_rtl_str(m))

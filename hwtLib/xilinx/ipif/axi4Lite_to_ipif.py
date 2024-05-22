@@ -3,11 +3,11 @@
 
 from hwt.code import Switch, If, FsmBuilder
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
 
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import RESP_SLVERR, RESP_OKAY
-from hwtLib.xilinx.ipif.intf import Ipif
+from hwtLib.xilinx.ipif.hIOIpif import Ipif
 from hwtLib.abstract.busBridge import BusBridge
 
 
@@ -24,7 +24,7 @@ class Axi4Lite_to_Ipif(BusBridge):
     def _declr(self) -> None:
         addClkRstn(self)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = Axi4Lite()
             self.m = Ipif()._m()
 
@@ -173,6 +173,7 @@ class Axi4Lite_to_Ipif(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Axi4Lite_to_Ipif()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = Axi4Lite_to_Ipif()
+    print(to_rtl_str(m))

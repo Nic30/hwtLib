@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import PROT_DEFAULT
@@ -28,7 +28,7 @@ class Mi32_to_Axi4Lite(BusBridge):
     def _declr(self):
         addClkRstn(self)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.m = Axi4Lite()._m()
             self.s = Mi32()
 
@@ -77,6 +77,7 @@ class Mi32_to_Axi4Lite(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Mi32_to_Axi4Lite()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = Mi32_to_Axi4Lite()
+    print(to_rtl_str(m))

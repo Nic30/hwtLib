@@ -2,14 +2,14 @@ from collections import deque
 from typing import Type, List, Tuple, Optional, Union
 
 from hwt.code import If
-from hwt.interfaces.std import HandshakeSync
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkPhysInterfaces
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIORdVldSync
+from hwt.hwModule import HwModule
+from hwt.hObjList import HObjList
+from hwt.mainBases import RtlSignalBase
+from hwt.synthesizer.interfaceLevel.utils import HwIO_walkSignals
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
-from hwtLib.abstract.debug_bus_monitor import monitor_of, connect_to_MonitorIntf
+from hwtLib.abstract.debug_bus_monitor import monitor_of, connect_to_HwIOMonitor
 from ipCorePackager.constants import DIRECTION, INTF_DIRECTION
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 
 
 class InHwError(Exception):
@@ -17,7 +17,7 @@ class InHwError(Exception):
     A base class for exceptions which are translated to hardware
     and handle in runtime of the hardware.
 
-    :ivar Deque[Unit] hw_traceback: traceback
+    :ivar Deque[HwModule] hw_traceback: traceback
     """
 
     def __init__(self, hw_args=None, *args, **kwargs):
@@ -30,15 +30,15 @@ class InHwError(Exception):
         self.hw_args = hw_args
 
 
-class ExceptionHandleInterface(HandshakeSync):
+class ExceptionHandleInterface(HwIORdVldSync):
 
     def __init__(self, exception:InHwError, masterDir=DIRECTION.OUT,
                  loadConfig=True):
-        HandshakeSync.__init__(self, masterDir=masterDir, loadConfig=loadConfig)
+        HwIORdVldSync.__init__(self, masterDir=masterDir, loadConfig=loadConfig)
         self._exception = exception
 
     def _declr(self):
-        HandshakeSync._declr(self)
+        HwIORdVldSync._declr(self)
         args = HObjList()
         for a in self._exception.hw_args:
             _a = monitor_of(a)
@@ -54,32 +54,32 @@ class HwExceptionCtx():
     An object which handles hardware exceptions.
 
     :attention: exception handling requires a clock and reset signal to be present on parent
-        :class:`hwt.synthesizer.unit.Unit` instance.
+        :class:`hwt.hwModule.HwModule` instance.
     """
 
-    def __init__(self, parent: Unit, name="raise"):
+    def __init__(self, parent: HwModule, name="raise"):
         self.parent = parent
         self.compId = 0
         self.catch_instances = []
         self.name = name
 
-    def _Unit_registerPublicIntfInImpl(self, intf: ExceptionHandleInterface, name:str):
+    def _HwModule_registerPublicHwIOInImpl(self, hwIO: ExceptionHandleInterface, name:str):
         p = self.parent
-        p._registerInterface(name, intf, isPrivate=False)
-        p._loadInterface(intf, True)
-        intf._signalsForInterface(
-            p._ctx, p._ctx.interfaces, p._store_manager.name_scope,
+        p._registerHwIO(name, hwIO, isPrivate=False)
+        p._loadInterface(hwIO, True)
+        hwIO._signalsForHwIO(
+            p._ctx, p._ctx.hwIOs, p._store_manager.name_scope,
             reverse_dir=True)
 
-    def _Unit_makePublicIntfPrivateInImpl(self, intf: ExceptionHandleInterface):
-        parent_u = intf._parent
-        while not isinstance(parent_u, Unit):
-            parent_u = parent_u._parent
+    def _HwModule_makePublicHwIOPrivateInImpl(self, hwIO: ExceptionHandleInterface):
+        parent_m = hwIO._parent
+        while not isinstance(parent_m, HwModule):
+            parent_m = parent_m._parent
 
-        parent_u._interfaces.remove(intf)
-        parent_u._private_interfaces.append(intf)
+        parent_m._hwIOs.remove(hwIO)
+        parent_m._private_hwIOs.append(hwIO)
 
-        for s in walkPhysInterfaces(intf):
+        for s in HwIO_walkSignals(hwIO):
             if s._direction == INTF_DIRECTION.SLAVE:
                 ep = s._sig.endpoints
                 ep.remove(s._hdl_port)
@@ -90,7 +90,7 @@ class HwExceptionCtx():
             else:
                 raise ValueError(s._direction)
 
-            s._sig.ctx.interfaces.pop(s._sig)
+            s._sig.ctx.hwIOs.pop(s._sig)
             self.parent._ctx.ent.ports.remove(s._hdl_port)
             s._hdl_port = None
             s._isExtern = False
@@ -114,13 +114,13 @@ class HwExceptionCtx():
         err_name = exception.__class__.__name__
         p = self.parent
 
-        # add a raise interace in impl phase of the Unit instance
-        raise_intf = ExceptionHandleInterface(exception)._m()
-        self._Unit_registerPublicIntfInImpl(
-            raise_intf,
+        # add a raise interace in impl phase of the HwModule instance
+        raiseHwIO = ExceptionHandleInterface(exception)._m()
+        self._HwModule_registerPublicHwIOInImpl(
+            raiseHwIO,
             AbstractComponentBuilder._findSuitableName(self, err_name)
         )
-        object.__setattr__(p, raise_intf._name, raise_intf)
+        object.__setattr__(p, raiseHwIO._name, raiseHwIO)
 
         # create a flag which means that the error is waiting
         err_pending = p._reg(f"{self.name:s}_{err_name:s}_pending", def_val=0)
@@ -128,23 +128,24 @@ class HwExceptionCtx():
             pending_flag(err_pending)
 
         If(err_pending,
-           err_pending(~raise_intf.rd),
+           err_pending(~raiseHwIO.rd),
         ).Else(
-           err_pending(raise_intf.vld & ~raise_intf.rd),
+           err_pending(raiseHwIO.vld & ~raiseHwIO.rd),
         )
-        raise_intf.vld._sig._nop_val = raise_intf.vld._sig._dtype.from_py(0)
+        raiseHwIO.vld._sig._nop_val = raiseHwIO.vld._sig._dtype.from_py(0)
         if exception.hw_args:
-            for a_src, a_dst in zip(exception.hw_args, raise_intf.args):
-                connect_to_MonitorIntf(a_src, a_dst)
+            for a_src, a_dst in zip(exception.hw_args, raiseHwIO.args):
+                connect_to_HwIOMonitor(a_src, a_dst)
 
         if raising_flag is not None:
-            raising_flag(raise_intf.vld)
+            raising_flag(raiseHwIO.vld)
 
         return [
-            raise_intf.vld(1),
+            raiseHwIO.vld(1),
         ]
 
-    def hw_catch(self, exception_cls: Optional[Union[Type[InHwError], Tuple[Type[InHwError], ...]]]=None) -> List[Tuple[InHwError, ExceptionHandleInterface]]:
+    def hw_catch(self, exception_cls: Optional[Union[Type[InHwError], Tuple[Type[InHwError], ...]]]=None)\
+            -> List[Tuple[InHwError, ExceptionHandleInterface]]:
         """
         Catch all uncatched exceptions by exception class.
 
@@ -154,47 +155,47 @@ class HwExceptionCtx():
         :return: List of tuples (exception, interface) for every uncatched exception in current scope (includes children).
             (Due to parallel nature of hardware it is a list and exceptions may be raised simulately.)
         """
-        for i in self.parent._private_interfaces:
-            if isinstance(i, ExceptionHandleInterface) and\
-                    isinstance(i._exception, exception_cls) and \
-                    not i.rd._sig.drivers:
-                yield i
+        for hwIO in self.parent._private_hwIOs:
+            if isinstance(hwIO, ExceptionHandleInterface) and\
+                    isinstance(hwIO._exception, exception_cls) and \
+                    not hwIO.rd._sig.drivers:
+                yield hwIO
 
-        for i in tuple(self.parent._interfaces):
-            # if interface is public it automaically means that exception is not handled
-            # in this Unit yet
-            if isinstance(i, ExceptionHandleInterface) and\
-                    i._direction == INTF_DIRECTION.SLAVE and \
-                    isinstance(i._exception, exception_cls):
-                self._Unit_makePublicIntfPrivateInImpl(i)
-                yield i
+        for hwIO in tuple(self.parent._hwIOs):
+            # if interface is public it automatically means that exception is not handled
+            # in this HwModule yet
+            if isinstance(hwIO, ExceptionHandleInterface) and\
+                    hwIO._direction == INTF_DIRECTION.SLAVE and \
+                    isinstance(hwIO._exception, exception_cls):
+                self._HwModule_makePublicHwIOPrivateInImpl(hwIO)
+                yield hwIO
 
-        for u in self.parent._units:
-            for i in u._interfaces:
-                if isinstance(i, ExceptionHandleInterface) and \
-                        not i.rd._sig.drivers and\
-                        isinstance(i._exception, exception_cls):
-                    yield i
+        for u in self.parent._subHwModules:
+            for hwIO in u._hwIOs:
+                if isinstance(hwIO, ExceptionHandleInterface) and \
+                        not hwIO.rd._sig.drivers and\
+                        isinstance(hwIO._exception, exception_cls):
+                    yield hwIO
 
     def propagate(self):
         """
-        Propagate uncatched exceptions from this :class:`hwt.synthesizer.unit.Unit` instance and its children
-        to IO of this :class:`hwt.synthesizer.unit.Unit` instance.
+        Propagate uncatched exceptions from this :class:`hwt.hwModule.HwModule` instance and its children
+        to IO of this :class:`hwt.hwModule.HwModule` instance.
 
         :note: The exception is considered uncached if its rd signal is not driven.
         """
-        for i in tuple(self.parent._private_interfaces):
-            if isinstance(i, ExceptionHandleInterface) and not i.rd._sig.drivers:
-                raise NotImplementedError(i)
+        for hwIO in tuple(self.parent._private_hwIOs):
+            if isinstance(hwIO, ExceptionHandleInterface) and not hwIO.rd._sig.drivers:
+                raise NotImplementedError(hwIO)
 
-        for u in self.parent._units:
-            for i in u._interfaces:
-                if isinstance(i, ExceptionHandleInterface) and not i.rd._sig.drivers:
-                    raise_intf = i.__copy__()._m()
-                    self._Unit_registerPublicIntfInImpl(
-                        raise_intf,
-                        AbstractComponentBuilder._findSuitableName(self, i._exception.__class__.__name__)
+        for u in self.parent._subHwModules:
+            for hwIO in u._hwIOs:
+                if isinstance(hwIO, ExceptionHandleInterface) and not hwIO.rd._sig.drivers:
+                    raise_hwIO = hwIO.__copy__()._m()
+                    self._HwModule_registerPublicHwIOInImpl(
+                        raise_hwIO,
+                        AbstractComponentBuilder._findSuitableName(self, hwIO._exception.__class__.__name__)
                     )
-                    object.__setattr__(self.parent, raise_intf._name, raise_intf)
-                    raise_intf(i)
+                    object.__setattr__(self.parent, raise_hwIO._name, raise_hwIO)
+                    raise_hwIO(hwIO)
 

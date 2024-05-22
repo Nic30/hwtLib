@@ -1,21 +1,21 @@
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VectSignal, Clk
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIOClk
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class ConstCondition(Unit):
+class ConstCondition(HwModule):
     def _declr(self):
-        self.clk = Clk()
-        self.a = VectSignal(2)
-        self.b = VectSignal(2)
-        self.c = Signal()._m()
+        self.clk = HwIOClk()
+        self.a = HwIOVectSignal(2)
+        self.b = HwIOVectSignal(2)
+        self.c = HwIOSignal()._m()
 
     def _impl(self):
-        one = self._sig('one', Bits(1))
-        intermed = self._reg('intermed', Bits(1))
+        one = self._sig('one', HBits(1))
+        intermed = self._reg('intermed', HBits(1))
         one(1)
         self.c(intermed)
         If(one._eq(1),
@@ -35,22 +35,23 @@ class ConstConditionTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = ConstCondition()
-        cls.compileSim(cls.u)
+        cls.dut = ConstCondition()
+        cls.compileSim(cls.dut)
 
     def test_reg_update(self):
-        u = self.u
-        u.a._ag.data.extend([0, 1, 0, 0, 0])
-        u.b._ag.data.extend([0, 0, 1, 2, 1])
+        dut = self.dut
+        dut.a._ag.data.extend([0, 1, 0, 0, 0])
+        dut.b._ag.data.extend([0, 0, 1, 2, 1])
         self.runSim(10 * CLK_PERIOD)
-        self.assertValSequenceEqual(u.c._ag.data, [None, None, 1, 0, 1, 0, 0, 0, 0, 0])
+        self.assertValSequenceEqual(dut.c._ag.data, [None, None, 1, 0, 1, 0, 0, 0, 0, 0])
 
 
 def main():
     import unittest
-    from hwt.synthesizer.utils import to_rtl_str
-    u = ConstCondition()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = ConstCondition()
+    print(to_rtl_str(m))
 
     testLoader = unittest.TestLoader()
     suite = testLoader.loadTestsFromTestCase(ConstConditionTC)

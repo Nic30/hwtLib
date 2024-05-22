@@ -1,5 +1,5 @@
+from hwt.hwModule import HwModule
 from hwt.math import log2ceil
-from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
@@ -11,12 +11,12 @@ def getSizeWidth(maxLen, dataWidth):
     return lenBits + alignBits
 
 
-class AxiInterconnectBase(Unit):
+class AxiInterconnectBase(HwModule):
     """
     Abstract class for axi interconnects
     """
 
-    def getDpIntf(self, unit):
+    def getDpHwIO(self, unit):
         raise NotImplementedError("Implement this function in your implementation")
 
     def configureFromDrivers(self, drivers, datapump, byInterfaces=False):
@@ -34,7 +34,7 @@ class AxiInterconnectBase(Unit):
 
         for d in drivers:
             if byInterfaces:
-                d = self.getDpIntf(d)
+                d = self.getDpHwIO(d)
 
             assert ID_WIDTH == int(d.ID_WIDTH)
             assert ADDR_WIDTH == int(d.ADDR_WIDTH)
@@ -61,9 +61,9 @@ class AxiInterconnectBase(Unit):
         for i, driver in enumerate(drivers):
             # width of signals should be configured by the widest
             # others drivers can have smaller widths of some signals for example id
-            self.drivers[i](self.getDpIntf(driver), fit=True)
+            self.drivers[i](self.getDpHwIO(driver), fit=True)
 
-        datapump.driver(self.getDpIntf(self))
+        datapump.driver(self.getDpHwIO(self))
 
     def reqHandler(self, dpReq, orderFifoIn):
         # join with roundrobin on requests form drivers and selected index is stored into orderFifo

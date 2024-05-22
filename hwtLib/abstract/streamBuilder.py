@@ -1,8 +1,12 @@
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Type, Callable, Sequence
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked
+from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIODataRdVld, HwIOClk, HwIORst, HwIORst_n
+from hwt.hwModule import HwModule
+from hwt.hdl.types.bits import HBits
+from hwt.mainBases import RtlSignalBase
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 
 
@@ -38,42 +42,48 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
     SplitPrioritizedCls = NotImplemented
 
     def _genericInstance(self,
-                         unit_cls,
-                         name,
-                         set_params=lambda u: u,
+                         hwModuleCls: Type[HwModule],
+                         name: str,
+                         set_params_fn:Optional[Callable[[HwModule], None]]=None,
                          update_params=True,
                          propagate_clk_rst=True):
         """
         Instantiate generic component and connect basics
 
-        :param unit_cls: class of unit which is being created
-        :param name: name for unit_cls instance
-        :param set_params: function which updates parameters as is required
+        :param hwModuleCls: class of HMoudule which is being created
+        :param name: name for hwModuleCls instance
+        :param set_params_fn: function which updates parameters as is required
             (parameters are already shared with self.end interface)
         """
 
-        u = unit_cls(self.getInfCls())
+        m = hwModuleCls(self.getHwIOCls())
         if update_params:
-            u._updateParamsFrom(self.end)
-        set_params(u)
+            m._updateParamsFrom(self.end)
+        if set_params_fn is not None:
+            set_params_fn(m)
 
-        setattr(self.parent, self._findSuitableName(name), u)
+        setattr(self.parent, self._findSuitableName(name), m)
         if propagate_clk_rst:
-            self._propagateClkRstn(u)
+            self._propagateClkRstn(m)
 
-        self.lastComp = u
+        self.lastComp = m
 
         if self.master_to_slave:
-            u.dataIn(self.end)
-            self.end = u.dataOut
+            m.dataIn(self.end)
+            self.end = m.dataOut
         else:
-            self.end(u.dataOut)
-            self.end = u.dataIn
+            self.end(m.dataOut)
+            self.end = m.dataIn
 
         return self
 
     @classmethod
-    def _join(cls, joinCls, parent, srcInterfaces, name, configAs, extraConfigFn):
+    def _join(cls, joinCls: Type[HwModule],
+               parent: HwModule,
+               srcHwIOs: Sequence[HwIO],
+               name: Optional[str],
+               configAs: Optional[HwModule],
+               extraConfigFn: Optional[Callable[[HwModule], None]]):
         """
         Create builder from many interfaces by joining them together
 
@@ -86,7 +96,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         :param extraConfigFn: function which is applied on join unit
             in configuration phase (can be None)
         """
-        srcInterfaces = list(srcInterfaces)
+        srcHwIOs = list(srcHwIOs)
         if name is None:
             if configAs is None:
                 name = "gen_join"
@@ -94,30 +104,30 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
                 name = "gen_" + configAs._name
 
         if configAs is None:
-            configAs = srcInterfaces[0]
+            configAs = srcHwIOs[0]
 
         self = cls(parent, None, name=name)
 
-        u = joinCls(self._getIntfCls(configAs))
+        m = joinCls(self._getHwIOCls(configAs))
         if extraConfigFn is not None:
-            extraConfigFn(u)
-        u._updateParamsFrom(configAs)
-        u.INPUTS = len(srcInterfaces)
+            extraConfigFn(m)
+        m._updateParamsFrom(configAs)
+        m.INPUTS = len(srcHwIOs)
 
-        setattr(self.parent, self._findSuitableName(name + "_join"), u)
-        self._propagateClkRstn(u)
+        setattr(self.parent, self._findSuitableName(name + "_join"), m)
+        self._propagateClkRstn(m)
 
-        for joinIn, inputIntf in zip(u.dataIn, srcInterfaces):
-            joinIn(inputIntf)
+        for joinIn, inputHwIO in zip(m.dataIn, srcHwIOs):
+            joinIn(inputHwIO)
 
-        self.lastComp = u
-        self.end = u.dataOut
+        self.lastComp = m
+        self.end = m.dataOut
 
         return self
 
     @classmethod
-    def join_prioritized(cls, parent, srcInterfaces, name=None,
-                         configAs=None, extraConfigFn=None):
+    def join_prioritized(cls, parent: HwModule, srcInterfaces, name: Optional[str]=None,
+                         configAs: Optional[HwModule]=None, extraConfigFn:Optional[Callable[[HwModule], None]]=None):
         """
         create builder from fairly joined interfaces (round robin for input select)
 
@@ -128,7 +138,8 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
     @classmethod
     def join_fair(cls, parent, srcInterfaces, name=None,
-                  configAs=None, exportSelected=False):
+                  configAs=None, exportSelected=False,
+                  extraConfigFn:Optional[Callable[[HwModule], None]]=None):
         """
         create builder from fairly joined interfaces (round robin for input select)
 
@@ -137,8 +148,10 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         :note: other parameters same as in `.AbstractStreamBuilder._join`
         """
 
-        def extraConfig(u):
-            u.EXPORT_SELECTED = exportSelected
+        def extraConfig(m):
+            m.EXPORT_SELECTED = exportSelected
+            if extraConfigFn is not None:
+                extraConfigFn(m)
 
         return cls._join(cls.JoinFairCls, parent, srcInterfaces, name,
                          configAs, extraConfig)
@@ -193,7 +206,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
                 u.INIT_DATA = init_data
 
             return self._genericInstance(self.RegCls, "reg",
-                                         set_params=applyParams)
+                                         set_params_fn=applyParams)
         else:
             # instantiate buffer as fifo
             if latency != 2 or delay != 0:
@@ -205,7 +218,9 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
             return self._genericInstance(self.FifoCls, "fifo", applyParams)
 
-    def buff_cdc(self, clk, rst, items=1):
+    def buff_cdc(self,
+                 clk: Union[HwIOClk, RtlSignal],
+                 rst: Union[HwIORst, HwIORst_n, RtlSignal], items:int=1):
         """
         Instantiate a CDC (Clock Domain Crossing) buffer or AsyncFifo
         on selected interface
@@ -225,9 +240,9 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         if items > 1:
 
-            def configure(u):
-                u.DEPTH = items
-                set_clk_freq(u)
+            def configure(m):
+                m.DEPTH = items
+                set_clk_freq(m)
 
             res = self._genericInstance(
                 self.FifoAsyncCls, "cdcAFifo", configure,
@@ -246,7 +261,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         return res
 
-    def split_copy(self, noOfOutputs):
+    def split_copy(self, noOfOutputs: int):
         """
         Clone input data to all outputs
 
@@ -260,7 +275,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         return self._genericInstance(self.SplitCopyCls, 'splitCopy', setChCnt)
 
-    def split_copy_to(self, *outputs):
+    def split_copy_to(self, *outputs: Sequence[HwIO]):
         """
         Same like split_copy, but outputs are automatically connected
 
@@ -277,9 +292,9 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         self.end = None  # invalidate None because port was fully connected
         return s
 
-    def split_select(self, outputSelSignalOrSequence, noOfOutputs):
+    def split_select(self, outputSelSignalOrSequence: Union[Sequence[RtlSignalBase], RtlSignalBase], noOfOutputs:int):
         """
-        Create a demultiplexer with number of outputs specified by noOfOutputs
+        Create a de-multiplexer with number of outputs specified by noOfOutputs
 
         :param noOfOutputs: number of outputs of multiplexer
         :param outputSelSignalOrSequence: handshaked interface (onehot encoded)
@@ -293,18 +308,18 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             u.OUTPUTS = noOfOutputs
 
         self._genericInstance(self.SplitSelectCls, 'select', setChCnt)
-        if isinstance(outputSelSignalOrSequence, Handshaked):
+        if isinstance(outputSelSignalOrSequence, HwIODataRdVld):
             self.lastComp.selectOneHot(outputSelSignalOrSequence)
         else:
             seq = outputSelSignalOrSequence
-            t = Bits(self.lastComp.selectOneHot.data._dtype.bit_length())
+            t = HBits(self.lastComp.selectOneHot.data._dtype.bit_length())
             size = len(seq)
             ohIndexes = map(lambda x: 1 << x, seq)
             indexes = self.parent._sig(self.name + "split_seq",
                                        t[size],
                                        def_val=ohIndexes)
             actual = self.parent._reg(self.name + "split_seq_index",
-                                      Bits(size.bit_length()),
+                                      HBits(size.bit_length()),
                                       0)
             iin = self.lastComp.selectOneHot
             iin.data(indexes[actual])
@@ -319,7 +334,9 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         return self
 
-    def split_select_to(self, outputSelSignalOrSequence, *outputs):
+    def split_select_to(self,
+                        outputSelSignalOrSequence: Union[Sequence[RtlSignalBase], RtlSignalBase],
+                        *outputs: Sequence[HwIO]):
         """
         Same like split_select, but outputs are automatically connected
 
@@ -336,7 +353,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         self.end = None  # invalidate None because port was fully connected
         return s
 
-    def split_prioritized(self, noOfOutputs):
+    def split_prioritized(self, noOfOutputs:int):
         """
         data from input is send to output which is ready and has highest priority from all ready outputs
 
@@ -351,7 +368,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         self._genericInstance(self.SplitPrioritizedCls, 'splitPrio', setChCnt)
         return self
 
-    def split_prioritized_to(self, *outputs):
+    def split_prioritized_to(self, *outputs: Sequence[HwIO]):
         """
         Same like split_prioritized, but outputs are automatically connected
 
@@ -367,7 +384,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         self.end = None  # invalidate None because port was fully connected
         return s
 
-    def split_fair(self, noOfOutputs, exportSelected=False):
+    def split_fair(self, noOfOutputs: int, exportSelected=False):
         """
         Create a round robin selector with number of outputs specified by noOfOutputs
 
@@ -384,7 +401,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         self._genericInstance(self.SplitFairCls, 'splitFair', setChCnt)
         return self
 
-    def split_fair_to(self, *outputs, exportSelected=False):
+    def split_fair_to(self, *outputs: Sequence[HwIO], exportSelected=False):
         """
         Same like split_fair, but outputs are automatically connected
 

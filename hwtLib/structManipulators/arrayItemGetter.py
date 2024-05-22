@@ -2,56 +2,56 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, Switch
-from hwt.interfaces.std import Handshaked, VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil, isPow2
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
+from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.hdl.types.bits import Bits
 
 
-class ArrayItemGetter(Unit):
+class ArrayItemGetter(HwModule):
     """
     Get specific item from array by index
 
     .. hwt-autodoc::
     """
     def _config(self):
-        self.ITEMS = Param(32)
-        self.ITEM_WIDTH = Param(32)
-        self.ID = Param(0)
-        self.ID_WIDTH = Param(4)
-        self.DATA_WIDTH = Param(64)
-        self.ADDR_WIDTH = Param(32)
-        self.MAX_TRANS_OVERLAP = Param(16)
+        self.ITEMS = HwParam(32)
+        self.ITEM_WIDTH = HwParam(32)
+        self.ID = HwParam(0)
+        self.ID_WIDTH = HwParam(4)
+        self.DATA_WIDTH = HwParam(64)
+        self.ADDR_WIDTH = HwParam(32)
+        self.MAX_TRANS_OVERLAP = HwParam(16)
 
     def _declr(self):
         addClkRstn(self)
         # addr of start of array
-        self.base = VectSignal(self.ADDR_WIDTH)
+        self.base = HwIOVectSignal(self.ADDR_WIDTH)
 
         # input index of item to get
-        self.index = Handshaked()
+        self.index = HwIODataRdVld()
         self.index.DATA_WIDTH = log2ceil(self.ITEMS)
 
         # output item from array
-        self.item = Handshaked()._m()
+        self.item = HwIODataRdVld()._m()
         self.item.DATA_WIDTH = self.ITEM_WIDTH
 
         self.ITEMS_IN_DATA_WORD = int(self.DATA_WIDTH) // int(self.ITEM_WIDTH)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             # interface for communication with datapump
-            self.rDatapump = AxiRDatapumpIntf()._m()
+            self.rDatapump = HwIOAxiRDatapump()._m()
             self.rDatapump.MAX_BYTES = self.DATA_WIDTH // 8
 
         if self.ITEMS_IN_DATA_WORD > 1:
             assert isPow2(self.ITEMS_IN_DATA_WORD)
-            f = self.itemSubIndexFifo = HandshakedFifo(Handshaked)
+            f = self.itemSubIndexFifo = HandshakedFifo(HwIODataRdVld)
             f.DATA_WIDTH = log2ceil(self.ITEMS_IN_DATA_WORD)
             f.DEPTH = self.MAX_TRANS_OVERLAP
 
@@ -70,7 +70,7 @@ class ArrayItemGetter(Unit):
         req.rem(0)
 
         if ITEMS_IN_DATA_WORD == 1:
-            addr = Concat(self.index.data, Bits(log2ceil(ITEM_WIDTH // 8)).from_py(0))
+            addr = Concat(self.index.data, HBits(log2ceil(ITEM_WIDTH // 8)).from_py(0))
             req.addr(self.base + fitTo(addr, req.addr))
             StreamNode(masters=[self.index], slaves=[req]).sync()
 
@@ -83,7 +83,7 @@ class ArrayItemGetter(Unit):
             subIndexBits = f.dataIn.data._dtype.bit_length()
             itemAlignBits = log2ceil(ITEM_WIDTH // 8)
             addr = Concat(self.index.data[:subIndexBits],
-                          Bits(itemAlignBits + subIndexBits).from_py(0))
+                          HBits(itemAlignBits + subIndexBits).from_py(0))
 
             req.addr(self.base + fitTo(addr, req.addr))
             f.dataIn.data(self.index.data[subIndexBits:])
@@ -99,6 +99,7 @@ class ArrayItemGetter(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = ArrayItemGetter()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = ArrayItemGetter()
+    print(to_rtl_str(m))

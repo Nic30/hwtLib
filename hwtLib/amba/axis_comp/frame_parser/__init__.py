@@ -1,1 +1,1 @@
-from hwtLib.amba.axis_comp.frame_parser._parser import AxiS_frameParser
+from hwtLib.amba.axis_comp.frame_parser._parser import Axi4S_frameParser

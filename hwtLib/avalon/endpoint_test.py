@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import READ, WRITE
-from hwt.interfaces.std import BramPort_withoutClk
+from hwt.constants import READ, WRITE
+from hwt.hwIOs.std import HwIOBramPort_noClk
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import structTwoFields, \
@@ -16,13 +16,13 @@ from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
 
-def addrGetter(intf):
-    if isinstance(intf, AvalonMM):
-        return intf.address
-    elif isinstance(intf, BramPort_withoutClk):
-        return intf.addr
+def addrGetter(hwIO):
+    if isinstance(hwIO, AvalonMM):
+        return hwIO.address
+    elif isinstance(hwIO, HwIOBramPort_noClk):
+        return hwIO.addr
     else:
-        raise TypeError(intf)
+        raise TypeError(hwIO)
 
 
 class AvalonMmEndpointTC(SimTestCase):
@@ -45,52 +45,52 @@ class AvalonMmEndpointTC(SimTestCase):
         self.regs = AvalonMmMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
     def randomizeAll(self):
-        u = self.u
-        for intf in u._interfaces:
-            if (intf not in (u.clk, u.rst_n, u.bus)
-                    and not isinstance(intf, BramPort_withoutClk)):
-                self.randomize(intf)
+        dut = self.dut
+        for hwIO in dut._hwIOs:
+            if (hwIO not in (dut.clk, dut.rst_n, dut.bus)
+                    and not isinstance(hwIO, HwIOBramPort_noClk)):
+                self.randomize(hwIO)
 
-        self.randomize(u.bus)
+        self.randomize(dut.bus)
 
     def mySetUp(self, data_width=32, structT=None):
         if structT is None:
             structT = self.STRUCT_TEMPLATE
-        u = self.u = AvalonMmEndpoint(structT)
+        dut = self.dut = AvalonMmEndpoint(structT)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH = self.DATA_WIDTH
+        dut.DATA_WIDTH = self.DATA_WIDTH
 
-        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
+        self.compileSimAndStart(self.dut, onAfterToRtl=self.mkRegisterMap)
+        return dut
 
     def test_nop(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
 
         self.randomizeAll()
         self.runSim(10 * self.CLK)
 
-        self.assertEmpty(u.bus._ag.rData)
-        self.assertEmpty(u.bus._ag.wResp)
-        self.assertEmpty(u.decoded.field0._ag.dout)
-        self.assertEmpty(u.decoded.field1._ag.dout)
+        self.assertEmpty(dut.bus._ag.rData)
+        self.assertEmpty(dut.bus._ag.wResp)
+        self.assertEmpty(dut.decoded.field0._ag.dout)
+        self.assertEmpty(dut.decoded.field1._ag.dout)
 
     def test_read(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         A = self.FIELD_ADDR
 
-        u.bus._ag.req.extend(
+        dut.bus._ag.req.extend(
             map(self.arTrans,
                 [A[0], A[1], A[0], A[1], A[1] + 0x4]))
 
-        u.decoded.field0._ag.din.extend([MAGIC])
-        u.decoded.field1._ag.din.extend([MAGIC + 1])
+        dut.decoded.field0._ag.din.extend([MAGIC])
+        dut.decoded.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
         self.runSim(40 * self.CLK)
 
-        self.assertValSequenceEqual(u.bus._ag.rData,
+        self.assertValSequenceEqual(dut.bus._ag.rData,
                                     [(MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
@@ -98,11 +98,11 @@ class AvalonMmEndpointTC(SimTestCase):
                                      (None, RESP_SLAVEERROR)])
 
     def test_write(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         m = mask(32 // 8)
         A = self.FIELD_ADDR
-        u.bus._ag.req.extend(
+        dut.bus._ag.req.extend(
             self.awTrans(a, d, m)
             for a, d in [
                 (A[0], MAGIC),
@@ -116,17 +116,17 @@ class AvalonMmEndpointTC(SimTestCase):
         self.runSim(50 * self.CLK)
 
         self.assertValSequenceEqual(
-            u.decoded.field0._ag.dout,
+            dut.decoded.field0._ag.dout,
             [MAGIC,
              MAGIC + 2
              ])
         self.assertValSequenceEqual(
-            u.decoded.field1._ag.dout,
+            dut.decoded.field1._ag.dout,
             [MAGIC + 1,
              MAGIC + 3
              ])
         self.assertValSequenceEqual(
-            u.bus._ag.wResp,
+            dut.bus._ag.wResp,
             [RESP_OKAY for _ in range(4)] + [RESP_SLAVEERROR])
 
     def test_registerMap(self):
@@ -165,7 +165,7 @@ class AvalonMmMemMasterTC(AxiLiteEndpointMemMasterTC):
         AvalonMmEndpointTC.mkRegisterMap(self, u)
 
     def _test_read_memMaster(self, structT):
-        u = AvalonMmEndpointTC.mySetUp(self, 32, structT)
+        dut = AvalonMmEndpointTC.mySetUp(self, 32, structT)
         MAGIC = 100
 
         regs = self.regs
@@ -174,20 +174,20 @@ class AvalonMmMemMasterTC(AxiLiteEndpointMemMasterTC):
         regs.field0.read()
         regs.field1.read()
 
-        u.decoded.field0._ag.din.extend([MAGIC])
-        u.decoded.field1._ag.din.extend([MAGIC + 1])
+        dut.decoded.field0._ag.din.extend([MAGIC])
+        dut.decoded.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
         self.runSim(30 * self.CLK)
 
-        self.assertValSequenceEqual(u.bus._ag.rData,
+        self.assertValSequenceEqual(dut.bus._ag.rData,
                                     [(MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY)])
 
     def _test_write_memMaster(self, structT):
-        u = AvalonMmEndpointTC.mySetUp(self, 32, structT)
+        dut = AvalonMmEndpointTC.mySetUp(self, 32, structT)
         MAGIC = 100
         regs = self.regs
         f0, f1 = regs.field0, regs.field1
@@ -200,17 +200,17 @@ class AvalonMmMemMasterTC(AxiLiteEndpointMemMasterTC):
         self.runSim(50 * self.CLK)
 
         self.assertValSequenceEqual(
-            u.decoded.field0._ag.dout,
+            dut.decoded.field0._ag.dout,
             [MAGIC,
              MAGIC + 2
              ])
         self.assertValSequenceEqual(
-            u.decoded.field1._ag.dout,
+            dut.decoded.field1._ag.dout,
             [MAGIC + 1,
              MAGIC + 3
              ])
         self.assertValSequenceEqual(
-            u.bus._ag.wResp,
+            dut.bus._ag.wResp,
             [RESP_OKAY for _ in range(4)])
 
 

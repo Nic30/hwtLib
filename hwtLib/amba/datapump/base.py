@@ -2,13 +2,13 @@ from typing import Union, List
 
 from hwt.code import If, Switch
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import HandshakeSync
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIORdVldSync
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil, isPow2
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwt.synthesizer.vectorUtils import fitTo, fitTo_t
 from hwtLib.amba.axi3 import Axi3_addr, Axi3
 from hwtLib.amba.axi3Lite import Axi3Lite_addr
@@ -22,7 +22,7 @@ from pyMathBitPrecise.bit_utils import mask, align_with_known_width
 from hwt.hdl.types.defs import BIT
 
 
-class AxiDatapumpBase(Unit):
+class AxiDatapumpBase(HwModule):
     """
     :ivar ~.MAX_TRANS_OVERLAP: max number of concurrent transactions
     :ivar ~.CHUNK_WIDTH: number of bits for one transaction chunk (a transaction is defined
@@ -39,23 +39,23 @@ class AxiDatapumpBase(Unit):
         super().__init__()
 
     def _config(self):
-        self.MAX_TRANS_OVERLAP = Param(16)
-        self.ALIGNAS = Param(64 // 8)
-        self.CHUNK_WIDTH = Param(64)
-        self.MAX_CHUNKS = Param(4096 // self.CHUNK_WIDTH)
+        self.MAX_TRANS_OVERLAP = HwParam(16)
+        self.ALIGNAS = HwParam(64 // 8)
+        self.CHUNK_WIDTH = HwParam(64)
+        self.MAX_CHUNKS = HwParam(4096 // self.CHUNK_WIDTH)
 
-        self.ID_WIDTH = Param(4 if issubclass(self._axiCls, (Axi3, Axi4)) else 0)
-        self.ADDR_WIDTH = Param(32)
-        self.USER_WIDTH = Param(0)
-        self.ADDR_USER_VAL = Param(None)
+        self.ID_WIDTH = HwParam(4 if issubclass(self._axiCls, (Axi3, Axi4)) else 0)
+        self.ADDR_WIDTH = HwParam(32)
+        self.USER_WIDTH = HwParam(0)
+        self.ADDR_USER_VAL = HwParam(None)
 
-        self.DATA_WIDTH = Param(64)
-        self.ID_VAL = Param(0)
-        self.CACHE_VAL = Param(CACHE_DEFAULT)
-        self.PROT_VAL = Param(PROT_DEFAULT)
-        self.QOS_VAL = Param(QOS_DEFAULT)
-        self.USE_STRB = Param(True)
-        self.AXI_CLS = Param(self._axiCls)
+        self.DATA_WIDTH = HwParam(64)
+        self.ID_VAL = HwParam(0)
+        self.CACHE_VAL = HwParam(CACHE_DEFAULT)
+        self.PROT_VAL = HwParam(PROT_DEFAULT)
+        self.QOS_VAL = HwParam(QOS_DEFAULT)
+        self.USE_STRB = HwParam(True)
+        self.AXI_CLS = HwParam(self._axiCls)
 
     def _declr(self):
         addClkRstn(self)
@@ -66,7 +66,7 @@ class AxiDatapumpBase(Unit):
             assert isPow2(self.CHUNK_WIDTH)
         assert self.MAX_CHUNKS > 0, self.MAX_CHUNKS
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             # address channel to axi
             self.axi = self._axiCls()._m()
 
@@ -140,7 +140,7 @@ class AxiDatapumpBase(Unit):
     def getLen_t(self):
         len_t = self.driver.req.len._dtype
         if not self.isAlwaysAligned():
-            len_t = Bits(len_t.bit_length() + 1, signed=False)
+            len_t = HBits(len_t.bit_length() + 1, signed=False)
         return len_t
 
     def hasAlignmentError(self, addr: RtlSignal):
@@ -150,7 +150,7 @@ class AxiDatapumpBase(Unit):
             return addr[log2ceil(self.CHUNK_WIDTH // 8):] != 0
 
     def isCrossingWordBoundary(self, addr, rem):
-        offset_t = Bits(self.getSizeAlignBits() + 1, signed=False)
+        offset_t = HBits(self.getSizeAlignBits() + 1, signed=False)
         word_B = offset_t.from_py(self.DATA_WIDTH // 8)
         bytesInLastWord = rem._eq(0)._ternary(word_B, fitTo_t(rem, offset_t))
         bytesAvaliableInLastWord = (word_B - fitTo_t(addr[self.getSizeAlignBits():], offset_t))
@@ -160,7 +160,7 @@ class AxiDatapumpBase(Unit):
     def addrHandler(self,
                     req: AddrSizeHs,
                     axiA: Union[Axi3_addr, Axi3Lite_addr, Axi4_addr, Axi4Lite_addr],
-                    transInfo: HandshakeSync, errFlag: RtlSignal):
+                    transInfo: HwIORdVldSync, errFlag: RtlSignal):
         """
         Propagate read/write requests from req to axi address channel
         and store extra info using transInfo interface.

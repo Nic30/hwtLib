@@ -1,4 +1,4 @@
-from hwt.interfaces.std import VectSignal
+from hwt.hwIOs.std import HwIOVectSignal
 from hwtLib.amba.axi4Lite import Axi4Lite, Axi4Lite_addr
 from hwtSimApi.hdlSimulator import HdlSimulator
 
@@ -11,9 +11,9 @@ class AceLite_addr(Axi4Lite_addr):
 
     def _declr(self):
         Axi4Lite_addr._declr(self)
-        self.domain = VectSignal(2)
-        self.snoop = VectSignal(3)
-        self.bar = VectSignal(2)
+        self.domain = HwIOVectSignal(2)
+        self.snoop = HwIOVectSignal(3)
+        self.bar = HwIOVectSignal(2)
 
     def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()

@@ -44,7 +44,7 @@ class Colorizer():
     """
 
     def get_color(self, name:str, data_spec:list, data: int):
-        raise  NotImplementedError("Should be overriden in implementation of this abstract class")
+        raise  NotImplementedError("Should be overridden in implementation of this abstract class")
 
 
 class ColorizerHandshakeOrEnLike(Colorizer):
@@ -52,14 +52,14 @@ class ColorizerHandshakeOrEnLike(Colorizer):
     LIGHT_PURPLE = '#b19cd9'
     LIGHT_GREEN = '#90ee90'
 
-    def _get_intf_names(self, data_spec):
+    def _get_HwIO_names(self, data_spec):
         return {
             n: (i, d_spec) for i, (n, d_spec) in enumerate(data_spec)
         }
 
-    def _try_get_intf_index_by_name(self, intfs: Dict[str, Tuple[int, Tuple[int, int]]], names: List[str], data) -> Optional[int]:
+    def _try_get_HwIO_index_by_name(self, hwIOs: Dict[str, Tuple[int, Tuple[int, int]]], names: List[str], data) -> Optional[int]:
         for n in names:
-            i = intfs.get(n, None)
+            i = hwIOs.get(n, None)
             if i is not None:
                 bits_start, bits_len = i[1]
                 val = select_bit_range(data, bits_start, bits_len)
@@ -70,9 +70,9 @@ class ColorizerHandshakeOrEnLike(Colorizer):
         if not data_spec or isinstance(data_spec[0], int):
             return
 
-        intfs = self._get_intf_names(data_spec)
-        rd, rd_v = self._try_get_intf_index_by_name(intfs, ["rd", "ready"], data)
-        vld, vld_v = self._try_get_intf_index_by_name(intfs, ["vld", "valid", 'en', 'enable', 'ce', 'clock_enable'], data)
+        hwIOs = self._get_HwIO_names(data_spec)
+        rd, rd_v = self._try_get_HwIO_index_by_name(hwIOs, ["rd", "ready"], data)
+        vld, vld_v = self._try_get_HwIO_index_by_name(hwIOs, ["vld", "valid", 'en', 'enable', 'ce', 'clock_enable'], data)
 
         # we recognize 3 types of interfaces
         if rd is not None or vld is not None:
@@ -111,14 +111,14 @@ class VisualNodeTemplate():
         self.children: List[VisualNodeTemplate] = []
 
     @classmethod
-    def _get_intf_depth(cls, data_spec: Union[dict, Tuple[int, int]]) -> int:
+    def _get_HwIO_depth(cls, data_spec: Union[dict, Tuple[int, int]]) -> int:
         if not data_spec or isinstance(data_spec[0], int):
             return 1
         else:
-            return max(cls._get_intf_depth(i[1]) for i in data_spec) + 1
+            return max(cls._get_HwIO_depth(i[1]) for i in data_spec) + 1
 
     @classmethod
-    def _visual_format_intf_rows(cls, name: str,
+    def _visual_format_HwIO_rows(cls, name: str,
                                  data_spec: Union[dict, Tuple[int, int]],
                                  buff: StringIO,
                                  column_cnt: int,
@@ -157,7 +157,7 @@ class VisualNodeTemplate():
         buff.write("</tr>\n")
         if has_subinterfaces:
             for k, v in data_spec:
-                cls._visual_format_intf_rows(k, v, buff, column_cnt, cur_indent + 1,
+                cls._visual_format_HwIO_rows(k, v, buff, column_cnt, cur_indent + 1,
                                              data, text_indent, colorizer)
 
     def _default_dot_formatter(self, data:int, out: StringIO,
@@ -172,8 +172,8 @@ class VisualNodeTemplate():
         else:
             color = f' bgcolor="{color}"'
         out.write(f"<table border='0' cellborder='1' cellspacing='0'{color:s}>\n")
-        column_cnt = self._get_intf_depth(self.data_spec) + 1  # +1 for value column
-        self._visual_format_intf_rows(self.name, self.data_spec, out, column_cnt, 0, data, indent + 1, colorizer)
+        column_cnt = self._get_HwIO_depth(self.data_spec) + 1  # +1 for value column
+        self._visual_format_HwIO_rows(self.name, self.data_spec, out, column_cnt, 0, data, indent + 1, colorizer)
 
         self._dump_txt_indent(out, indent)
         out.write("</table>\n")
@@ -329,7 +329,7 @@ class DebugBusMonitorCtl():
 
 class DebugBusMonitorCtlDevmem(DebugBusMonitorCtl):
 
-    def __init__(self, addr):
+    def __init__(self, addr: int):
         DebugBusMonitorCtl.__init__(self, addr)
         self.devmem = "devmem"
 

@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.code import If, Switch
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.types.ctypes import uint8_t, int8_t
 
@@ -35,10 +35,10 @@ class ReprOfHdlObjsTC(unittest.TestCase):
         ae(a <= b, "a <= b")
         ae(a < b, "a < b")
 
-        d = ctx.sig("d", Bits(8))
+        d = ctx.sig("d", HBits(8))
         ae(d[1:0], "d[1:0]")
-        ae(d << 1, "Concat(d[7:0], Bits(1).from_py(0))")
-        ae(d >> 1, "Concat(Bits(1).from_py(0), d[8:1])")
+        ae(d << 1, "Concat(d[7:0], HBits(1).from_py(0))")
+        ae(d >> 1, "Concat(HBits(1).from_py(0), d[8:1])")
 
     def test_HdlAssignmentContainer(self):
         ctx = RtlNetlist()

@@ -2,34 +2,33 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked, Signal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-
-from hwtLib.clocking.clkBuilder import ClkBuilder
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
+from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
 # http://ece-research.unm.edu/jimp/vhdl_fpgas/slides/UART.pdf
-class UartTx(Unit):
+class UartTx(HwModule):
     """
     UART Tx channel controller
 
     .. hwt-autodoc::
     """
     def _config(self):
-        self.FREQ = Param(int(100e6))
+        self.FREQ = HwParam(int(100e6))
         # number of bits per second
-        self.BAUD = Param(115200)
-        # self.PARITY = Param(None)
+        self.BAUD = HwParam(115200)
+        # self.PARITY = HwParam(None)
 
     def _declr(self):
         addClkRstn(self)
-        self.dataIn = Handshaked()
+        self.dataIn = HwIODataRdVld()
         self.dataIn.DATA_WIDTH = 8
-        self.txd = Signal()._m()
+        self.txd = HwIOSignal()._m()
 
     def _impl(self):
         propagateClkRstn(self)
@@ -44,7 +43,7 @@ class UartTx(Unit):
 
         din = self.dataIn
 
-        data = r("data", Bits(BITS_TO_SEND))  # data + start bit + stop bit
+        data = r("data", HBits(BITS_TO_SEND))  # data + start bit + stop bit
         en = r("en", def_val=False)
         tick, last = ClkBuilder(self, self.clk).timers(
                                                        [BIT_RATE, BIT_RATE * BITS_TO_SEND],
@@ -70,6 +69,7 @@ class UartTx(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = UartTx()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = UartTx()
+    print(to_rtl_str(m))

@@ -3,50 +3,50 @@
 
 from hwt.code import If, Switch, Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
-    HandshakeSync
-from hwt.interfaces.utils import propagateClkRstn
+from hwt.hwIOs.std import HwIOSignal, HwIODataRdVld, HwIOVectSignal, \
+    HwIORdVldSync
+from hwt.hwIOs.utils import propagateClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import NotSpecified
-from hwt.synthesizer.param import Param
+from hwt.synthesizer.interfaceLevel.utils import NotSpecifiedError
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.datapump.base import AxiDatapumpBase
-from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
+from hwtLib.amba.datapump.intf import HwIOAxiWDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class WFifoIntf(Handshaked):
+class WFifoIntf(HwIODataRdVld):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.SHIFT_OPTIONS = Param((0,))
+        self.SHIFT_OPTIONS = HwParam((0,))
 
     def _declr(self):
         if self.SHIFT_OPTIONS != (0,):
             # The encoded value of how many bytes should be the data from input write data be shifted
             # in order to fit the word on output write bus
-            self.shift = VectSignal(log2ceil(len(self.SHIFT_OPTIONS)))
+            self.shift = HwIOVectSignal(log2ceil(len(self.SHIFT_OPTIONS)))
             # last word can be canceled because the address can have some offset which could
             # potentially spot new word but due to limited transaction size (using req.rem)
             # this should not happen, this flags provides this information
-            self.drop_last_word = Signal()
+            self.drop_last_word = HwIOSignal()
 
-        HandshakeSync._declr(self)
+        HwIORdVldSync._declr(self)
 
     def _initSimAgent(self, sim:HdlSimulator):
-        raise NotSpecified()
+        raise NotSpecifiedError()
 
 
-class BFifoIntf(Handshaked):
+class BFifoIntf(HwIODataRdVld):
     """
     .. hwt-autodoc::
     """
@@ -55,11 +55,11 @@ class BFifoIntf(Handshaked):
         pass
 
     def _declr(self):
-        self.isLast = Signal()
-        HandshakeSync._declr(self)
+        self.isLast = HwIOSignal()
+        HwIORdVldSync._declr(self)
 
     def _initSimAgent(self, sim:HdlSimulator):
-        raise NotSpecified()
+        raise NotSpecifiedError()
 
 
 @serializeParamsUniq
@@ -75,13 +75,13 @@ class Axi_wDatapump(AxiDatapumpBase):
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel
 
-        self.errorWrite = Signal()._m()
+        self.errorWrite = HwIOSignal()._m()
         if self.ALIGNAS != 8:
-            self.errorAlignment = Signal()._m()
+            self.errorAlignment = HwIOSignal()._m()
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.axi.HAS_R = False
-            d = self.driver = AxiWDatapumpIntf()
+            d = self.driver = HwIOAxiWDatapump()
             d.ID_WIDTH = 0
             d.ID_WIDTH = 0
             d.MAX_BYTES = self.MAX_CHUNKS * (self.CHUNK_WIDTH // 8)
@@ -168,16 +168,16 @@ class Axi_wDatapump(AxiDatapumpBase):
                         # in first word the prefix is invalid, in rest of the frames it is taken from
                         # previous data
                         If(waitForShift,
-                            w.data(Concat(Bits(rem_w).from_py(None), prevData.data[:rem_w])),
+                            w.data(Concat(HBits(rem_w).from_py(None), prevData.data[:rem_w])),
                         ).Else(
                             w.data(Concat(wIn.data[rem_w:], prevData.data[:rem_w])),
                         ),
                         If(waitForShift,
                             # wait until remainder of previous data is send
-                            w.strb(Concat(Bits(rem_w // 8).from_py(0), prevData.strb[:rem_w // 8])),
+                            w.strb(Concat(HBits(rem_w // 8).from_py(0), prevData.strb[:rem_w // 8])),
                         ).Elif(isFirst,
                             # ignore previous data
-                            w.strb(Concat(wIn.strb[rem_w // 8:], Bits(sh // 8).from_py(0))),
+                            w.strb(Concat(wIn.strb[rem_w // 8:], HBits(sh // 8).from_py(0))),
                         ).Else(
                             # take what is left from prev data and append from wIn
                             w.strb(Concat(wIn.strb[rem_w // 8:], prevData.strb[:rem_w // 8])),
@@ -260,7 +260,7 @@ class Axi_wDatapump(AxiDatapumpBase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Axi_wDatapump()
-    # u.ALIGNAS = 8
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = Axi_wDatapump()
+    # m.ALIGNAS = 8
+    print(to_rtl_str(m))

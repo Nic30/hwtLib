@@ -3,10 +3,13 @@
 
 import unittest
 
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal
 from hwt.synthesizer.exceptions import TypeConversionErr
-from hwt.synthesizer.rtlLevel.signalUtils.exceptions import \
+from hwt.hwModule import HwModule
+from hwt.synthesizer.rtlLevel.exceptions import \
     SignalDriverErr
-from hwt.synthesizer.utils import to_rtl_str
+from hwt.synth import to_rtl_str
 from hwtLib.examples.errors.accessingSubunitInternalIntf import \
     AccessingSubunitInternalIntf
 from hwtLib.examples.errors.inconsistentIntfDirection import \
@@ -15,17 +18,14 @@ from hwtLib.examples.errors.invalidTypeConnetion import InvalidTypeConnetion
 from hwtLib.examples.errors.multipleDriversOfChildNet import \
     MultipleDriversOfChildNet, MultipleDriversOfChildNet2
 from hwtLib.examples.errors.unusedSubunit import UnusedSubunit, UnusedSubunit2
-from hwt.synthesizer.unit import Unit
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal
 from hwtLib.types.ctypes import uint8_t
 
 
-class ExampleRomWithTooLargeArrayInit(Unit):
+class ExampleRomWithTooLargeArrayInit(HwModule):
 
     def _declr(self):
-        self.idx = Signal(Bits(2))
-        self.data = Signal(Bits(8, signed=False))._m()
+        self.idx = HwIOSignal(HBits(2))
+        self.data = HwIOSignal(HBits(8, signed=False))._m()
 
     def _impl(self):
 
@@ -38,44 +38,44 @@ class ExampleRomWithTooLargeArrayInit(Unit):
 class ErrorsTC(unittest.TestCase):
 
     def test_invalidTypeConnetion(self):
-        u = InvalidTypeConnetion()
+        dut = InvalidTypeConnetion()
         with self.assertRaises(TypeConversionErr):
-            to_rtl_str(u)
+            to_rtl_str(dut)
 
     def test_inconsistentIntfDirection(self):
-        u = InconsistentIntfDirection()
+        dut = InconsistentIntfDirection()
         with self.assertRaises(SignalDriverErr):
-            to_rtl_str(u)
+            to_rtl_str(dut)
 
     def test_multipleDriversOfChildNet(self):
-        u = MultipleDriversOfChildNet()
+        dut = MultipleDriversOfChildNet()
         with self.assertRaises((SignalDriverErr, AssertionError)):
-            to_rtl_str(u)
+            to_rtl_str(dut)
 
     def test_multipleDriversOfChildNet2(self):
-        u = MultipleDriversOfChildNet2()
+        dut = MultipleDriversOfChildNet2()
         with self.assertRaises(SignalDriverErr):
-            to_rtl_str(u)
+            to_rtl_str(dut)
 
     def test_unusedSubunit(self):
-        u = UnusedSubunit()
+        dut = UnusedSubunit()
         with self.assertRaises(SignalDriverErr):
-            to_rtl_str(u)
+            to_rtl_str(dut)
 
     def test_unusedSubunit2(self):
-        u = UnusedSubunit2()
+        dut = UnusedSubunit2()
         with self.assertRaises(SignalDriverErr):
-            to_rtl_str(u)
+            to_rtl_str(dut)
 
     def test_accessingSubunitInternalIntf(self):
-        u = AccessingSubunitInternalIntf()
+        dut = AccessingSubunitInternalIntf()
         with self.assertRaises(AssertionError):
-            to_rtl_str(u)
+            to_rtl_str(dut)
 
     def test_ExampleRomWithTooLargeArrayInit(self):
-        u = ExampleRomWithTooLargeArrayInit()
+        dut = ExampleRomWithTooLargeArrayInit()
         with self.assertRaises(ValueError):
-            to_rtl_str(u)
+            to_rtl_str(dut)
 
 
 if __name__ == '__main__':

@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import FsmBuilder, Switch, If
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 
 
-class FsmExample(Unit):
+class FsmExample(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
-        self.a = Signal()
-        self.b = Signal()
-        self.dout = VectSignal(3)._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.dout = HwIOVectSignal(3)._m()
 
     def _impl(self):
         # :note: stT member names are colliding with port names and thus
@@ -59,7 +59,7 @@ class HadrcodedFsmExample(FsmExample):
         b = self.b
         out = self.dout
 
-        st = self._reg("st", Bits(3), 1)
+        st = self._reg("st", HBits(3), 1)
 
         If(st._eq(1),
             If(a & b,
@@ -96,6 +96,7 @@ class HadrcodedFsmExample(FsmExample):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = FsmExample()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = FsmExample()
+    print(to_rtl_str(m))

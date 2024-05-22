@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, rol
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.handshaked.splitCopy import HsSplitCopy
 
@@ -31,13 +31,13 @@ class HsSplitFair(HsSplitCopy):
 
     def _config(self):
         HsSplitCopy._config(self)
-        self.EXPORT_SELECTED = Param(True)
+        self.EXPORT_SELECTED = HwParam(True)
 
     def _declr(self):
         HsSplitCopy._declr(self)
         addClkRstn(self)
         if self.EXPORT_SELECTED:
-            s = self.selectedOneHot = Handshaked()._m()
+            s = self.selectedOneHot = HwIODataRdVld()._m()
             s.DATA_WIDTH = self.OUTPUTS
 
     def isSelectedLogic(self, din):
@@ -49,7 +49,7 @@ class HsSplitFair(HsSplitCopy):
         rd = self.get_ready_signal
         EXPORT_SELECTED = bool(self.EXPORT_SELECTED)
 
-        priority = self._reg("priority", Bits(self.OUTPUTS), def_val=1)
+        priority = self._reg("priority", HBits(self.OUTPUTS), def_val=1)
         priority(rol(priority, 1))
 
         rdSignals = [rd(d) for d in self.dataOut]
@@ -84,10 +84,11 @@ class HsSplitFair(HsSplitCopy):
 
 
 def _example_HsSplitFair():
-    return HsSplitFair(Handshaked)
+    return HsSplitFair(HwIODataRdVld)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HsSplitFair()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_HsSplitFair()
+    print(to_rtl_str(m))

@@ -3,9 +3,10 @@
 
 from typing import Union, Set, List, Tuple
 
-from hwt.hdl.constants import READ, READ_WRITE, WRITE
-from hwt.interfaces.utils import propagateClkRstn
-from hwt.synthesizer.hObjList import HObjList
+from hwt.constants import READ, READ_WRITE, WRITE
+from hwt.hwIOs.utils import propagateClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busInterconnect import BusInterconnectUtils, \
     BusInterconnect
 from hwtLib.amba.axi4 import Axi4
@@ -13,7 +14,6 @@ from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixR import AxiInterconnectMatrixR
 from hwtLib.amba.axi_comp.interconnect.matrixW import AxiInterconnectMatrixW
 from ipCorePackager.constants import INTF_DIRECTION
-from hwt.synthesizer.param import Param
 
 
 class AxiInterconnectMatrix(AxiInterconnectCommon):
@@ -37,7 +37,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
     def _config(self):
         AxiInterconnectCommon._config(self)
-        self.AW_AND_W_WORD_TOGETHER = Param(True)
+        self.AW_AND_W_WORD_TOGETHER = HwParam(True)
 
     def configure_sub_interconnect(self,
                                    master_indexes: Set[int],
@@ -107,7 +107,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
             masters_with_read_ch.update(master_indexes)
             slaves_with_read_ch.update(slave_indexes)
 
-            inter = AxiInterconnectMatrixR(self.intfCls)
+            inter = AxiInterconnectMatrixR(self.hwIOCls)
             con = self.configure_sub_interconnect(
                 master_indexes, slave_indexes, inter)
             r_interconnects.append(inter)
@@ -121,13 +121,13 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
             masters_with_write_ch.update(master_indexes)
             slaves_with_write_ch.update(slave_indexes)
 
-            inter = AxiInterconnectMatrixW(self.intfCls)
+            inter = AxiInterconnectMatrixW(self.hwIOCls)
             con = self.configure_sub_interconnect(
                 master_indexes, slave_indexes, inter)
             w_interconnects.append(inter)
             self.sub_interconnect_connections.extend(con)
 
-        with self._paramsShared(exclude=({"SLAVES", "MASTERS"}, set())):
+        with self._hwParamsShared(exclude=({"SLAVES", "MASTERS"}, set())):
             self.r_interconnects = r_interconnects
             self.w_interconnects = w_interconnects
 
@@ -167,15 +167,15 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
 
 def example_AxiInterconnectMatrix():
-    u = AxiInterconnectMatrix(Axi4)
-    u.MASTERS = ({(0, READ), (1, READ_WRITE)},
+    m = AxiInterconnectMatrix(Axi4)
+    m.MASTERS = ({(0, READ), (1, READ_WRITE)},
                  )
-    u.SLAVES = ((0x1000, 0x1000),
+    m.SLAVES = ((0x1000, 0x1000),
                 (0x2000, 0x1000))
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = example_AxiInterconnectMatrix()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = example_AxiInterconnectMatrix()
+    print(to_rtl_str(m))

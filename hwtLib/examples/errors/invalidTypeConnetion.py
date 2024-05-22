@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.unit import Unit
-from hwt.interfaces.std import VectSignal
+from hwt.hwModule import HwModule
+from hwt.hwIOs.std import HwIOVectSignal
 
 
-class InvalidTypeConnetion(Unit):
+class InvalidTypeConnetion(HwModule):
     def _declr(self):
-        self.a = VectSignal(32)._m()
-        self.b = VectSignal(64)
+        self.a = HwIOVectSignal(32)._m()
+        self.b = HwIOVectSignal(64)
 
     def _impl(self):
-        # wrong size can be overriden by dst(src, fit=True)
+        # wrong size can be overridden by dst(src, fit=True)
         self.a(self.b)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = InvalidTypeConnetion()
+    from hwt.synth import to_rtl_str
+    
+    m = InvalidTypeConnetion()
     # expecting hwt.synthesizer.exceptions.TypeConversionErr
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

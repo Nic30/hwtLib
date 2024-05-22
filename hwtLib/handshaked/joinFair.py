@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, rol, SwitchLogic
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
-from hwt.interfaces.std import VldSynced
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIODataVld
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 
@@ -25,13 +25,13 @@ class HsJoinFairShare(HsJoinPrioritized):
 
     def _config(self):
         HsJoinPrioritized._config(self)
-        self.EXPORT_SELECTED = Param(True)
+        self.EXPORT_SELECTED = HwParam(True)
 
     def _declr(self):
         HsJoinPrioritized._declr(self)
         addClkRstn(self)
         if self.EXPORT_SELECTED:
-            s = self.selectedOneHot = VldSynced()._m()
+            s = self.selectedOneHot = HwIODataVld()._m()
             s.DATA_WIDTH = self.INPUTS
 
     @staticmethod
@@ -68,7 +68,7 @@ class HsJoinFairShare(HsJoinPrioritized):
             if selectedOneHot is not None:
                 selectedOneHot.data(1)
         else:
-            priority = self._reg("priority", Bits(len(din_vlds)), def_val=1)
+            priority = self._reg("priority", HBits(len(din_vlds)), def_val=1)
             priority(rol(priority, 1))
 
             isSelectedFlags = []
@@ -122,13 +122,15 @@ class HsJoinFairShare(HsJoinPrioritized):
 
 
 def _example_HsJoinFairShare():
-    from hwt.interfaces.std import Handshaked
-    u = HsJoinFairShare(Handshaked)
-    u.INPUTS = 3
-    return u
+    from hwt.hwIOs.std import HwIODataRdVld
+
+    m = HsJoinFairShare(HwIODataRdVld)
+    m.INPUTS = 3
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HsJoinFairShare()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_HsJoinFairShare()
+    print(to_rtl_str(m))

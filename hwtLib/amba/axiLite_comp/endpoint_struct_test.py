@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import field_path_get_type
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
@@ -18,8 +18,8 @@ structHierarchy = HStruct(
 structHierarchy_str = """\
 struct {
     struct {
-        <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-        <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
+        <HBits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+        <HBits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
     } a // start:0x0(bit) 0x0(byte)
 }"""
 
@@ -33,9 +33,9 @@ structHierarchyArr = HStruct(
 structHierarchyArr_str = """\
 struct {
     struct {
-        <Bits, 16bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-        //<Bits, 16bits, unsigned> empty space // start:0x10(bit) 0x2(byte)
-        <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
+        <HBits, 16bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+        //<HBits, 16bits, unsigned> empty space // start:0x10(bit) 0x2(byte)
+        <HBits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
     }[3] a // start:0x0(bit) 0x0(byte)
 }"""
 
@@ -44,17 +44,17 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structHierarchy
 
     def test_nop(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
 
         self.randomizeAll()
         self.runSim(10 * self.CLK)
 
-        self.assertEmpty(u.bus._ag.r.data)
-        self.assertEmpty(u.decoded.a.field0._ag.dout)
-        self.assertEmpty(u.decoded.a.field1._ag.dout)
+        self.assertEmpty(dut.bus._ag.r.data)
+        self.assertEmpty(dut.decoded.a.field0._ag.dout)
+        self.assertEmpty(dut.decoded.a.field1._ag.dout)
 
     def test_read(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         r = self.regs
 
@@ -62,13 +62,13 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
             r.a.field0.read()
             r.a.field1.read()
 
-        u.decoded.a.field0._ag.din.extend([MAGIC])
-        u.decoded.a.field1._ag.din.extend([MAGIC + 1])
+        dut.decoded.a.field0._ag.din.extend([MAGIC])
+        dut.decoded.a.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
         self.runSim(30 * self.CLK)
 
-        self.assertValSequenceEqual(u.bus.r._ag.data,
+        self.assertValSequenceEqual(dut.bus.r._ag.data,
                                     [(MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
@@ -80,7 +80,7 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
         self.assertEqual(s, structHierarchy_str)
 
     def test_write(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         r = self.regs
 
@@ -91,44 +91,44 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
         self.randomizeAll()
         self.runSim(50 * self.CLK)
 
-        self.assertValSequenceEqual(u.decoded.a.field0._ag.dout,
+        self.assertValSequenceEqual(dut.decoded.a.field0._ag.dout,
                                     [MAGIC,
                                      MAGIC + 1
                                      ])
-        self.assertValSequenceEqual(u.decoded.a.field1._ag.dout,
+        self.assertValSequenceEqual(dut.decoded.a.field1._ag.dout,
                                     [MAGIC + 2,
                                      MAGIC + 3
                                      ])
-        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)])
+        self.assertValSequenceEqual(dut.bus.b._ag.data, [RESP_OKAY for _ in range(4)])
 
 
 class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structHierarchyArr
 
     def mySetUp(self, data_width=32):
-        u = AxiLiteEndpoint(self.STRUCT_TEMPLATE,
+        dut = AxiLiteEndpoint(self.STRUCT_TEMPLATE,
                 shouldEnterFn=lambda root, field_path:\
-                    (True, isinstance(field_path_get_type(root, field_path), Bits)))
-        self.u = u
+                    (True, isinstance(field_path_get_type(root, field_path), HBits)))
+        self.dut = dut
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH = self.DATA_WIDTH
+        dut.DATA_WIDTH = self.DATA_WIDTH
 
-        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
+        self.compileSimAndStart(self.dut, onAfterToRtl=self.mkRegisterMap)
+        return dut
 
     def test_nop(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
 
         self.randomizeAll()
         self.runSim(10 * self.CLK)
 
-        self.assertEmpty(u.bus._ag.r.data)
+        self.assertEmpty(dut.bus._ag.r.data)
         for i in range(3):
-            self.assertEmpty(u.decoded.a[i].field0._ag.dout)
-            self.assertEmpty(u.decoded.a[i].field1._ag.dout)
+            self.assertEmpty(dut.decoded.a[i].field0._ag.dout)
+            self.assertEmpty(dut.decoded.a[i].field1._ag.dout)
 
         with self.assertRaises(IndexError):
-            u.decoded.a[3]
+            dut.decoded.a[3]
 
     def test_registerMap(self):
         self.mySetUp(32)
@@ -136,7 +136,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
         self.assertEqual(s, structHierarchyArr_str)
 
     def test_read(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         r = self.regs
 
@@ -149,13 +149,13 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
             expected.append((MAGIC + 32 + (i % 3), RESP_OKAY, 32))
 
         for i in range(3):
-            u.decoded.a[i].field0._ag.din.append(MAGIC + i)
-            u.decoded.a[i].field1._ag.din.append(MAGIC + 32 + i)
+            dut.decoded.a[i].field0._ag.din.append(MAGIC + i)
+            dut.decoded.a[i].field1._ag.din.append(MAGIC + 32 + i)
 
         self.randomizeAll()
         self.runSim(80 * self.CLK)
 
-        r_data = u.bus.r._ag.data
+        r_data = dut.bus.r._ag.data
         self.assertEqual(len(r_data), len(expected))
         for d, ed in zip(r_data, expected):
             edata, eresp, ebits = ed
@@ -166,7 +166,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
             self.assertValEqual(data, edata)
 
     def test_write(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         r = self.regs
         for i in range(2 * 3):
@@ -180,16 +180,16 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
         self.runSim(120 * self.CLK)
 
         for i in range(3):
-            self.assertValSequenceEqual(u.decoded.a[i].field0._ag.dout,
+            self.assertValSequenceEqual(dut.decoded.a[i].field0._ag.dout,
                                         [MAGIC + i,
                                          MAGIC + 3 + i
                                          ])
-            self.assertValSequenceEqual(u.decoded.a[i].field1._ag.dout,
+            self.assertValSequenceEqual(dut.decoded.a[i].field1._ag.dout,
                                         [MAGIC + 32 + i,
                                          MAGIC + 32 + 3 + i
                                          ])
 
-        self.assertValSequenceEqual(u.bus.b._ag.data,
+        self.assertValSequenceEqual(dut.bus.b._ag.data,
                                     [RESP_OKAY for _ in range(2 * 2 * 3)])
 
 

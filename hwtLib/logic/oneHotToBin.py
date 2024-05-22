@@ -4,18 +4,18 @@
 from typing import Union, List
 
 from hwt.code import If, Or
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VldSynced, VectSignal
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIODataVld, HwIOVectSignal
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwt.synthesizer.vectorUtils import iterBits
 
 
 @serializeParamsUniq
-class OneHotToBin(Unit):
+class OneHotToBin(HwModule):
     """
     Converts one hot signal to binary, bin.vld is high when oneHot != 0
 
@@ -23,11 +23,11 @@ class OneHotToBin(Unit):
     """
 
     def _config(self):
-        self.ONE_HOT_WIDTH = Param(8)
+        self.ONE_HOT_WIDTH = HwParam(8)
 
     def _declr(self):
-        self.oneHot = VectSignal(self.ONE_HOT_WIDTH)
-        self.bin = VldSynced()._m()
+        self.oneHot = HwIOVectSignal(self.ONE_HOT_WIDTH)
+        self.bin = HwIODataVld()._m()
         self.bin.DATA_WIDTH = log2ceil(self.ONE_HOT_WIDTH)
 
     def _impl(self):
@@ -35,13 +35,13 @@ class OneHotToBin(Unit):
         self.bin.vld(Or(*[bit for bit in iterBits(self.oneHot)]))
 
 
-def oneHotToBin(parent, signals: Union[RtlSignal, Signal, List[Union[RtlSignal, Signal]]], resName="oneHotToBin"):
-    if isinstance(signals, (RtlSignal, Signal)):
+def oneHotToBin(parent, signals: Union[RtlSignal, HwIOSignal, List[Union[RtlSignal, HwIOSignal]]], resName="oneHotToBin"):
+    if isinstance(signals, (RtlSignal, HwIOSignal)):
         signals = [signals[i] for i in range(signals._dtype.bit_length())]
     else:
         signals = list(signals)
 
-    res = parent._sig(resName, Bits(log2ceil(len(signals))))
+    res = parent._sig(resName, HBits(log2ceil(len(signals))))
     leadingZeroTop = None
     for i, s in enumerate(reversed(signals)):
         connections = res(len(signals) - i - 1)
@@ -59,6 +59,7 @@ def oneHotToBin(parent, signals: Union[RtlSignal, Signal, List[Union[RtlSignal, 
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = OneHotToBin()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = OneHotToBin()
+    print(to_rtl_str(m))

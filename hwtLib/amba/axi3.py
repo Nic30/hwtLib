@@ -1,10 +1,10 @@
-from hwt.hdl.constants import DIRECTION
-from hwt.interfaces.std import VectSignal, Signal
-from hwt.synthesizer.param import Param
+from hwt.constants import DIRECTION
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
+from hwt.hwParam import HwParam
 from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite, Axi3Lite_r, Axi3Lite_b,\
     IP_Axi3Lite
-from hwtLib.amba.axi_intf_common import AxiMap, Axi_id, Axi_hs, Axi_strb
-from hwtLib.amba.axis import AxiStream, AxiStreamAgent
+from hwtLib.amba.axi_common import AxiMap, Axi_id, Axi_hs, Axi_strb
+from hwtLib.amba.axi4s import Axi4Stream, Axi4StreamAgent
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwt.serializer.ip_packager import IpPackager
 from ipCorePackager.component import Component
@@ -28,25 +28,25 @@ class Axi3_addr(Axi3Lite_addr, Axi_id):
     def _config(self):
         Axi3Lite_addr._config(self)
         Axi_id._config(self, default_id_width=6)
-        self.USER_WIDTH = Param(0)
+        self.USER_WIDTH = HwParam(0)
 
     def _declr(self):
         Axi3Lite_addr._declr(self)
         Axi_id._declr(self)
-        self.burst = VectSignal(2)
-        self.cache = VectSignal(4)
-        self.len = VectSignal(self.LEN_WIDTH)
-        self.lock = VectSignal(self.LOCK_WIDTH)
-        self.prot = VectSignal(3)
-        self.size = VectSignal(3)
+        self.burst = HwIOVectSignal(2)
+        self.cache = HwIOVectSignal(4)
+        self.len = HwIOVectSignal(self.LEN_WIDTH)
+        self.lock = HwIOVectSignal(self.LOCK_WIDTH)
+        self.prot = HwIOVectSignal(3)
+        self.size = HwIOVectSignal(3)
         if self.USER_WIDTH:
-            self.user = VectSignal(self.USER_WIDTH)
+            self.user = HwIOVectSignal(self.USER_WIDTH)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3_addrAgent(sim, self)
 
 
-class Axi3_addrAgent(AxiStreamAgent):
+class Axi3_addrAgent(Axi4StreamAgent):
     """
     Simulation agent for :class:`.Axi3_addr` interface
 
@@ -55,21 +55,21 @@ class Axi3_addrAgent(AxiStreamAgent):
     prot, size, qos, optionally user)
     """
 
-    def __init__(self, sim: HdlSimulator, intf: Axi3_addr, allowNoReset=False):
-        BaseAxiAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim: HdlSimulator, hwIO: Axi3_addr, allowNoReset=False):
+        BaseAxiAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
 
         signals = [
-            intf.id,
-            intf.addr,
-            intf.burst,
-            intf.cache,
-            intf.len,
-            intf.lock,
-            intf.prot,
-            intf.size,
+            hwIO.id,
+            hwIO.addr,
+            hwIO.burst,
+            hwIO.cache,
+            hwIO.len,
+            hwIO.lock,
+            hwIO.prot,
+            hwIO.size,
         ]
-        if hasattr(intf, "user"):
-            signals.append(intf.user)
+        if hasattr(hwIO, "user"):
+            signals.append(hwIO.user)
         self._signals = tuple(signals)
         self._sigCnt = len(signals)
 
@@ -86,9 +86,9 @@ class Axi3_addrAgent(AxiStreamAgent):
         :note: transaction is created and returned but it is not added to a agent data
         """
         if size is _DEFAULT:
-            D_B = self.intf._parent.DATA_WIDTH // 8
+            D_B = self.hwIO._parent.DATA_WIDTH // 8
             size = BYTES_IN_TRANS(D_B)
-        if self.intf.USER_WIDTH:
+        if self.hwIO.USER_WIDTH:
             return (_id, addr, burst, cache, _len, lock, prot, size, user)
         else:
             assert user is None
@@ -98,24 +98,24 @@ class Axi3_addrAgent(AxiStreamAgent):
 #####################################################################
 class Axi3_w(Axi_hs, Axi_strb):
     """
-    Axi3 write channel interface (simplified  AxiStream)
+    Axi3 write channel interface (simplified  Axi4Stream)
 
     .. hwt-autodoc::
     """
     def _config(self):
-        self.ID_WIDTH = Param(0)
-        self.DATA_WIDTH = Param(64)
+        self.ID_WIDTH = HwParam(0)
+        self.DATA_WIDTH = HwParam(64)
 
     def _declr(self):
         if self.ID_WIDTH:
-            self.id = VectSignal(self.ID_WIDTH)
-        self.data = VectSignal(self.DATA_WIDTH)
+            self.id = HwIOVectSignal(self.ID_WIDTH)
+        self.data = HwIOVectSignal(self.DATA_WIDTH)
         Axi_strb._declr(self)
-        self.last = Signal()
+        self.last = HwIOSignal()
         Axi_hs._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        AxiStream._initSimAgent(self, sim)
+        Axi4Stream._initSimAgent(self, sim)
 
 
 #####################################################################
@@ -132,7 +132,7 @@ class Axi3_r(Axi3Lite_r, Axi_id):
     def _declr(self):
         Axi_id._declr(self)
         Axi3Lite_r._declr(self)
-        self.last = Signal()
+        self.last = HwIOSignal()
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi3_rAgent(sim, self)
@@ -147,27 +147,27 @@ class Axi3_rAgent(BaseAxiAgent):
     """
 
     def get_data(self):
-        intf = self.intf
+        hwIO = self.hwIO
 
-        _id = intf.id.read()
-        data = intf.data.read()
-        resp = intf.resp.read()
-        last = intf.last.read()
+        _id = hwIO.id.read()
+        data = hwIO.data.read()
+        resp = hwIO.resp.read()
+        last = hwIO.last.read()
 
         return (_id, data, resp, last)
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
 
         if data is None:
             data = [None for _ in range(4)]
 
         _id, data, resp, last = data
 
-        intf.id.write(_id)
-        intf.data.write(data)
-        intf.resp.write(resp)
-        intf.last.write(last)
+        hwIO.id.write(_id)
+        hwIO.data.write(data)
+        hwIO.resp.write(resp)
+        hwIO.last.write(last)
 
 
 #####################################################################
@@ -198,20 +198,20 @@ class Axi3_bAgent(BaseAxiAgent):
     """
 
     def get_data(self):
-        intf = self.intf
+        hwIO = self.hwIO
 
-        return intf.id.read(), intf.resp.read()
+        return hwIO.id.read(), hwIO.resp.read()
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
 
         if data is None:
             data = [None for _ in range(2)]
 
         _id, resp = data
 
-        intf.id.write(_id)
-        intf.resp.write(resp)
+        hwIO.id.write(_id)
+        hwIO.resp.write(resp)
 
 
 #####################################################################
@@ -234,11 +234,11 @@ class Axi3(Axi3Lite):
     def _config(self):
         Axi3Lite._config(self)
         Axi_id._config(self, default_id_width=6)
-        self.ADDR_USER_WIDTH = Param(0)
-        # self.DATA_USER_WIDTH = Param(0)
+        self.ADDR_USER_WIDTH = HwParam(0)
+        # self.DATA_USER_WIDTH = HwParam(0)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             if self.HAS_R:
                 self.ar = self.AR_CLS()
                 self.ar.USER_WIDTH = self.ADDR_USER_WIDTH

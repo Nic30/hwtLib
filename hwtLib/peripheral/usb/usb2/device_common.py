@@ -1,15 +1,15 @@
 from typing import Optional
 
 from hwt.code import Switch, If, In
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.std import Signal
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import hMin, log2ceil
+from hwt.hwModule import HwModule
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.peripheral.usb.constants import usb_addr_t
 from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle
 from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE, \
@@ -17,12 +17,12 @@ from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE, \
 from hwtLib.peripheral.usb.device_request import usb_device_request_t, \
     USB_REQUEST_TYPE_TYPE, USB_REQUEST, USB_REQUEST_TYPE_DIRECTION
 from hwtLib.peripheral.usb.usb2.device_core import Usb2DeviceCore
+from hwtLib.peripheral.usb.usb2.device_ep_buffers import UsbDeviceEpBuffers
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b
 from hwtLib.types.ctypes import uint16_t, uint8_t
-from hwtLib.peripheral.usb.usb2.device_ep_buffers import UsbDeviceEpBuffers
 
 
-class Usb2DeviceCommon(Unit):
+class Usb2DeviceCommon(HwModule):
     """
     USB2.0 device common parts. This component directly handles the functionality of the EP0
     and connects the usb_core to ep_buffers.
@@ -40,15 +40,15 @@ class Usb2DeviceCommon(Unit):
     def _declr(self):
         addClkRstn(self)
         self.phy = Utmi_8b()
-        self.usb_rst: Signal = Signal()._m()
+        self.usb_rst: HwIOSignal = HwIOSignal()._m()
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.usb_core = Usb2DeviceCore()
 
     def generat_descriptor_rom(self, descriptors: UsbDescriptorBundle, rst):
         _descriptor_rom = descriptors.compile_rom()
         descriptor_rom = self._sig("descriptor_rom",
-                                   Bits(8)[len(_descriptor_rom)],
+                                   HBits(8)[len(_descriptor_rom)],
                                    def_val=_descriptor_rom)
         # a register for descriptor reader
         descr_addr = self._reg("descr_addr", uint8_t, rst=rst)
@@ -96,14 +96,14 @@ class Usb2DeviceCommon(Unit):
             set_addr_len(None, None)
         )
 
-    def load_usb_device_request(self, rx:AxiStream, rst:RtlSignal):
+    def load_usb_device_request(self, rx:Axi4Stream, rst:RtlSignal):
         """
         :param rx: the port with incomming data
         :param rst: the usb reset or core reset
         """
         setup_byte_cnt = usb_device_request_t.bit_length() // 8
-        setup_raw = self._reg("setup", Bits(usb_device_request_t.bit_length()))
-        setup_rx_byte_i = self._reg("setup_rx_byte_i", Bits(log2ceil(setup_byte_cnt - 1)), def_val=0, rst=rst)
+        setup_raw = self._reg("setup", HBits(usb_device_request_t.bit_length()))
+        setup_rx_byte_i = self._reg("setup_rx_byte_i", HBits(log2ceil(setup_byte_cnt - 1)), def_val=0, rst=rst)
 
         def index_setup_byte(i: int):
             return setup_raw[(i + 1) * 8: i * 8]
@@ -125,7 +125,7 @@ class Usb2DeviceCommon(Unit):
         req_bDescriptorType, req_bDescriptorIndex = index_setup_byte(3), index_setup_byte(2),
         return setup, req_bDescriptorType, req_bDescriptorIndex
 
-    def decode_setup_request_class(self, setup:StructIntf, ep0_stall: RtlSignal, usb_addr_next: RtlSignal,
+    def decode_setup_request_class(self, setup:HwIOStruct, ep0_stall: RtlSignal, usb_addr_next: RtlSignal,
                             descriptors: UsbDescriptorBundle,
                             req_bDescriptorType: RtlSignal, req_bDescriptorIndex: RtlSignal, dev_configured: RtlSignal,
                             descr_addr: RtlSignal, ep0_trans_len: RtlSignal):
@@ -133,7 +133,7 @@ class Usb2DeviceCommon(Unit):
             ep0_stall(1),
         ]
 
-    def decode_setup_request(self, setup:StructIntf, ep0_stall: RtlSignal, usb_addr_next: RtlSignal,
+    def decode_setup_request(self, setup:HwIOStruct, ep0_stall: RtlSignal, usb_addr_next: RtlSignal,
                             descriptors: UsbDescriptorBundle,
                             req_bDescriptorType: RtlSignal, req_bDescriptorIndex: RtlSignal, dev_configured: RtlSignal,
                             descr_addr: RtlSignal, ep0_trans_len: RtlSignal):
@@ -225,7 +225,7 @@ class Usb2DeviceCommon(Unit):
                                                 'STATUS_OUT', 'STATUS_IN'])
         setup_stage = self._reg("setup_stage", setup_stage_t, def_val=setup_stage_t.IDLE, rst=rst)
         EP0_MAX_TX_PACKET_SIZE = self.ep_buffers.ENDPOINT_META[0][0].max_packet_size
-        packet_split_cntr = self._reg("packet_split_cntr", Bits(log2ceil(EP0_MAX_TX_PACKET_SIZE - 1)),
+        packet_split_cntr = self._reg("packet_split_cntr", HBits(log2ceil(EP0_MAX_TX_PACKET_SIZE - 1)),
                                       def_val=0, rst=rst)
 
         # is_setup_get = setup_valid_q & setup.bmRequestType.data_transfer_direction._eq(USB_REQUEST_TYPE_DIRECTION.DEV_TO_HOST)

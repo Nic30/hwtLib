@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, RegCntrl
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIORegCntrl
+from hwt.hwIOs.utils import addClkRstn
 from hwt.serializer.mode import serializeOnce
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 
 
 @serializeOnce
-class FlipRegister(Unit):
+class FlipRegister(HwModule):
     """
     Switchable register, there are two registers and two sets of ports,
     Each set of ports is every time connected to opposite reg.
@@ -27,18 +27,18 @@ class FlipRegister(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(32)
-        self.DEFAULT_VAL = Param(0)
+        self.DATA_WIDTH = HwParam(32)
+        self.DEFAULT_VAL = HwParam(0)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             addClkRstn(self)
-            self.first = RegCntrl()
-            self.second = RegCntrl()
+            self.first = HwIORegCntrl()
+            self.second = HwIORegCntrl()
 
-            self.select_sig = Signal()
+            self.select_sig = HwIOSignal()
 
-    def connectWriteIntf(self, regA, regB):
+    def connectWriteHwIO(self, regA, regB):
         return [
             If(self.first.dout.vld,
                 regA(self.first.dout.data)
@@ -48,26 +48,26 @@ class FlipRegister(Unit):
             )
         ]
 
-    def connectReadIntf(self, regA, regB):
+    def connectReadHwIO(self, regA, regB):
         return [
             self.first.din(regA),
             self.second.din(regB)
         ]
 
     def _impl(self):
-        first = self._reg("first_reg", Bits(self.DATA_WIDTH), def_val=self.DEFAULT_VAL)
-        second = self._reg("second_reg", Bits(self.DATA_WIDTH), def_val=self.DEFAULT_VAL)
+        first = self._reg("first_reg", HBits(self.DATA_WIDTH), def_val=self.DEFAULT_VAL)
+        second = self._reg("second_reg", HBits(self.DATA_WIDTH), def_val=self.DEFAULT_VAL)
 
         If(self.select_sig,
-           self.connectReadIntf(second, first),
-           self.connectWriteIntf(second, first)
+           self.connectReadHwIO(second, first),
+           self.connectWriteHwIO(second, first)
         ).Else(
-           self.connectReadIntf(first, second),
-           self.connectWriteIntf(first, second)
+           self.connectReadHwIO(first, second),
+           self.connectWriteHwIO(first, second)
         )
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = FlipRegister()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = FlipRegister()
+    print(to_rtl_str(m))

@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.constants import Time
-from hwt.interfaces.std import VectSignal
+from hwt.constants import Time
+from hwt.hwIOs.std import HwIOVectSignal
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.hObjList import HObjList
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
+from hwt.hObjList import HObjList
 
 
-class BitonicSorter(Unit):
+class BitonicSorter(HwModule):
     """
     Bitonic sorter of arbitrary data
 
@@ -21,23 +21,23 @@ class BitonicSorter(Unit):
         :param cmpFn: function (item0, item1) if returns true,
             items are not swaped
         """
-        Unit.__init__(self)
+        HwModule.__init__(self)
         self.cmpFn = cmpFn
 
     def _config(self):
-        self.ITEMS = Param(2)
-        self.DATA_WIDTH = Param(64)
-        self.SIGNED = Param(False)
+        self.ITEMS = HwParam(2)
+        self.DATA_WIDTH = HwParam(64)
+        self.SIGNED = HwParam(False)
 
     def _declr(self):
         w = self.DATA_WIDTH
         sig = bool(self.SIGNED)
 
         self.inputs = HObjList(
-            VectSignal(w, sig) for _ in range(int(self.ITEMS))
+            HwIOVectSignal(w, sig) for _ in range(int(self.ITEMS))
         )
         self.outputs = HObjList(
-            VectSignal(w, sig)._m() for _ in range(int(self.ITEMS))
+            HwIOVectSignal(w, sig)._m() for _ in range(int(self.ITEMS))
         )
 
     def bitonic_sort(self, cmpFn, x, layer=0, offset=0):
@@ -93,27 +93,27 @@ class BitonicSorterTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = BitonicSorter()
-        cls.compileSim(cls.u)
+        cls.dut = BitonicSorter()
+        cls.compileSim(cls.dut)
 
     def getOutputs(self):
-        return [outp._ag.data[-1] for outp in self.u.outputs]
+        return [outp._ag.data[-1] for outp in self.dut.outputs]
 
     def setInputs(self, values):
-        for v, p in zip(values, self.u.inputs):
+        for v, p in zip(values, self.dut.inputs):
             p._ag.data.append(v)
 
     def test_reversed(self):
-        u = self.u
-        ref = [i for i in range(int(u.ITEMS))]
+        dut = self.dut
+        ref = [i for i in range(int(dut.ITEMS))]
         self.setInputs(reversed(ref))
 
         self.runSim(self.SIM_TIME)
         self.assertValSequenceEqual(self.getOutputs(), ref)
 
     def test_sorted(self):
-        u = self.u
-        ref = [i for i in range(int(u.ITEMS))]
+        dut = self.dut
+        ref = [i for i in range(int(dut.ITEMS))]
         self.setInputs(ref)
 
         self.runSim(self.SIM_TIME)
@@ -122,10 +122,10 @@ class BitonicSorterTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
 
-    u = BitonicSorter()
-    print(to_rtl_str(u))
+    m = BitonicSorter()
+    print(to_rtl_str(m))
 
     testLoader = unittest.TestLoader()
     # suite = unittest.TestSuite([BitonicSorterTC("test_sorted")])

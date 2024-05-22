@@ -4,16 +4,16 @@
 from binascii import crc32, crc_hqx
 import os
 
-from hwt.hdl.constants import Time
+from hwt.constants import Time
+from hwt.hdl.types.bits import HBits
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_1, CRC_8_CCITT, CRC_16_CCITT, CRC_32, \
     CRC_8_SAE_J1850, CRC_5_USB
-from pyMathBitPrecise.bit_utils import get_bit, bit_list_to_int, mask, \
-    bit_list_reversed_endianity, bit_list_reversed_bits_in_bytes, reverse_bits
-from hwt.hdl.types.bits import Bits
 from hwtLib.logic.crc_test_utils import NaiveCrcAccumulator, naive_crc
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import get_bit, mask, \
+    reverse_bits
 
 
 def stoi(s):
@@ -42,43 +42,43 @@ class CrcCombTC(SimTestCase):
         if dataWidth is None:
             dataWidth = poly.WIDTH
 
-        u = self.u = CrcComb()
-        u.setConfig(poly)
-        u.DATA_WIDTH = dataWidth
+        dut = self.dut = CrcComb()
+        dut.setConfig(poly)
+        dut.DATA_WIDTH = dataWidth
         if initval is not None:
-            u.INIT = Bits(poly.WIDTH).from_py(initval)
+            dut.INIT = HBits(poly.WIDTH).from_py(initval)
         if refin is not None:
-            u.REFIN = refin
+            dut.REFIN = refin
         if refout is not None:
-            u.REFOUT = refout
+            dut.REFOUT = refout
         if finxor is not None:
-            u.XOROUT = Bits(poly.WIDTH).from_py(finxor)
-        u.IN_IS_BIGENDIAN = bigendian
-        self.compileSimAndStart(u)
-        return u
+            dut.XOROUT = HBits(poly.WIDTH).from_py(finxor)
+        dut.IN_IS_BIGENDIAN = bigendian
+        self.compileSimAndStart(dut)
+        return dut
 
     def test_crc1(self):
         self.setUpCrc(CRC_1, 8)
-        u = self.u
+        dut = self.dut
         inp = b"a"
 
-        u.dataIn._ag.data.append(stoi(inp))
+        dut.dataIn._ag.data.append(stoi(inp))
         self.runSim(20 * Time.ns)
 
         crc = 1
-        out = int(u.dataOut._ag.data[-1])
+        out = int(dut.dataOut._ag.data[-1])
         self.assertEqual(out, crc, "0x{:x} 0x{:x}".format(crc, out))
 
     def test_crc8(self):
         self.setUpCrc(CRC_8_CCITT, 8)
-        u = self.u
+        dut = self.dut
         inp = b"a"
 
-        u.dataIn._ag.data.append(stoi(inp))
+        dut.dataIn._ag.data.append(stoi(inp))
         self.runSim(20 * Time.ns)
 
         crc = 0x20
-        self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
+        self.assertValSequenceEqual(dut.dataOut._ag.data, [crc])
 
     def test_crc5_usb(self):
         r = NaiveCrcAccumulator(CRC_5_USB)
@@ -89,7 +89,7 @@ class CrcCombTC(SimTestCase):
         self.setUpCrc(CRC_5_USB, 11,
                       refin=False,  # because bits are already reflected in data
                       bigendian=True)
-        u = self.u
+        dut = self.dut
 
         expected_crc = []
 
@@ -97,7 +97,7 @@ class CrcCombTC(SimTestCase):
             _crc5 = r.getFinalValue()
             self.assertEqual(_crc5, crc5, "{0:05b} != {1:05b}".format(
                 _crc5, crc5))
-            u.dataIn._ag.data.append(v)
+            dut.dataIn._ag.data.append(v)
             expected_crc.append(reverse_bits(crc5, 5))
 
         def check_addr_ep(addr: int, endp: int, crc5: int):
@@ -127,7 +127,7 @@ class CrcCombTC(SimTestCase):
         check_11b(0x0001, 0b10111)
 
         self.runSim((len(expected_crc) + 1) * CLK_PERIOD)
-        self.assertValSequenceEqual(u.dataOut._ag.data, expected_crc)
+        self.assertValSequenceEqual(dut.dataOut._ag.data, expected_crc)
 
     def test_crc32_py(self):
         self.assertEqual(crc32(b"aa"), crc32(b"a", crc32(b"a")))
@@ -201,37 +201,37 @@ class CrcCombTC(SimTestCase):
 
     def test_crc32(self):
         for i, inp in enumerate([b"abcd", b"0001"]):
-            u = self.setUpCrc(CRC_32)
-            u.dataIn._ag.data.append(
+            dut = self.setUpCrc(CRC_32)
+            dut.dataIn._ag.data.append(
                stoi(inp),
             )
             self.runSim(2 * CLK_PERIOD, name=os.path.join(self.DEFAULT_LOG_DIR,
                                                         f"test_crc32_{i:d}.vcd"))
-            out = int(u.dataOut._ag.data[-1])
+            out = int(dut.dataOut._ag.data[-1])
             ref = crc32(inp) & mask(32)
             self.assertEqual(out, ref, f"0x{out:08X} 0x{ref:08X}")
 
     def test_crc32_64b(self):
         inp = b"abcdefgh"
-        u = self.setUpCrc(CRC_32, dataWidth=64)
-        u.dataIn._ag.data.append(stoi(inp))
+        dut = self.setUpCrc(CRC_32, dataWidth=64)
+        dut.dataIn._ag.data.append(stoi(inp))
         self.runSim(2 * CLK_PERIOD)
-        out = int(u.dataOut._ag.data[-1])
+        out = int(dut.dataOut._ag.data[-1])
         ref = crc32(inp) & 0xffffffff
         self.assertEqual(out, ref, f"0x{out:08X} 0x{ref:08X}")
 
     def test_crc16(self):
         for i, inp in enumerate([b"aa", b"ab", b"x6"]):
             self.setUpCrc(CRC_16_CCITT)
-            u = self.u
+            dut = self.dut
 
-            u.dataIn._ag.data.append(stoi(inp))
+            dut.dataIn._ag.data.append(stoi(inp))
             self.runSim(2 * CLK_PERIOD, name=os.path.join(self.DEFAULT_LOG_DIR,
                                                         f"test_crc16_{i:d}.vcd"))
 
             # crc = 0x449C
             ref = crc_hqx(inp, CRC_16_CCITT.INIT)
-            d = u.dataOut._ag.data[0]
+            d = dut.dataOut._ag.data[0]
             self.assertValEqual(d, ref, (inp, "0x{:x} 0x{:x}".format(int(d), ref)))
 
 

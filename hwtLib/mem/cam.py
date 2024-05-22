@@ -2,21 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdl.types.bits import Bits
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
+from hwtLib.commonHwIO.addr_data import HwIOAddrDataVldRdVld, HwIOAddrDataRdVld
 from hwtLib.handshaked.streamNode import StreamNode
 
 
 @serializeParamsUniq
-class Cam(Unit):
+class Cam(HwModule):
     """
     Content addressable memory.
     MATCH_LATENCY = 1
@@ -29,15 +29,15 @@ class Cam(Unit):
     """
 
     def _config(self):
-        self.KEY_WIDTH = Param(15)
-        self.ITEMS = Param(32)
-        self.USE_VLD_BIT = Param(True)
+        self.KEY_WIDTH = HwParam(15)
+        self.ITEMS = HwParam(32)
+        self.USE_VLD_BIT = HwParam(True)
 
     def _declr_match_io(self):
-        self.match = m = Handshaked()
+        self.match = m = HwIODataRdVld()
         m.DATA_WIDTH = self.KEY_WIDTH
         # one hot encoded
-        self.out = o = Handshaked()._m()
+        self.out = o = HwIODataRdVld()._m()
         o.DATA_WIDTH = self.ITEMS
 
     def _declr(self):
@@ -46,9 +46,9 @@ class Cam(Unit):
 
         # address is index of CAM cell, data is key to store
         if self.USE_VLD_BIT:
-            w = AddrDataVldHs()
+            w = HwIOAddrDataVldRdVld()
         else:
-            w = AddrDataHs()
+            w = HwIOAddrDataRdVld()
         w.DATA_WIDTH = self.KEY_WIDTH
         w.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
         self.write = w
@@ -67,7 +67,7 @@ class Cam(Unit):
            )
         )
 
-    def matchHandler(self, mem, key: Handshaked, match_res: Handshaked):
+    def matchHandler(self, mem, key: HwIODataRdVld, match_res: HwIODataRdVld):
 
         key_data = key.data
         if self.USE_VLD_BIT:
@@ -88,7 +88,7 @@ class Cam(Unit):
             KEY_WIDTH += 1
 
         self._mem = self._sig("cam_mem",
-                              Bits(KEY_WIDTH)[self.ITEMS],
+                              HBits(KEY_WIDTH)[self.ITEMS],
                               [0 for _ in range(self.ITEMS)]
                               )
         self.writeHandler(self._mem)
@@ -108,7 +108,7 @@ class CamMultiPort(Cam):
 
     def _config(self):
         Cam._config(self)
-        self.MATCH_PORT_CNT = Param(None)
+        self.MATCH_PORT_CNT = HwParam(None)
 
     def _declr_match_io(self):
         if self.MATCH_PORT_CNT is None:
@@ -116,15 +116,15 @@ class CamMultiPort(Cam):
             Cam._declr_match_io(self)
         else:
             # muliport version
-            self.match = HObjList([Handshaked() for _ in range(self.MATCH_PORT_CNT)])
+            self.match = HObjList([HwIODataRdVld() for _ in range(self.MATCH_PORT_CNT)])
             for m in self.match:
                 m.DATA_WIDTH = self.KEY_WIDTH
 
-            self.out = HObjList([Handshaked()._m() for _ in range(self.MATCH_PORT_CNT)])
+            self.out = HObjList([HwIODataRdVld()._m() for _ in range(self.MATCH_PORT_CNT)])
             for o in self.out:
                 o.DATA_WIDTH = self.ITEMS
 
-    def matchHandler(self, mem, key:Handshaked, match_res:Handshaked):
+    def matchHandler(self, mem, key:HwIODataRdVld, match_res:HwIODataRdVld):
         if self.MATCH_PORT_CNT is None:
             Cam.matchHandler(self, mem, key, match_res)
         else:
@@ -133,11 +133,11 @@ class CamMultiPort(Cam):
                 Cam.matchHandler(self, mem, _match, _match_res)
 
 def _example_CamMultiPort():
-    u = CamMultiPort()
-    u.MATCH_PORT_CNT = 2
-    return u
+    m = CamMultiPort()
+    m.MATCH_PORT_CNT = 2
+    return m
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_CamMultiPort()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_CamMultiPort()
+    print(to_rtl_str(m))

@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
-from hwt.interfaces.utils import addClkRstn
+from hwt.constants import Time
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
 
 
-class AxiTestJunction(Unit):
+class AxiTestJunction(HwModule):
 
     def __init__(self, axiCls):
         self.axiCls = axiCls
-        Unit.__init__(self)
+        HwModule.__init__(self)
 
     def _config(self) -> None:
         self.axiCls._config(self)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = self.axiCls()
             self.m = self.axiCls()._m()
 
@@ -98,8 +98,8 @@ class Axi_ag_TC(SimTestCase):
     def test_axi4_ag(self):
         """Test if axi4 agent can transmit and receive data on all channels"""
         assert self.rtl_simulator_cls is None, "Should have been removed in tearDown()"
-        u = AxiTestJunction(Axi4)
-        self.compileSimAndStart(u)
+        dut = AxiTestJunction(Axi4)
+        self.compileSimAndStart(dut)
         N = 10
 
         aw = [self.randAxi4A() for _ in range(N)]
@@ -108,31 +108,31 @@ class Axi_ag_TC(SimTestCase):
         b = [self.randB() for _ in range(N)]
         r = [self.randR() for _ in range(N)]
 
-        u.s.aw._ag.data.extend(aw)
-        u.s.ar._ag.data.extend(ar)
+        dut.s.aw._ag.data.extend(aw)
+        dut.s.ar._ag.data.extend(ar)
 
-        u.s.w._ag.data.extend(w)
+        dut.s.w._ag.data.extend(w)
 
-        u.m.r._ag.data.extend(r)
-        u.m.b._ag.data.extend(b)
+        dut.m.r._ag.data.extend(r)
+        dut.m.b._ag.data.extend(b)
 
         self.runSim(20 * N * Time.ns)
 
         a = self.assertValSequenceEqual
 
-        a(u.m.aw._ag.data, aw)
-        a(u.m.ar._ag.data, ar)
-        a(u.m.w._ag.data, w)
+        a(dut.m.aw._ag.data, aw)
+        a(dut.m.ar._ag.data, ar)
+        a(dut.m.w._ag.data, w)
 
-        a(u.s.r._ag.data, r)
-        a(u.s.b._ag.data, b)
+        a(dut.s.r._ag.data, r)
+        a(dut.s.b._ag.data, b)
 
     def test_axi3_withAddrUser_ag(self):
         """Test if axi3 agent can transmit and receive data on all channels"""
         assert self.rtl_simulator_cls is None, "Should have been removed in tearDown()"
-        u = AxiTestJunction(Axi3)
-        u.ADDR_USER_WIDTH = 10
-        self.compileSimAndStart(u)
+        dut = AxiTestJunction(Axi3)
+        dut.ADDR_USER_WIDTH = 10
+        self.compileSimAndStart(dut)
         N = 10
 
         aw = [self.randAxi3Au() for _ in range(N)]
@@ -141,24 +141,24 @@ class Axi_ag_TC(SimTestCase):
         b = [self.randB() for _ in range(N)]
         r = [self.randR() for _ in range(N)]
 
-        u.s.aw._ag.data.extend(aw)
-        u.s.ar._ag.data.extend(ar)
+        dut.s.aw._ag.data.extend(aw)
+        dut.s.ar._ag.data.extend(ar)
 
-        u.s.w._ag.data.extend(w)
+        dut.s.w._ag.data.extend(w)
 
-        u.m.r._ag.data.extend(r)
-        u.m.b._ag.data.extend(b)
+        dut.m.r._ag.data.extend(r)
+        dut.m.b._ag.data.extend(b)
 
         self.runSim(20 * N * Time.ns)
 
         a = self.assertValSequenceEqual
 
-        a(u.m.aw._ag.data, aw)
-        a(u.m.ar._ag.data, ar)
-        a(u.m.w._ag.data, w)
+        a(dut.m.aw._ag.data, aw)
+        a(dut.m.ar._ag.data, ar)
+        a(dut.m.w._ag.data, w)
 
-        a(u.s.r._ag.data, r)
-        a(u.s.b._ag.data, b)
+        a(dut.s.r._ag.data, r)
+        a(dut.s.b._ag.data, b)
 
 
 if __name__ == "__main__":

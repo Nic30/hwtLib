@@ -4,20 +4,20 @@
 from typing import Tuple, List
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
-from hwt.interfaces.utils import addClkRstn
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOFifoWriter, HwIOFifoReader, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
+from hwt.hwModule import HwModule
+from hwt.constants import NOT_SPECIFIED
 
 
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
 @serializeParamsUniq
-class Fifo(Unit):
+class Fifo(HwModule):
     """
     Generic FIFO usually mapped to BRAM.
 
@@ -30,27 +30,27 @@ class Fifo(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
-        self.DEPTH = Param(0)
-        self.EXPORT_SIZE = Param(False)
-        self.EXPORT_SPACE = Param(False)
-        self.INIT_DATA: tuple = Param(())
-        self.INIT_DATA_FIRST_WORD = Param(NOT_SPECIFIED)
+        self.DATA_WIDTH = HwParam(64)
+        self.DEPTH = HwParam(0)
+        self.EXPORT_SIZE = HwParam(False)
+        self.EXPORT_SPACE = HwParam(False)
+        self.INIT_DATA: tuple = HwParam(())
+        self.INIT_DATA_FIRST_WORD = HwParam(NOT_SPECIFIED)
 
     def _declr_size_and_space(self):
         if self.EXPORT_SIZE:
-            self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
+            self.size = HwIOVectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
         if self.EXPORT_SPACE:
-            self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
+            self.space = HwIOVectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
 
     def _declr(self):
         assert self.DEPTH > 0, \
             "Fifo is disabled in this case, do not use it entirely"
 
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = FifoWriter()
-            self.dataOut = FifoReader()._m()
+        with self._hwParamsShared():
+            self.dataIn = HwIOFifoWriter()
+            self.dataOut = HwIOFifoReader()._m()
         self._declr_size_and_space()
 
     def fifo_pointers(self, DEPTH: int,
@@ -64,7 +64,7 @@ class Fifo(Unit):
         :attention: writer pointer next logic check only last reader pointer
         :return: list, tule(en, ptr) for writer and each reader
         """
-        index_t = Bits(log2ceil(DEPTH), signed=False)
+        index_t = HBits(log2ceil(DEPTH), signed=False)
         # assert isPow2(DEPTH), DEPTH
         MAX_DEPTH = DEPTH - 1
         s = self._sig
@@ -137,7 +137,7 @@ class Fifo(Unit):
             init_data_expanded = list(init_data) + [None for _ in range(self.DEPTH - len(init_data))]
 
         if self.DATA_WIDTH:
-            mem = self.mem = s("memory", Bits(self.DATA_WIDTH)[DEPTH], def_val=init_data_expanded)
+            mem = self.mem = s("memory", HBits(self.DATA_WIDTH)[DEPTH], def_val=init_data_expanded)
             If(self.clk._onRisingEdge(),
                 If(fifo_write,
                     # Write Data to Memory
@@ -189,18 +189,19 @@ class Fifo(Unit):
 
 
 def _example_Fifo():
-    u = Fifo()
-    u.DATA_WIDTH = 8
-    u.EXPORT_SIZE = True
-    u.EXPORT_SPACE = True
-    u.INIT_DATA = (1, 2, 3)
-    u.INIT_DATA_FIRST_WORD = 0
-    u.DEPTH = 16
+    m = Fifo()
+    m.DATA_WIDTH = 8
+    m.EXPORT_SIZE = True
+    m.EXPORT_SPACE = True
+    m.INIT_DATA = (1, 2, 3)
+    m.INIT_DATA_FIRST_WORD = 0
+    m.DEPTH = 16
 
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_Fifo()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_Fifo()
+    print(to_rtl_str(m))

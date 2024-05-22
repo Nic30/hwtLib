@@ -1,16 +1,16 @@
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import Handshaked, VectSignal, Signal, HandshakeSync
+from hwt.hwParam import HwParam
+from hwt.hwIO import HwIO
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIOSignal, HwIORdVldSync
 from hwt.math import log2ceil
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
 
 
-class InsertIntfAgent(HandshakedAgent):
+class HwIOInsertAgent(HwIODataRdVldAgent):
     """
-    Simulation agent for `.InsertIntf` interface
+    Simulation agent for `.HwIOInsert` interface
 
     data format:
         * if interface has data signal,
@@ -19,12 +19,12 @@ class InsertIntfAgent(HandshakedAgent):
           data format is tuple (hash, key, item_vld)
     """
 
-    def __init__(self, sim: HdlSimulator, intf: "InsertIntf"):
-        HandshakedAgent.__init__(self, sim, intf)
-        self.hasData = bool(intf.DATA_WIDTH)
+    def __init__(self, sim: HdlSimulator, hwIO: "HwIOInsert"):
+        HwIODataRdVldAgent.__init__(self, sim, hwIO)
+        self.hasData = bool(hwIO.DATA_WIDTH)
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         _hash = i.hash.read()
         key = i.key.read()
         item_vld = i.item_vld.read()
@@ -36,7 +36,7 @@ class InsertIntfAgent(HandshakedAgent):
             return hash, key, item_vld
 
     def set_data(self, data):
-        i = self.intf
+        i = self.hwIO
 
         if data is None:
             i.hash.write(None)
@@ -56,121 +56,121 @@ class InsertIntfAgent(HandshakedAgent):
             i.item_vld.write(item_vld)
 
 
-class InsertIntf(HandshakeSync):
+class HwIOInsert(HwIORdVldSync):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.HASH_WIDTH = Param(8)
-        self.KEY_WIDTH = Param(8)
-        self.DATA_WIDTH = Param(0)
+        self.HASH_WIDTH = HwParam(8)
+        self.KEY_WIDTH = HwParam(8)
+        self.DATA_WIDTH = HwParam(0)
 
     def _declr(self):
-        super(InsertIntf, self)._declr()
-        self.hash = VectSignal(self.HASH_WIDTH)
-        self.key = VectSignal(self.KEY_WIDTH)
+        super(HwIOInsert, self)._declr()
+        self.hash = HwIOVectSignal(self.HASH_WIDTH)
+        self.key = HwIOVectSignal(self.KEY_WIDTH)
         if self.DATA_WIDTH:
-            self.data = VectSignal(self.DATA_WIDTH)
+            self.data = HwIOVectSignal(self.DATA_WIDTH)
 
-        self.item_vld = Signal()
+        self.item_vld = HwIOSignal()
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = InsertIntfAgent(sim, self)
+        self._ag = HwIOInsertAgent(sim, self)
 
 
-class LookupKeyIntfAgent(HandshakedAgent):
+class HwIOLookupKeyAgent(HwIODataRdVldAgent):
     """
-    Simulation agent for LookupKeyIntf interface
+    Simulation agent for HwIOLookupKey interface
     """
 
-    def __init__(self, sim: HdlSimulator, intf: "LookupKeyIntf"):
-        HandshakedAgent.__init__(self, sim, intf)
-        self.HAS_LOOKUP_ID = bool(intf.LOOKUP_ID_WIDTH)
+    def __init__(self, sim: HdlSimulator, hwIO: "HwIOLookupKey"):
+        HwIODataRdVldAgent.__init__(self, sim, hwIO)
+        self.HAS_LOOKUP_ID = bool(hwIO.LOOKUP_ID_WIDTH)
 
     def get_data(self):
-        intf = self.intf
+        hwIO = self.hwIO
         if self.HAS_LOOKUP_ID:
-            return intf.lookup_id.read(), intf.key.read()
-        return intf.key.read()
+            return hwIO.lookup_id.read(), hwIO.key.read()
+        return hwIO.key.read()
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
         if self.HAS_LOOKUP_ID:
             _id, _key = data
-            return intf.lookup_id.write(_id), intf.key.write(_key)
+            return hwIO.lookup_id.write(_id), hwIO.key.write(_key)
 
-        self.intf.key.write(data)
+        self.hwIO.key.write(data)
 
 
-class LookupKeyIntf(HandshakeSync):
+class HwIOLookupKey(HwIORdVldSync):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.LOOKUP_ID_WIDTH = Param(0)
-        self.KEY_WIDTH = Param(8)
+        self.LOOKUP_ID_WIDTH = HwParam(0)
+        self.KEY_WIDTH = HwParam(8)
 
     def _declr(self):
-        HandshakeSync._declr(self)
+        HwIORdVldSync._declr(self)
         if self.LOOKUP_ID_WIDTH:
-            self.lookupId = VectSignal(self.LOOKUP_ID_WIDTH)
-        self.key = VectSignal(self.KEY_WIDTH)
+            self.lookupId = HwIOVectSignal(self.LOOKUP_ID_WIDTH)
+        self.key = HwIOVectSignal(self.KEY_WIDTH)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = LookupKeyIntfAgent(sim, self)
+        self._ag = HwIOLookupKeyAgent(sim, self)
 
 
-class LookupResultIntfAgent(HandshakedAgent):
+class HwIOLookupResultAgent(HwIODataRdVldAgent):
     """
-    Simulation agent for `.LookupResultIntf`
+    Simulation agent for `.HwIOLookupResult`
     data is stored in .data
     data format is tuple (hash, key, data, found) but some items
     can be missing depending on configuration of interface
     """
 
-    def __init__(self, sim, intf):
-        HandshakedAgent.__init__(self, sim, intf)
-        self.hasHash = bool(intf.LOOKUP_HASH)
-        self.hasKey = bool(intf.LOOKUP_KEY)
-        self.hasData = bool(intf.DATA_WIDTH)
+    def __init__(self, sim, hwIO):
+        HwIODataRdVldAgent.__init__(self, sim, hwIO)
+        self.hasHash = bool(hwIO.LOOKUP_HASH)
+        self.hasKey = bool(hwIO.LOOKUP_KEY)
+        self.hasData = bool(hwIO.DATA_WIDTH)
 
     def get_data(self):
         d = []
         append = d.append
-        intf = self.intf
+        hwIO = self.hwIO
 
         if self.hasHash:
-            append(intf.hash.read())
+            append(hwIO.hash.read())
 
         if self.hasKey:
-            append(intf.key.read())
+            append(hwIO.key.read())
 
         if self.hasData:
-            append(intf.data.read())
+            append(hwIO.data.read())
 
-        append(intf.found.read())
-        append(intf.occupied.read())
+        append(hwIO.found.read())
+        append(hwIO.occupied.read())
 
         return tuple(d)
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
 
         dIt = iter(data)
 
         if self.hasHash:
-            intf.hash.write(next(dIt))
+            hwIO.hash.write(next(dIt))
 
         if self.hasKey:
-            intf.key.write(next(dIt))
+            hwIO.key.write(next(dIt))
 
         if self.hasData:
-            intf.data.write(next(dIt))
+            hwIO.data.write(next(dIt))
 
-        intf.found.write(next(dIt))
-        intf.occupied.write(next(dIt))
+        hwIO.found.write(next(dIt))
+        hwIO.occupied.write(next(dIt))
 
         try:
             next(dIt)
@@ -179,9 +179,9 @@ class LookupResultIntfAgent(HandshakedAgent):
             return
 
 
-class LookupResultIntf(Handshaked):
+class HwIOLookupResult(HwIODataRdVld):
     """
-    Interface for result of lookup in hash table
+    HwIO for result of lookup in hash table
 
     :ivar ~.HASH_WIDTH: width of the hash used by hash table
     :ivar ~.KEY_WIDTH: width of the key used by hash table
@@ -197,46 +197,46 @@ class LookupResultIntf(Handshaked):
     """
 
     def _config(self):
-        self.HASH_WIDTH = Param(8)
-        self.KEY_WIDTH = Param(8)
-        self.DATA_WIDTH = Param(0)
-        self.LOOKUP_ID_WIDTH = Param(0)
-        self.LOOKUP_HASH = Param(False)
-        self.LOOKUP_KEY = Param(False)
+        self.HASH_WIDTH = HwParam(8)
+        self.KEY_WIDTH = HwParam(8)
+        self.DATA_WIDTH = HwParam(0)
+        self.LOOKUP_ID_WIDTH = HwParam(0)
+        self.LOOKUP_HASH = HwParam(False)
+        self.LOOKUP_KEY = HwParam(False)
 
     def _declr(self):
-        HandshakeSync._declr(self)
+        HwIORdVldSync._declr(self)
         if self.LOOKUP_ID_WIDTH:
-            self.lookupId = VectSignal(self.LOOKUP_ID_WIDTH)
+            self.lookupId = HwIOVectSignal(self.LOOKUP_ID_WIDTH)
 
         if self.LOOKUP_HASH:
-            self.hash = VectSignal(self.HASH_WIDTH)
+            self.hash = HwIOVectSignal(self.HASH_WIDTH)
 
         if self.LOOKUP_KEY:
-            self.key = VectSignal(self.KEY_WIDTH)
+            self.key = HwIOVectSignal(self.KEY_WIDTH)
 
         if self.DATA_WIDTH:
-            self.data = VectSignal(self.DATA_WIDTH)
+            self.data = HwIOVectSignal(self.DATA_WIDTH)
 
-        self.found = Signal()
-        self.occupied = Signal()
+        self.found = HwIOSignal()
+        self.occupied = HwIOSignal()
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = LookupResultIntfAgent(sim, self)
+        self._ag = HwIOLookupResultAgent(sim, self)
 
 
-class HashTableIntf(Interface):
+class HwIOHashTable(HwIO):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.ITEMS_CNT = Param(32)
-        self.KEY_WIDTH = Param(16)
-        self.DATA_WIDTH = Param(8)
-        self.LOOKUP_ID_WIDTH = Param(0)
-        self.LOOKUP_HASH = Param(False)
-        self.LOOKUP_KEY = Param(False)
+        self.ITEMS_CNT = HwParam(32)
+        self.KEY_WIDTH = HwParam(16)
+        self.DATA_WIDTH = HwParam(8)
+        self.LOOKUP_ID_WIDTH = HwParam(0)
+        self.LOOKUP_HASH = HwParam(False)
+        self.LOOKUP_KEY = HwParam(False)
 
     def _declr(self):
         assert int(self.KEY_WIDTH) > 0
@@ -249,36 +249,36 @@ class HashTableIntf(Interface):
             "It makes no sense to use hash table when you can use key directly as index",
             self.HASH_WIDTH, self.KEY_WIDTH)
 
-        with self._paramsShared():
-            self.insert = InsertIntf()
+        with self._hwParamsShared():
+            self.insert = HwIOInsert()
             self.insert.HASH_WIDTH = self.HASH_WIDTH
 
-            self.lookup = LookupKeyIntf()
+            self.lookup = HwIOLookupKey()
 
-            self.lookupRes = LookupResultIntf(masterDir=DIRECTION.IN)
+            self.lookupRes = HwIOLookupResult(masterDir=DIRECTION.IN)
             self.lookupRes.HASH_WIDTH = self.HASH_WIDTH
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = HashTableIntfAgent(sim, self)
+        self._ag = HwIOHashTableAgent(sim, self)
 
 
-class HashTableIntfAgent(AgentBase):
+class HwIOHashTableAgent(AgentBase):
 
-    def __init__(self, sim:HdlSimulator, intf: HashTableIntf):
-        AgentBase.__init__(self, sim, intf)
-        intf.insert._initSimAgent(sim)
-        intf.lookup._initSimAgent(sim)
-        intf.lookupRes._initSimAgent(sim)
+    def __init__(self, sim:HdlSimulator, hwIO: HwIOHashTable):
+        AgentBase.__init__(self, sim, hwIO)
+        hwIO.insert._initSimAgent(sim)
+        hwIO.lookup._initSimAgent(sim)
+        hwIO.lookupRes._initSimAgent(sim)
 
     def getDrivers(self):
-        intf = self.intf
-        yield from intf.insert._ag.getDrivers()
-        yield from intf.lookup._ag.getDrivers()
-        yield from intf.lookupRes._ag.getMonitors()
+        hwIO = self.hwIO
+        yield from hwIO.insert._ag.getDrivers()
+        yield from hwIO.lookup._ag.getDrivers()
+        yield from hwIO.lookupRes._ag.getMonitors()
 
     def getMonitors(self):
-        intf = self.intf
-        yield from intf.insert._ag.getMonitors()
-        yield from intf.lookup._ag.getMonitors()
-        yield from intf.lookupRes._ag.getDrivers()
+        hwIO = self.hwIO
+        yield from hwIO.insert._ag.getMonitors()
+        yield from hwIO.lookup._ag.getMonitors()
+        yield from hwIO.lookupRes._ag.getDrivers()
 

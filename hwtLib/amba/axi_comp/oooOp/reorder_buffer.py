@@ -4,18 +4,18 @@
 from typing import Tuple
 
 from hwt.code import If
-from hwt.hdl.constants import READ, WRITE
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.hsStructIntf import HsStructIntf
-from hwt.interfaces.std import VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
+from hwt.constants import READ, WRITE
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.std import HwIOVectSignal
+from hwt.hwIOs.hwIOStruct import HwIOStructRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
-from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
-from hwtLib.handshaked.ramAsHs import RamAsHs
+from hwtLib.handshaked.ramAsAddrDataRdVld import RamAsAddrDataRdVld
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.mem.ram import RamSingleClock
@@ -24,28 +24,28 @@ from hwtSimApi.hdlSimulator import HdlSimulator
 from pyMathBitPrecise.bit_utils import apply_set_and_clear
 
 
-class HsStructWithIdIntf(HsStructIntf):
+class HwIOStructRdVldWithId(HwIOStructRdVld):
 
     def _config(self):
-        HsStructIntf._config(self)
-        self.ID_WIDTH = Param(6)
+        HwIOStructRdVld._config(self)
+        self.ID_WIDTH = HwParam(6)
 
     def _declr(self):
-        self.id = VectSignal(self.ID_WIDTH)
-        HsStructIntf._declr(self)
+        self.id = HwIOVectSignal(self.ID_WIDTH)
+        HwIOStructRdVld._declr(self)
         
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = HsStructWithIdIntfAgent(sim, self)
+        self._ag = HwIOStructRdVldWithIdAgent(sim, self)
 
         
-class HsStructWithIdIntfAgent(HandshakedAgent):
+class HwIOStructRdVldWithIdAgent(HwIODataRdVldAgent):
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
         return (i.id.read(), i.data.read())
 
     def set_data(self, data):
-        i = self.intf
+        i = self.hwIO
         if data is None:
             t, d = (None, None)
         else:
@@ -55,7 +55,7 @@ class HsStructWithIdIntfAgent(HandshakedAgent):
         i.data.write(d)
 
 
-class ReorderBuffer(Unit):
+class ReorderBuffer(HwModule):
     """
     Serialize an unordered input sequence to continuous output sequence.
 
@@ -66,23 +66,23 @@ class ReorderBuffer(Unit):
     """
 
     def _config(self):
-        HsStructWithIdIntf._config(self)
+        HwIOStructRdVldWithId._config(self)
         self.T = uint16_t
     
     def _declr(self):
         assert self.T is not None
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = HsStructWithIdIntf()
-            self.dataOut = HsStructIntf()._m()  
+        with self._hwParamsShared():
+            self.dataIn = HwIOStructRdVldWithId()
+            self.dataOut = HwIOStructRdVld()._m()  
         
-        self.storage_w = RamAsHs()
+        self.storage_w = RamAsAddrDataRdVld()
         self.storage_w.HAS_W = True
         self.storage_w.HAS_R = False
         self.storage_w.ADDR_WIDTH = self.ID_WIDTH;
         self.storage_w.DATA_WIDTH = self.T.bit_length()
         
-        self.storage_r = RamAsHs()
+        self.storage_r = RamAsAddrDataRdVld()
         self.storage_r._updateParamsFrom(self.storage_w)        
         self.storage_r.HAS_R = True
         self.storage_r.HAS_W = False
@@ -92,12 +92,12 @@ class ReorderBuffer(Unit):
         self.storage_ram.PORT_CNT = (WRITE, READ) 
 
     def item_occupancy_reg(self) -> Tuple[RtlSignal, RtlSyncSignal, RtlSignal]:
-        item_occ_set = self._sig("item_occ_set", Bits(2 ** self.ID_WIDTH))
-        item_occ_clear = self._sig("item_occ_clear", Bits(2 ** self.ID_WIDTH))
-        item_occ = self._reg("item_occ", Bits(2 ** self.ID_WIDTH), def_val=0)
+        item_occ_set = self._sig("item_occ_set", HBits(2 ** self.ID_WIDTH))
+        item_occ_clear = self._sig("item_occ_clear", HBits(2 ** self.ID_WIDTH))
+        item_occ = self._reg("item_occ", HBits(2 ** self.ID_WIDTH), def_val=0)
         item_occ(apply_set_and_clear(item_occ, item_occ_set, item_occ_clear))
         return item_occ_set, item_occ, item_occ_clear
-    
+
     def _impl(self):
         self.storage_ram.port[0](self.storage_w.ram)
         self.storage_ram.port[1](self.storage_r.ram)
@@ -122,7 +122,7 @@ class ReorderBuffer(Unit):
         )
         
         # Output
-        out_cntr = self._reg("item_occ", Bits(self.ID_WIDTH), def_val=0)
+        out_cntr = self._reg("item_occ", HBits(self.ID_WIDTH), def_val=0)
         sn_addr = StreamNode(
             [],
             [self.storage_r.r.addr],
@@ -143,9 +143,9 @@ class ReorderBuffer(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = ReorderBuffer()
-    u.T = uint16_t
-    u.ID_WIDTH = 4
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = ReorderBuffer()
+    m.T = uint16_t
+    m.ID_WIDTH = 4
+    print(to_rtl_str(m))
         

@@ -5,16 +5,16 @@ from math import inf
 
 from hwt.code import If, Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Signal, Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
+from hwt.hwIOs.std import HwIOSignal, HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
+from hwtLib.amba.axis_comp.frame_parser import Axi4S_frameParser
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crc import Crc
 from hwtLib.logic.crcComb import CrcComb
@@ -27,7 +27,7 @@ from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b_rx
 from pyMathBitPrecise.bit_utils import mask
 
 
-class Usb2SieDeviceRx(Unit):
+class Usb2SieDeviceRx(HwModule):
     """
     UTMI rx (host->device) packet parser and CRC checker and cutter, (SIE stands for serial interface engine)
 
@@ -39,9 +39,9 @@ class Usb2SieDeviceRx(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.enable = Signal()
+        self.enable = HwIOSignal()
         self.rx = Utmi_8b_rx()
-        self.current_usb_addr = Signal(usb_addr_t)
+        self.current_usb_addr = HwIOSignal(usb_addr_t)
 
         self.rx_header: Usb2SieRxOut = Usb2SieRxOut()._m()
         self.rx_data: DataErrVldKeepLast = DataErrVldKeepLast()._m()
@@ -105,23 +105,23 @@ class Usb2SieDeviceRx(Unit):
         rx = self._Utmi_8b_rx_to_DataErrVldStrbLast(self.rx)
         rx_ending = rename_signal(self, rx.vld & rx.last, "rx_ending")
 
-        parser_pid = AxiS_frameParser(
+        parser_pid = Axi4S_frameParser(
             HStruct(
-                (Bits(8), "pid"),
-                (HStream(Bits(8), frame_len=(0, inf)), "data"),
+                (HBits(8), "pid"),
+                (HStream(HBits(8), frame_len=(0, inf)), "data"),
             )
         )
-        parser_token = AxiS_frameParser(
+        parser_token = Axi4S_frameParser(
             HStruct(
                 (usb_addr_t, "addr"),
                 (usb_endp_t, "endp"),
                 (usb_crc5_t, "crc5"),
             )
         )
-        parser_payload = AxiS_frameParser(
+        parser_payload = Axi4S_frameParser(
             HStruct(
-                (HStream(Bits(8), frame_len=[0, 1024]), "payload"),
-                (Bits(16), "crc16"),
+                (HStream(HBits(8), frame_len=[0, 1024]), "payload"),
+                (HBits(16), "crc16"),
             )
         )
         for parser in [parser_pid, parser_token, parser_payload]:
@@ -138,13 +138,13 @@ class Usb2SieDeviceRx(Unit):
 
         for parser in [parser_pid, parser_token, parser_payload]:
             # because input and output is just VldSynced and we can not stall the data
-            for i in parser.dataOut._interfaces:
-                if isinstance(i, Handshaked):
-                    i.rd(1)
-                elif isinstance(i, AxiStream):
+            for hwIO in parser.dataOut._hwIOs:
+                if isinstance(hwIO, HwIODataRdVld):
+                    hwIO.rd(1)
+                elif isinstance(hwIO, Axi4Stream):
                     pass
                 else:
-                    raise NotImplementedError(i)
+                    raise NotImplementedError(hwIO)
 
         parser_pid.dataIn(rx, exclude=[parser_pid.dataIn.ready, parser_pid.dataIn.valid, parser_pid.dataIn.keep, rx.vld])
         parser_pid.dataIn.valid(rx.vld)
@@ -169,7 +169,7 @@ class Usb2SieDeviceRx(Unit):
                 "valid": 0,
             }
         )
-        pid: Handshaked = parser_pid.dataOut.pid
+        pid: HwIODataRdVld = parser_pid.dataOut.pid
 
         # :attention: there are also SPLIT related PID values which are not supported
         pid_has_0b_data = rename_signal(
@@ -195,7 +195,7 @@ class Usb2SieDeviceRx(Unit):
             pid_has_16b_data & (rx_data_ending != parser_token.dataOut.crc5.vld),
             "err_packet_len_token")
 
-        after_pid: AxiStream = parser_pid.dataOut.data
+        after_pid: Axi4Stream = parser_pid.dataOut.data
         StreamNode(
             [after_pid],
             [parser_token.dataIn, parser_payload.dataIn],
@@ -237,9 +237,9 @@ class Usb2SieDeviceRx(Unit):
         )
 
         for token_field_name in ["addr", "endp", "crc5"]:
-            p_intf = getattr(parser_token.dataOut, token_field_name)
-            If(p_intf.vld & pid_has_16b_data,
-               getattr(token_q, token_field_name)(p_intf.data)
+            pHwIO = getattr(parser_token.dataOut, token_field_name)
+            If(pHwIO.vld & pid_has_16b_data,
+               getattr(token_q, token_field_name)(pHwIO.data)
             )
 
         # crc for token headers
@@ -269,11 +269,11 @@ class Usb2SieDeviceRx(Unit):
         crc16.DATA_WIDTH = 8
         self.crc16 = crc16
         # restart or dissabled or end of the frame
-        payload: AxiStream = parser_payload.dataOut.payload
+        payload: Axi4Stream = parser_payload.dataOut.payload
         crc16.dataIn.data(payload.data)
         crc16.dataIn.vld(payload.valid & payload.keep)
         # buffer to assert that the crc error flag is set in last word
-        payload = AxiSBuilder(self, payload).buff(2).end
+        payload = Axi4SBuilder(self, payload).buff(2).end
         payload_end = payload.ready & payload.valid & payload.last
         crc16.rst_n(self.rst_n & self.enable & ~payload_end)
         payload.ready(1)
@@ -307,6 +307,7 @@ class Usb2SieDeviceRx(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = Usb2SieDeviceRx()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = Usb2SieDeviceRx()
+    print(to_rtl_str(m))

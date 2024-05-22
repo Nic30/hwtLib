@@ -1,6 +1,6 @@
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
 from ipCorePackager.constants import DIRECTION
 
 
@@ -10,63 +10,63 @@ class MIG_CMD():
     WR_BYTES = 0b011
 
 
-class MigUserPortWDF(Interface):
+class MigUserPortWDF(HwIO):
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
+        self.DATA_WIDTH = HwParam(64)
 
     def _declr(self):
         # DDR data to write
-        self.data = VectSignal(self.DATA_WIDTH)
+        self.data = HwIOVectSignal(self.DATA_WIDTH)
         # DDR write burst end
-        self.end = Signal()
+        self.end = HwIOSignal()
         # DDR mask of data to write (select which bytes will be written)
-        self.mask = VectSignal(self.DATA_WIDTH // 8)
+        self.mask = HwIOVectSignal(self.DATA_WIDTH // 8)
         # DDR write enable
-        self.wren = Signal()
+        self.wren = HwIOSignal()
         # DDR driver is ready to accept write request
-        self.rdy = Signal(masterDir=DIRECTION.IN)
+        self.rdy = HwIOSignal(masterDir=DIRECTION.IN)
 
 
-class MigUserPortRD(Interface):
+class MigUserPortRD(HwIO):
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
+        self.DATA_WIDTH = HwParam(64)
 
     def _declr(self):
         # DDR read dataslv_array_2d_t
-        self.data = VectSignal(self.DATA_WIDTH)
+        self.data = HwIOVectSignal(self.DATA_WIDTH)
         # DDR read burst end
-        self.end = Signal()
+        self.end = HwIOSignal()
         # DDR read data valid
-        self.valid = Signal()
+        self.valid = HwIOSignal()
 
 
-class MigUserPort(Interface):
+class MigUserPort(HwIO):
     """
-    Interface used to control Xilinx MIG (Memory Interface Generator) DDR4 controller
+    HwIO used to control Xilinx MIG (Memory HwIO Generator) DDR4 controller
 
     https://www.xilinx.com/support/documentation/ip_documentation/ultrascale_memory_ip/v1_4/pg150-ultrascale-memory-ip.pdf
     p. 122
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
-        self.ADDR_WIDTH = Param(32)
+        self.DATA_WIDTH = HwParam(64)
+        self.ADDR_WIDTH = HwParam(32)
 
     def _declr(self):
         IN = DIRECTION.IN
         # Calibration complete
-        self.calib_complete = Signal(masterDir=IN)
+        self.calib_complete = HwIOSignal(masterDir=IN)
         # DDR address
-        self.addr = VectSignal(self.ADDR_WIDTH)
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         # DDR command
-        self.cmd = VectSignal(3)
+        self.cmd = HwIOVectSignal(3)
         # DDR enable signal
-        self.en = Signal()
+        self.en = HwIOSignal()
         # DDR driver is ready to accept read request
-        self.RDY = Signal(masterDir=IN)
-        with self._paramsShared():
+        self.RDY = HwIOSignal(masterDir=IN)
+        with self._hwParamsShared():
             # data write channel
             self.wdf = MigUserPortWDF()
             # data read channel

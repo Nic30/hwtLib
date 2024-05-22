@@ -3,7 +3,7 @@
 
 from copy import copy
 
-from hwt.hdl.constants import NOP
+from hwt.constants import NOP
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
@@ -19,11 +19,11 @@ class CuckooHashTableWithRam_common_TC(SimTestCase):
         SimTestCase.setUp(self)
         m = self.rtl_simulator.model
         self.TABLE_MEMS = [getattr(m, f"table_cores_{i:d}_inst").table_inst.io.ram_memory
-                           for i in range(len(self.u.POLYNOMIALS))]
+                           for i in range(len(self.dut.POLYNOMIALS))]
 
     def test_no_comb_loops(self):
         s = CombLoopAnalyzer()
-        s.visit_Unit(self.u)
+        s.visit_HwModule(self.dut)
         comb_loops = freeze_set_of_sets(s.report())
         # for loop in comb_loops:
         #     print(10 * "-")
@@ -38,7 +38,7 @@ class CuckooHashTableWithRam_common_TC(SimTestCase):
 
     def hashTableAsDict(self):
         d = {}
-        SUB_TABLE_SIZE = self.u.TABLE_SIZE // len(self.TABLE_MEMS)
+        SUB_TABLE_SIZE = self.dut.TABLE_SIZE // len(self.TABLE_MEMS)
         for t in self.TABLE_MEMS:
             self.assertEqual(len(t), SUB_TABLE_SIZE)
             for i in range(SUB_TABLE_SIZE):
@@ -64,34 +64,34 @@ class CuckooHashTableWithRam_common_TC(SimTestCase):
         """
         :return: tuple (key, data, item_vld)
         """
-        return self.u.table_cores[0].parseItem(item)
+        return self.dut.table_cores[0].parseItem(item)
 
     def randomize_all(self):
-        u = self.u
-        self.randomize(u.insert)
-        self.randomize(u.insertRes)
-        self.randomize(u.lookup)
-        self.randomize(u.lookupRes)
-        self.randomize(u.delete)
-        self.randomize(u.clean)
+        dut = self.dut
+        self.randomize(dut.insert)
+        self.randomize(dut.insertRes)
+        self.randomize(dut.lookup)
+        self.randomize(dut.lookupRes)
+        self.randomize(dut.delete)
+        self.randomize(dut.clean)
 
 
 class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
 
     @classmethod
     def setUpClass(cls):
-        u = CuckooHashTableWithRam([CRC_32, CRC_32])
-        u.KEY_WIDTH = 16
-        u.DATA_WIDTH = 8
-        u.LOOKUP_KEY = True
-        u.TABLE_SIZE = 32 * 2
-        cls.compileSim(u)
+        dut = CuckooHashTableWithRam([CRC_32, CRC_32])
+        dut.KEY_WIDTH = 16
+        dut.DATA_WIDTH = 8
+        dut.LOOKUP_KEY = True
+        dut.TABLE_SIZE = 32 * 2
+        cls.compileSim(dut)
 
     def test_clean(self):
-        u = self.u
-        u.clean._ag.data.append(1)
+        dut = self.dut
+        dut.clean._ag.data.append(1)
         self.runSim(40 * CLK_PERIOD)
-        SUB_TABLE_SIZE = self.u.TABLE_SIZE // len(self.TABLE_MEMS)
+        SUB_TABLE_SIZE = self.dut.TABLE_SIZE // len(self.TABLE_MEMS)
         for t in self.TABLE_MEMS:
             self.assertEqual(len(t), SUB_TABLE_SIZE)
             for i in range(SUB_TABLE_SIZE):
@@ -99,7 +99,7 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
                 self.assertValEqual(item_vld, 0, i)
 
     def test_simpleInsert(self):
-        u = self.u
+        dut = self.dut
         reference = {
             56: 11,
             99: 55,
@@ -108,24 +108,24 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
             16: 90
         }
 
-        u.clean._ag.data.append(1)
+        dut.clean._ag.data.append(1)
 
         def planInsert():
             # wait because we want to execute clean first
             yield Timer(3 * CLK_PERIOD)
             for k, v in sorted(reference.items(), key=lambda x: x[0]):
-                u.insert._ag.data.append((k, v))
+                dut.insert._ag.data.append((k, v))
 
         self.procs.append(planInsert())
 
         self.runSim(65 * CLK_PERIOD)
         self.assertValSequenceEqual(
-            [d[0] for d in u.insertRes._ag.data],
+            [d[0] for d in dut.insertRes._ag.data],
             [0 for _ in range(len(reference))])
         self.checkContains(reference)
 
     def test_simpleInsertAndLookup(self, randomize=False):
-        u = self.u
+        dut = self.dut
         self.cleanupMemory()
         reference = {
             15: 79,
@@ -142,12 +142,12 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
         if randomize:
             lookup_delay *= 3
 
-        u.lookup._ag.data.extend([NOP for _ in range(lookup_delay)])
+        dut.lookup._ag.data.extend([NOP for _ in range(lookup_delay)])
 
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
             # insert should have higher priority
-            u.insert._ag.data.append((k, v))
-            u.lookup._ag.data.append(k)
+            dut.insert._ag.data.append((k, v))
+            dut.lookup._ag.data.append(k)
             expected.append((k, v, found, occupied))
 
         t = 80
@@ -157,26 +157,26 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
 
         self.runSim(t * CLK_PERIOD)
         self.checkContains(reference)
-        self.assertValSequenceEqual([d[0] for d in u.insertRes._ag.data],
+        self.assertValSequenceEqual([d[0] for d in dut.insertRes._ag.data],
                                     [0 for _ in range(len(reference))])
-        self.assertValSequenceEqual(u.lookupRes._ag.data, expected)
+        self.assertValSequenceEqual(dut.lookupRes._ag.data, expected)
 
     def test_simpleInsertAndLookup_randomized(self):
         self.test_simpleInsertAndLookup(randomize=True)
 
     def test_80p_fill(self):
-        u = self.u
+        dut = self.dut
         self.cleanupMemory()
-        CNT = int(self.u.TABLE_SIZE * 0.8)
+        CNT = int(self.dut.TABLE_SIZE * 0.8)
         reference = {i + 1: i + 2 for i in range(CNT)}
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
-            u.insert._ag.data.append((k, v))
+            dut.insert._ag.data.append((k, v))
 
         self.runSim(CNT * 7 * CLK_PERIOD)
         self.checkContains(reference)
 
     def test_delete(self):
-        u = self.u
+        dut = self.dut
         self.cleanupMemory()
         reference = {
             15: 79,
@@ -188,11 +188,11 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
         toDelete = [15, 99]
 
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
-            u.insert._ag.data.append((k, v))
+            dut.insert._ag.data.append((k, v))
 
         def doDelete():
             yield Timer(35 * CLK_PERIOD)
-            u.delete._ag.data.extend(toDelete)
+            dut.delete._ag.data.extend(toDelete)
 
         self.procs.append(doDelete())
 
@@ -206,53 +206,53 @@ class CuckooHashTableWithRam_1TableTC(CuckooHashTableWithRamTC):
 
     @classmethod
     def setUpClass(cls):
-        u = CuckooHashTableWithRam([CRC_32])
-        u.KEY_WIDTH = 16
-        u.DATA_WIDTH = 8
-        u.LOOKUP_KEY = True
-        u.TABLE_SIZE = 32
-        u.MAX_REINSERT = 1
-        cls.compileSim(u)
+        dut = CuckooHashTableWithRam([CRC_32])
+        dut.KEY_WIDTH = 16
+        dut.DATA_WIDTH = 8
+        dut.LOOKUP_KEY = True
+        dut.TABLE_SIZE = 32
+        dut.MAX_REINSERT = 1
+        cls.compileSim(dut)
 
 
 class CuckooHashTableWithRam_2Table_collisionTC(CuckooHashTableWithRam_common_TC):
 
     @classmethod
     def setUpClass(cls):
-        u = CuckooHashTableWithRam([CRC_32, CRC_32C])
-        u.KEY_WIDTH = 8
-        u.DATA_WIDTH = 8
-        u.LOOKUP_KEY = True
-        u.TABLE_SIZE = 2 * 2
-        u.MAX_REINSERT = 4
-        cls.compileSim(u)
+        dut = CuckooHashTableWithRam([CRC_32, CRC_32C])
+        dut.KEY_WIDTH = 8
+        dut.DATA_WIDTH = 8
+        dut.LOOKUP_KEY = True
+        dut.TABLE_SIZE = 2 * 2
+        dut.MAX_REINSERT = 4
+        cls.compileSim(dut)
 
     def test_nop(self):
         self.randomize_all()
         self.runSim(50 * CLK_PERIOD)
-        self.assertEmpty(self.u.lookupRes._ag.data)
+        self.assertEmpty(self.dut.lookupRes._ag.data)
 
     def test_insert_coliding(self, N=10, randomized=False):
         if randomized:
             self.randomize_all()
         self.cleanupMemory()
 
-        u = self.u
+        dut = self.dut
         reference = {i + 1: i + 2 for i in range(N)}
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
-            u.insert._ag.data.append((k, v))
+            dut.insert._ag.data.append((k, v))
 
         t = N
         if randomized:
             t *= 3
 
         self.runSim((15 * t + 10) * CLK_PERIOD)
-        self.assertEmpty(u.lookupRes._ag.data)
+        self.assertEmpty(dut.lookupRes._ag.data)
 
         table = self.hashTableAsDict()
         self.assertGreater(len(table), 0)
-        self.assertEqual(len(u.insertRes._ag.data), N)
-        for pop, key, data in u.insertRes._ag.data:
+        self.assertEqual(len(dut.insertRes._ag.data), N)
+        for pop, key, data in dut.insertRes._ag.data:
             if pop:
                 key = int(key)
                 self.assertNotIn(key, table)

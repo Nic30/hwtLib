@@ -1,9 +1,9 @@
-from hwt.interfaces.std import VectSignal, Signal
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
+from hwt.hwParam import HwParam
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_r, Axi3_b, IP_Axi3, Axi3, _DEFAULT
 from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.amba.axi_intf_common import Axi_strb, Axi_hs
-from hwtLib.amba.axis import AxiStream, AxiStreamAgent
+from hwtLib.amba.axi_common import Axi_strb, Axi_hs
+from hwtLib.amba.axi4s import Axi4Stream, Axi4StreamAgent
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtLib.amba.constants import BURST_INCR, LOCK_DEFAULT, PROT_DEFAULT,\
@@ -24,29 +24,29 @@ class Axi4_addr(Axi3_addr):
 
     def _declr(self):
         Axi3_addr._declr(self)
-        self.qos = VectSignal(4)
+        self.qos = HwIOVectSignal(4)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = Axi4_addrAgent(sim, self)
 
 
-class Axi4_addrAgent(AxiStreamAgent):
-    def __init__(self, sim: HdlSimulator, intf: Axi3_addr, allowNoReset=False):
-        BaseAxiAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
+class Axi4_addrAgent(Axi4StreamAgent):
+    def __init__(self, sim: HdlSimulator, hwIO: Axi3_addr, allowNoReset=False):
+        BaseAxiAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
 
         signals = [
-            intf.id,
-            intf.addr,
-            intf.burst,
-            intf.cache,
-            intf.len,
-            intf.lock,
-            intf.prot,
-            intf.size,
-            intf.qos
+            hwIO.id,
+            hwIO.addr,
+            hwIO.burst,
+            hwIO.cache,
+            hwIO.len,
+            hwIO.lock,
+            hwIO.prot,
+            hwIO.size,
+            hwIO.qos
         ]
-        if hasattr(intf, "user"):
-            signals.append(intf.user)
+        if hasattr(hwIO, "user"):
+            signals.append(hwIO.user)
         self._signals = tuple(signals)
         self._sigCnt = len(signals)
 
@@ -64,9 +64,9 @@ class Axi4_addrAgent(AxiStreamAgent):
         :note: transaction is created and returned but it is not added to a agent data
         """
         if size is _DEFAULT:
-            D_B = self.intf._parent.DATA_WIDTH // 8
+            D_B = self.hwIO._parent.DATA_WIDTH // 8
             size = BYTES_IN_TRANS(D_B)
-        if self.intf.USER_WIDTH:
+        if self.hwIO.USER_WIDTH:
             return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
         else:
             assert user is None
@@ -93,16 +93,16 @@ class Axi4_w(Axi_hs, Axi_strb):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.DATA_WIDTH = Param(64)
+        self.DATA_WIDTH = HwParam(64)
 
     def _declr(self):
-        self.data = VectSignal(self.DATA_WIDTH)
+        self.data = HwIOVectSignal(self.DATA_WIDTH)
         Axi_strb._declr(self)
-        self.last = Signal()
+        self.last = HwIOSignal()
         Axi_hs._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        AxiStream._initSimAgent(self, sim)
+        Axi4Stream._initSimAgent(self, sim)
 
 
 #####################################################################
@@ -141,9 +141,9 @@ class Axi4(Axi3):
 
     def _config(self):
         Axi4Lite._config(self)
-        self.ID_WIDTH = Param(6)
+        self.ID_WIDTH = HwParam(6)
         self.LOCK_WIDTH = 1
-        self.ADDR_USER_WIDTH = Param(0)
+        self.ADDR_USER_WIDTH = HwParam(0)
 
     def _getIpCoreIntfClass(self):
         return IP_Axi4

@@ -4,8 +4,8 @@
 from typing import Optional
 
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -13,15 +13,15 @@ from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     BYTES_IN_TRANS, QOS_DEFAULT
 
 
-def interface_not_present_on_other(a: Interface, b: Interface):
+def interface_not_present_on_other(a: HwIO, b: HwIO):
     """
     :return: set of interfaces which does not have an equivalent on "b"
     """
     missing_on_b = []
-    for a in a._interfaces:
-        on_b = getattr(b, a._name, None)
+    for on_a in a._hwIOs:
+        on_b = getattr(b, on_a._name, None)
         if on_b is None:
-            missing_on_b.append(a)
+            missing_on_b.append(on_a)
 
     return set(missing_on_b)
 
@@ -34,19 +34,19 @@ class AxiLite_to_Axi(BusBridge):
     .. hwt-autodoc::
     """
 
-    def __init__(self, intfCls=Axi4, hdl_name_override:Optional[str]=None):
-        self.intfCls = intfCls
+    def __init__(self, hwIOCls=Axi4, hdl_name_override:Optional[str]=None):
+        self.hwIOCls = hwIOCls
         super(AxiLite_to_Axi, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
-        self.INTF_CLS = Param(self.intfCls)
-        self.intfCls._config(self)
-        self.DEFAULT_ID = Param(0)
+        self.HWIO_CLS = HwParam(self.hwIOCls)
+        self.hwIOCls._config(self)
+        self.DEFAULT_ID = HwParam(0)
 
     def _declr(self):
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = Axi4Lite()
-            self.m = self.intfCls()._m()
+            self.m = self.hwIOCls()._m()
 
     def _impl(self) -> None:
         axiFull = self.m
@@ -83,6 +83,6 @@ class AxiLite_to_Axi(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AxiLite_to_Axi()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = AxiLite_to_Axi()
+    print(to_rtl_str(m))

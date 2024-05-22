@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import isPow2
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.cesnet.mi32.intf import Mi32
 
@@ -27,8 +27,8 @@ class Mi32SlidingWindow(BusBridge):
 
     def _config(self):
         Mi32._config(self)
-        self.M_ADDR_WIDTH = Param(self.ADDR_WIDTH + 1)
-        self.WINDOW_SIZE = Param(4096)
+        self.M_ADDR_WIDTH = HwParam(self.ADDR_WIDTH + 1)
+        self.WINDOW_SIZE = HwParam(4096)
 
     def _declr(self):
         assert isPow2(self.WINDOW_SIZE), self.WINDOW_SIZE
@@ -38,7 +38,7 @@ class Mi32SlidingWindow(BusBridge):
             self.M_ADDR_WIDTH, self.WINDOW_SIZE
         )
         addClkRstn(self)
-        with self._paramsShared(exclude=({"ADDR_WIDTH"}, {})):
+        with self._hwParamsShared(exclude=({"ADDR_WIDTH"}, {})):
             self.m = Mi32()._m()
             self.m.ADDR_WIDTH = self.M_ADDR_WIDTH
             self.s = Mi32()
@@ -60,9 +60,9 @@ class Mi32SlidingWindow(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
 
-    u = Mi32SlidingWindow()
-    u.ADDR_WIDTH = 16
-    u.M_ADDR_WIDTH = 32
-    print(to_rtl_str(u))
+    m = Mi32SlidingWindow()
+    m.ADDR_WIDTH = 16
+    m.M_ADDR_WIDTH = 32
+    print(to_rtl_str(m))

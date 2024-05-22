@@ -3,10 +3,10 @@
 
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import HdlType_select
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi_comp.virtualDma import AxiVirtualDma
 from hwtLib.handshaked.builder import HsBuilder
@@ -29,7 +29,7 @@ frameHeader = HdlType_select(
 )
 
 
-class EthAddrUpdater(Unit):
+class EthAddrUpdater(HwModule):
     """
     This is example unit which reads dst and src addresses(MAC and IPv4)
     from ethernet frame stored in memory and writes this addresses
@@ -39,15 +39,15 @@ class EthAddrUpdater(Unit):
     """
     def _config(self):
         Axi3._config(self)
-        self.ALIGNAS = Param(self.DATA_WIDTH)
+        self.ALIGNAS = HwParam(self.DATA_WIDTH)
 
     def _declr(self):
         addClkRstn(self)
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.axi_m = Axi3()._m()
 
-        a = self.packetAddr = Handshaked()
+        a = self.packetAddr = HwIODataRdVld()
         a.DATA_WIDTH = self.ADDR_WIDTH
 
     def _impl(self):
@@ -80,6 +80,7 @@ class EthAddrUpdater(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = EthAddrUpdater()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = EthAddrUpdater()
+    print(to_rtl_str(m))

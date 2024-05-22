@@ -10,7 +10,7 @@ from pyMathBitPrecise.bit_utils import mask, get_bit_range, get_bit
 class Axi_datapumpTC(SimTestCase):
 
     def aTrans(self, addr, _len, _id):
-        axi = self.u.axi
+        axi = self.dut.axi
         if axi.HAS_R:
             axi_a = axi.ar
         else:
@@ -23,7 +23,7 @@ class Axi_datapumpTC(SimTestCase):
 
     def test_no_comb_loops(self):
         s = CombLoopAnalyzer()
-        s.visit_Unit(self.u)
+        s.visit_HwModule(self.dut)
         comb_loops = freeze_set_of_sets(s.report())
         # for loop in comb_loops:
         #     print(10 * "-")
@@ -60,14 +60,14 @@ class Axi_datapumpTC(SimTestCase):
         :param lastWordByteCnt: if not None it is used to generate a strb (byte enable mask) in last
             word of reference receive data
         """
-        u = self.u
-        addr_step = u.DATA_WIDTH // 8
-        req = u.driver._ag.req
+        dut = self.dut
+        addr_step = dut.DATA_WIDTH // 8
+        req = dut.driver._ag.req
 
         assert base % addr_step == 0, base
         MAGIC = 100
         if singleReqFrameLen is None:
-            singleReqFrameLen = u.driver.req.MAX_LEN
+            singleReqFrameLen = dut.driver.req.MAX_LEN
 
         if lastWordByteCnt is None:
             lastWordByteCnt = 0
@@ -75,7 +75,7 @@ class Axi_datapumpTC(SimTestCase):
             assert lastWordByteCnt > 0 and lastWordByteCnt <= addr_step, lastWordByteCnt
             lastWordByteCnt %= addr_step
 
-        AXI_LEN_MAX = min(2 ** u.axi.LEN_WIDTH, singleReqFrameLen + 1, len_ + 1)
+        AXI_LEN_MAX = min(2 ** dut.axi.LEN_WIDTH, singleReqFrameLen + 1, len_ + 1)
 
         offset = base
         end = offset + (len_ + 1) * addr_step
@@ -99,7 +99,7 @@ class Axi_datapumpTC(SimTestCase):
             ar_ref.append(a)
             offset += addr_step * AXI_LEN_MAX
 
-        rIn = u.axi.r._ag.data
+        rIn = dut.axi.r._ag.data
         r_ref = []
         M_ALL = mask(addr_step)
         if addData:
@@ -127,14 +127,14 @@ class Axi_datapumpTC(SimTestCase):
         return ar_ref, r_ref
 
     def check_r_trans(self, ar_ref, driver_r_ref):
-        u = self.u
+        dut = self.dut
 
-        self.assertEqual(len(u.driver._ag.req.data), 0)
-        self.assertEqual(len(u.axi.r._ag.data), 0)
+        self.assertEqual(len(dut.driver._ag.req.data), 0)
+        self.assertEqual(len(dut.axi.r._ag.data), 0)
 
         r_data = []
-        m_width = u.driver.r.strb._dtype.bit_length()
-        for (d, m, l) in u.driver.r._ag.data:
+        m_width = dut.driver.r.strb._dtype.bit_length()
+        for (d, m, l) in dut.driver.r._ag.data:
             if l:
                 m = int(m)
                 invalid_seen = False
@@ -158,4 +158,4 @@ class Axi_datapumpTC(SimTestCase):
 
         self.assertValSequenceEqual(r_data, driver_r_ref)
 
-        self.assertValSequenceEqual(u.axi.ar._ag.data, ar_ref)
+        self.assertValSequenceEqual(dut.axi.ar._ag.data, ar_ref)

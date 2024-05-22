@@ -3,18 +3,18 @@
 
 
 from hwt.code import Xor, Concat
-from hwt.hdl.constants import Time
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn
+from hwt.constants import Time
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwIOs.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwt.synthesizer.vectorUtils import iterBits
 from pyMathBitPrecise.bit_utils import get_bit
 
 
-class Lfsr(Unit):
+class Lfsr(HwModule):
     """
     Linear shift feedback register generator,
     form of hardware pseudorandom generator.
@@ -23,17 +23,17 @@ class Lfsr(Unit):
     """
 
     def _config(self):
-        self.POLY_WIDTH = Param(8)
-        self.POLY = Param(0x88)
-        self.INIT = Param(1)
+        self.POLY_WIDTH = HwParam(8)
+        self.POLY = HwParam(0x88)
+        self.INIT = HwParam(1)
 
     def _declr(self):
         addClkRstn(self)
-        self.dataOut = Signal()._m()
+        self.dataOut = HwIOSignal()._m()
 
     def _impl(self):
         accumulator = self._reg("accumulator",
-                                Bits(self.POLY_WIDTH),
+                                HBits(self.POLY_WIDTH),
                                 def_val=self.INIT)
         POLY = int(self.POLY)
         xorBits = []
@@ -51,17 +51,17 @@ class LfsrTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = Lfsr()
-        cls.compileSim(cls.u)
+        cls.dut = Lfsr()
+        cls.compileSim(cls.dut)
 
     def test_simple(self):
         self.runSim(300 * Time.ns)
         self.assertValSequenceEqual(
-            self.u.dataOut._ag.data,
+            self.dut.dataOut._ag.data,
             [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
              0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1])
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(Lfsr()))

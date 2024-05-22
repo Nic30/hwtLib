@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 
 
-class SelfRefCntr(Unit):
+class SelfRefCntr(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.dt = Bits(8, signed=False)
+        self.dt = HBits(8, signed=False)
 
         addClkRstn(self)
 
-        self.dout = Signal(dtype=self.dt)._m()
+        self.dout = HwIOSignal(dtype=self.dt)._m()
 
     def _impl(self):
         cntr = self._reg("cntr", self.dt, def_val=0)
@@ -32,5 +32,6 @@ class SelfRefCntr(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
+
     print(to_rtl_str(SelfRefCntr()))

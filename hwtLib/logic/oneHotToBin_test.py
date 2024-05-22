@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.oneHotToBin import OneHotToBin
 from hwtSimApi.constants import CLK_PERIOD
@@ -20,23 +20,23 @@ class OneHotToBinTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = OneHotToBinSimWrap()
+        dut = OneHotToBinSimWrap()
         cls.ONE_HOT_WIDTH = 8
-        u.ONE_HOT_WIDTH = cls.ONE_HOT_WIDTH
-        cls.compileSim(u)
+        dut.ONE_HOT_WIDTH = cls.ONE_HOT_WIDTH
+        cls.compileSim(dut)
 
     def test_nop(self):
-        u = self.u
-        oneHot = u.oneHot._ag.data
+        dut = self.dut
+        oneHot = dut.oneHot._ag.data
         oneHot.append(0)
 
         self.runSim(4 * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.bin._ag.data, [])
+        self.assertValSequenceEqual(dut.bin._ag.data, [])
 
     def test_basic(self):
-        u = self.u
-        oneHot = u.oneHot._ag.data
+        dut = self.dut
+        oneHot = dut.oneHot._ag.data
         oneHot.append(0)
         for i in range(self.ONE_HOT_WIDTH):
             oneHot.append(1 << i)
@@ -44,7 +44,7 @@ class OneHotToBinTC(SimTestCase):
 
         self.runSim((self.ONE_HOT_WIDTH + 3) * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.bin._ag.data, range(self.ONE_HOT_WIDTH))
+        self.assertValSequenceEqual(dut.bin._ag.data, range(self.ONE_HOT_WIDTH))
 
 
 if __name__ == "__main__":

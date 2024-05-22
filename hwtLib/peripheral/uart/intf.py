@@ -1,9 +1,10 @@
-from hwt.interfaces.std import D, Signal
+from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIOSignal
+from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from hwt.synthesizer.interface import Interface
 
 
-class Uart(Interface):
+class Uart(HwIO):
     """
     Base UART interface, also known as Serial or COM.
 
@@ -11,8 +12,8 @@ class Uart(Interface):
     """
 
     def _declr(self):
-        self.rx = Signal(masterDir=D.IN)
-        self.tx = Signal()
+        self.rx = HwIOSignal(masterDir=DIRECTION.IN)
+        self.tx = HwIOSignal()
 
     def _getIpCoreIntfClass(self):
         return IP_Uart

@@ -1,5 +1,5 @@
-from hwtLib.xilinx.slr_crossing import HsSlrCrossing
 from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.xilinx.slr_crossing import HsSlrCrossing
 from hwtSimApi.constants import CLK_PERIOD
 
 
@@ -7,26 +7,26 @@ class HsSlrCrossingTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = HsSlrCrossing()
-        u.DATA_WIDTH = 4
-        cls.compileSim(u)
+        dut = cls.dut = HsSlrCrossing()
+        dut.DATA_WIDTH = 4
+        cls.compileSim(dut)
 
     def test_pass_data(self, randomize=True, N=50):
-        u = self.u
+        dut = self.dut
         DATA = [
-            self._rand.getrandbits(u.DATA_WIDTH) for _ in range(N)
+            self._rand.getrandbits(dut.DATA_WIDTH) for _ in range(N)
             # i for i in range(N)
         ]
 
-        u.s._ag.data.extend(DATA)
+        dut.s._ag.data.extend(DATA)
         t = (2 + N) * CLK_PERIOD
         if randomize:
-            self.randomize(u.s)
-            self.randomize(u.m)
+            self.randomize(dut.s)
+            self.randomize(dut.m)
             t *= 6
         self.runSim(t)
 
-        self.assertValSequenceEqual(u.m._ag.data, DATA)
+        self.assertValSequenceEqual(dut.m._ag.data, DATA)
 
 
 if __name__ == "__main__":

@@ -103,17 +103,17 @@ module Exporter (
     assign dout_valid = 1'bx;
 endmodule
 //
-//    Stream duplicator for AxiStream interfaces
+//    Stream duplicator for Axi4Stream interfaces
 //
 //    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 //
 //    .. hwt-autodoc::
 //    
-module AxiSSplitCopy #(
+module Axi4SSplitCopy #(
     parameter DATA_WIDTH = 64,
     parameter DEST_WIDTH = 0,
+    parameter HWIO_CLS = "<class 'hwtLib.amba.axi4s.Axi4Stream'>",
     parameter ID_WIDTH = 0,
-    parameter INTF_CLS = "<class 'hwtLib.amba.axis.AxiStream'>",
     parameter IS_BIGENDIAN = 0,
     parameter OUTPUTS = 2,
     parameter USER_WIDTH = 0,
@@ -157,11 +157,11 @@ module AxiSSplitCopy #(
         $error("%m Generated only for this param value");
     endgenerate
 
-    generate if (ID_WIDTH != 0)
+    generate if (HWIO_CLS != "<class 'hwtLib.amba.axi4s.Axi4Stream'>")
         $error("%m Generated only for this param value");
     endgenerate
 
-    generate if (INTF_CLS != "<class 'hwtLib.amba.axis.AxiStream'>")
+    generate if (ID_WIDTH != 0)
         $error("%m Generated only for this param value");
     endgenerate
 
@@ -349,11 +349,11 @@ module NetFilter #(
         .patternMatch_valid(sig_filter_patternMatch_valid)
     );
 
-    AxiSSplitCopy #(
+    Axi4SSplitCopy #(
         .DATA_WIDTH(64),
         .DEST_WIDTH(0),
+        .HWIO_CLS("<class 'hwtLib.amba.axi4s.Axi4Stream'>"),
         .ID_WIDTH(0),
-        .INTF_CLS("<class 'hwtLib.amba.axis.AxiStream'>"),
         .IS_BIGENDIAN(0),
         .OUTPUTS(2),
         .USER_WIDTH(0),

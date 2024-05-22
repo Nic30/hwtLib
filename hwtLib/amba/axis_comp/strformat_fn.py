@@ -1,17 +1,17 @@
 import re
 from typing import Generator, Union
 
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.structIntf import Interface_to_HdlType
+from hwt.hwIOs.hwIOStruct import HwIO_to_HdlType
+from hwt.hwModule import HwModule
 from hwt.synthesizer.typePath import TypePath
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.strformat import AxiS_strFormat, AxiS_strFormatItem
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axis_comp.strformat import Axi4S_strFormat, Axi4S_strFormatItem
 
 
-def _parse_format_groups(f_str: str) -> Generator[Union[str, AxiS_strFormatItem], None, None]:
+def _parse_format_groups(f_str: str) -> Generator[Union[str, Axi4S_strFormatItem], None, None]:
     _tokens = re.split("([\{\}])", f_str) + [None, ]
     group_start = None
     current_group_body = None
@@ -68,7 +68,7 @@ def _parse_format_groups(f_str: str) -> Generator[Union[str, AxiS_strFormatItem]
                         format_type = format_type[i:]
                     if name_or_index.isdigit():
                         name_or_index = int(name_or_index)
-                    yield AxiS_strFormatItem(
+                    yield Axi4S_strFormatItem(
                         TypePath(name_or_index),
                         format_type,
                         digits)
@@ -81,10 +81,10 @@ def _parse_format_groups(f_str: str) -> Generator[Union[str, AxiS_strFormatItem]
                 current_group_body = t
 
 
-def axiS_strFormat(parent: Unit, name: str, data_width: int, format_str: str,
+def axiS_strFormat(parent: HwModule, name: str, data_width: int, format_str: str,
                    *args, **kwargs):
     """
-    Instanciate an :class:`hwtLib.amba.axis_comp.strformat.AxiS_strFormat` using simplified str.format syntax
+    Instantiate an :class:`hwtLib.amba.axis_comp.strformat.Axi4S_strFormat` using simplified str.format syntax
     The syntax is allows for an utf-8 string with a variable format groups and several escape sequences
     in addition to normal string escape sequences.
 
@@ -109,13 +109,13 @@ def axiS_strFormat(parent: Unit, name: str, data_width: int, format_str: str,
 
     * The index or name specifies the name or the index of the input parameter.
     * The width specifies how mahy digits should the output have.
-    * Format types can be found at :class:`hwtLib.amba.axis_comp.strformat.AxiS_strFormatItem`
+    * Format types can be found at :class:`hwtLib.amba.axis_comp.strformat.Axi4S_strFormatItem`
     * If nuber_of_digits starts with 0 the leading zeros will be used instead of default space char (' ')
     * The sign char is included in nuber_of_digits ('{0:04X}'.format(-1) == '-001')
-    * The type is described in :class:`hwtLib.amba.axis_comp.strformat.AxiS_strFormatItem`
+    * The type is described in :class:`hwtLib.amba.axis_comp.strformat.Axi4S_strFormatItem`
     """
 
-    f = AxiS_strFormat()
+    f = Axi4S_strFormat()
     f.DATA_WIDTH = data_width
 
     # construct input t for configuration
@@ -165,10 +165,10 @@ def axiS_strFormat(parent: Unit, name: str, data_width: int, format_str: str,
     if in_intf_name_tuples:
         struct_members = []
         for a, a_name in in_intf_name_tuples:
-            if isinstance(a, AxiStream):
-                t = HStream(Bits(8), start_offsets=[0])
+            if isinstance(a, Axi4Stream):
+                t = HStream(HBits(8), start_offsets=[0])
             else:
-                t = Interface_to_HdlType().apply(a)
+                t = HwIO_to_HdlType().apply(a)
             struct_members.append((t, a_name))
         f.INPUT_T = HStruct(*struct_members)
     else:

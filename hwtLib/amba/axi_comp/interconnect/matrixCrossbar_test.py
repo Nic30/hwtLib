@@ -17,10 +17,10 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
-        u.OUTPUTS = [{0}]
-        u.INPUT_CNT = 1
-        cls.compileSim(u)
+        cls.dut = dut = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
+        dut.OUTPUTS = [{0}]
+        dut.INPUT_CNT = 1
+        cls.compileSim(dut)
 
     def data_transaction(self, id_, data):
         r_transactions = []
@@ -31,62 +31,62 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SimTestCase):
         return r_transactions
 
     def rand_transaction(self, magic, input_i, output_i, expected_outputs):
-        u = self.u
+        dut = self.dut
         word_cnt = int(self._rand.random() * self.LEN_MAX) + 1
         data = [magic + i for i in range(word_cnt)]
         data = self.data_transaction(input_i, data)
-        u.dataIn[input_i]._ag.data.extend(data)
+        dut.dataIn[input_i]._ag.data.extend(data)
 
-        intf = u.order_dout_index_for_din_in[input_i]
-        if intf is not None:
-            intf._ag.data.append(output_i)
+        hwIO = dut.order_dout_index_for_din_in[input_i]
+        if hwIO is not None:
+            hwIO._ag.data.append(output_i)
 
-        intf = u.order_din_index_for_dout_in[output_i]
-        if intf is not None:
-            intf._ag.data.append(input_i)
+        hwIO = dut.order_din_index_for_dout_in[output_i]
+        if hwIO is not None:
+            hwIO._ag.data.append(input_i)
 
         expected_outputs[output_i].extend(data)
         return magic + word_cnt
 
     def randomize_all(self):
-        u = self.u
-        for i in u.dataOut:
+        dut = self.dut
+        for i in dut.dataOut:
             self.randomize(i)
 
-        for i in u.dataIn:
+        for i in dut.dataIn:
             self.randomize(i)
 
-        for i in u.order_dout_index_for_din_in:
+        for i in dut.order_dout_index_for_din_in:
             if i is not None:
                 self.randomize(i)
-        for i in u.order_din_index_for_dout_in:
+        for i in dut.order_din_index_for_dout_in:
             if i is not None:
                 self.randomize(i)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.randomize_all()
 
         self.runSim(10 * CLK_PERIOD)
-        for i in chain(u.dataIn, u.dataOut):
+        for i in chain(dut.dataIn, dut.dataOut):
             self.assertEmpty(i._ag.data)
 
-        for i in u.order_dout_index_for_din_in:
+        for i in dut.order_dout_index_for_din_in:
             if i is not None:
                 self.assertEmpty(i._ag.data)
 
-        for i in u.order_din_index_for_dout_in:
+        for i in dut.order_din_index_for_dout_in:
             if i is not None:
                 self.assertEmpty(i._ag.data)
 
     def test_all(self, transaction_cnt=10, magic=0):
         # :param transaction_cnt: transactions per master per connected slave
-        u = self.u
+        dut = self.dut
         # self.randomize_all()
 
-        expected_transactions = [[] for _ in u.dataOut]
-        for output_i, accesible_inputs in enumerate(u.OUTPUTS):
-            for input_i, _ in enumerate(u.dataIn):
+        expected_transactions = [[] for _ in dut.dataOut]
+        for output_i, accesible_inputs in enumerate(dut.OUTPUTS):
+            for input_i, _ in enumerate(dut.dataIn):
                 if input_i not in accesible_inputs:
                     continue
                 for _ in range(transaction_cnt):
@@ -97,12 +97,12 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SimTestCase):
         self.runSim((500 + 5 * max_trans_duration * 
                      transaction_cnt) * CLK_PERIOD)
         # assert all data was send
-        for m_i, din in enumerate(u.dataIn):
+        for m_i, din in enumerate(dut.dataIn):
             self.assertEmpty(din._ag.data, f"dataIn: {m_i:d}")
 
         # check the address transactions arrived correctly on slave
         for dout_i, (dout, dout_ref) in enumerate(zip(
-                u.dataOut, expected_transactions)):
+                dut.dataOut, expected_transactions)):
             dout = dout._ag.data
             self.assertValSequenceEqual(dout, dout_ref, f"dataOut: {dout_i:d}")
 
@@ -111,31 +111,31 @@ class AxiInterconnectMatrixCrossbar_1to3TC(AxiInterconnectMatrixCrossbar_1to1TC)
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
-        u.OUTPUTS = [{0, 1, 2}]
-        u.INPUT_CNT = 3
-        cls.compileSim(u)
+        cls.dut = dut = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
+        dut.OUTPUTS = [{0, 1, 2}]
+        dut.INPUT_CNT = 3
+        cls.compileSim(dut)
 
 
 class AxiInterconnectMatrixCrossbar_3to1TC(AxiInterconnectMatrixCrossbar_1to1TC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
-        u.OUTPUTS = [{0}, {0}, {0}]
-        u.INPUT_CNT = 1
-        u.ADDR_WIDTH = log2ceil(0x2000 - 1)
-        cls.compileSim(u)
+        cls.dut = dut = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
+        dut.OUTPUTS = [{0}, {0}, {0}]
+        dut.INPUT_CNT = 1
+        dut.ADDR_WIDTH = log2ceil(0x2000 - 1)
+        cls.compileSim(dut)
 
 
 class AxiInterconnectMatrixCrossbar_3to3TC(AxiInterconnectMatrixCrossbar_1to1TC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
-        u.OUTPUTS = [{0, 1, 2}, {0, 1, 2}, {0, 1, 2}]
-        u.INPUT_CNT = 3
-        cls.compileSim(u)
+        cls.dut = dut = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
+        dut.OUTPUTS = [{0, 1, 2}, {0, 1, 2}, {0, 1, 2}]
+        dut.INPUT_CNT = 3
+        cls.compileSim(dut)
 
 
 AxiInterconnectMatrixCrossbar_TCs = [

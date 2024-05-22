@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.unit import Unit
-from hwt.interfaces.std import VectSignal
 from hwt.code import Switch
+from hwt.hwIOs.std import HwIOVectSignal
+from hwt.hwModule import HwModule
 
 
-class Segment7(Unit):
+class Segment7(HwModule):
     """
     7-segment display decoder
 
@@ -32,8 +32,8 @@ class Segment7(Unit):
     """
 
     def _declr(self):
-        self.dataIn = VectSignal(4)
-        self.dataOut = VectSignal(7)._m()
+        self.dataIn = HwIOVectSignal(4)
+        self.dataOut = HwIOVectSignal(7)._m()
 
     def _impl(self):
         dec = [
@@ -68,5 +68,5 @@ class Segment7(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(Segment7()))

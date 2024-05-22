@@ -1,29 +1,29 @@
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import VectSignal, HandshakeSync, Signal
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.std import HwIOVectSignal, HwIORdVldSync, HwIOSignal
+from hwt.hwParam import HwParam
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class CInsertIntf(HandshakeSync):
+class HwIOCuckooInsert(HwIORdVldSync):
     """
     Cuckoo hash insert interface
     """
 
     def _config(self):
-        self.KEY_WIDTH = Param(8)
-        self.DATA_WIDTH = Param(0)
+        self.KEY_WIDTH = HwParam(8)
+        self.DATA_WIDTH = HwParam(0)
 
     def _declr(self):
-        super(CInsertIntf, self)._declr()
-        self.key = VectSignal(self.KEY_WIDTH)
+        super(HwIOCuckooInsert, self)._declr()
+        self.key = HwIOVectSignal(self.KEY_WIDTH)
         if self.DATA_WIDTH:
-            self.data = VectSignal(self.DATA_WIDTH)
+            self.data = HwIOVectSignal(self.DATA_WIDTH)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = CInsertIntfAgent(sim, self)
+        self._ag = HwIOCuckooInsertAgent(sim, self)
 
 
-class CInsertResIntf(CInsertIntf):
+class HwIOCuckooInsertRes(HwIOCuckooInsert):
     """
     An interface with an result of insert operation.
     
@@ -33,57 +33,57 @@ class CInsertResIntf(CInsertIntf):
     """
 
     def _declr(self):
-        self.pop = Signal()
-        CInsertIntf._declr(self)
+        self.pop = HwIOSignal()
+        HwIOCuckooInsert._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = CInsertResIntfAgent(sim, self)
+        self._ag = HwIOCuckooInsertResAgent(sim, self)
 
 
-class CInsertIntfAgent(HandshakedAgent):
+class HwIOCuckooInsertAgent(HwIODataRdVldAgent):
     """
-    Agent for CInsertIntf interface
+    Agent for HwIOCuckooInsert interface
     """
 
-    def __init__(self, sim, intf):
-        HandshakedAgent.__init__(self, sim, intf)
-        self._hasData = bool(intf.DATA_WIDTH)
+    def __init__(self, sim, hwIO):
+        HwIODataRdVldAgent.__init__(self, sim, hwIO)
+        self._hasData = bool(hwIO.DATA_WIDTH)
 
     def get_data(self):
-        intf = self.intf
+        hwIO = self.hwIO
         if self._hasData:
-            return intf.key.read(), intf.data.read()
+            return hwIO.key.read(), hwIO.data.read()
         else:
-            return intf.key.read()
+            return hwIO.key.read()
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
         if self._hasData:
             if data is None:
                 k = None
                 d = None
             else:
                 k, d = data
-            intf.key.write(k)
-            intf.data.write(d)
+            hwIO.key.write(k)
+            hwIO.data.write(d)
         else:
-            intf.key.write(data)
+            hwIO.key.write(data)
 
 
-class CInsertResIntfAgent(CInsertIntfAgent):
+class HwIOCuckooInsertResAgent(HwIOCuckooInsertAgent):
     """
-    Agent for CInsertResIntf interface
+    Agent for HwIOCuckooInsertRes interface
     """
 
     def get_data(self):
-        intf = self.intf
+        hwIO = self.hwIO
         if self._hasData:
-            return intf.pop.read(), intf.key.read(), intf.data.read()
+            return hwIO.pop.read(), hwIO.key.read(), hwIO.data.read()
         else:
-            return intf.pop.read(), intf.key.read()
+            return hwIO.pop.read(), hwIO.key.read()
 
     def set_data(self, data):
-        intf = self.intf
+        hwIO = self.hwIO
         if self._hasData:
             if data is None:
                 p = None
@@ -91,11 +91,11 @@ class CInsertResIntfAgent(CInsertIntfAgent):
                 d = None
             else:
                 p, k, d = data
-            intf.pop.write(p)
-            intf.key.write(k)
-            intf.data.write(d)
+            hwIO.pop.write(p)
+            hwIO.key.write(k)
+            hwIO.data.write(d)
         else:
-            intf.pop.write(p)
-            intf.key.write(data)
+            hwIO.pop.write(p)
+            hwIO.key.write(data)
     
     

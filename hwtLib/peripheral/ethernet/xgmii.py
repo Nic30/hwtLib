@@ -1,15 +1,15 @@
 from typing import List
 
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import VectSignal, Clk
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOVectSignal, HwIOClk
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
-class XgmiiChannel(Interface):
+class XgmiiChannel(HwIO):
     """
     :ivar ~.clk: clock signal
     :ivar ~.d: data signal
@@ -35,24 +35,24 @@ class XgmiiChannel(Interface):
         This is an enum of values which may appear
         on data byte while corresponding control bit is :py:attr:`~.CONTROL.CONTROL`
         """
-        IDLE = Bits(8).from_py(0x07)
-        START = Bits(8).from_py(0xFB)
-        TERM = Bits(8).from_py(0xFD)
-        ERROR = Bits(8).from_py(0xFE)
+        IDLE = HBits(8).from_py(0x07)
+        START = HBits(8).from_py(0xFB)
+        TERM = HBits(8).from_py(0xFD)
+        ERROR = HBits(8).from_py(0xFE)
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
-        self.FREQ = Param(int(156.25e6))
-        self.IS_DDR = Param(True)
-        self.ALIGNMENT = Param(1)
+        self.DATA_WIDTH = HwParam(64)
+        self.FREQ = HwParam(int(156.25e6))
+        self.IS_DDR = HwParam(True)
+        self.ALIGNMENT = HwParam(1)
 
     def _declr(self):
         assert self.ALIGNMENT > 0 and self.ALIGNMENT < self.DATA_WIDTH // 8, self.ALIGNMENT
-        self.clk = Clk()
+        self.clk = HwIOClk()
         self.clk.FREQ = self.FREQ
         self._make_association(clk=self.clk)
-        self.d = VectSignal(self.DATA_WIDTH)
-        self.c = VectSignal(self.DATA_WIDTH // 8)
+        self.d = HwIOVectSignal(self.DATA_WIDTH)
+        self.c = HwIOVectSignal(self.DATA_WIDTH // 8)
 
     def detect_control(self, s) -> List[RtlSignal]:
         """
@@ -67,9 +67,9 @@ class XgmiiChannel(Interface):
         ]
 
 
-class Xgmii(Interface):
+class Xgmii(HwIO):
     """
-    10G Media Independent Interface
+    10G Media Independent HwIO
 
     :note: usually 64b@156.25MHz DDR or 32b@312.5MHz DDR
         or twice wider and SDR

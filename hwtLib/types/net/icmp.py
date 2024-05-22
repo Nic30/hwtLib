@@ -1,16 +1,16 @@
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
 
 
 ICMP_header_t = HStruct(
-    (Bits(8), "type"), (Bits(8), "code"), (Bits(16), "checksum"),
-    (Bits(32), "restOfHeader"),
+    (HBits(8), "type"), (HBits(8), "code"), (HBits(16), "checksum"),
+    (HBits(32), "restOfHeader"),
     name="ICMP_header_t"
 )
 
 ICMP_echo_header_t = HStruct(
-    (Bits(8), "type"), (Bits(8), "code"), (Bits(16), "checksum"),
-    (Bits(16), "identifier"), (Bits(16), "seqNo"),
+    (HBits(8), "type"), (HBits(8), "code"), (HBits(16), "checksum"),
+    (HBits(16), "identifier"), (HBits(16), "seqNo"),
     name="ICMP_echo_header_t"
 )
 

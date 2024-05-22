@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import SwitchLogic, Switch, If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import BramPort_withoutClk
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOBramPort_noClk
 from hwt.math import log2ceil
 from hwtLib.abstract.busEndpoint import BusEndpoint
 
@@ -18,13 +18,13 @@ class BramPortEndpoint(BusEndpoint):
 
     .. hwt-autodoc:: _example_BramPortEndpoint
     """
-    _getWordAddrStep = BramPort_withoutClk._getWordAddrStep
-    _getAddrStep = BramPort_withoutClk._getAddrStep
+    _getWordAddrStep = HwIOBramPort_noClk._getWordAddrStep
+    _getAddrStep = HwIOBramPort_noClk._getAddrStep
 
-    def __init__(self, structTemplate, intfCls=BramPort_withoutClk,
+    def __init__(self, structTemplate, hwIOCls=HwIOBramPort_noClk,
                  shouldEnterFn=None):
         BusEndpoint.__init__(self, structTemplate,
-                             intfCls=intfCls, shouldEnterFn=shouldEnterFn)
+                             hwIOCls=hwIOCls, shouldEnterFn=shouldEnterFn)
 
     def _impl(self):
         self._parseTemplate()
@@ -44,7 +44,7 @@ class BramPortEndpoint(BusEndpoint):
         if self._bramPortMapped:
             BRAMS_CNT = len(self._bramPortMapped)
             bramIndxCases = []
-            readBramIndx = self._reg("readBramIndx", Bits(
+            readBramIndx = self._reg("readBramIndx", HBits(
                 log2ceil(BRAMS_CNT + 1), False))
             outputSwitch = Switch(readBramIndx)
 
@@ -78,7 +78,7 @@ def _example_BramPortEndpoint():
     from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
 
-    u = BramPortEndpoint(
+    m = BramPortEndpoint(
         HStruct(
             (uint32_t, "reg0"),
             (uint32_t, "reg1"),
@@ -87,11 +87,12 @@ def _example_BramPortEndpoint():
             (uint32_t[1024 + 4], "nonAligned0")
         )
     )
-    u.DATA_WIDTH = 32
-    return u
+    m.DATA_WIDTH = 32
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_BramPortEndpoint()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_BramPortEndpoint()
+    print(to_rtl_str(m))

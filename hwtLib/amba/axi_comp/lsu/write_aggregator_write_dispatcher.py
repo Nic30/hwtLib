@@ -5,27 +5,27 @@ from math import ceil
 
 from hwt.code import Concat, If
 from hwt.code_utils import rename_signal
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4_addr, Axi4, Axi4_w, Axi4_b
 from hwtLib.amba.constants import BURST_INCR, PROT_DEFAULT, BYTES_IN_TRANS, \
     LOCK_DEFAULT, CACHE_DEFAULT, QOS_DEFAULT
-from hwtLib.common_nonstd_interfaces.index_key_hs import IndexKeyHs
+from hwtLib.commonHwIO.index_key_hs import HwIOIndexKeyRdVld
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ramCumulativeMask import BramPort_withReadMask_withoutClk
 from pyMathBitPrecise.bit_utils import mask
 
 
 @serializeParamsUniq
-class AxiWriteAggregatorWriteDispatcher(Unit):
+class AxiWriteAggregatorWriteDispatcher(HwModule):
     """
     Use :class:`hwtLib.amba.axi_comp.lsu.fifo_oooread.FifoOutOfOrderReadFiltered` read ports
     to query an AXI transaction info and copy paste this transaction from BRAM to AXI.
@@ -34,10 +34,10 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
     """
 
     def _config(self):
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
-        self.ID_WIDTH = Param(6)
-        self.CACHE_LINE_SIZE = Param(64)  # [B]
+        self.ADDR_WIDTH = HwParam(32)
+        self.DATA_WIDTH = HwParam(64)
+        self.ID_WIDTH = HwParam(6)
+        self.CACHE_LINE_SIZE = HwParam(64)  # [B]
 
     def precompute_constants(self):
         # number of address bits used to index in a single cache line
@@ -54,7 +54,7 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
             WORD_OFFSET_W = log2ceil(self.BUS_WORDS_IN_CACHE_LINE)
             self.WORD_OFFSET_MAX = mask(WORD_OFFSET_W)
             # type for a counter of bus words in a single transactions
-            self.word_index_t = Bits(WORD_OFFSET_W, signed=False, force_vector=True)
+            self.word_index_t = HBits(WORD_OFFSET_W, signed=False, force_vector=True)
 
     def _declr(self):
         addClkRstn(self)
@@ -68,16 +68,16 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
         d.HAS_BE = self.DATA_WIDTH > 8
 
         # begin the read of the item
-        wl = self.read_execute = IndexKeyHs()
+        wl = self.read_execute = HwIOIndexKeyRdVld()
         wl.KEY_WIDTH = self.CACHE_LINE_ADDR_WIDTH
         wl.INDEX_WIDTH = self.ID_WIDTH
 
         # confirm that the item was read and the item in fifo is ready to be used again
-        pc = self.read_confirm = Handshaked()._m()
+        pc = self.read_confirm = HwIODataRdVld()._m()
         pc.DATA_WIDTH = self.ID_WIDTH
 
         # bus to write items to
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.m = Axi4()._m()
             self.m.HAS_R = False
 
@@ -117,7 +117,7 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
             a_tmp.vld(a_tmp.vld & ~a.ready)
         )
         a.id(a_tmp.id)
-        a.addr(Concat(a_tmp.addr, Bits(self.CACHE_LINE_OFFSET_BITS).from_py(0)))
+        a.addr(Concat(a_tmp.addr, HBits(self.CACHE_LINE_OFFSET_BITS).from_py(0)))
 
         a.len(self.BUS_WORDS_IN_CACHE_LINE - 1)
         a.burst(BURST_INCR)
@@ -229,13 +229,13 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
 
         return r_ack
 
-    def receive_write_confirm(self, b: Axi4_b, read_confirm: Handshaked):
+    def receive_write_confirm(self, b: Axi4_b, read_confirm: HwIODataRdVld):
         read_confirm.data(b.id)
         StreamNode([b], [read_confirm]).sync()
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
 
-    u = AxiWriteAggregatorWriteDispatcher()
-    print(to_rtl_str(u))
+    m = AxiWriteAggregatorWriteDispatcher()
+    print(to_rtl_str(m))

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
+from hwt.constants import Time
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import BramPort_withoutClk
+from hwt.hwIOs.std import HwIOBramPort_noClk
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -21,8 +21,8 @@ structTwoFields = HStruct(
 
 structTwoFields_str = """\
 struct {
-    <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-    <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
+    <HBits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+    <HBits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
 }"""
 
 structTwoFieldsDense = HStruct(
@@ -33,9 +33,9 @@ structTwoFieldsDense = HStruct(
 
 structTwoFieldsDense_str = """\
 struct {
-    <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-    //<Bits, 32bits, unsigned> empty space // start:0x20(bit) 0x4(byte)
-    <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
+    <HBits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+    //<HBits, 32bits, unsigned> empty space // start:0x20(bit) 0x4(byte)
+    <HBits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
 }"""
 
 structTwoFieldsDenseStart = HStruct(
@@ -46,19 +46,19 @@ structTwoFieldsDenseStart = HStruct(
 
 structTwoFieldsDenseStart_str = """\
 struct {
-    //<Bits, 32bits, unsigned> empty space // start:0x0(bit) 0x0(byte)
-    <Bits, 32bits, unsigned> field0 // start:0x20(bit) 0x4(byte)
-    <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
+    //<HBits, 32bits, unsigned> empty space // start:0x0(bit) 0x0(byte)
+    <HBits, 32bits, unsigned> field0 // start:0x20(bit) 0x4(byte)
+    <HBits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
 }"""
 
 
-def addrGetter(intf):
-    if isinstance(intf, Axi4Lite):
-        return intf.ar.addr
-    elif isinstance(intf, BramPort_withoutClk):
-        return intf.addr
+def addrGetter(hwIO):
+    if isinstance(hwIO, Axi4Lite):
+        return hwIO.ar.addr
+    elif isinstance(hwIO, HwIOBramPort_noClk):
+        return hwIO.addr
     else:
-        raise TypeError(intf)
+        raise TypeError(hwIO)
 
 
 class AxiLiteEndpointTC(SimTestCase):
@@ -75,50 +75,50 @@ class AxiLiteEndpointTC(SimTestCase):
         self.regs = AxiLiteMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
     def randomizeAll(self):
-        u = self.u
-        for intf in u._interfaces:
-            if (intf not in (u.clk, u.rst_n, u.bus)
-                    and not isinstance(intf, BramPort_withoutClk)):
-                self.randomize(intf)
-        axi_randomize_per_channel(self, u.bus)
+        dut = self.dut
+        for hwIO in dut._hwIOs:
+            if (hwIO not in (dut.clk, dut.rst_n, dut.bus)
+                    and not isinstance(hwIO, HwIOBramPort_noClk)):
+                self.randomize(hwIO)
+        axi_randomize_per_channel(self, dut.bus)
 
     def mySetUp(self, data_width=32, STRUCT_TEMPLATE=None):
         if STRUCT_TEMPLATE is None:
             STRUCT_TEMPLATE = self.STRUCT_TEMPLATE
-        u = self.u = AxiLiteEndpoint(STRUCT_TEMPLATE)
+        dut = self.dut = AxiLiteEndpoint(STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH = self.DATA_WIDTH
+        dut.DATA_WIDTH = self.DATA_WIDTH
 
-        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
+        self.compileSimAndStart(self.dut, onAfterToRtl=self.mkRegisterMap)
+        return dut
 
     def test_nop(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
 
         self.randomizeAll()
         self.runSim(10 * self.CLK)
 
-        self.assertEmpty(u.bus._ag.r.data)
-        self.assertEmpty(u.decoded.field0._ag.dout)
-        self.assertEmpty(u.decoded.field1._ag.dout)
+        self.assertEmpty(dut.bus._ag.r.data)
+        self.assertEmpty(dut.decoded.field0._ag.dout)
+        self.assertEmpty(dut.decoded.field1._ag.dout)
 
     def test_read(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         A = self.FIELD_ADDR
 
-        a = u.bus.ar._ag.create_addr_req
-        u.bus.ar._ag.data.extend(map(a,
+        a = dut.bus.ar._ag.create_addr_req
+        dut.bus.ar._ag.data.extend(map(a,
                                      [A[0], A[1], A[0], A[1], A[1] + 0x4]))
 
-        u.decoded.field0._ag.din.extend([MAGIC])
-        u.decoded.field1._ag.din.extend([MAGIC + 1])
+        dut.decoded.field0._ag.din.extend([MAGIC])
+        dut.decoded.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
         self.runSim(30 * self.CLK)
 
-        self.assertValSequenceEqual(u.bus.r._ag.data,
+        self.assertValSequenceEqual(dut.bus.r._ag.data,
                                     [(MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
@@ -126,19 +126,19 @@ class AxiLiteEndpointTC(SimTestCase):
                                      (None, RESP_SLVERR)])
 
     def test_write(self):
-        u = self.mySetUp(32)
+        dut = self.mySetUp(32)
         MAGIC = 100
         m = mask(32 // 8)
         A = self.FIELD_ADDR
 
-        a = u.bus.ar._ag.create_addr_req
-        u.bus.aw._ag.data.extend(map(a,
+        a = dut.bus.ar._ag.create_addr_req
+        dut.bus.aw._ag.data.extend(map(a,
                                      [A[0],
                                       A[1],
                                       A[0],
                                       A[1],
                                       A[1] + 0x4]))
-        u.bus.w._ag.data.extend([(MAGIC, m),
+        dut.bus.w._ag.data.extend([(MAGIC, m),
                                  (MAGIC + 1, m),
                                  (MAGIC + 2, m),
                                  (MAGIC + 3, m),
@@ -147,16 +147,16 @@ class AxiLiteEndpointTC(SimTestCase):
         self.randomizeAll()
         self.runSim(50 * self.CLK)
 
-        self.assertValSequenceEqual(u.decoded.field0._ag.dout,
+        self.assertValSequenceEqual(dut.decoded.field0._ag.dout,
                                     [MAGIC,
                                      MAGIC + 2
                                      ])
-        self.assertValSequenceEqual(u.decoded.field1._ag.dout,
+        self.assertValSequenceEqual(dut.decoded.field1._ag.dout,
                                     [MAGIC + 1,
                                      MAGIC + 3
                                      ])
         self.assertValSequenceEqual(
-            u.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
+            dut.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
 
     def test_registerMap(self):
         self.mySetUp(32)
@@ -194,7 +194,7 @@ class AxiLiteEndpointMemMasterTC(SimTestCase):
         AxiLiteEndpointTC.mkRegisterMap(self, u)
 
     def _test_read_memMaster(self, structT):
-        u = AxiLiteEndpointTC.mySetUp(self, 32, structT)
+        dut = AxiLiteEndpointTC.mySetUp(self, 32, structT)
         MAGIC = 100
 
         regs = self.regs
@@ -203,13 +203,13 @@ class AxiLiteEndpointMemMasterTC(SimTestCase):
         regs.field0.read()
         regs.field1.read()
 
-        u.decoded.field0._ag.din.extend([MAGIC])
-        u.decoded.field1._ag.din.extend([MAGIC + 1])
+        dut.decoded.field0._ag.din.extend([MAGIC])
+        dut.decoded.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
         self.runSim(30 * self.CLK)
 
-        self.assertValSequenceEqual(u.bus.r._ag.data,
+        self.assertValSequenceEqual(dut.bus.r._ag.data,
                                     [(MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
@@ -217,7 +217,7 @@ class AxiLiteEndpointMemMasterTC(SimTestCase):
                                      ])
 
     def _test_write_memMaster(self, structT):
-        u = AxiLiteEndpointTC.mySetUp(self, 32, structT)
+        dut = AxiLiteEndpointTC.mySetUp(self, 32, structT)
         MAGIC = 100
         regs = self.regs
         f0, f1 = regs.field0, regs.field1
@@ -229,16 +229,16 @@ class AxiLiteEndpointMemMasterTC(SimTestCase):
         self.randomizeAll()
         self.runSim(50 * self.CLK)
 
-        self.assertValSequenceEqual(u.decoded.field0._ag.dout,
+        self.assertValSequenceEqual(dut.decoded.field0._ag.dout,
                                     [MAGIC,
                                      MAGIC + 2
                                      ])
-        self.assertValSequenceEqual(u.decoded.field1._ag.dout,
+        self.assertValSequenceEqual(dut.decoded.field1._ag.dout,
                                     [MAGIC + 1,
                                      MAGIC + 3
                                      ])
         self.assertValSequenceEqual(
-            u.bus.b._ag.data, [RESP_OKAY for _ in range(4)])
+            dut.bus.b._ag.data, [RESP_OKAY for _ in range(4)])
 
     def test_read_memMaster(self):
         self._test_read_memMaster(structTwoFields)
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    # u = AxiLiteEndpoint(structStructsInArray,
+    # m = AxiLiteEndpoint(structStructsInArray,
     #                     shouldEnterFn=lambda tmpl: True)
-    # u.DATA_WIDTH = 32
-    # print(to_rtl_str(u))
+    # m.DATA_WIDTH = 32
+    # print(to_rtl_str(m))

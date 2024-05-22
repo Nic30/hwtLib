@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.math import log2ceil
-from hwtLib.handshaked.ramAsHs import RamAsHs
+from hwtLib.handshaked.ramAsAddrDataRdVld import RamAsAddrDataRdVld
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.ram import RamSingleClock
@@ -22,7 +22,7 @@ class HashTableCoreWithRam(HashTableCore):
         t.ADDR_WIDTH = log2ceil(self.ITEMS_CNT)
         t.DATA_WIDTH = self.KEY_WIDTH + self.DATA_WIDTH + 1  # +1 for item_vld
 
-        tc = self.tableConnector = RamAsHs()
+        tc = self.tableConnector = RamAsAddrDataRdVld()
         tc.ADDR_WIDTH = t.ADDR_WIDTH
         tc.DATA_WIDTH = t.DATA_WIDTH
 
@@ -37,6 +37,6 @@ def _example_HashTableCoreWithRam():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HashTableCoreWithRam()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_HashTableCoreWithRam()
+    print(to_rtl_str(m))

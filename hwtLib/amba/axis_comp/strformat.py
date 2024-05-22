@@ -3,27 +3,27 @@ from typing import Dict, Tuple, List, Union, Optional
 from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwt.code import If, Switch, SwitchLogic, Or
 from hwt.hdl.statements.statement import HdlStatement
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.structIntf import HdlType_to_Interface
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.typePath import TypePath
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.logic.binToBcd import BinToBcd
 from hwtLib.types.ctypes import uint32_t
 from hwt.hdl.types.defs import BIT
 
 
-class AxiS_strFormatItem():
+class Axi4S_strFormatItem():
     """
     :ivar member_path: path which specifies the loacation of interface with the value on input interface
     :ivar digits: number of digitsof output formated number (not used for 's' format)
@@ -63,32 +63,32 @@ class AxiS_strFormatItem():
         self.digits = digits
 
     def __repr__(self):
-        return f"<AxiS_strFormatItem {self.member_path}, {self.format_type}, {self.digits}>"
+        return f"<Axi4S_strFormatItem {self.member_path}, {self.format_type}, {self.digits}>"
 
 
-class HdlType_to_Interface_with_AxiStream(HdlType_to_Interface):
+class HdlType_to_Interface_with_Axi4Stream(HdlType_to_HwIO):
 
-    def apply(self, dtype: HdlType, field_path: Optional[TypePath]=None) -> Interface:
+    def apply(self, dtype: HdlType, field_path: Optional[TypePath]=None) -> HwIO:
         """
         Run the connversion
         """
         if isinstance(dtype, HStream):
-            assert dtype.element_t == Bits(8), dtype
+            assert dtype.element_t == HBits(8), dtype
             assert dtype.start_offsets == (0,), dtype.start_offsets
             assert dtype.len_min >= 1, dtype
-            i = AxiStream()
+            i = Axi4Stream()
             i.DATA_WIDTH = 8
         else:
-            i = super(HdlType_to_Interface_with_AxiStream, self).apply(dtype, field_path)
+            i = super(HdlType_to_Interface_with_Axi4Stream, self).apply(dtype, field_path)
         return i
 
 
 @serializeParamsUniq
-class AxiS_strFormat(Unit):
+class Axi4S_strFormat(HwModule):
     """
     Generate compomonent which does same thing as printf just in hw.
     The output string is stream of encoded characters. The ending '0' is not appended.
-    And 'last' signal of AxiStream is used instead.
+    And 'last' signal of Axi4Stream is used instead.
 
     :note: use :func:`hwtLib.amba.axis_comp.strformat_fn.axiS_strFormat` to generate instance
         of this component from normal string format string and argument
@@ -97,29 +97,29 @@ class AxiS_strFormat(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(8)
-        self.FORMAT = Param((
-            "AxiS_strFormat"
-            ": hex: 0x", AxiS_strFormatItem(TypePath("data"), 'x', 32 // 4),
-            ", dec: ", AxiS_strFormatItem(TypePath("data"), 'd', BinToBcd.decadic_deciamls_for_bin(32)),
+        self.DATA_WIDTH = HwParam(8)
+        self.FORMAT = HwParam((
+            "Axi4S_strFormat"
+            ": hex: 0x", Axi4S_strFormatItem(TypePath("data"), 'x', 32 // 4),
+            ", dec: ", Axi4S_strFormatItem(TypePath("data"), 'd', BinToBcd.decadic_deciamls_for_bin(32)),
             " is the value of data from example"
         ))
-        self.INPUT_T = Param(HStruct(
+        self.INPUT_T = HwParam(HStruct(
             (uint32_t, "data"),
         ))
-        self.ENCODING = Param("utf-8")
+        self.ENCODING = HwParam("utf-8")
 
     def _declr(self):
         addClkRstn(self)
         if self.INPUT_T is not None:
             # if INPUT_T is none it menas that the component is configured to print a costant string.
-            self.data_in = HdlType_to_Interface_with_AxiStream().apply(self.INPUT_T)
+            self.data_in = HdlType_to_Interface_with_Axi4Stream().apply(self.INPUT_T)
         # filter out emplty strings
         self.FORMAT = tuple(f for f in self.FORMAT if not isinstance(f, str) or f)
         assert self.FORMAT, "Need to have something to print"
 
-        with self._paramsShared():
-            self.data_out = AxiStream()._m()
+        with self._hwParamsShared():
+            self.data_out = Axi4Stream()._m()
 
     def build_string_rom(self):
         """
@@ -137,7 +137,7 @@ class AxiS_strFormat(Unit):
                 s = strings[i] = f.encode(self.ENCODING)
                 max_chars_per_format = max(max_chars_per_format, len(s))
             else:
-                assert isinstance(f, AxiS_strFormatItem), f
+                assert isinstance(f, Axi4S_strFormatItem), f
                 t = f.format_type
                 if t == 'd':
                     # use bcd
@@ -210,7 +210,7 @@ class AxiS_strFormat(Unit):
 
     def connect_single_format_group(self,
                                     f_i: int,
-                                    f: Union[str, AxiS_strFormatItem],
+                                    f: Union[str, Axi4S_strFormatItem],
                                     strings_offset_and_size: Dict[Union[int, str], Tuple[int, int]],
                                     string_rom: RtlSignal,
                                     char_i: RtlSignal,
@@ -223,13 +223,13 @@ class AxiS_strFormat(Unit):
         * iterate the string characters stored in string_rom
         * iterate and translate bin/oct/hex characters
         * register bcd input for later connection
-        * connect an input string from an input AxiStream
+        * connect an input string from an input Axi4Stream
         """
         dout = self.data_out
         in_vld = BIT.from_py(1)
         res = []
         in_last = None
-        string_rom_index_t = Bits(log2ceil(string_rom._dtype.size), signed=False)
+        string_rom_index_t = HBits(log2ceil(string_rom._dtype.size), signed=False)
         if isinstance(f, str):
             str_offset, str_size = strings_offset_and_size[f_i]
             str_offset = string_rom_index_t.from_py(str_offset)
@@ -238,8 +238,8 @@ class AxiS_strFormat(Unit):
                 dout.data(string_rom[str_offset + fitTo(char_i, str_offset, shrink=False)])
             )
         else:
-            assert isinstance(f, AxiS_strFormatItem), f
-            in_ = self.data_in._fieldsToInterfaces[f.member_path]
+            assert isinstance(f, Axi4S_strFormatItem), f
+            in_ = self.data_in._fieldsToHwIOs[f.member_path]
 
             if f.format_type in ('d', 'b', 'o', 'x', 'X'):
                 if  f.format_type == 'd':
@@ -250,8 +250,8 @@ class AxiS_strFormat(Unit):
                     bcd.rd(dout.ready & en & char_i._eq(f.digits - 1))
                     in_ = bcd.data
 
-                bits_per_char = AxiS_strFormatItem.BITS_PER_CHAR[f.format_type]
-                actual_digit = self._sig(f"f_{f_i}_actual_digit", Bits(bits_per_char))
+                bits_per_char = Axi4S_strFormatItem.BITS_PER_CHAR[f.format_type]
+                actual_digit = self._sig(f"f_{f_i}_actual_digit", HBits(bits_per_char))
                 to_str_table_offset, _ = strings_offset_and_size[f.format_type]
                 to_str_table_offset = string_rom_index_t.from_py(to_str_table_offset)
                 # iterate output digits using char_i
@@ -265,7 +265,7 @@ class AxiS_strFormat(Unit):
                 str_size = f.digits
 
             else:
-                # connect a string from an input AxiStream
+                # connect a string from an input Axi4Stream
                 assert f.format_type == 's', f.format_type
                 assert in_.DATA_WIDTH == 8, in_.DATA_WIDTH
                 assert in_.USE_STRB == False, in_.USE_STRB
@@ -279,7 +279,7 @@ class AxiS_strFormat(Unit):
                 in_last = in_.last
 
         if in_last is None:
-            # if signal to detect last character is not overriden use counter to resolve it
+            # if signal to detect last character is not overridden use counter to resolve it
             in_last = char_i._eq(str_size - 1)
 
         return res, in_vld, in_last,
@@ -298,8 +298,8 @@ class AxiS_strFormat(Unit):
         # tuples (cond, input)
         to_bcd_inputs = []
 
-        string_rom = self._sig("string_rom", Bits(8)[len(_string_rom)], def_val=[int(c) for c in _string_rom])
-        char_i = self._reg("char_i", Bits(log2ceil(max_chars_per_format), signed=False), def_val=0)
+        string_rom = self._sig("string_rom", HBits(8)[len(_string_rom)], def_val=[int(c) for c in _string_rom])
+        char_i = self._reg("char_i", HBits(log2ceil(max_chars_per_format), signed=False), def_val=0)
 
         # create an iterator over all characters
         element_cnt = len(self.FORMAT)
@@ -311,7 +311,7 @@ class AxiS_strFormat(Unit):
             _, out_vld, out_last = self.connect_single_format_group(f_i, f, strings_offset_and_size, string_rom, char_i, to_bcd_inputs, en)
             char_i_rst = out_last
         else:
-            main_st = self._reg("main_st", Bits(log2ceil(element_cnt), signed=False), def_val=0)
+            main_st = self._reg("main_st", HBits(log2ceil(element_cnt), signed=False), def_val=0)
             char_i_rst = out_last = out_vld = BIT.from_py(0)
             main_st_fsm = Switch(main_st)
             for is_last_f, (f_i, f) in iter_with_last(enumerate(self.FORMAT)):
@@ -362,7 +362,7 @@ class AxiS_strFormat(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AxiS_strFormat()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = Axi4S_strFormat()
+    print(to_rtl_str(m))
 

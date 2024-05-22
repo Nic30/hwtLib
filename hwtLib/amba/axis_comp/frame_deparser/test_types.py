@@ -1,8 +1,9 @@
+from math import inf
+
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
 from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t, uint8_t
-from math import inf
 
 
 s1field = HStruct(

@@ -5,25 +5,25 @@ from typing import List, Tuple
 
 from hwt.code import Concat, SwitchLogic, Or
 from hwt.code_utils import rename_signal
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwModule import HwModule
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.defs import BIT
-from hwt.interfaces.std import Handshaked
 from hwt.math import log2ceil
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.types.ctypes import uint8_t
 
 
-class AxiInterconnectMatrixAddrCrossbar(Unit):
+class AxiInterconnectMatrixAddrCrossbar(HwModule):
     """
     Component which implements N to M crossbar for AXI address channel.
     If there are multiple masters connected to any slave the access is mannaged by round-robin.
@@ -41,14 +41,14 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
         return HsJoinFairShare.priorityAck(priorityReg, vldSignals, index)
 
     def __init__(self, axi_addr_cls):
-        self.intfCls = axi_addr_cls
+        self.hwIOCls = axi_addr_cls
         super(AxiInterconnectMatrixAddrCrossbar, self).__init__()
 
     def _config(self):
-        self.INTF_CLS = Param(self.intfCls)
-        self.SLAVES = Param(tuple())
-        self.MASTERS = Param(tuple())
-        self.intfCls._config(self)
+        self.HWIO_CLS = HwParam(self.hwIOCls)
+        self.SLAVES = HwParam(tuple())
+        self.MASTERS = HwParam(tuple())
+        self.hwIOCls._config(self)
 
     def _declr(self):
         AxiInterconnectCommon._declr(self, has_r=False, has_w=False)
@@ -62,7 +62,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
         order_m_index_for_s_data_out = HObjList()
         for connected_masters in self.MASTERS_FOR_SLAVE:
             if len(connected_masters) > 1:
-                f = Handshaked()._m()
+                f = HwIODataRdVld()._m()
                 f.DATA_WIDTH = MASTER_INDEX_WIDTH
             else:
                 f = None
@@ -74,7 +74,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
             # fifo for slave index for each master
             # so master knows where it should expect the data
             if len(slaves) > 1:
-                f = Handshaked()._m()
+                f = HwIODataRdVld()._m()
                 f.DATA_WIDTH = SLAVE_INDEX_WIDTH
             else:
                 f = None
@@ -129,7 +129,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
             dataCases.append((cond, data_connect_exprs))
 
         dataDefault = []
-        for sig in slv_addr_tmp._interfaces:
+        for sig in slv_addr_tmp._hwIOs:
             if sig not in {slv_addr_tmp.valid, slv_addr_tmp.ready}:
                 dataDefault.append(sig(None))
 
@@ -259,7 +259,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
 
     def _impl(self):
         master_addr_channels = [
-            AxiSBuilder(self, m).buff(1).end
+            Axi4SBuilder(self, m).buff(1).end
             for m in self.s]
         slave_addr_channels = self.m
 
@@ -275,25 +275,25 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
 
 def example_AxiInterconnectMatrixAddrCrossbar():
     from hwtLib.amba.axi4 import Axi4
-    u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
-    # u.MASTERS = ({0, 1},)
-    # u.MASTERS = ({0, 1, 2},)
-    # u.MASTERS = ({0}, {0}, {0})
-    # u.SLAVES = ((0x1000, 0x1000),
+    m = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
+    # m.MASTERS = ({0, 1},)
+    # m.MASTERS = ({0, 1, 2},)
+    # m.MASTERS = ({0}, {0}, {0})
+    # m.SLAVES = ((0x1000, 0x1000),
     #            (0x2000, 0x1000),
     #            (0x3000, 0x1000),
     #          )
-    # u.SLAVES = ((0x1000, 0x1000))
+    # m.SLAVES = ((0x1000, 0x1000))
 
-    u.MASTERS = ({0, 1}, {0, 1})
-    u.SLAVES = ((0x1000, 0x1000),
+    m.MASTERS = ({0, 1}, {0, 1})
+    m.SLAVES = ((0x1000, 0x1000),
                 (0x2000, 0x1000),
                 )
 
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = example_AxiInterconnectMatrixAddrCrossbar()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = example_AxiInterconnectMatrixAddrCrossbar()
+    print(to_rtl_str(m))

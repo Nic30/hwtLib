@@ -1,12 +1,12 @@
 from typing import NamedTuple, Optional, List, Union
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
-from hwt.interfaces.structIntf import HdlType_to_Interface
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIORdVldSync
+from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
+from hwt.hwIO import HwIO
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -33,7 +33,7 @@ class OOOOpPipelineStage():
         self.name = name
         r = parent._reg
         self.id = r(f"{name:s}_id", parent.m.ar.id._dtype)
-        self.addr = r(f"{name:s}_addr", Bits(parent.MAIN_STATE_INDEX_WIDTH))
+        self.addr = r(f"{name:s}_addr", HBits(parent.MAIN_STATE_INDEX_WIDTH))
 
         if has_transaction_state and parent.TRANSACTION_STATE_T is not None:
             # data private to an algorim of the pipeline
@@ -104,29 +104,29 @@ class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
         )
 
 
-class OutOfOrderCummulativeOpIntf(Handshaked):
+class HwIOOutOfOrderCummulativeOp(HwIODataRdVld):
     """
     .. hwt-autodoc::
     """
 
     def _config(self):
-        self.TRANSACTION_STATE_T = Param(uint8_t)
-        self.MAIN_STATE_T = Param(uint8_t)
-        self.MAIN_STATE_INDEX_WIDTH = Param(8)
+        self.TRANSACTION_STATE_T = HwParam(uint8_t)
+        self.MAIN_STATE_T = HwParam(uint8_t)
+        self.MAIN_STATE_INDEX_WIDTH = HwParam(8)
 
     def _declr(self):
-        self.addr = VectSignal(self.MAIN_STATE_INDEX_WIDTH)
+        self.addr = HwIOVectSignal(self.MAIN_STATE_INDEX_WIDTH)
         if self.MAIN_STATE_T is not None:
-            self.data = HdlType_to_Interface().apply(self.MAIN_STATE_T)
+            self.data = HdlType_to_HwIO().apply(self.MAIN_STATE_T)
         if self.TRANSACTION_STATE_T is not None:
-            self.transaction_state = HdlType_to_Interface().apply(self.TRANSACTION_STATE_T)
-        HandshakeSync._declr(self)
+            self.transaction_state = HdlType_to_HwIO().apply(self.TRANSACTION_STATE_T)
+        HwIORdVldSync._declr(self)
 
     def _initSimAgent(self, sim:HdlSimulator):
-        self._ag = OutOfOrderCummulativeOpIntfAgent(sim, self)
+        self._ag = HwIOOutOfOrderCummulativeOpAgent(sim, self)
 
 
-class OutOfOrderCummulativeOpIntfAgent(HandshakedAgent):
+class HwIOOutOfOrderCummulativeOpAgent(HwIODataRdVldAgent):
     """
     :note: if TRANSACTION_STATE_T is None the data should be only int for address
         else data should be tuple of int for address and a value of the state
@@ -134,30 +134,30 @@ class OutOfOrderCummulativeOpIntfAgent(HandshakedAgent):
         for struct it is tuple, ...
     """
 
-    def __init__(self, sim:HdlSimulator, intf: OutOfOrderCummulativeOpIntf, allowNoReset=False):
-        HandshakedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
-        if intf.TRANSACTION_STATE_T is not None:
-            t_st = intf.transaction_state
+    def __init__(self, sim:HdlSimulator, hwIO: HwIOOutOfOrderCummulativeOp, allowNoReset=False):
+        HwIODataRdVldAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
+        if hwIO.TRANSACTION_STATE_T is not None:
+            t_st = hwIO.transaction_state
             t_st._initSimAgent(sim)
-            self.t_st_is_primitive = not isinstance(t_st, Interface)
+            self.t_st_is_primitive = not isinstance(t_st, HwIO)
 
-        if intf.MAIN_STATE_T is not None:
-            m_st = intf.data
+        if hwIO.MAIN_STATE_T is not None:
+            m_st = hwIO.data
             m_st._initSimAgent(sim)
-            self.m_st_is_primitive = not isinstance(m_st, Interface)
+            self.m_st_is_primitive = not isinstance(m_st, HwIO)
 
     def getDrivers(self):
-        yield from HandshakedAgent.getDrivers(self)
-        if self.intf.TRANSACTION_STATE_T is not None:
-            yield from self.intf.transaction_state._ag.getDrivers()
+        yield from HwIODataRdVldAgent.getDrivers(self)
+        if self.hwIO.TRANSACTION_STATE_T is not None:
+            yield from self.hwIO.transaction_state._ag.getDrivers()
 
     def getMonitors(self):
-        yield from HandshakedAgent.getMonitors(self)
-        if self.intf.TRANSACTION_STATE_T is not None:
-            yield from self.intf.transaction_state._ag.getMonitors()
+        yield from HwIODataRdVldAgent.getMonitors(self)
+        if self.hwIO.TRANSACTION_STATE_T is not None:
+            yield from self.hwIO.transaction_state._ag.getMonitors()
 
     def get_data(self):
-        i = self.intf
+        i = self.hwIO
 
         if i.TRANSACTION_STATE_T is not None:
             if i.MAIN_STATE_T is not None:
@@ -180,7 +180,7 @@ class OutOfOrderCummulativeOpIntfAgent(HandshakedAgent):
             return i.addr.read()
 
     def set_data(self, d):
-        i = self.intf
+        i = self.hwIO
 
         if i.TRANSACTION_STATE_T is not None:
             if i.MAIN_STATE_T is not None:

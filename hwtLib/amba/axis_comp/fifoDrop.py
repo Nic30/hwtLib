@@ -3,16 +3,16 @@
 
 from typing import Tuple, Optional, Union
 
-from hwt.interfaces.std import Signal, Rst_n, Rst, Clk
+from hwt.hwIOs.std import HwIOSignal, HwIORst_n, HwIORst, HwIOClk
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf
-from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwt.synthesizer.interfaceLevel.utils import HwIO_pack
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.fifoDrop import HandshakedFifoDrop
 
 
 @serializeParamsUniq
-class AxiSFifoDrop(AxiSCompBase, HandshakedFifoDrop):
+class Axi4SFifoDrop(Axi4SCompBase, HandshakedFifoDrop):
     """
     Synchronous fifo for axi-stream interface with frame drop functionality
     and speculative buffering. Also known as a speculative fifo.
@@ -21,15 +21,15 @@ class AxiSFifoDrop(AxiSCompBase, HandshakedFifoDrop):
 
     :see: :class:`hwtLib.handshaked.fifo_drop.HandshakedFifoDrop`
 
-    .. hwt-autodoc:: _example_AxiSFifoDrop
+    .. hwt-autodoc:: _example_Axi4SFifoDrop
     """
     def _declr(self):
         HandshakedFifo._declr(self)
-        self.dataIn_discard = Signal()
+        self.dataIn_discard = HwIOSignal()
 
     def _impl(self, clk_rst: Optional[Tuple[
-            Tuple[Clk, Union[Rst, Rst_n]],
-            Tuple[Clk, Union[Rst, Rst_n]]]]=None):
+            Tuple[HwIOClk, Union[HwIORst, HwIORst_n]],
+            Tuple[HwIOClk, Union[HwIORst, HwIORst_n]]]]=None):
         super(HandshakedFifoDrop, self)._impl(clk_rst=clk_rst)
 
     def _connect_fifo_in(self):
@@ -42,20 +42,20 @@ class AxiSFifoDrop(AxiSCompBase, HandshakedFifoDrop):
         rd(din)(wr_en)
         fIn.discard(self.dataIn_discard)
         fIn.commit(din.valid & din.last)
-        fIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
+        fIn.data(HwIO_pack(din, exclude=[vld(din), rd(din)]))
         fIn.en(vld(din) & wr_en)
 
 
-def _example_AxiSFifoDrop():
-    u = AxiSFifoDrop()
-    u.DEPTH = 4
-    u.EXPORT_SIZE = True
-    u.EXPORT_SPACE = True
-    return u
+def _example_Axi4SFifoDrop():
+    m = Axi4SFifoDrop()
+    m.DEPTH = 4
+    m.EXPORT_SIZE = True
+    m.EXPORT_SPACE = True
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiSFifoDrop()
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4SFifoDrop()
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

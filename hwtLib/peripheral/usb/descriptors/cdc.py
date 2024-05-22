@@ -7,7 +7,7 @@ https://www.silabs.com/documents/public/application-notes/AN758.pdf
 
 from typing import List, Optional
 
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwtLib.peripheral.usb.constants import USB_VER
@@ -121,7 +121,7 @@ usb_descriptor_functional_call_management_body_t = HStruct(
         # the Communication Class interface.
         (BIT, "supportHandlesCallManagementItself"),
         (BIT, "supportManagementOverDataClassInterface"),
-        (Bits(6), "reserved0"),
+        (HBits(6), "reserved0"),
     ), "bmCapabilities"),
     # Interface number of Data Class interface optionally used for call management.
     # (Zero based index of the interface in this configuration.(bInterfaceNum))
@@ -163,7 +163,7 @@ usb_descriptor_functional_abstract_control_management_body_t = HStruct(
         (BIT, "lineCodingAndSerialState"),
         (BIT, "sendBreak"),
         (BIT, "networkConnection"),
-        (Bits(4), "reserved0"),
+        (HBits(4), "reserved0"),
     ), "bmCapabilities"),
     name="usb_descriptor_functional_abstract_control_management_body_t"
 )

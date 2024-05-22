@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import SwitchLogic
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
-
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 
@@ -21,7 +20,7 @@ class HsSplitSelect(HandshakedCompBase):
     .. hwt-autodoc:: _example_HsSplitSelect
     """
     def _config(self):
-        self.OUTPUTS = Param(3)
+        self.OUTPUTS = HwParam(3)
         super()._config()
 
     def _declr(self):
@@ -30,13 +29,13 @@ class HsSplitSelect(HandshakedCompBase):
         outputs = int(self.OUTPUTS)
         assert outputs > 1, outputs
 
-        self.selectOneHot = Handshaked()
+        self.selectOneHot = HwIODataRdVld()
         self.selectOneHot.DATA_WIDTH = outputs
 
-        with self._paramsShared():
-            self.dataIn = self.intfCls()
+        with self._hwParamsShared():
+            self.dataIn = self.hwIOCls()
             self.dataOut = HObjList(
-                self.intfCls()._m() for _ in range(int(self.OUTPUTS))
+                self.hwIOCls()._m() for _ in range(int(self.OUTPUTS))
             )
 
     def _select_consume_en(self):
@@ -47,22 +46,22 @@ class HsSplitSelect(HandshakedCompBase):
         rd = self.get_ready_signal
 
         sel = self.selectOneHot
-        r = HandshakedReg(Handshaked)
+        r = HandshakedReg(HwIODataRdVld)
         r.DATA_WIDTH = sel.data._dtype.bit_length()
         self.selReg = r
         r.dataIn(sel)
         propagateClkRstn(self)
         sel = r.dataOut
 
-        for index, outIntf in enumerate(self.dataOut):
-            for ini, outi in zip(In._interfaces, outIntf._interfaces):
-                if ini == self.get_valid_signal(In):
+        for index, outHwIO in enumerate(self.dataOut):
+            for inIO, outIO in zip(In._hwIOs, outHwIO._hwIOs):
+                if inIO == self.get_valid_signal(In):
                     # out.vld
-                    outi(sel.vld & ini & sel.data[index])
-                elif ini == rd(In):
+                    outIO(sel.vld & inIO & sel.data[index])
+                elif inIO == rd(In):
                     pass
                 else:  # data
-                    outi(ini)
+                    outIO(inIO)
 
         din = self.dataIn
         SwitchLogic(
@@ -81,10 +80,11 @@ class HsSplitSelect(HandshakedCompBase):
 
 
 def _example_HsSplitSelect():
-    return  HsSplitSelect(Handshaked)
+    return  HsSplitSelect(HwIODataRdVld)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HsSplitSelect()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = _example_HsSplitSelect()
+    print(to_rtl_str(m))

@@ -1,8 +1,8 @@
-from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.amba.constants import RESP_OKAY
 
 
-class Axi4LiteSimRam(AxiSimRam):
+class Axi4LiteSimRam(Axi4SimRam):
     """
     Simulation memory for Axi4Lite interfaces (slave component)
     """

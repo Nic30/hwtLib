@@ -3,18 +3,18 @@
 
 from hwt.code import If, Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.constants import READ, WRITE
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.constants import READ, WRITE
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.lsu.fifo_oooread import FifoOutOfOrderReadFiltered
-from hwtLib.amba.axi_comp.lsu.interfaces import AxiWriteAggregatorWriteTmpIntf
+from hwtLib.amba.axi_comp.lsu.hIOs import HwIOAxiWriteAggregatorWriteTmp
 from hwtLib.amba.axi_comp.lsu.write_aggregator_write_dispatcher import AxiWriteAggregatorWriteDispatcher
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.amba.axis_comp.reg import AxiSReg
+from hwtLib.amba.axis_comp.builder import Axi4SBuilder
+from hwtLib.amba.axis_comp.reg import Axi4SReg
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
@@ -23,7 +23,7 @@ from hwtLib.mem.ramCumulativeMask import BramPort_withReadMask_withoutClk, \
 
 
 @serializeParamsUniq
-class AxiWriteAggregator(Unit):
+class AxiWriteAggregator(HwModule):
     """
     A buffer which is used for write data from cache.
 
@@ -45,12 +45,12 @@ class AxiWriteAggregator(Unit):
 
     def _config(self):
         AxiWriteAggregatorWriteDispatcher._config(self)
-        self.MAX_BLOCK_DATA_WIDTH = Param(None)
+        self.MAX_BLOCK_DATA_WIDTH = HwParam(None)
 
     def _declr(self):
         addClkRstn(self)
         AxiWriteAggregatorWriteDispatcher.precompute_constants(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.s = s_axi = Axi4()
             s_axi.HAS_R = False
 
@@ -78,27 +78,27 @@ class AxiWriteAggregator(Unit):
     def _addr_to_index(self, addr: RtlSignal):
         return addr[:self.CACHE_LINE_OFFSET_BITS]
 
-    def w_in_tmp_reg_load(self) -> AxiWriteAggregatorWriteTmpIntf:
+    def w_in_tmp_reg_load(self) -> HwIOAxiWriteAggregatorWriteTmp:
         """
         * check if this address is already present in address CAM or w_in_reg
         """
         w_in_aw = self.s.aw
         w_in_w = self.s.w
-        w_in_b = AxiSBuilder(self, self.s.b, master_to_slave=False).buff(latency=(1, 2)).end
+        w_in_b = Axi4SBuilder(self, self.s.b, master_to_slave=False).buff(latency=(1, 2)).end
         ooo_fifo = self.ooo_fifo
         write_pre_lookup = ooo_fifo.write_pre_lookup
         write_pre_lookup_res = ooo_fifo.write_pre_lookup_res
 
         write_pre_lookup.data(self._addr_to_index(w_in_aw.addr))
 
-        w_in_reg = AxiSReg(AxiWriteAggregatorWriteTmpIntf)
+        w_in_reg = Axi4SReg(HwIOAxiWriteAggregatorWriteTmp)
         w_in_reg.ID_WIDTH = self.ID_WIDTH
         w_in_reg.ADDR_WIDTH = self.CACHE_LINE_ADDR_WIDTH
         w_in_reg.DATA_WIDTH = self.DATA_WIDTH
         w_in_reg.ITEMS = self.ooo_fifo.ITEMS
         self.w_in_reg = w_in_reg
-        w_tmp_in: AxiWriteAggregatorWriteTmpIntf = w_in_reg.dataIn
-        w_tmp_out: AxiWriteAggregatorWriteTmpIntf = w_in_reg.dataOut
+        w_tmp_in: HwIOAxiWriteAggregatorWriteTmp = w_in_reg.dataIn
+        w_tmp_out: HwIOAxiWriteAggregatorWriteTmp = w_in_reg.dataOut
 
         # if true it means that the current input write data should be merged with
         # a content of the w_tmp register
@@ -163,7 +163,7 @@ class AxiWriteAggregator(Unit):
         # s_axi_stalling = ~w_in_aw.valid | ~w_in_w.valid | ~w_in_b.ready
         return w_tmp_out
 
-    def resolve_cam_index(self, w_tmp_out: AxiWriteAggregatorWriteTmpIntf):
+    def resolve_cam_index(self, w_tmp_out: HwIOAxiWriteAggregatorWriteTmp):
         ooo_fifo = self.ooo_fifo
         # CAM insert
         cam_index_onehot_previous = self._reg("cam_index_onehot_previous", w_tmp_out.cam_lookup._dtype)
@@ -287,33 +287,33 @@ class AxiWriteAggregator(Unit):
 
 
 def _example_AxiWriteAggregator():
-    u = AxiWriteAggregator()
-    u.ID_WIDTH = 2
-    u.CACHE_LINE_SIZE = 4
-    u.DATA_WIDTH = 32
-    u.MAX_BLOCK_DATA_WIDTH = 8
+    m = AxiWriteAggregator()
+    m.ID_WIDTH = 2
+    m.CACHE_LINE_SIZE = 4
+    m.DATA_WIDTH = 32
+    m.MAX_BLOCK_DATA_WIDTH = 8
 
-    return u
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     # from hwtLib.xilinx.constants import XILINX_VIVADO_MAX_DATA_WIDTH
 
-    u = _example_AxiWriteAggregator()
-    # u.ID_WIDTH = 6
-    # u.CACHE_LINE_SIZE = 64
-    # u.DATA_WIDTH = 256
-    # u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
+    m = _example_AxiWriteAggregator()
+    # m.ID_WIDTH = 6
+    # m.CACHE_LINE_SIZE = 64
+    # m.DATA_WIDTH = 256
+    # m.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
 
-    # u.ID_WIDTH = 2
-    # u.CACHE_LINE_SIZE = 4
-    # u.DATA_WIDTH = (u.CACHE_LINE_SIZE // 2) * 8
+    # m.ID_WIDTH = 2
+    # m.CACHE_LINE_SIZE = 4
+    # m.DATA_WIDTH = (m.CACHE_LINE_SIZE // 2) * 8
 
-    # u.ADDR_WIDTH = 16
-    # u.ID_WIDTH = 2
-    # u.CACHE_LINE_SIZE = 4
-    # u.DATA_WIDTH = 32
-    # u.MAX_BLOCK_DATA_WIDTH = 8
+    # m.ADDR_WIDTH = 16
+    # m.ID_WIDTH = 2
+    # m.CACHE_LINE_SIZE = 4
+    # m.DATA_WIDTH = 32
+    # m.MAX_BLOCK_DATA_WIDTH = 8
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

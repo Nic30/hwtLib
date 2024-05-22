@@ -1,4 +1,4 @@
-from hwt.hdl.constants import READ
+from hwt.constants import READ
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
@@ -8,6 +8,8 @@ from hwtLib.amba.axi_comp.buff_cdc import AxiBuffCdc
 from hwtLib.amba.axi_comp.resize import AxiResize
 from hwtLib.amba.axi_comp.to_axiLite import Axi_to_AxiLite
 from hwtLib.avalon.axiToMm import Axi4_to_AvalonMm
+from typing import Callable
+from hwt.hwModule import HwModule
 
 
 class AxiBuilder(AbstractComponentBuilder):
@@ -19,33 +21,34 @@ class AxiBuilder(AbstractComponentBuilder):
     BuffCdcCls = AxiBuffCdc
 
     def _genericInstance(self,
-                         unit_cls,
-                         name,
-                         set_params=lambda u: u,
+                         hwModuleCls,
+                         name: str,
+                         set_params_fn: Callable[[HwModule], None]=None,
                          update_params=True,
                          propagate_clk_rst=True):
         """
         Instantiate generic component and connect basics
 
-        :param unit_cls: class of unit which is being created
-        :param name: name for unit_cls instance
-        :param set_params: function which updates parameters as is required
+        :param hwModuleCls: class of unit which is being created
+        :param name: name for hwModuleCls instance
+        :param set_params_fn: function which updates parameters as is required
             (parameters are already shared with self.end interface)
         """
 
-        u = unit_cls(self.getInfCls())
+        m = hwModuleCls(self.getHwIOCls())
         if update_params:
-            u._updateParamsFrom(self.end)
-        set_params(u)
+            m._updateParamsFrom(self.end)
+        if set_params_fn is not None:
+            set_params_fn(m)
 
-        setattr(self.parent, self._findSuitableName(name), u)
+        setattr(self.parent, self._findSuitableName(name), m)
         if propagate_clk_rst:
-            self._propagateClkRstn(u)
+            self._propagateClkRstn(m)
 
-        u.s(self.end)
+        m.s(self.end)
 
-        self.lastComp = u
-        self.end = u.m
+        self.lastComp = m
+        self.end = m.m
 
         return self
 
@@ -61,7 +64,7 @@ class AxiBuilder(AbstractComponentBuilder):
             u.DATA_BUFF_DEPTH = data_items
 
         return self._genericInstance(self.BuffCls, "buff",
-                                     set_params=applyParams)
+                                     set_params_fn=applyParams)
 
     def buff_cdc(self, clk, rst, addr_items=1, data_items=1):
         """
@@ -81,7 +84,7 @@ class AxiBuilder(AbstractComponentBuilder):
             u.M_FREQ = clk.FREQ
 
         res = self._genericInstance(self.BuffCdcCls, "buffCdc",
-                                    set_params=applyParams,
+                                    set_params_fn=applyParams,
                                     propagate_clk_rst=False)
         b = res.lastComp
         b.clk(current_clk)
@@ -122,13 +125,13 @@ class AxiBuilder(AbstractComponentBuilder):
         def applyParams(u: AxiLite_to_Axi):
             u.ID_WIDTH = id_width
 
-        get_intf_cls = self.getInfCls
+        getHwIOCls = self.getHwIOCls
         try:
-            self.getInfCls = lambda: axi_cls
+            self.getHwIOCls = lambda: axi_cls
             return self._genericInstance(AxiLite_to_Axi, "axiLite_to_Axi",
-                                         set_params=applyParams)
+                                         set_params_fn=applyParams)
         finally:
-            self.getInfCls = get_intf_cls
+            self.getHwIOCls = getHwIOCls
 
     def to_avalon_mm(self, R_DATA_FIFO_DEPTH=16, R_SIZE_FIFO_DEPTH=16, RW_PRIORITY=READ):
         if not issubclass(self.end.__class__, Axi4):
@@ -141,4 +144,4 @@ class AxiBuilder(AbstractComponentBuilder):
             u.R_SIZE_FIFO_DEPTH = R_SIZE_FIFO_DEPTH
 
         return self._genericInstance(lambda x: Axi4_to_AvalonMm(), "axi4_to_AvalonMM",
-                                     set_params=applyParams)
+                                     set_params_fn=applyParams)

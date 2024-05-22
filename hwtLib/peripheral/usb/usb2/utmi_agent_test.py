@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.utils import addClkRstn
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.hwModule import HwModule
+from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
 from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgentTC, \
     UlpiUsbAgentTC
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b
-from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.peripheral.usb.usb2.utmi_usb_agent import UtmiUsbAgent
-from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
 
 
-class UtmiWire(Unit):
+class UtmiWire(HwModule):
 
     def _declr(self):
         addClkRstn(self)
@@ -26,8 +26,8 @@ class UtmiAgentTC(UlpiAgentTC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = UtmiWire()
-        cls.compileSim(cls.u)
+        cls.dut = UtmiWire()
+        cls.compileSim(cls.dut)
 
     def format_pid_before_tx(self, pid: int):
         return int(pid)
@@ -37,15 +37,15 @@ class UtmiUsbAgentTC(UlpiUsbAgentTC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = UtmiWire()
-        cls.compileSim(u)
+        cls.dut = dut = UtmiWire()
+        cls.compileSim(dut)
 
     def setUp(self):
         SimTestCase.setUp(self)
-        u = self.u
-        u.host._ag = UtmiUsbAgent(self.rtl_simulator, u.host)
-        u.dev._ag = UtmiUsbAgent(self.rtl_simulator, u.dev)
-        u.dev._ag.descriptors = get_default_usb_cdc_vcp_descriptors()
+        dut = self.dut
+        dut.host._ag = UtmiUsbAgent(self.rtl_simulator, dut.host)
+        dut.dev._ag = UtmiUsbAgent(self.rtl_simulator, dut.dev)
+        dut.dev._ag.descriptors = get_default_usb_cdc_vcp_descriptors()
 
 
 UtmiAgentTCs = [

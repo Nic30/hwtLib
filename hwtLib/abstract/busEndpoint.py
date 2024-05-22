@@ -1,31 +1,32 @@
 from builtins import isinstance
 from copy import copy
 from math import ceil
-from typing import Union, Tuple
+from typing import Union, Tuple, Type
 
 from hwt.code import Switch, Concat
-from hwt.hdl.constants import INTF_DIRECTION
+from hwt.constants import INTF_DIRECTION
+from hwt.hwIOs.hwIO_map import HwIOObjMap_get_by_field_path, HwIOObjMap, \
+    walkHwIOStructAndHwIOObjMap, HTypeFromHwIOObjMap
+from hwt.hwIOs.std import HwIOBramPort_noClk, HwIORegCntrl, HwIOSignal, HwIODataVld
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOUnion import HwIOUnionSink, HwIOUnionSource
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
+from hwt.hObjList import HObjList
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.structUtils import field_path_get_type, HdlType_select
-from hwt.interfaces.intf_map import IntfMap_get_by_field_path, IntfMap, \
-    walkStructIntfAndIntfMap, HTypeFromIntfMap
-from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
-from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.unionIntf import UnionSink, UnionSource
-from hwt.interfaces.utils import addClkRstn
+from hwt.mainBases import RtlSignalBase
 from hwt.math import log2ceil, inRange, isPow2
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.typePath import TypePath
-from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.addressStepTranslation import AddressStepTranslation
 from ipCorePackager.constants import DIRECTION
+from hwt.hwIO import HwIO
 
 
 def TransTmpl_get_min_addr(t: TransTmpl):
@@ -60,7 +61,7 @@ def TransTmpl_get_max_addr(t: TransTmpl):
         return offset + TransTmpl_get_max_addr(t.children)
 
 
-class BusEndpoint(Unit):
+class BusEndpoint(HwModule):
     """
     Abstract unit
 
@@ -75,26 +76,26 @@ class BusEndpoint(Unit):
 
     """
 
-    def __init__(self, structTemplate, intfCls=None, shouldEnterFn=None):
+    def __init__(self, structTemplate, hwIOCls:Type[HwIO]=None, shouldEnterFn=None):
         """
         :param structTemplate: instance of HStruct which describes
             address space of this endpoint
-        :param intfCls: class of bus interface which should be used
+        :param hwIOCls: class of bus interface which should be used
         :param shouldEnterFn: function(root_t, structFieldPath) return (shouldEnter, shouldUse)
             where shouldEnter is flag that means iterator over this interface
             should look inside of this actual object
             and shouldUse flag means that this field should be used
             (to create interface)
         """
-        assert intfCls is not None, "intfCls has to be specified"
+        assert hwIOCls is not None, "hwIOCls has to be specified"
 
-        self._intfCls = intfCls
+        self._hwIOCls = hwIOCls
         self.STRUCT_TEMPLATE = structTemplate
         if shouldEnterFn is None:
             self.shouldEnterFn = self._defaultShouldEnterFn
         else:
             self.shouldEnterFn = shouldEnterFn
-        Unit.__init__(self)
+        HwModule.__init__(self)
 
     @staticmethod
     def _defaultShouldEnterFn(root: HdlType, field_path: Tuple[Union[str, int]]):
@@ -104,7 +105,7 @@ class BusEndpoint(Unit):
         """
         t = field_path_get_type(root, field_path)
         isNonPrimitiveArray = isinstance(t, HArray) and\
-            not isinstance(t.element_t, Bits)
+            not isinstance(t.element_t, HBits)
         shouldEnter = isinstance(t, HStruct) or isNonPrimitiveArray
         shouldUse = not shouldEnter
         return shouldEnter, shouldUse
@@ -124,45 +125,45 @@ class BusEndpoint(Unit):
             "Should be overridden in concrete implementation, this is abstract class")
 
     def _config(self):
-        self._intfCls._config(self)
+        self._hwIOCls._config(self)
 
     def _declr(self):
         addClkRstn(self)
 
-        with self._paramsShared():
-            self.bus = self._intfCls()
+        with self._hwParamsShared():
+            self.bus = self._hwIOCls()
 
-        self.decoded = StructIntf(
+        self.decoded = HwIOStruct(
             self.STRUCT_TEMPLATE, tuple(),
             instantiateFieldFn=self._mkFieldInterface)._m()
 
     @staticmethod
-    def intf_for_Bits(t):
+    def HwIO_for_Bits(t):
         if t.const:
             t = copy(t)
             t.const = False
-            p = Signal(dtype=t, masterDir=DIRECTION.IN)
+            p = HwIOSignal(dtype=t, masterDir=DIRECTION.IN)
         else:
-            p = RegCntrl()
+            p = HwIORegCntrl()
         p.DATA_WIDTH = t.bit_length()
         return p
 
-    def _mkFieldInterface(self, structIntf: StructIntf, field: HStructField):
+    def _mkFieldInterface(self, structHwIO: HwIOStruct, field: HStructField):
         """
         Instantiate field interface for fields in structure template of this endpoint
 
         :return: interface for specified field
         """
         t = field.dtype
-        path = structIntf._field_path / field.name
+        path = structHwIO._field_path / field.name
         shouldEnter, shouldUse = self.shouldEnterFn(self.STRUCT_TEMPLATE, path)
 
         if shouldUse:
-            if isinstance(t, Bits):
-                p = BusEndpoint.intf_for_Bits(t)
+            if isinstance(t, HBits):
+                p = BusEndpoint.HwIO_for_Bits(t)
             elif isinstance(t, HArray):
-                p = BramPort_withoutClk()
-                assert isinstance(t.element_t, Bits), t.element_t
+                p = HwIOBramPort_noClk()
+                assert isinstance(t.element_t, HBits), t.element_t
                 p.DATA_WIDTH = t.element_t.bit_length()
                 p.ADDR_WIDTH = log2ceil(t.size)
             else:
@@ -171,27 +172,27 @@ class BusEndpoint(Unit):
         elif shouldEnter:
             if isinstance(t, HArray):
                 e_t = t.element_t
-                if isinstance(e_t, Bits):
+                if isinstance(e_t, HBits):
                     p = HObjList()
                     for i_i in range(int(t.size)):
-                        i = BusEndpoint.intf_for_Bits(e_t)
-                        structIntf._fieldsToInterfaces[path / i_i] = i
+                        i = BusEndpoint.HwIO_for_Bits(e_t)
+                        structHwIO._fieldsToHwIOs[path / i_i] = i
                         p.append(i)
                 elif isinstance(e_t, HStruct):
                     p = HObjList(
-                        StructIntf(t.element_t,
+                        HwIOStruct(t.element_t,
                                    path / i,
                                    instantiateFieldFn=self._mkFieldInterface)
                         for i in range(int(t.size))
                     )
                     for i in p:
-                        i._fieldsToInterfaces = structIntf._fieldsToInterfaces
+                        i._fieldsToHwIOs = structHwIO._fieldsToHwIOs
                 else:
                     raise NotImplementedError()
             elif isinstance(t, HStruct):
-                p = StructIntf(t, path,
+                p = HwIOStruct(t, path,
                                instantiateFieldFn=self._mkFieldInterface)
-                p._fieldsToInterfaces = structIntf._fieldsToInterfaces
+                p._fieldsToHwIOs = structHwIO._fieldsToHwIOs
             else:
                 raise TypeError(t)
 
@@ -199,7 +200,7 @@ class BusEndpoint(Unit):
 
     def getPort(self, transTmpl: TransTmpl):
         p = tuple(transTmpl.getFieldPath())
-        return self.decoded._fieldsToInterfaces[p]
+        return self.decoded._fieldsToHwIOs[p]
 
     def isInMyAddrRange(self, addr_sig):
         return inRange(addr_sig, self._ADDR_MIN, self._ADDR_MAX)
@@ -221,11 +222,11 @@ class BusEndpoint(Unit):
 
         def shouldEnterFn(trans_tmpl: TransTmpl):
             p = trans_tmpl.getFieldPath()
-            intf = self.decoded._fieldsToInterfaces[p]
-            if isinstance(intf, (StructIntf, UnionSink, UnionSource, HObjList)):
+            hwIO = self.decoded._fieldsToHwIOs[p]
+            if isinstance(hwIO, (HwIOStruct, HwIOUnionSink, HwIOUnionSource, HObjList)):
                 shouldEnter = True
                 shouldUse = False
-            elif isinstance(intf, BramPort_withoutClk):
+            elif isinstance(hwIO, HwIOBramPort_noClk):
                 shouldEnter = False
                 shouldUse = True
             else:
@@ -234,13 +235,13 @@ class BusEndpoint(Unit):
 
             return shouldEnter, shouldUse
 
-        for ((base, end), t) in tmpl.walkFlatten(shouldEnterFn=shouldEnterFn):
+        for ((base, end), t) in tmpl.HwIO_walkFlatten(shouldEnterFn=shouldEnterFn):
             self._bramPortMapped.append(((base, end), t))
 
         # resolve exact addresses for directly mapped field parts
         directly_mapped_fields = {}
-        for p, out in self.decoded._fieldsToInterfaces.items():
-            if not isinstance(out, (RegCntrl, Signal)):
+        for p, out in self.decoded._fieldsToHwIOs.items():
+            if not isinstance(out, (HwIORegCntrl, HwIOSignal)):
                 continue
             a = directly_mapped_fields
             for _p in p:
@@ -327,7 +328,7 @@ class BusEndpoint(Unit):
             _addrEnd = transTmpl.bitAddrEnd // src_addr_step
             addrIsInRange = inRange(src_addr_sig, _addr, _addrEnd)
             addr_tmp = self._sig(dst_addr_sig._name +
-                                 "_addr_tmp", Bits(self.ADDR_WIDTH))
+                                 "_addr_tmp", HBits(self.ADDR_WIDTH))
             addr_tmp(src_addr_sig - _addr)
 
         if bitsOfSubAddr == 0:
@@ -345,7 +346,7 @@ class BusEndpoint(Unit):
     def connect_directly_mapped_read(self, ar_addr: RtlSignal,
                                      r_data: RtlSignal, default_r_data_drive):
         """
-        Connect the RegCntrl.din interfaces to a bus
+        Connect the HwIORegCntrl.din interfaces to a bus
         """
         DW = int(self.DATA_WIDTH)
         ADDR_STEP = self._getAddrStep()
@@ -357,10 +358,10 @@ class BusEndpoint(Unit):
                 assert last_end == tpart.startOfPart, (last_end, tpart.startOfPart)
                 if tpart.tmpl is None:
                     # padding
-                    din = Bits(tpart.bit_length()).from_py(None)
+                    din = HBits(tpart.bit_length()).from_py(None)
                 else:
                     din = self.getPort(tpart.tmpl)
-                    if isinstance(din, RegCntrl):
+                    if isinstance(din, HwIORegCntrl):
                         din = din.din
                 if din._dtype.bit_length() > 1:
                     fr = tpart.getFieldBitRange()
@@ -387,7 +388,7 @@ class BusEndpoint(Unit):
     def connect_directly_mapped_write(self, aw_addr: RtlSignal,
                                       w_data: RtlSignal, en: RtlSignal):
         """
-        Connect the RegCntrl.dout interfaces to a bus
+        Connect the HwIORegCntrl.dout interfaces to a bus
         """
         DW = int(self.DATA_WIDTH)
         addrWidth = int(self.ADDR_WIDTH)
@@ -398,7 +399,7 @@ class BusEndpoint(Unit):
                     # padding
                     continue
                 out = self.getPort(tpart.tmpl)
-                if not isinstance(out, RegCntrl):
+                if not isinstance(out, HwIORegCntrl):
                     continue
                 else:
                     out = out.dout
@@ -409,52 +410,52 @@ class BusEndpoint(Unit):
                 bus_range = tpart.getBusWordBitRange()
                 out.data(w_data[bus_range[0]: bus_range[1]])
                 addr = w_i * (DW // ADDR_STEP)
-                out.vld(en & (aw_addr._eq(Bits(addrWidth).from_py(addr))))
+                out.vld(en & (aw_addr._eq(HBits(addrWidth).from_py(addr))))
 
-    def connectByInterfaceMap(self, interfaceMap: IntfMap):
+    def connectByInterfaceMap(self, hwIOMap: HwIOObjMap):
         """
         Connect "decoded" struct interface to interfaces specified
         in interface map
         """
-        assert isinstance(interfaceMap, IntfMap), interfaceMap
+        assert isinstance(hwIOMap, HwIOObjMap), hwIOMap
 
         # connect interfaces as was specified by register map
-        for convIntf, intf in walkStructIntfAndIntfMap(self.decoded,
-                                                       interfaceMap):
-            if isinstance(intf, Signal):
-                assert intf._direction == INTF_DIRECTION.MASTER
-                if isinstance(convIntf, Signal):
-                    convIntf(intf)
+        for convHwIO, hwIO in walkHwIOStructAndHwIOObjMap(self.decoded,
+                                                       hwIOMap):
+            if isinstance(hwIO, HwIOSignal):
+                assert hwIO._direction == INTF_DIRECTION.MASTER
+                if isinstance(convHwIO, HwIOSignal):
+                    convHwIO(hwIO)
                 else:
-                    convIntf.din(intf)
+                    convHwIO.din(hwIO)
 
-            elif isinstance(intf, RtlSignalBase):
-                convIntf.din(intf)
+            elif isinstance(hwIO, RtlSignalBase):
+                convHwIO.din(hwIO)
 
-            elif isinstance(intf, RegCntrl):
-                assert intf._direction == INTF_DIRECTION.SLAVE
-                intf(convIntf)
+            elif isinstance(hwIO, HwIORegCntrl):
+                assert hwIO._direction == INTF_DIRECTION.SLAVE
+                hwIO(convHwIO)
 
-            elif isinstance(intf, VldSynced):
-                assert intf._direction == INTF_DIRECTION.SLAVE
-                intf(convIntf.dout)
+            elif isinstance(hwIO, HwIODataVld):
+                assert hwIO._direction == INTF_DIRECTION.SLAVE
+                hwIO(convHwIO.dout)
 
-            elif isinstance(intf, BramPort_withoutClk):
-                intf(convIntf)
+            elif isinstance(hwIO, HwIOBramPort_noClk):
+                hwIO(convHwIO)
             else:
-                raise NotImplementedError(intf)
+                raise NotImplementedError(hwIO)
 
     @classmethod
-    def fromInterfaceMap(cls, interfaceMap):
+    def fromHwIOMap(cls, interfaceMap):
         """
         Generate converter by struct data type specified by interface map
 
-        :param interfaceMap: :func:`hwt.interfaces.intf_map.HTypeFromIntfMap`
+        :param interfaceMap: :func:`hwt.hwIOs.hwIO_map.HTypeFromHwIOObjMap`
         """
-        t = HTypeFromIntfMap(interfaceMap)
+        t = HTypeFromHwIOObjMap(interfaceMap)
 
         def shouldEnter(root: HdlType, field_path: TypePath):
-            actual = IntfMap_get_by_field_path(interfaceMap, field_path)
+            actual = HwIOObjMap_get_by_field_path(interfaceMap, field_path)
 
             shouldEnter = isinstance(actual, (list, tuple, HStruct)) or (
                 isinstance(actual, HStructField) and isinstance(actual.dtype, HStruct))

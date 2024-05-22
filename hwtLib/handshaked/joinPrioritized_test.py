@@ -3,8 +3,8 @@
 
 import unittest
 
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.std import HwIODataRdVld
+from hwt.hwIOs.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 from hwtSimApi.constants import CLK_PERIOD
@@ -22,24 +22,24 @@ class HsJoinPrioritizedTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = HsJoinWithReference(Handshaked)
-        cls.u.DATA_WIDTH = 8
-        cls.compileSim(cls.u)
+        cls.dut = HsJoinWithReference(HwIODataRdVld)
+        cls.dut.DATA_WIDTH = 8
+        cls.compileSim(cls.dut)
 
     def test_passdata(self):
-        u = self.u
+        dut = self.dut
 
-        u.dataIn[0]._ag.data.extend([1, 2, 3, 4, 5, 6])
-        u.dataIn[1]._ag.data.extend([7, 8, 9, 10, 11, 12])
+        dut.dataIn[0]._ag.data.extend([1, 2, 3, 4, 5, 6])
+        dut.dataIn[1]._ag.data.extend([7, 8, 9, 10, 11, 12])
         t = 20
         if self.randomized:
             t *= 2
         self.runSim(t * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data,
+        self.assertValSequenceEqual(dut.dataOut._ag.data,
                                     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
 
-        for d in u.dataIn:
+        for d in dut.dataIn:
             self.assertEmpty(d._ag.data)
 
 
@@ -48,7 +48,7 @@ class HsJoinPrioritized_randomized_TC(HsJoinPrioritizedTC):
 
     def setUp(self):
         super(HsJoinPrioritized_randomized_TC, self).setUp()
-        self.randomize(self.u.dataOut)
+        self.randomize(self.dut.dataOut)
 
 
 if __name__ == "__main__":

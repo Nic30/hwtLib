@@ -3,34 +3,34 @@
 
 from hwt.code import Concat, If
 from hwt.hdl.types.defs import BIT
-from hwt.interfaces.std import VectSignal
+from hwt.hwIOs.std import HwIOVectSignal
 from hwt.math import log2ceil, isPow2
-from hwt.synthesizer.param import Param
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from pyMathBitPrecise.bit_utils import mask
 
 
 # https://electronics.stackexchange.com/questions/196914/verilog-synthesize-high-speed-leading-zero-count
 # https://content.sciendo.com/view/journals/jee/66/6/article-p329.xml?language=en
-class _CountLeading(Unit):
+class _CountLeading(HwModule):
     """
     Count leading zeros/ones in bit vector
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(2)
+        self.DATA_WIDTH = HwParam(2)
 
     def _declr(self):
         assert isPow2(self.DATA_WIDTH), self.DATA_WIDTH
-        self.data_in = VectSignal(self.DATA_WIDTH)
-        self.data_out = VectSignal(log2ceil(self.DATA_WIDTH + 1))._m()
+        self.data_in = HwIOVectSignal(self.DATA_WIDTH)
+        self.data_out = HwIOVectSignal(log2ceil(self.DATA_WIDTH + 1))._m()
 
     @classmethod
     def _count_leading_recurse(cls, data_in: RtlSignal, bit_to_count: int):
         """
         Construct a balanced tree for counter of leading 0/1
-        :atterntion: result is not final result
+        :attention: result is not final result
 
         """
         assert bit_to_count in (0, 1), bit_to_count
@@ -71,7 +71,7 @@ class _CountLeading(Unit):
         )
 
     def _impl(self):
-        raise NotImplementedError("This is an abstract method and should be overriden")
+        raise NotImplementedError("This is an abstract method and should be overridden")
 
 
 class CountLeadingZeros(_CountLeading):
@@ -97,5 +97,5 @@ class CountLeadingOnes(_CountLeading):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(CountLeadingZeros()))

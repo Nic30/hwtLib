@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Signal
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.std import HwIOSignal
+from hwt.hwModule import HwModule
 
 
-class ExampleChild(Unit):
+class ExampleChild(HwModule):
     def _declr(self):
-        self.c = Signal()
-        self.d = Signal()._m()
+        self.c = HwIOSignal()
+        self.d = HwIOSignal()._m()
 
     def _impl(self):
         self.d(self.c)
 
 
-class UnusedSubunit(Unit):
+class UnusedSubunit(HwModule):
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()._m()
 
         self.child = ExampleChild()
 
@@ -26,10 +26,10 @@ class UnusedSubunit(Unit):
         self.b(self.a)
 
 
-class UnusedSubunit2(Unit):
+class UnusedSubunit2(HwModule):
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()._m()
 
         self.child0 = ExampleChild()
         self.child1 = ExampleChild()
@@ -44,7 +44,8 @@ class UnusedSubunit2(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = UnusedSubunit2()
+    from hwt.synth import to_rtl_str
+    
+    m = UnusedSubunit2()
     # hwt.serializer.exceptions.SerializerException
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

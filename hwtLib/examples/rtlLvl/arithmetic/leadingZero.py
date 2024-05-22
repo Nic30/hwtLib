@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
 from ipCorePackager.constants import DIRECTION
 
 
 def LeadingZero():
-    t = Bits(64)
-    resT = Bits(8)
+    t = HBits(64)
+    resT = HBits(8)
     n = RtlNetlist()
 
     s_in = n.sig("s_in", t)

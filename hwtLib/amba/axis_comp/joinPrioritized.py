@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, If
-from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.base import Axi4SCompBase
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
 
 
-class AxiSJoinPrioritized(AxiSCompBase, HsJoinPrioritized):
+class Axi4SJoinPrioritized(Axi4SCompBase, HsJoinPrioritized):
     """
     Join input stream to single output stream
     inputs with lower number has higher priority
@@ -24,7 +24,7 @@ class AxiSJoinPrioritized(AxiSCompBase, HsJoinPrioritized):
         HsJoinPrioritized._declr(self)
 
     def _impl(self) -> None:
-        join = HsJoinPrioritized(self.INTF_CLS)
+        join = HsJoinPrioritized(self.HWIO_CLS)
         join._updateParamsFrom(self)
         join.get_valid_signal = self.get_valid_signal
         join.get_ready_signal = self.get_ready_signal
@@ -48,7 +48,7 @@ class AxiSJoinPrioritized(AxiSCompBase, HsJoinPrioritized):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = AxiSJoinPrioritized()
+    from hwt.synth import to_rtl_str
 
-    print(to_rtl_str(u))
+    m = Axi4SJoinPrioritized()
+    print(to_rtl_str(m))

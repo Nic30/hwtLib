@@ -2,21 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VectSignal, Clk
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIOClk
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 
 
-class SimpleIfStatement(Unit):
+class SimpleIfStatement(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()
-        self.c = Signal()
-        self.d = Signal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()
+        self.d = HwIOSignal()._m()
 
     def _impl(self):
         If(self.a,
@@ -28,16 +28,16 @@ class SimpleIfStatement(Unit):
         )
 
 
-class SimpleIfStatement2(Unit):
+class SimpleIfStatement2(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
-        self.a = Signal()
-        self.b = Signal()
-        self.c = Signal()
-        self.d = Signal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()
+        self.d = HwIOSignal()._m()
 
     def _impl(self):
         r = self._reg("reg_d", def_val=0)
@@ -52,16 +52,16 @@ class SimpleIfStatement2(Unit):
         self.d(r)
 
 
-class SimpleIfStatement2b(Unit):
+class SimpleIfStatement2b(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
-        self.a = Signal()
-        self.b = Signal()
-        self.c = Signal()
-        self.d = Signal()._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()
+        self.d = HwIOSignal()._m()
 
     def _impl(self):
         r = self._reg("reg_d", def_val=0)
@@ -76,19 +76,19 @@ class SimpleIfStatement2b(Unit):
         self.d(r)
 
 
-class SimpleIfStatement2c(Unit):
+class SimpleIfStatement2c(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
-        self.a = Signal()
-        self.b = Signal()
-        self.c = Signal()
-        self.d = VectSignal(2)._m()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()
+        self.d = HwIOVectSignal(2)._m()
 
     def _impl(self):
-        r = self._reg("reg_d", Bits(2), def_val=0)
+        r = self._reg("reg_d", HBits(2), def_val=0)
 
         If(self.a & self.b,
             If(self.c,
@@ -116,16 +116,16 @@ class SimpleIfStatement3(SimpleIfStatement):
         )
 
 
-class SimpleIfStatementMergable(Unit):
+class SimpleIfStatementMergable(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
 
-        self.c = Signal()._m()
-        self.d = Signal()._m()
+        self.c = HwIOSignal()._m()
+        self.d = HwIOSignal()._m()
 
     def _impl(self):
         If(self.a,
@@ -141,17 +141,17 @@ class SimpleIfStatementMergable(Unit):
         )
 
 
-class SimpleIfStatementMergable1(Unit):
+class SimpleIfStatementMergable1(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
 
-        self.c = Signal()._m()
-        self.d = Signal()._m()
-        self.e = Signal()
+        self.c = HwIOSignal()._m()
+        self.d = HwIOSignal()._m()
+        self.e = HwIOSignal()
 
     def _impl(self):
         If(self.e,
@@ -164,18 +164,18 @@ class SimpleIfStatementMergable1(Unit):
         )
 
 
-class SimpleIfStatementMergable2(Unit):
+class SimpleIfStatementMergable2(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
 
-        self.c = Signal()
-        self.d = Signal()._m()
-        self.e = Signal()._m()
-        self.f = Signal()._m()
+        self.c = HwIOSignal()
+        self.d = HwIOSignal()._m()
+        self.e = HwIOSignal()._m()
+        self.f = HwIOSignal()._m()
 
     def _impl(self):
         If(self.a,
@@ -192,15 +192,15 @@ class SimpleIfStatementMergable2(Unit):
         )
 
 
-class SimpleIfStatementPartialOverride(Unit):
+class SimpleIfStatementPartialOverride(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.a = Signal()
-        self.b = Signal()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
 
-        self.c = Signal()._m()
+        self.c = HwIOSignal()._m()
 
     def _impl(self):
         If(self.b,
@@ -210,17 +210,17 @@ class SimpleIfStatementPartialOverride(Unit):
             ),
         )
 
-class SimpleIfStatementPartialOverrideNopVal(Unit):
+class SimpleIfStatementPartialOverrideNopVal(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.clk = Clk()
-        self.a = Signal()
-        self.b = Signal()
-        self.c = Signal()
+        self.clk = HwIOClk()
+        self.a = HwIOSignal()
+        self.b = HwIOSignal()
+        self.c = HwIOSignal()
 
-        self.e = Signal()._m()
+        self.e = HwIOSignal()._m()
 
     def _impl(self):
         d = self._reg("d")
@@ -236,17 +236,17 @@ class SimpleIfStatementPartialOverrideNopVal(Unit):
         self.e(d)
 
 
-class IfStatementPartiallyEnclosed(Unit):
+class IfStatementPartiallyEnclosed(HwModule):
     """
     .. hwt-autodoc::
     """
     def _declr(self):
-        self.clk = Clk()
-        self.a = Signal()._m()
-        self.b = Signal()._m()
+        self.clk = HwIOClk()
+        self.a = HwIOSignal()._m()
+        self.b = HwIOSignal()._m()
 
-        self.c = Signal()
-        self.d = Signal()
+        self.c = HwIOSignal()
+        self.d = HwIOSignal()
 
     def _impl(self):
         a = self._reg("a_reg")
@@ -266,6 +266,7 @@ class IfStatementPartiallyEnclosed(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = SimpleIfStatementPartialOverrideNopVal()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = SimpleIfStatementPartialOverrideNopVal()
+    print(to_rtl_str(m))

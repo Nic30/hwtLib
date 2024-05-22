@@ -1,8 +1,8 @@
-from hwt.interfaces.std import VectSignal, Signal
-from hwt.synthesizer.param import Param
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
+from hwt.hwParam import HwParam
 from hwtLib.amba.axi3Lite import Axi3Lite_bAgent
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
-from hwtLib.amba.axi_intf_common import Axi_hs
+from hwtLib.amba.axi_common import Axi_hs
 from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
 
@@ -114,10 +114,10 @@ class Ace_addr(Axi4_addr):
 
     def _declr(self):
         Axi4_addr._declr(self)
-        self.domain = VectSignal(2)
-        self.region = VectSignal(4)
-        self.snoop = VectSignal(3)
-        self.bar = VectSignal(2)
+        self.domain = HwIOVectSignal(2)
+        self.region = HwIOVectSignal(4)
+        self.snoop = HwIOVectSignal(3)
+        self.bar = HwIOVectSignal(2)
 
 
 class AceSnoop_addr(Axi_hs):
@@ -126,12 +126,12 @@ class AceSnoop_addr(Axi_hs):
     """
 
     def _config(self):
-        self.SNOOP_ADDR_WIDTH = Param(32)
+        self.SNOOP_ADDR_WIDTH = HwParam(32)
 
     def _declr(self):
-        self.addr = VectSignal(self.SNOOP_ADDR_WIDTH)
-        self.snoop = VectSignal(4)
-        self.prot = VectSignal(3)
+        self.addr = HwIOVectSignal(self.SNOOP_ADDR_WIDTH)
+        self.snoop = HwIOVectSignal(4)
+        self.prot = HwIOVectSignal(3)
         Axi_hs._declr(self)
 
 
@@ -141,7 +141,7 @@ class AceSnoop_resp(Axi_hs):
     """
 
     def _declr(self):
-        self.resp = VectSignal(4)
+        self.resp = HwIOVectSignal(4)
         Axi_hs._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
@@ -154,11 +154,11 @@ class AceSnoop_data(Axi_hs):
     """
 
     def _config(self):
-        self.SNOOP_DATA_WIDTH = Param(32)
+        self.SNOOP_DATA_WIDTH = HwParam(32)
 
     def _declr(self):
-        self.data = VectSignal(self.SNOOP_DATA_WIDTH)
-        self.last = Signal()
+        self.data = HwIOVectSignal(self.SNOOP_DATA_WIDTH)
+        self.last = HwIOSignal()
         Axi_hs._declr(self)
 
 
@@ -180,12 +180,12 @@ class Ace(Axi4):
 
     def _config(self):
         Axi4._config(self)
-        self.SNOOP_ADDR_WIDTH = Param(32)
-        self.SNOOP_DATA_WIDTH = Param(32)
+        self.SNOOP_ADDR_WIDTH = HwParam(32)
+        self.SNOOP_DATA_WIDTH = HwParam(32)
 
     def _declr(self):
         super(Ace, self)._declr()
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.ac = AceSnoop_addr(masterDir=DIRECTION.IN)
             self.cr = AceSnoop_resp()
             self.cd = AceSnoop_data()

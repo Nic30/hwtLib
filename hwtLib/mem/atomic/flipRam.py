@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.interfaces.std import Signal, BramPort_withoutClk, Clk
-from hwt.interfaces.utils import propagateClk
+from hwt.hwIOs.std import HwIOSignal, HwIOBramPort_noClk, HwIOClk
+from hwt.hwIOs.utils import propagateClk
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.unit import Unit
+from hwt.hwModule import HwModule
 from hwtLib.mem.ram import RamSingleClock
 
 
 @serializeParamsUniq
-class FlipRam(Unit):
+class FlipRam(HwModule):
     """
     Switchable RAM, there are two memories and two sets of ports,
     Each set of ports is every time connected to opposite ram.
@@ -31,20 +31,20 @@ class FlipRam(Unit):
     def _declr(self):
         PORT_CNT = self.PORT_CNT
 
-        with self._paramsShared():
-            self.clk = Clk()
+        with self._hwParamsShared():
+            self.clk = HwIOClk()
 
             # to let IDEs resolve type of port
-            self.firstA = BramPort_withoutClk()
-            self.secondA = BramPort_withoutClk()
+            self.firstA = HwIOBramPort_noClk()
+            self.secondA = HwIOBramPort_noClk()
 
             if PORT_CNT == 2:
-                self.firstB = BramPort_withoutClk()
-                self.secondB = BramPort_withoutClk()
+                self.firstB = HwIOBramPort_noClk()
+                self.secondB = HwIOBramPort_noClk()
             elif PORT_CNT > 2:
                 raise NotImplementedError()
 
-            self.select_sig = Signal()
+            self.select_sig = HwIOSignal()
 
             self.ram0 = RamSingleClock()
             self.ram1 = RamSingleClock()
@@ -78,5 +78,5 @@ class FlipRam(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     print(to_rtl_str(FlipRam()))

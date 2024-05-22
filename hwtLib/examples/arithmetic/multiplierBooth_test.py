@@ -7,13 +7,13 @@ class MultiplierBoothTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = MultiplierBooth()
-        u.DATA_WIDTH = 4
-        cls.compileSim(u)
+        cls.dut = dut = MultiplierBooth()
+        dut.DATA_WIDTH = 4
+        cls.compileSim(dut)
 
     def test_possitive(self):
-        u = self.u
-        din = u.dataIn._ag.data
+        dut = self.dut
+        din = dut.dataIn._ag.data
         ref = []
         for a, b in [
                 (0, 0), (0, 1), (1, 0),
@@ -30,9 +30,9 @@ class MultiplierBoothTC(SimTestCase):
             din.append((a, b))
             ref.append(a * b)
 
-        self.runSim(CLK_PERIOD * (len(din) * u.RESULT_WIDTH + 15))
+        self.runSim(CLK_PERIOD * (len(din) * dut.RESULT_WIDTH + 15))
 
-        self.assertValSequenceEqual(u.dataOut._ag.data, ref)
+        self.assertValSequenceEqual(dut.dataOut._ag.data, ref)
 
 
 if __name__ == "__main__":

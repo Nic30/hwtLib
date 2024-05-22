@@ -5,11 +5,11 @@ from math import ceil
 
 from hwt.code import Concat, Or, If
 from hwt.code_utils import rename_signal
-from hwt.hdl.constants import WRITE, READ
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import BramPort_withoutClk, HandshakeSync, VectSignal, \
-    Signal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.constants import WRITE, READ
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOBramPort_noClk, HwIORdVldSync, HwIOVectSignal, \
+    HwIOSignal
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits
@@ -18,12 +18,12 @@ from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
 
 
-class BramPort_withReadMask_withoutClk(BramPort_withoutClk):
+class BramPort_withReadMask_withoutClk(HwIOBramPort_noClk):
     """
     Block RAM port with a :py:obj:`~en` handshaked interface for arbitration
 
-    :ivar do_accumulate: Signal if 1 the mask bits are or-ed together with the value in stored in ram
-    :ivar do_overwrite: Signal if 1 the the data mask in ram is set to current we value
+    :ivar do_accumulate: HwIOSignal if 1 the mask bits are or-ed together with the value in stored in ram
+    :ivar do_overwrite: HwIOSignal if 1 the the data mask in ram is set to current we value
     :note: :py:obj:`~.do_overwrite` has higher priority than :py:obj:`~.do_accumulate`
     :note: :py:obj:`~.do_accumulate` affect only the bytes in memory
         where data validity mask is stored.
@@ -38,30 +38,30 @@ class BramPort_withReadMask_withoutClk(BramPort_withoutClk):
     def _declr(self):
         assert self.HAS_R or self.HAS_W, "has to have at least read or write part"
 
-        self.addr = VectSignal(self.ADDR_WIDTH)
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         DATA_WIDTH = self.DATA_WIDTH
         if self.HAS_W:
-            self.din = VectSignal(DATA_WIDTH)
+            self.din = HwIOVectSignal(DATA_WIDTH)
 
         if self.HAS_R:
-            self.dout = VectSignal(DATA_WIDTH, masterDir=DIRECTION.IN)
+            self.dout = HwIOVectSignal(DATA_WIDTH, masterDir=DIRECTION.IN)
 
-        self.en = HandshakeSync()
+        self.en = HwIORdVldSync()
         if (self.HAS_R and self.HAS_W) or (self.HAS_W and self.HAS_BE):
             # in write only mode we do not need this as well as we can use "en"
             if self.HAS_BE:
                 assert DATA_WIDTH % 8 == 0, DATA_WIDTH
-                self.we = VectSignal(DATA_WIDTH // 8)
+                self.we = HwIOVectSignal(DATA_WIDTH // 8)
             else:
-                self.we = Signal()
+                self.we = HwIOSignal()
 
         if self.HAS_W and self.HAS_BE:
-            self.do_accumulate = Signal()
-            self.do_overwrite = Signal()
+            self.do_accumulate = HwIOSignal()
+            self.do_overwrite = HwIOSignal()
 
         if self.HAS_R and self.HAS_BE:
             assert self.DATA_WIDTH % 8 == 0
-            self.dout_mask = VectSignal(self.DATA_WIDTH // 8, masterDir=DIRECTION.IN)
+            self.dout_mask = HwIOVectSignal(self.DATA_WIDTH // 8, masterDir=DIRECTION.IN)
 
 
 def is_mask_byte_unaligned(mask_signal: RtlSignal) -> RtlSignal:
@@ -105,7 +105,7 @@ class RamCumulativeMask(RamSingleClock):
         self.MASK_W = self.DATA_WIDTH // 8
         # padding to make mask width % 8 == 0
         self.MASK_PADDING_W = ceil(self.MASK_W / 8) * 8 - self.MASK_W
-        with self._paramsShared(exclude=({"DATA_WIDTH"}, {})):
+        with self._hwParamsShared(exclude=({"DATA_WIDTH"}, {})):
             ram = self.ram = RamSingleClock()
             ram.DATA_WIDTH = self.DATA_WIDTH + self.MASK_PADDING_W + self.MASK_W
 
@@ -139,7 +139,7 @@ class RamCumulativeMask(RamSingleClock):
         ram_w.we(Concat(w.we, we_for_we_bytes))
         w_mask = w.we
         if self.MASK_PADDING_W:
-            w_mask = Concat(Bits(self.MASK_PADDING_W).from_py(0), w_mask)
+            w_mask = Concat(HBits(self.MASK_PADDING_W).from_py(0), w_mask)
 
         is_first_read_port = True
         for ram_r, r in zip(self.ram.port[1:], self.port[1:]):
@@ -167,12 +167,12 @@ class RamCumulativeMask(RamSingleClock):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
     # from hwtLib.xilinx.constants import XILINX_VIVADO_MAX_DATA_WIDTH
 
-    u = RamCumulativeMask()
-    # u.ADDR_WIDTH = 5
-    # u.DATA_WIDTH = 512
-    # u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
+    m = RamCumulativeMask()
+    # m.ADDR_WIDTH = 5
+    # m.DATA_WIDTH = 512
+    # m.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(m))

@@ -4,12 +4,12 @@
 from typing import List, Tuple, Union
 
 from hwt.code import If
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
+from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
+from hwt.hwParam import HwParam
+from hwt.constants import NOT_SPECIFIED
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
@@ -17,9 +17,9 @@ from hwtLib.handshaked.compBase import HandshakedCompBase
 @serializeParamsUniq
 class HandshakedReg(HandshakedCompBase):
     """
-    Register for Handshaked interfaces
+    Register for HwIODataRdVld interfaces
 
-    :note: latency and delay can be specified as well as interface class
+    :note: latency and delay can be specified as well as HwIO class
     :note: if LATENCY == (1, 2) the ready chain is broken.
         That there is an extra register for potential data overflow and
         no combinational path between input ready, valid and output ready/valid exists.
@@ -34,15 +34,15 @@ class HandshakedReg(HandshakedCompBase):
 
     def _config(self):
         HandshakedCompBase._config(self)
-        self.LATENCY: Union[int, Tuple[int, int]] = Param(1)
-        self.DELAY = Param(0)
-        self.INIT_DATA: tuple = Param(())
+        self.LATENCY: Union[int, Tuple[int, int]] = HwParam(1)
+        self.DELAY = HwParam(0)
+        self.INIT_DATA: tuple = HwParam(())
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = self.intfCls()
-            self.dataOut = self.intfCls()._m()
+        with self._hwParamsShared():
+            self.dataIn = self.hwIOCls()
+            self.dataOut = self.hwIOCls()._m()
 
     def _impl_latency(self, inVld: RtlSignal, inRd: RtlSignal, inData: List[RtlSignal],
                       outVld: RtlSignal, outRd: RtlSignal, prefix:str, initData: list,
@@ -257,12 +257,14 @@ class HandshakedReg(HandshakedCompBase):
 
 
 def _example_HandshakedReg():
-    from hwt.interfaces.std import Handshaked
-    u = HandshakedReg(Handshaked)
-    return u
+    from hwt.hwIOs.std import HwIODataRdVld
+
+    m = HandshakedReg(HwIODataRdVld)
+    return m
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_HandshakedReg()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+
+    m = _example_HandshakedReg()
+    print(to_rtl_str(m))

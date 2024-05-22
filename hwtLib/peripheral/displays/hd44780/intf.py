@@ -2,16 +2,16 @@
 
 from math import ceil
 
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.param import Param
-from pyMathBitPrecise.bit_utils import get_bit, mask, get_bit_range
+from hwt.hwParam import HwParam
+from hwt.hwIO import HwIO
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.triggers import WaitTimeslotEnd, Edge
+from pyMathBitPrecise.bit_utils import get_bit, mask, get_bit_range
 
 
-class Hd44780Intf(Interface):
+class HwIOHd44780(HwIO):
     """
     HD44780 is an old but comonly used driver for character LCDs.
     It is commonly used for 16x2 character displays but does also supports
@@ -114,9 +114,9 @@ class Hd44780Intf(Interface):
 
     @staticmethod
     def CMD_FUNCTION_SET(data_len, lines, font):
-        assert data_len in (Hd44780Intf.DATA_LEN_4b, Hd44780Intf.DATA_LEN_8b)
-        assert lines in (Hd44780Intf.LINES_1, Hd44780Intf.LINES_2)
-        assert font in (Hd44780Intf.FONT_5x8, Hd44780Intf.FONT_5x8)
+        assert data_len in (HwIOHd44780.DATA_LEN_4b, HwIOHd44780.DATA_LEN_8b)
+        assert lines in (HwIOHd44780.LINES_1, HwIOHd44780.LINES_2)
+        assert font in (HwIOHd44780.FONT_5x8, HwIOHd44780.FONT_5x8)
         return 0b00100000 | (data_len << 4) | (lines << 3) | (font << 2)
 
     @staticmethod
@@ -127,15 +127,15 @@ class Hd44780Intf(Interface):
 
     def _config(self):
         self.FREQ = int(270e3)
-        self.DATA_WIDTH = Param(8)
-        self.ROWS = Param(2)
-        self.COLS = Param(16)
+        self.DATA_WIDTH = HwParam(8)
+        self.ROWS = HwParam(2)
+        self.COLS = HwParam(16)
 
     def _declr(self):
-        self.en = Signal()
-        self.rs = Signal()  # register select
-        self.rw = Signal()
-        self.d = VectSignal(self.DATA_WIDTH)
+        self.en = HwIOSignal()
+        self.rs = HwIOSignal()  # register select
+        self.rw = HwIOSignal()
+        self.d = HwIOVectSignal(self.DATA_WIDTH)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = HD44780InterfaceAgent(sim, self)
@@ -147,13 +147,13 @@ class HD44780InterfaceAgent(AgentBase):
 
     :ivar ~.screen: character present on screen
     """
-    REV_CHAR_MAP = {v: k for k, v in Hd44780Intf.CHAR_MAP.items()}
+    REV_CHAR_MAP = {v: k for k, v in HwIOHd44780.CHAR_MAP.items()}
 
-    def __init__(self, sim: HdlSimulator, intf: Hd44780Intf):
-        super(HD44780InterfaceAgent, self).__init__(sim, intf)
+    def __init__(self, sim: HdlSimulator, hwIO: HwIOHd44780):
+        super(HD44780InterfaceAgent, self).__init__(sim, hwIO)
         self.screen = [
-            [' ' for _ in range(intf.COLS)]
-            for _ in range(intf.ROWS)
+            [' ' for _ in range(hwIO.COLS)]
+            for _ in range(hwIO.ROWS)
         ]
         self.busy = False
         self.cursor = [0, 0]  # left upper corner, [row, line]
@@ -170,7 +170,7 @@ class HD44780InterfaceAgent(AgentBase):
         return "\n".join(["".join(line) for line in self.screen])
 
     def monitor(self):
-        i = self.intf
+        i = self.hwIO
         while True:
             # print(self.sim.now // Time.ns)
             yield Edge(i.en)
@@ -179,9 +179,9 @@ class HD44780InterfaceAgent(AgentBase):
                 rs = int(i.rs.read())
                 rw = int(i.rw.read())
                 d = int(i.d.read())
-                if rs == Hd44780Intf.RS_CONTROL:
+                if rs == HwIOHd44780.RS_CONTROL:
                     # command processing
-                    if rw == Hd44780Intf.RW_WRITE:
+                    if rw == HwIOHd44780.RW_WRITE:
                         if d & 0b10000000:
                             # cursor position set (DDRAM addr)
                             d = get_bit_range(d, 0, 7)
@@ -199,9 +199,9 @@ class HD44780InterfaceAgent(AgentBase):
                             # CMD_CURSOR_OR_DISPLAY_SHIFT
                             shift_or_cursor = get_bit(d, 3)
                             right_left = get_bit(d, 2)
-                            if shift_or_cursor == Hd44780Intf.SC_CURSOR_MOVE:
+                            if shift_or_cursor == HwIOHd44780.SC_CURSOR_MOVE:
                                 c = self.cursor
-                                if right_left == Hd44780Intf.SHIFT_RIGHT:
+                                if right_left == HwIOHd44780.SHIFT_RIGHT:
                                     c[1] += 1
                                     if c[1] == i.COLS:
                                         c[1] = 0
@@ -220,12 +220,12 @@ class HD44780InterfaceAgent(AgentBase):
                             shift_en = get_bit(d, 0)
                             incr_decr = get_bit(d, 1)
                             if shift_en:
-                                self.shift = 1 if incr_decr == Hd44780Intf.INCR else -1
+                                self.shift = 1 if incr_decr == HwIOHd44780.INCR else -1
                             else:
                                 self.shift = 0
-                        elif d & Hd44780Intf.CMD_RETURN_HOME:
+                        elif d & HwIOHd44780.CMD_RETURN_HOME:
                             raise NotImplementedError()
-                        elif d == Hd44780Intf.CMD_CLEAR_DISPLAY:
+                        elif d == HwIOHd44780.CMD_CLEAR_DISPLAY:
                             for line in self.screen:
                                 for x in range(i.COLS):
                                     line[x] = ' '
@@ -233,12 +233,12 @@ class HD44780InterfaceAgent(AgentBase):
                         else:
                             raise NotImplementedError("{0:8b}".format(d))
                     else:
-                        assert rw == Hd44780Intf.RW_READ, rw
+                        assert rw == HwIOHd44780.RW_READ, rw
                         raise NotImplementedError()
                 else:
                     # data processing
-                    assert rs == Hd44780Intf.RS_DATA, rs
-                    if self.data_len == Hd44780Intf.DATA_LEN_8b:
+                    assert rs == HwIOHd44780.RS_DATA, rs
+                    if self.data_len == HwIOHd44780.DATA_LEN_8b:
                         d = int(d)
                         d = self.REV_CHAR_MAP.get(d, " ")
                         cur = self.cursor

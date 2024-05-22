@@ -1,16 +1,16 @@
 from typing import Union, Tuple, List, Dict
 
-from pyMathBitPrecise.bit_utils import mask
-
 from hwt.code import Concat, Or
-from hwt.hdl.types.bitsVal import BitsVal
-from hwt.hdl.value import HValue
-from hwt.synthesizer.interface import Interface
+from hwt.hdl.const import HConst
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsConst import HBitsConst
+from hwt.hwIO import HwIO
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.hdl.types.bits import Bits
+from pyMathBitPrecise.bit_utils import mask
 
 
 class StrbKeepStash():
+
     def __init__(self):
         self.strb = []
         self.keep = []
@@ -25,15 +25,15 @@ class StrbKeepStash():
         assert data_len > 0, data_len
         if isinstance(data_valid, tuple):
             m, ens = data_valid
-            data_valid = Or(*ens)._ternary(m, Bits(m._dtype.bit_length()).from_py(0))
+            data_valid = Or(*ens)._ternary(m, HBits(m._dtype.bit_length()).from_py(0))
 
         if isinstance(data_valid, RtlSignal):
             res.append(data_valid)
         else:
-            assert isinstance(data_valid, (int, BitsVal)), data_valid
+            assert isinstance(data_valid, (int, HBitsConst)), data_valid
             w = data_len // 8
             v = mask(w) if data_valid else 0
-            res.append(Bits(w).from_py(v))
+            res.append(HBits(w).from_py(v))
 
     @staticmethod
     def _vec_to_signal(extra_strbs: Union[Tuple[int, bool], RtlSignal]):
@@ -54,7 +54,7 @@ class StrbKeepStash():
                 else:
                     StrbKeepStash._push_mask_vec(res, prev_len, prev_val)
                     prev_len, prev_val = s
-            elif isinstance(s, (RtlSignal, Interface)):
+            elif isinstance(s, (RtlSignal, HwIO)):
                 res.append(s)
                 prev_len, prev_val = 0, None
 
@@ -64,15 +64,14 @@ class StrbKeepStash():
 
     def pop(self, inversedWordIndex, extra_strbs, extra_keeps, STRB_ALL):
         strb = self._vec_to_signal(self.strb)
-        if not isinstance(strb, HValue) or strb != STRB_ALL:
+        if not isinstance(strb, HConst) or strb != STRB_ALL:
             extra_strbs.append((inversedWordIndex, strb))
 
         keep = self._vec_to_signal(self.keep)
-        if not isinstance(keep, HValue) or keep != STRB_ALL:
+        if not isinstance(keep, HConst) or keep != STRB_ALL:
             extra_keeps.append((inversedWordIndex, keep))
 
-
-#def reduce_conditional_StrbKeepStashes(sk_stashes: List[StrbKeepStash]):
+# def reduce_conditional_StrbKeepStashes(sk_stashes: List[StrbKeepStash]):
 #    strb_chunks = []
 #    keep_chunks = []
 #    for (en, sk) in sk_stashes:
@@ -83,7 +82,8 @@ class StrbKeepStash():
 #
 #    return Concat(*reversed(strb_chunks)), Concat(*reversed(keep_chunks))
 
-def pop_mask_value(mask_val_to_en_dict: Dict[HValue, List[RtlSignal]]):
+
+def pop_mask_value(mask_val_to_en_dict: Dict[HConst, List[RtlSignal]]):
     if len(mask_val_to_en_dict) == 1:
         v, _ = mask_val_to_en_dict.popitem()
         # there is only a single possible value, that means that the decision to a different mask
@@ -98,6 +98,7 @@ def pop_mask_value(mask_val_to_en_dict: Dict[HValue, List[RtlSignal]]):
             assert ens, ens
             m = Or(*ens)._ternary(v, m)
         return m
+
 
 def reduce_conditional_StrbKeepStashes(sk_stashes: List[StrbKeepStash]):
     strb_val_to_en = {}

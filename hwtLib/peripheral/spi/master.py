@@ -2,41 +2,41 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtLib.clocking.clkBuilder import ClkBuilder
-from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
-    HandshakedBiDirectionalAgent
+from hwtLib.handshaked.hwIOBiDirectional import HwIORdVldSyncBiDirectionalData, \
+    HwIORdVldSyncBiDirectionalDataAgent
 from hwtLib.logic.binToOneHot import BinToOneHot
 from hwtLib.peripheral.spi.intf import Spi
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):
+class SpiCntrlDataAgent(HwIORdVldSyncBiDirectionalDataAgent):
     def get_data(self):
         """extract data from interface"""
-        intf = self.intf
+        hwIO = self.hwIO
 
-        return intf.slave.read(), intf.dout.read(), intf.last.read()
+        return hwIO.slave.read(), hwIO.dout.read(), hwIO.last.read()
 
     def set_data(self, data):
         """write data to interface"""
-        intf = self.intf
+        hwIO = self.hwIO
         if data is None:
             slave, d, last = None, None, None
         else:
             slave, d, last = data
-        intf.slave.write(slave)
-        intf.dout.write(d)
-        intf.last.write(last)
+        hwIO.slave.write(slave)
+        hwIO.dout.write(d)
+        hwIO.last.write(last)
 
 
-class SpiCntrlData(HandshakedBiDirectional):
+class SpiCntrlData(HwIORdVldSyncBiDirectionalData):
     """
-    HandshakedBiDirectional interface with last and slave signal added.
+    HwIORdVldSyncBiDirectionalData interface with last and slave signal added.
     If last=1 slave will be deselected and initial slave select wait will be.
     Slave selects the slave where data should be read from and written to.
 
@@ -44,19 +44,19 @@ class SpiCntrlData(HandshakedBiDirectional):
     """
 
     def _declr(self):
-        self.slave = VectSignal(1)
-        HandshakedBiDirectional._declr(self)
-        self.last = Signal()
+        self.slave = HwIOVectSignal(1)
+        HwIORdVldSyncBiDirectionalData._declr(self)
+        self.last = HwIOSignal()
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = SpiCntrlDataAgent(sim, self)
 
 
-class SpiMaster(Unit):
+class SpiMaster(HwModule):
     """
     Master for SPI interface
 
-    :ivar ~.SPI_FREQ_PESCALER: frequency prescaler to get SPI clk from main clk (Param)
+    :ivar ~.SPI_FREQ_PESCALER: frequency prescaler to get SPI clk from main clk (HwParam)
     :ivar ~.SS_WAIT_CLK_TICKS: number of SPI ticks to wait with SPI clk activation after slave select
     :ivar ~.HAS_TX: if set true write part will be instantiated
     :ivar ~.HAS_RX: if set true read part will be instantiated
@@ -69,11 +69,11 @@ class SpiMaster(Unit):
     .. hwt-autodoc::
     """
     def _config(self):
-        self.SPI_FREQ_PESCALER = Param(32)
-        self.SS_WAIT_CLK_TICKS = Param(4)
-        self.HAS_TX = Param(True)
-        self.HAS_RX = Param(True)
-        self.SPI_DATA_WIDTH = Param(1)
+        self.SPI_FREQ_PESCALER = HwParam(32)
+        self.SS_WAIT_CLK_TICKS = HwParam(4)
+        self.HAS_TX = HwParam(True)
+        self.HAS_RX = HwParam(True)
+        self.SPI_DATA_WIDTH = HwParam(1)
         Spi._config(self)
 
     def _declr(self):
@@ -82,7 +82,7 @@ class SpiMaster(Unit):
         self.spi = Spi()._m()
         assert self.HAS_RX or self.HAS_TX
 
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.DATA_WIDTH = int(self.SPI_DATA_WIDTH) * 8
             self.data = SpiCntrlData()
             self.data.DATA_WIDTH = self.DATA_WIDTH
@@ -91,7 +91,7 @@ class SpiMaster(Unit):
         self.csDecoder.DATA_WIDTH = self.SLAVE_CNT
 
     def writePart(self, writeTick, isLastTick, data):
-        txReg = self._reg("txReg", Bits(self.DATA_WIDTH))
+        txReg = self._reg("txReg", HBits(self.DATA_WIDTH))
         txInitialized = self._reg("txInitialized", def_val=0)
         If(writeTick,
             If(txInitialized,
@@ -109,7 +109,7 @@ class SpiMaster(Unit):
         self.spi.mosi(txReg[self.DATA_WIDTH - 1])
 
     def readPart(self, readTick):
-        rxReg = self._reg("rxReg", Bits(self.DATA_WIDTH))
+        rxReg = self._reg("rxReg", HBits(self.DATA_WIDTH))
 
         If(readTick,
            rxReg(Concat(rxReg[(self.DATA_WIDTH - 1):], self.spi.miso))
@@ -195,6 +195,7 @@ class SpiMaster(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = SpiMaster()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    
+    m = SpiMaster()
+    print(to_rtl_str(m))

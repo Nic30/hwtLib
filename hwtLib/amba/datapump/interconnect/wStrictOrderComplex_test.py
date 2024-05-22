@@ -3,28 +3,28 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.constants import Time
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.unit import Unit
+from hwt.hObjList import HObjList
+from hwt.hwModule import HwModule
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b, Axi4_addr, Axi4
-from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
-from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
+from hwtLib.amba.datapump.intf import HwIOAxiWDatapump
 from hwtLib.amba.datapump.test import Axi_datapumpTC
 from hwtLib.amba.datapump.w import Axi_wDatapump
 from pyMathBitPrecise.bit_utils import mask
 
 
-class WStrictOrderInterconnecComplex(Unit):
+class WStrictOrderInterconnecComplex(HwModule):
 
     def _config(self):
         WStrictOrderInterconnect._config(self)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
+        with self._hwParamsShared():
             self.dp = Axi_wDatapump(axiCls=Axi4)
             self.ic = WStrictOrderInterconnect()
             self.ic.ID_WIDTH = 0
@@ -32,7 +32,7 @@ class WStrictOrderInterconnecComplex(Unit):
             self.aw = Axi4_addr()._m()
             self.w = Axi4_w()._m()
             self.b = Axi4_b()
-            self.drivers = HObjList(AxiWDatapumpIntf()
+            self.drivers = HObjList(HwIOAxiWDatapump()
                                     for _ in range(int(self.DRIVER_CNT)))
             for d in self.drivers:
                 d.ID_WIDTH = self.ic.ID_WIDTH
@@ -55,15 +55,15 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        u = cls.u = WStrictOrderInterconnecComplex()
-        u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
-        cls.DATA_WIDTH = u.DATA_WIDTH
-        u.DRIVER_CNT = cls.DRIVER_CNT = 3
-        cls.compileSim(u)
+        dut = cls.dut = WStrictOrderInterconnecComplex()
+        dut.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
+        cls.DATA_WIDTH = dut.DATA_WIDTH
+        dut.DRIVER_CNT = cls.DRIVER_CNT = 3
+        cls.compileSim(dut)
 
     def test_3x128(self, N=128):
-        u = self.u
-        m = AxiSimRam(axiAW=u.aw, axiW=u.w, axiB=u.b)
+        dut = self.dut
+        m = Axi4SimRam(axiAW=dut.aw, axiW=dut.w, axiB=dut.b)
         _mask = mask(self.DATA_WIDTH // 8)
         data = [[self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
                 for _ in range(self.DRIVER_CNT)]
@@ -72,8 +72,8 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
                        for _ in range(self.DRIVER_CNT)]
 
         for di, _data in enumerate(data):
-            req = u.drivers[di].req._ag
-            wIn = u.drivers[di].w._ag
+            req = dut.drivers[di].req._ag
+            wIn = dut.drivers[di].w._ag
             dataIt = iter(_data)
 
             addr = dataAddress[di]
@@ -96,14 +96,14 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
                     break
 
         r = self.randomize
-        for d in u.drivers:
+        for d in dut.drivers:
             r(d.req)
             r(d.w)
             r(d.ack)
 
-        r(u.aw)
-        r(u.w)
-        r(u.b)
+        r(dut.aw)
+        r(dut.w)
+        r(dut.b)
 
         self.runSim(self.DRIVER_CNT * N * 40 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):

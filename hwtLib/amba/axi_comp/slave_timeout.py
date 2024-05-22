@@ -4,15 +4,15 @@
 from typing import Optional
 
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.utils import addClkRstn
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
+from hwt.hdl.types.bits import HBits
 from hwt.math import log2ceil
-from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.constants import RESP_SLVERR
 
 
-class AxiSlaveTimeout(BusBridge):
+class Axi4SlaveTimeout(BusBridge):
     """
     Component witch has internal timeout for r/b channel and responds
     with the error code if the slave does not respond in specified time
@@ -20,26 +20,26 @@ class AxiSlaveTimeout(BusBridge):
     :note: blocks the overlapping transactions, it allows only
         a single pending transaction per type
 
-    .. hwt-autodoc:: _example_AxiSlaveTimeout
+    .. hwt-autodoc:: _example_Axi4SlaveTimeout
     """
 
-    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
-        self.intfCls = intfCls
-        super(AxiSlaveTimeout, self).__init__(hdl_name_override=hdl_name_override)
+    def __init__(self, hwIOCls, hdl_name_override:Optional[str]=None):
+        self.hwIOCls = hwIOCls
+        super(Axi4SlaveTimeout, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
-        self.TIMEOUT = Param(4096)
-        self.intfCls._config(self)
+        self.TIMEOUT = HwParam(4096)
+        self.hwIOCls._config(self)
 
     def _declr(self):
         addClkRstn(self)
-        self.INTF_CLS = Param(self.intfCls)
-        with self._paramsShared():
-            self.s = self.intfCls()
-            self.m = self.intfCls()._m()
+        self.HWIO_CLS = HwParam(self.hwIOCls)
+        with self._hwParamsShared():
+            self.s = self.hwIOCls()
+            self.m = self.hwIOCls()._m()
 
     def _impl(self):
-        timer_t = Bits(log2ceil(self.TIMEOUT - 1))
+        timer_t = HBits(log2ceil(self.TIMEOUT - 1))
         TIMER_MAX = self.TIMEOUT - 1
         m, s = self.s, self.m
         s.aw(m.aw)
@@ -100,13 +100,13 @@ class AxiSlaveTimeout(BusBridge):
             m.b(s.b)
         )
 
-def _example_AxiSlaveTimeout():
+def _example_Axi4SlaveTimeout():
     from hwtLib.amba.axi4 import Axi4
 
-    u = AxiSlaveTimeout(Axi4)
-    return u
+    m = Axi4SlaveTimeout(Axi4)
+    return m
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiSlaveTimeout()
-    print(to_rtl_str(u))
+    from hwt.synth import to_rtl_str
+    m = _example_Axi4SlaveTimeout()
+    print(to_rtl_str(m))

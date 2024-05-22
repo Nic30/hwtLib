@@ -3,30 +3,30 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.constants import Time
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.xilinx.locallink.axis_conv import LocalLinkToAxiS, AxiSToLocalLink
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.xilinx.locallink.axis_conv import LocalLinkToAxi4S, Axi4SToLocalLink
 from pyMathBitPrecise.bit_utils import mask
 
 
-class LocalLink_AxiSConvTest(Unit):
+class LocalLink_Axi4SConvTest(HwModule):
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
-        self.USER_WIDTH = Param(2)
-        self.USE_STRB = Param(True)
+        self.DATA_WIDTH = HwParam(64)
+        self.USER_WIDTH = HwParam(2)
+        self.USE_STRB = HwParam(True)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = AxiStream()
-            self.conv0 = AxiSToLocalLink()
-            self.conv1 = LocalLinkToAxiS()
-            self.dataOut = AxiStream()._m()
+        with self._hwParamsShared():
+            self.dataIn = Axi4Stream()
+            self.conv0 = Axi4SToLocalLink()
+            self.conv1 = LocalLinkToAxi4S()
+            self.dataOut = Axi4Stream()._m()
 
     def _impl(self):
         propagateClkRstn(self)
@@ -35,35 +35,35 @@ class LocalLink_AxiSConvTest(Unit):
         self.dataOut(self.conv1.dataOut)
 
 
-class AxiS_localLinkConvTC(SimTestCase):
+class Axi4S_localLinkConvTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = LocalLink_AxiSConvTest()
-        cls.compileSim(cls.u)
+        cls.dut = LocalLink_Axi4SConvTest()
+        cls.compileSim(cls.dut)
 
     def test_nop(self):
-        u = self.u
+        dut = self.dut
         self.runSim(200 * Time.ns)
 
-        self.assertEmpty(u.dataOut._ag.data)
+        self.assertEmpty(dut.dataOut._ag.data)
 
     def test_simple(self):
-        u = self.u
+        dut = self.dut
 
         # (data, strb, user, last)
         d = [(13, mask(8), 0b01, 0),
              (14, mask(1), 0b10, 1)]
 
-        u.dataIn._ag.data.extend(d)
+        dut.dataIn._ag.data.extend(d)
         self.runSim(200 * Time.ns)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data, d)
+        self.assertValSequenceEqual(dut.dataOut._ag.data, d)
 
 
 if __name__ == "__main__":
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([AxiS_localLinkConvTC("test_withPause")])
-    suite = testLoader.loadTestsFromTestCase(AxiS_localLinkConvTC)
+    # suite = unittest.TestSuite([Axi4S_localLinkConvTC("test_withPause")])
+    suite = testLoader.loadTestsFromTestCase(Axi4S_localLinkConvTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -3,12 +3,12 @@
 
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
-from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.bits import HBits
 from ipCorePackager.constants import DIRECTION
 
 
 def IndexOps():
-    t = Bits(8)
+    t = HBits(8)
     n = RtlNetlist()
 
     s_in = n.sig("s_in", t)
@@ -17,15 +17,15 @@ def IndexOps():
     s_in2 = n.sig("s_in2", t)
     s_out2 = n.sig("s_out2", t)
 
-    s_in3 = n.sig("s_in3", Bits(16))
+    s_in3 = n.sig("s_in3", HBits(16))
     s_out3 = n.sig("s_out3", t)
 
     s_in4a = n.sig("s_in4a", t)
     s_in4b = n.sig("s_in4b", t)
 
-    s_out4 = n.sig("s_out4", Bits(16))
+    s_out4 = n.sig("s_out4", HBits(16))
 
-    s_out(s_in[4:]._concat(Bits(4).from_py(2)))
+    s_out(s_in[4:]._concat(HBits(4).from_py(2)))
 
     s_out2[4:](s_in2[4:])
     s_out2[:4](s_in2[:4])

@@ -1,17 +1,17 @@
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
-from hwt.hdl.types.bits import Bits
-from hwtLib.types.ctypes import uint8_t, uint16_t
+from hwtLib.peripheral.usb.constants import USB_VER
 from hwtLib.peripheral.usb.descriptors.std import make_usb_descriptor_device, \
     USB_DEVICE_CLASS, make_usb_descriptor_string, default_usb_descriptor_string0, \
     make_usb_descriptor_interface, usb_descriptor_header_t, USB_DESCRIPTOR_TYPE
-from hwtLib.peripheral.usb.constants import USB_VER
+from hwtLib.types.ctypes import uint8_t, uint16_t
+
 
 # based on Device Class Definition for Human Interface Devices (HID)
 # Firmware Specification—5/27/01 Version 1.11
-
 usb_hid_mouse_input_report_t = HStruct(
-    (Bits(5), "button"),
-    (Bits(3), "reserved"),
+    (HBits(5), "button"),
+    (HBits(3), "reserved"),
     (uint8_t, "x"),
     (uint8_t, "y"),
     (uint8_t, "wheel"),

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
+from hwt.hwModule import HwModule
 from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ULPI_TX_CMD
 from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgentTC
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b
 from hwtLib.peripheral.usb.usb2.utmi_to_ulpi import Utmi_to_Ulpi
 
 
-class Utmi_to_UlpiWrap(Unit):
+class Utmi_to_UlpiWrap(HwModule):
 
     def _declr(self):
         addClkRstn(self)
@@ -28,8 +28,8 @@ class Utmi_to_UlpiTC(UlpiAgentTC):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = Utmi_to_UlpiWrap()
-        cls.compileSim(cls.u)
+        cls.dut = Utmi_to_UlpiWrap()
+        cls.compileSim(cls.dut)
 
     def format_pid_before_tx(self, pid: int):
         return int(pid)

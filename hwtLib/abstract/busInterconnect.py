@@ -1,9 +1,9 @@
 from typing import List, Set
 
-from hwt.hdl.constants import READ, WRITE, READ_WRITE
+from hwt.constants import READ, WRITE, READ_WRITE
 from hwt.math import log2ceil, isPow2
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 
 
 class AUTO_ADDR():
@@ -154,7 +154,7 @@ class BusInterconnectUtils():
         return groups
 
 
-class BusInterconnect(Unit):
+class BusInterconnect(HwModule):
     """
     Abstract class of bus interconnects
 
@@ -163,8 +163,8 @@ class BusInterconnect(Unit):
     """
 
     def _config(self):
-        self.SLAVES = Param(tuple())
-        self.MASTERS = Param(tuple())
+        self.SLAVES = HwParam(tuple())
+        self.MASTERS = HwParam(tuple())
         self._config_normalized = False
 
     def _normalize_config(self):

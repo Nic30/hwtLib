@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdl.constants import Time, NOP, WRITE, READ
+from hwt.constants import Time, NOP, WRITE, READ
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.atomic.flipRam import FlipRam
 
@@ -12,55 +12,55 @@ class FlipRamTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = FlipRam()
-        cls.compileSim(cls.u)
+        cls.dut = FlipRam()
+        cls.compileSim(cls.dut)
 
     def test_basic(self):
-        u = self.u
+        dut = self.dut
         MAGIC0 = 80
         MAGIC1 = 30
         N = 10
 
-        u.select_sig._ag.data.append(0)
-        u.firstA._ag.requests.extend([(WRITE, i, MAGIC0 + i)
+        dut.select_sig._ag.data.append(0)
+        dut.firstA._ag.requests.extend([(WRITE, i, MAGIC0 + i)
                                       for i in range(N)])
-        u.secondA._ag.requests.extend([(WRITE, i, MAGIC1 + i)
+        dut.secondA._ag.requests.extend([(WRITE, i, MAGIC1 + i)
                                        for i in range(N)])
 
-        u.firstA._ag.requests.extend([(READ, i) for i in range(N)])
-        u.secondA._ag.requests.extend([(READ, i) for i in range(N)])
+        dut.firstA._ag.requests.extend([(READ, i) for i in range(N)])
+        dut.secondA._ag.requests.extend([(READ, i) for i in range(N)])
 
         self.runSim(N * 40 * Time.ns)
 
-        self.assertValSequenceEqual(u.firstA._ag.r_data, [MAGIC0 + i
+        self.assertValSequenceEqual(dut.firstA._ag.r_data, [MAGIC0 + i
                                                           for i in range(N)])
-        self.assertValSequenceEqual(u.secondA._ag.r_data, [MAGIC1 + i
+        self.assertValSequenceEqual(dut.secondA._ag.r_data, [MAGIC1 + i
                                                            for i in range(N)])
 
     def test_flip(self):
-        u = self.u
+        dut = self.dut
         MAGIC0 = 80
         MAGIC1 = 30
         N = 3
 
-        u.select_sig._ag.data.extend(
+        dut.select_sig._ag.data.extend(
             [0 for _ in range(N)]
             + [1 for _ in range(2 * N)])
-        u.firstA._ag.requests.extend(
+        dut.firstA._ag.requests.extend(
             [(WRITE, i, MAGIC0 + i) for i in range(N)]
             + [NOP for _ in range(2 * N)])
-        u.secondA._ag.requests.extend(
+        dut.secondA._ag.requests.extend(
             [(WRITE, i, MAGIC1 + i) for i in range(N)]
             + [NOP for _ in range(2 * N)])
 
-        u.firstA._ag.requests.extend([(READ, i % N) for i in range(N)])
-        u.secondA._ag.requests.extend([(READ, i % N) for i in range(N)])
+        dut.firstA._ag.requests.extend([(READ, i % N) for i in range(N)])
+        dut.secondA._ag.requests.extend([(READ, i % N) for i in range(N)])
 
         self.runSim(3 * N * 40 * Time.ns)
 
-        self.assertValSequenceEqual(u.firstA._ag.r_data, [MAGIC1 + i
+        self.assertValSequenceEqual(dut.firstA._ag.r_data, [MAGIC1 + i
                                                           for i in range(N)])
-        self.assertValSequenceEqual(u.secondA._ag.r_data, [MAGIC0 + i
+        self.assertValSequenceEqual(dut.secondA._ag.r_data, [MAGIC0 + i
                                                            for i in range(N)])
 
 
