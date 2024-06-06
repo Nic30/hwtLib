@@ -10,14 +10,14 @@ def parsePolyStr_parse_n(string):
     elif string == '+':
         return 1
     else:
-        if re.match("\s*\+\s*1\s*", string):
+        if re.match(r"\s*\+\s*1\s*", string):
             return 1
         return int(string)
 
 
 def parsePolyStr_parse_p(string):
     "Parse the power part of a polynomial string term"
-    pat = re.compile('x\^?(\d+)?')
+    pat = re.compile(r'x\^?(\d+)?')
     if not string:
         return 0
     res = pat.findall(string)[0]
@@ -40,7 +40,7 @@ def parsePolyStr(polyStr, width):
 
     :return: list of coefficients
     """
-    termpat = re.compile('([-+]?\s*\d*\.?\d*)(x?\^?(\d+)?)')
+    termpat = re.compile(r'([-+]?\s*\d*\.?\d*)(x?\^?(\d+)?)')
     res_dict = {}
     for n, powStr, _ in termpat.findall(polyStr):
         n, p = n.strip(), powStr.strip()
