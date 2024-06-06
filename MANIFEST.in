@@ -44,8 +44,8 @@ include hwtLib/examples/showcase0.vhd
 include hwtLib/examples/SimpleComentedHwModule2.vhd
 include hwtLib/examples/SimpleComentedHwModule3.vhd
 include hwtLib/examples/SimpleComentedHwModule.vhd
-include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnconstrainedArrayImportedType2.vhd
-include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnconstrainedArrayImportedType.vhd
+include hwtLib/examples/speciaHwIOTypes/HwIOWithVHDLUnconstrainedArrayImportedType2.vhd
+include hwtLib/examples/speciaHwIOTypes/HwIOWithVHDLUnconstrainedArrayImportedType.vhd
 include hwtLib/examples/statements/BlockStm_complete_override1.vhd
 include hwtLib/examples/statements/FsmExample.cpp
 include hwtLib/examples/statements/FsmExample.v
