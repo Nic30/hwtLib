@@ -7,8 +7,8 @@ also contains commonly used helpers and types like uint64_t, UDP header etc.
 Library is structuralized mostly by main interface.
 Note that many compoments are parametrizable and do work with multiple interfaces.
 
-The compoment is a class which inherits from Unit class.
-Interfaces are added in hwDeclr() method and parameters in hwConfig() method of unit class.
+The compoment is a class which inherits from HwModule class.
+Interfaces are added in hwDeclr() method and parameters in hwConfig() method of HwModule class.
 For component there is usually the schematic, which can be opened from link under the name of the component in this documentation.
 
 
