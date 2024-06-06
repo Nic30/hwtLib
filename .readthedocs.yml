@@ -11,9 +11,6 @@ build:
 sphinx:
   configuration: doc/conf.py
 
-conda:
-  environment: doc/environment.yml
-
 # Optionally build your docs in additional formats such as PDF
 formats:
   - htmlzip
