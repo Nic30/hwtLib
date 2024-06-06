@@ -29,9 +29,9 @@ Also note that the code of the components should be shared if `@serializeParamsU
 * [avalon](https://github.com/Nic30/hwtLib/tree/master/hwtLib/avalon) - same thing as amba just for Avalon interfaces (AvalonST, AvalonMM, ... and components for them)
 * [cesnet](https://github.com/Nic30/hwtLib/tree/master/hwtLib/cesnet) - components and interfaces specific to Cesnet designs
 * [clocking](https://github.com/Nic30/hwtLib/tree/master/hwtLib/clocking) - various generic PLLs, timer generators etc.
+* [commonHwIO](https://github.com/Nic30/hwtLib/tree/master/hwtLib/commonHwIO) - various interfaces which does not have it's package yet
 * [examples](https://github.com/Nic30/hwtLib/tree/master/hwtLib/examples) - demonstrative examples of [hwt](https://github.com/Nic30/hwt/) functionality
 * [handshaked](https://github.com/Nic30/hwtLib/tree/master/hwtLib/handshaked) - components for handshaked interfaces (FIFO, AsyncFifo, Resizer, interconnects, Register, ...)
-* [interfaces](https://github.com/Nic30/hwtLib/tree/master/hwtLib/interfaces) - various interfaces which does not have it's package yet
 * [logic](https://github.com/Nic30/hwtLib/tree/master/hwtLib/logic) - various components like CRC generator, gray counter, decoders-encoders ...
 * [mem](https://github.com/Nic30/hwtLib/tree/master/hwtLib/mem) - various memories (BRAM, ROM, FIFO, Async FIFO, CAM, LUT, ...)
 * [peripheral](https://github.com/Nic30/hwtLib/tree/master/hwtLib/peripheral) - various peripheral interfaces and components (I2C, MDIO, SPI, UART, USB, Ethernet, ...)
