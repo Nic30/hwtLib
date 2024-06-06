@@ -28,19 +28,19 @@ class PseudoLru():
     .. code-block::
 
                    are all 4 lines valid?
-                        /       \
+                        /      \\
                       yes        no, use an invalid line
                        |
                        |
                        |
                   bit_0 == 0?            state | replace      ref to | next state
-                   /       \             ------+--------      -------+-----------
+                   /       \\             ------+--------      -------+-----------
                   y         n             00x  |  line_0      line_0 |    11_
-                 /           \            01x  |  line_1      line_1 |    10_
+                 /           \\           01x  |  line_1      line_1 |    10_
           bit_1 == 0?    bit_2 == 0?      1x0  |  line_2      line_2 |    0_1
-            /    \          /    \        1x1  |  line_3      line_3 |    0_0
+            /    \\         /    \\       1x1  |  line_3      line_3 |    0_0
            y      n        y      n
-          /        \      /        \        ('x' means       ('_' means unchanged)
+          /       \\      /        \\       ('x' means       ('_' means unchanged)
         line_0  line_1  line_2  line_3      don't care)
 
 

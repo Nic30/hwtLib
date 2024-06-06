@@ -12,7 +12,7 @@ from hwtLib.amba.axis_comp.strformat import Axi4S_strFormat, Axi4S_strFormatItem
 
 
 def _parse_format_groups(f_str: str) -> Generator[Union[str, Axi4S_strFormatItem], None, None]:
-    _tokens = re.split("([\{\}])", f_str) + [None, ]
+    _tokens = re.split(r"([\{\}])", f_str) + [None, ]
     group_start = None
     current_group_body = None
     tokens = iter(enumerate(_tokens))

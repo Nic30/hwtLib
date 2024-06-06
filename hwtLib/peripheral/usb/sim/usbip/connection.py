@@ -136,7 +136,7 @@ class USBIPConnection:
         if self.debug:
             self.debug_log(f'IMPORT {busid}')
 
-        m = re.match("(\d+)-(\d+)", busid)
+        m = re.match(r"(\d+)-(\d+)", busid)
         if m:
             busnum = int(m.group(1))
             devnum = int(m.group(2))
