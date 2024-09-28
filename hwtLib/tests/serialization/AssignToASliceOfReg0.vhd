@@ -19,8 +19,8 @@ END ENTITY;
 ARCHITECTURE rtl OF AssignToASliceOfReg0 IS
     SIGNAL r : STD_LOGIC_VECTOR(15 DOWNTO 0) := X"0000";
     SIGNAL r_next : STD_LOGIC_VECTOR(15 DOWNTO 0);
-    SIGNAL r_next_15downto8 : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL r_next_7downto0 : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    SIGNAL r_next_15downto8 : STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
     data_in_rd <= '1';
     data_out <= r;
@@ -35,20 +35,20 @@ BEGIN
         END IF;
     END PROCESS;
     r_next <= r_next_15downto8 & r_next_7downto0;
-    assig_process_r_next_15downto8: PROCESS(data_in_addr, data_in_data, data_in_vld, r)
-    BEGIN
-        IF data_in_vld = '1' AND data_in_addr = "1" THEN
-            r_next_15downto8 <= data_in_data;
-        ELSE
-            r_next_15downto8 <= r(15 DOWNTO 8);
-        END IF;
-    END PROCESS;
     assig_process_r_next_7downto0: PROCESS(data_in_addr, data_in_data, data_in_vld, r)
     BEGIN
         IF data_in_vld = '1' AND data_in_addr = "0" THEN
             r_next_7downto0 <= data_in_data;
         ELSE
             r_next_7downto0 <= r(7 DOWNTO 0);
+        END IF;
+    END PROCESS;
+    assig_process_r_next_15downto8: PROCESS(data_in_addr, data_in_data, data_in_vld, r)
+    BEGIN
+        IF data_in_vld = '1' AND data_in_addr = "1" THEN
+            r_next_15downto8 <= data_in_data;
+        ELSE
+            r_next_15downto8 <= r(15 DOWNTO 8);
         END IF;
     END PROCESS;
 END ARCHITECTURE;

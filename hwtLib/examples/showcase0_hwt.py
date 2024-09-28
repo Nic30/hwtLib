@@ -8,7 +8,6 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import INT, SLICE, STR, BIT, FLOAT64
 from hwt.hdl.types.enum import HEnum
 
-
 class Showcase0(HwModule):
     """
         Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class

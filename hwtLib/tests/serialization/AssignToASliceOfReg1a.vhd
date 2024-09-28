@@ -19,8 +19,8 @@ END ENTITY;
 ARCHITECTURE rtl OF AssignToASliceOfReg1a IS
     SIGNAL r : STD_LOGIC_VECTOR(15 DOWNTO 0) := X"0000";
     SIGNAL r_next : STD_LOGIC_VECTOR(15 DOWNTO 0);
-    SIGNAL r_next_15downto8 : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL r_next_7downto0 : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    SIGNAL r_next_15downto8 : STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
     data_in_rd <= '1';
     data_out <= r;
@@ -44,8 +44,8 @@ BEGIN
             r_next_7downto0 <= data_in_data(15 DOWNTO 8);
             r_next_15downto8 <= data_in_data(7 DOWNTO 0);
         ELSE
-            r_next_15downto8 <= r(15 DOWNTO 8);
             r_next_7downto0 <= r(7 DOWNTO 0);
+            r_next_15downto8 <= r(15 DOWNTO 8);
         END IF;
     END PROCESS;
 END ARCHITECTURE;
