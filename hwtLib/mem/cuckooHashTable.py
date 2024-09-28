@@ -146,7 +146,7 @@ class CuckooHashTable(HashTableCore):
         tables = self.tables
         # one hot encoded index where item should be stored (where was found
         # or where is place)
-        insertTargetOH = self._reg("insertTargetOH", HBits(self.TABLE_CNT, force_vector=True))
+        insertTargetOH = self._reg("insertTargetOH", HBits(self.TABLE_CNT, force_vector=self.TABLE_CNT==1))
 
         res = [t.lookupRes for t in tables]
         insertFinal = self._reg("insertFinal")

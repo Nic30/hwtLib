@@ -135,7 +135,7 @@ class Axi4S_footerSplit(Axi4SCompBase):
                                                            RtlSignal, RtlSignal,
                                                            RtlSignal]]:
         din = self.dataIn
-        mask_t = HBits(self.DATA_WIDTH // 8, force_vector=True)
+        mask_t = HBits(self.DATA_WIDTH // 8, force_vector=self.DATA_WIDTH==8)
         data_fieds = [
             (din.data._dtype, "data"),
             # flag for end of input frame

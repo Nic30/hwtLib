@@ -13,7 +13,7 @@ def hBit(v):
 
 
 def vec(v, w, signed=None):
-    return HBits(w, force_vector=True, signed=signed).from_py(v)
+    return HBits(w, force_vector=w == 1, signed=signed).from_py(v)
 
 
 def hBool(v):

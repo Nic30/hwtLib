@@ -56,7 +56,7 @@ class AxiWriteAggregatorWriteDispatcher(HwModule):
             WORD_OFFSET_W = log2ceil(self.BUS_WORDS_IN_CACHE_LINE)
             self.WORD_OFFSET_MAX = mask(WORD_OFFSET_W)
             # type for a counter of bus words in a single transactions
-            self.word_index_t = HBits(WORD_OFFSET_W, signed=False, force_vector=True)
+            self.word_index_t = HBits(WORD_OFFSET_W, signed=False, force_vector=WORD_OFFSET_W==1)
 
     @override
     def hwDeclr(self):

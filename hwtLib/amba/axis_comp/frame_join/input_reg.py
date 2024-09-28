@@ -71,7 +71,7 @@ class FrameJoinInputReg(HwModule):
 
     @override
     def hwImpl(self):
-        mask_t = HBits(self.DATA_WIDTH // 8, force_vector=True)
+        mask_t = HBits(self.DATA_WIDTH // 8, force_vector=self.DATA_WIDTH==8)
         data_fieds = [
             (HBits(self.DATA_WIDTH), "data"),
             (mask_t, "keep"),  # valid= keep != 0
