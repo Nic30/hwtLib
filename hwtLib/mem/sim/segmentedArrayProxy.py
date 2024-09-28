@@ -37,7 +37,7 @@ class SegmentedArrayProxy():
 
     def clean(self):
         for mem in self.mems:
-            # may not neccessary have to be two different instances
+            # may not necessary have to be two different instances
             # as the value is copied into simulator, (copy just to make sure)
             t = mem._dtype
             mem.val = t.from_py([0 for _ in range(t.size)])
