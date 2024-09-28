@@ -1,12 +1,12 @@
 import os
 import re
 
+from hwt.hwModule import HwModule
 from hwt.serializer.hwt import HwtSerializer
 from hwt.serializer.systemC import SystemCSerializer
 from hwt.serializer.verilog import VerilogSerializer
 from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.hwModule import HwModule
 from hwt.synth import to_rtl_str
 
 
@@ -52,4 +52,5 @@ class BaseSerializationTC(SimTestCase):
         with open(fn) as f:
             ref_s = f.read()
         # print(ref_s)
+        # print(s)
         self.strStructureCmp(s, ref_s)
