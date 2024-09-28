@@ -40,7 +40,8 @@ Also note that the code of the components should be shared if `@serializeParamsU
 * [tests](https://github.com/Nic30/hwtLib/tree/master/hwtLib/tests) - tests which are not related to another components
 * [types](https://github.com/Nic30/hwtLib/tree/master/hwtLib/types) - deffinitions of common types (uint32_t, ipv6_t, udp_t, ...)
 * [xilinx](https://github.com/Nic30/hwtLib/tree/master/hwtLib/xilinx) - components, primitives and interfaces specific to Xilinx based designs (IPIF, LocalLink, ...)
-
+* :skull: [orc-apps](https://github.com/orcc/orc-apps) - examples for orcc compiler
+* :skull: [fpga-npu](https://github.com/intel/fpga-npu) - NPU softprocesor, compiler and runtime
 If you see any problem/do not underestand something/do miss something open the github issue as others may step uppon same problem sooner or later.
 
 
@@ -82,10 +83,14 @@ sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/r
 * [hls-fpga-machine-learning](https://github.com/hls-fpga-machine-learning) - Python -> HSL C++, mostyl ML and video processing
 * [fpgasystems](https://github.com/fpgasystems) - HLS C++, SystemVerilog, FPGA @ Systems Group, ETH Zurich, mostly networking
 * [Limago](https://github.com/hpcn-uam/Limago) - SV/VHDL - 100G TCP/IP stack
-* [Vitis_Libraries](https://github.com/Xilinx/Vitis_Libraries) - C++/VitisHls - set of various algorithms implemented in VitisHls
+* [Vitis_Libraries](https://github.com/Xilinx/Vitis_Libraries) - C++/VitisHLS - set of various algorithms implemented in VitisHLS
+* [Vitis HLS Introductory Examples](https://github.com/Xilinx/Vitis-HLS-Introductory-Examples) - C++/VitisHLS - set of various examples for VitisHLS
 * [WangXuan95 repositories](https://github.com/WangXuan95) - SV - compression, encoding, USB, DSP 
 * [vortexgpgpu](https://github.com/vortexgpgpu)
 * [wav-lpddr-hw](https://github.com/waviousllc/wav-lpddr-hw) - SV - LPDDR4x/LPDDR5, DFI5.0
 * [hlslibs](https://github.com/hlslibs) - C++/VitisHls - set of libraries for mostly focused on ML/DSP and generic math
 * [OpenXiangShan](https://github.com/OpenXiangShan) - Chisel3 - performance focused RISC-V
 * [Parretto/DisplayPort](https://github.com/Parretto/DisplayPort) - SV - universal RX/TX DisplayPort core
+* [fabriziotappero/ip-cores](https://github.com/fabriziotappero/ip-cores) - SV/VHDL
+* [EttusResearch/fpga](https://github.com/EttusResearch/fpga) - SV - SDR focused
+* [WangXuan95 repositories](https://github.com/WangXuan95?tab=repositories) - SV - Compression/Image processing focused
