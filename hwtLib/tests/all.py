@@ -228,7 +228,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.hwIOSynthesizerTC import \
 from hwtLib.tests.synthesizer.interfaceLevel.subHwModuleSynthesisTC import \
     SubunitsSynthesisTC
 from hwtLib.tests.synthesizer.rtlLevel.basic_signal_methods_test import BasicSignalMethodsTC
-from hwtLib.tests.synthesizer.rtlLevel.statements_consystency_test import StatementsConsystencyTC
+from hwtLib.tests.synthesizer.rtlLevel.statements_consistency_test import StatementsConsistencyTC
 from hwtLib.tests.synthesizer.statementTreesInternal_test import StatementTreesInternalTC
 from hwtLib.tests.synthesizer.statementTrees_test import StatementTreesTC
 from hwtLib.tests.synthesizer.statements_test import StatementsTC
@@ -287,7 +287,7 @@ suite = testSuiteFromTCs(
     HStructConstTC,
     ParametrizationTC,
     BasicSignalMethodsTC,
-    StatementsConsystencyTC,
+    StatementsConsistencyTC,
     HConstTC,
     StatementTreesInternalTC,
     StatementTreesTC,

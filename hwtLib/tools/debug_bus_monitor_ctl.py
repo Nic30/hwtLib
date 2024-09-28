@@ -163,7 +163,7 @@ class VisualNodeTemplate():
     def _default_dot_formatter(self, data:int, out: StringIO,
                                indent: int, colorizer: Optional[Colorizer]) -> str:
         """
-        Format interface signals and values as a html like table for graphwiz
+        Format interface signals and values as a html like table for graphviz
         """
         self._dump_txt_indent(out, indent)
         color = colorizer.get_color(self.name, self.data_spec, data)
@@ -300,7 +300,7 @@ class DebugBusMonitorCtl():
                 out.write(">];\n")
             else:
                 # visual hierachy node which will be represented as subgraph of nodes with a value
-                # :attention: cluster_ prefix in label is required for graphwiz to work correctly
+                # :attention: cluster_ prefix in label is required for grapvwiz to work correctly
                 out.write(f"subgraph cluster_{n.id:d} {{\n")
                 VisualNodeTemplate._dump_txt_indent(out, indent + 1)
                 out.write(f'label="{n.name:s}";\n')

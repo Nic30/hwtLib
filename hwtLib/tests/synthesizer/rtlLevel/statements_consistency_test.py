@@ -16,8 +16,8 @@ from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.tests.synthesizer.interfaceLevel.subHwModuleSynthesisTC import synthesised
 
 
-class StatementsConsystencyTC(unittest.TestCase):
-    def check_consystency(self, dut: HwModule):
+class StatementsConsistencyTC(unittest.TestCase):
+    def check_consistency(self, dut: HwModule):
         synthesised(dut)
         c = dut._ctx
         for s in c.signals:
@@ -35,37 +35,37 @@ class StatementsConsystencyTC(unittest.TestCase):
 
     def test_if_stm_merging(self):
         dut = FlipRegister()
-        self.check_consystency(dut)
+        self.check_consistency(dut)
 
     def test_comples_stm_ops(self):
         dut = CuckooHashTable()
-        self.check_consystency(dut)
+        self.check_consistency(dut)
 
     def test_rm_statement(self):
         dut = SimpleIfStatement3()
-        self.check_consystency(dut)
+        self.check_consistency(dut)
         stms = dut._ctx.statements
         self.assertEqual(len(stms), 1)
         self.assertIsInstance(list(stms)[0], HdlAssignmentContainer)
 
     def test_index_inputs_with_assignment_has_endpoint(self):
         dut = SimpleAsyncRam()
-        self.check_consystency(dut)
+        self.check_consistency(dut)
 
         self.assertEqual(len(dut.addr_in._sigInside.endpoints), 1)
         self.assertEqual(len(dut.addr_out._sigInside.endpoints), 1)
 
     def test_if_inputs_correc(self):
         dut = Segment7()
-        self.check_consystency(dut)
+        self.check_consistency(dut)
 
     def test_unconnected_slices_removed_from_inputs_of_statements(self):
         dut = OooOpExampleCounterHashTable()
-        self.check_consystency(dut)
+        self.check_consistency(dut)
 
-    def test_stm_enclosure_consystency(self):
+    def test_stm_enclosure_consistency(self):
         dut = I2cMasterBitCtrl()
-        self.check_consystency(dut)
+        self.check_consistency(dut)
 
         # test if there is not a latch
         for stm in dut._ctx.statements:

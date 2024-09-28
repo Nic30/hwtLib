@@ -73,23 +73,23 @@ class I2cMasterBitCtrl(HwModule):
 
     .. code-block:: text
 
-        start:    SCL  ~~~~~~~~~~~~~~\____
-                  SDA  XX/~~~~~~~\______
+        start:    SCL  ~~~~~~~~~~~~~~\\___
+                  SDA  XX/~~~~~~~\\_______
                        x | 0 | 1 | 2 | 3 | i
 
-        repstart  SCL  ______/~~~~~~~\___
-                  SDA  __/~~~~~~~\______
+        repstart  SCL  ______/~~~~~~~\\___
+                  SDA  __/~~~~~~~\\_______
                        x | 0 | 1 | 2 | 3 | i
 
         stop      SCL  _______/~~~~~~~~~~~
-                  SDA  ==\___________/~~~~~
+                  SDA  ==\\__________/~~~~
                        x | 0 | 1 | 2 | 3 | i
 
-        write    SCL  ______/~~~~~~~\____
+        write    SCL  ______/~~~~~~~\\____
                  SDA  XXX===============XX
                       x | 0 | 1 | 2 | 3 | i
 
-        read     SCL  ______/~~~~~~~\____
+        read     SCL  ______/~~~~~~~\\___
                  SDA  XXXXXXX=XXXXXXXXXXX
                       x | 0 | 1 | 2 | 3 | i
 

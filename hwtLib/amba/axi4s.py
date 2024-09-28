@@ -101,9 +101,9 @@ class Axi4StreamAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
     input/output data stored in list under "data" property
     data contains tuples
 
-    Format of data tules is derived from signals on Axi4Stream interface
-    Order of values coresponds to definition of interface signals.
-    If all signals are present fotmat of tuple will be
+    Format of data tuples is derived from signals on Axi4Stream interface
+    Order of values corresponds to definition of interface signals.
+    If all signals are present format of tuple will be
     (id, dest, data, strb, keep, user, last)
     """
 
