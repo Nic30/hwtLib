@@ -1,7 +1,11 @@
 from math import ceil
-from typing import List, Tuple, Union, Deque
+from typing import List, Tuple, Union, Deque, Generator, Optional, Sequence
 
+from hwt.code import Concat
+from hwt.hdl.const import HConst
+from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
+from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.utils import HConst_from_words
 from hwt.hwIOs.agents.rdVldSync import UniversalRdVldSyncAgent
@@ -111,13 +115,29 @@ class Axi4StreamAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
         UniversalRdVldSyncAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
 
 
-def packAxi4SFrame(dataWidth, structVal, withStrb=False):
+def packAxi4SFrame(dataWidth: int, structVal: Union[HConst, Sequence[int]], withStrb=False)\
+        ->Generator[Union[Tuple[Optional[int], int, int],
+                           Tuple[Optional[int], int]], None, None]:
     """
     pack data of structure into words on axis interface
     Words are tuples (data, last) or (data, mask, last) depending on args.
+    
+    :param structVal: value to be send, HConst instance or list of int for each byte
+    
+    :returns: generator of tuples (data, strb, isLast), strb is ommited if withStrb=False
+    
     """
-    if withStrb:
-        byte_cnt = dataWidth // 8
+    if not isinstance(structVal, HConst):
+        try:
+            valByteCnt = len(structVal)
+        except:
+            structVal = tuple(structVal)
+            valByteCnt = len(structVal)
+
+        if valByteCnt != 0:
+            structVal = uint8_t[valByteCnt].from_py(structVal)
+        else:
+            structVal = []
 
     if structVal == []:
         if withStrb:
@@ -125,6 +145,9 @@ def packAxi4SFrame(dataWidth, structVal, withStrb=False):
         else:
             yield (None, 1)
         return
+
+    if withStrb:
+        byte_cnt = dataWidth // 8
 
     words = iterBits(structVal, bitsInOne=dataWidth,
                      skipPadding=False, fillup=True)
@@ -145,7 +168,12 @@ def packAxi4SFrame(dataWidth, structVal, withStrb=False):
             yield (d, last)
 
 
-def unpackAxi4SFrame(structT: HdlType, frameData: Deque[Union[HBitsConst, int]], getDataFn=None, dataWidth=None):
+def concatDataStrbLastFlags(frameBeats: Sequence[Tuple[HBitsConst, int, int]], strbT: HBits):
+    for data, strb, last in frameBeats:
+        yield Concat(BIT.from_py(last), strbT.from_py(strb), data)
+
+
+def unpackAxi4SFrame(structT: HdlType, frameData: Deque[Union[HBitsConst, int]], getDataFn=None, dataWidth=None) -> HConst:
     """
     opposite of packAxi4SFrame
     """
