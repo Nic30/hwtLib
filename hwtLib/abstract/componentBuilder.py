@@ -1,11 +1,11 @@
 from typing import Optional, Union
 
-from hwt.hdl.types.bits import HBits
 from hwt.hObjList import HObjList
+from hwt.hdl.types.bits import HBits
 from hwt.hwIO import HwIO
+from hwt.hwModule import HwModule
 from hwt.synthesizer.interfaceLevel.getDefaultClkRts import getClk, getRst
 from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
-from hwt.hwModule import HwModule
 
 
 class AbstractComponentBuilder(object):
@@ -107,15 +107,15 @@ class AbstractComponentBuilder(object):
 
         self.compId += 1
 
-    def _propagateClkRstn(self, u):
+    def _propagateClkRstn(self, m: HwModule):
         """
-        Connect clock and reset to unit "u"
+        Connect clock and reset to HwModule "m"
         """
-        if hasattr(u, "clk"):
-            u.clk(self.getClk())
+        if hasattr(m, "clk"):
+            m.clk(self.getClk())
 
-        if hasattr(u, 'rst_n'):
-            u.rst_n(self.getRstn())
+        if hasattr(m, 'rst_n'):
+            m.rst_n(self.getRstn())
 
-        if hasattr(u, "rst"):
-            u.rst(~self.getRstn())
+        if hasattr(m, "rst"):
+            m.rst(~self.getRstn())
