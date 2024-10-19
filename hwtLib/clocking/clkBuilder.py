@@ -12,7 +12,7 @@ from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
 
 
 AnySig = Union[RtlSignal, HwIO]
-
+# https://github.com/BrianHGinc/Verilog-Floating-Point-Clock-Divider/blob/main/hdl/BHG_FP_clk_divider.v
 
 class ClkBuilder(AbstractComponentBuilder):
     """
