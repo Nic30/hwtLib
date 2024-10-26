@@ -14,7 +14,6 @@ from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.ramAsAddrDataRdVld import RamAsAddrDataRdVld
 from hwtLib.handshaked.streamNode import StreamNode
@@ -99,7 +98,7 @@ class ReorderBuffer(HwModule):
         self.storage_ram._updateHwParamsFrom(self.storage_w)
         self.storage_ram.PORT_CNT = (WRITE, READ) 
 
-    def item_occupancy_reg(self) -> Tuple[RtlSignal, RtlSyncSignal, RtlSignal]:
+    def item_occupancy_reg(self) -> Tuple[RtlSignal, RtlSignal, RtlSignal]:
         item_occ_set = self._sig("item_occ_set", HBits(2 ** self.ID_WIDTH))
         item_occ_clear = self._sig("item_occ_clear", HBits(2 ** self.ID_WIDTH))
         item_occ = self._reg("item_occ", HBits(2 ** self.ID_WIDTH), def_val=0)

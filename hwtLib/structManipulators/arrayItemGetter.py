@@ -9,10 +9,10 @@ from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.math import log2ceil, isPow2
 from hwt.pyUtils.typingFuture import override
-from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.hdl.types.bitsCastUtils import fitTo
 
 
 class ArrayItemGetter(HwModule):

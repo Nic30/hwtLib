@@ -8,6 +8,7 @@ from hwt.code import Concat, Or, If
 from hwt.code_utils import rename_signal
 from hwt.hObjList import HObjList
 from hwt.hdl.const import HConst
+from hwt.hdl.types.bitsCastUtils import fitTo
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.std import HwIORdVldSync, HwIOVectSignal, HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
@@ -16,7 +17,6 @@ from hwt.hwParam import HwParam
 from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.xilinx.primitive.dsp48e1 import DSP48E1
 from hwtLib.xilinx.primitive.dsp48e1_constants import ALU_MODE, CARRYIN_SEL, \
     get_inmode, MUL_A_SEL, MUL_B_SEL, get_opmode, X_SEL, Y_SEL, Z_SEL

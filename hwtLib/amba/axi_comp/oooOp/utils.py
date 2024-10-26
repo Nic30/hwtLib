@@ -8,7 +8,7 @@ from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
 from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIORdVldSync
 from hwt.hwParam import HwParam
 from hwt.pyUtils.typingFuture import override
-from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.hdlSimulator import HdlSimulator
 
@@ -63,7 +63,7 @@ class OOOOpPipelineStage():
         )
 
         # :note: constructed later
-        self.collision_detect: Optional[List[Union[int, RtlSyncSignal]]] = None
+        self.collision_detect: Optional[List[Union[int, RtlSignal]]] = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__:s} {self.name:s} 0x{id(self):x}>"

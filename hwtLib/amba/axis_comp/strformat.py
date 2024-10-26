@@ -4,24 +4,24 @@ from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwt.code import If, Switch, SwitchLogic, Or
 from hwt.hdl.statements.statement import HdlStatement
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsCastUtils import fitTo
+from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIO import HwIO
 from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hwIO import HwIO
+from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.typePath import TypePath
-from hwt.hwModule import HwModule
-from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.logic.binToBcd import BinToBcd
 from hwtLib.types.ctypes import uint32_t
-from hwt.hdl.types.defs import BIT
-from hwt.pyUtils.typingFuture import override
 
 
 class Axi4S_strFormatItem():

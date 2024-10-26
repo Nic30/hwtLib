@@ -3,6 +3,7 @@
 
 from hwt.code import If, Concat, FsmBuilder
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsCastUtils import fitTo
 from hwt.hdl.types.enum import HEnum
 from hwt.hwIOs.std import HwIODataRdVld, HwIORegCntrl
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
@@ -10,7 +11,6 @@ from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.math import log2ceil
 from hwt.pyUtils.typingFuture import override
-from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import HwIOAxiRDatapump, HwIOAxiWDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode

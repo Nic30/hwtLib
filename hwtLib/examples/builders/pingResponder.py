@@ -10,7 +10,6 @@ from hwt.hwIOs.std import HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
-from hwt.mainBases import RtlMemoryBase
 from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
@@ -77,8 +76,8 @@ class Axi4SPingResponder(HwModule):
             if isinstance(In, HwIOStruct):
                 self.req_load(In, reg, freeze)
             elif isinstance(reg, HConst) or \
-                    (isinstance(reg, HwIOSignal) and not isinstance(reg._sig, RtlMemoryBase)):
-                # we have an exact value to use, ignore this intput
+                    (isinstance(reg, HwIOSignal) and (isinstance(reg._sig, HConst) or reg._sig.next is None)):
+                # we have an exact value to use, ignore this input
                 In.rd(1)
                 continue
             else:
@@ -158,7 +157,8 @@ class Axi4SPingResponder(HwModule):
                                                echoFrame_t,
                                                Axi4Stream,
                                                setup_frame_deparser)
-
+        
+        # connect computed resp to input of deparser
         self.connect_resp(resp, deparserIn, sendingReply)
         tx = txBuilder.end
         self.tx(tx)

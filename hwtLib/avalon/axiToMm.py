@@ -7,6 +7,7 @@ from hwt.code import If
 from hwt.code_utils import rename_signal
 from hwt.constants import READ
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsCastUtils import fitTo
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.hwIOStruct import HwIOStruct
@@ -15,7 +16,6 @@ from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwParam import HwParam
 from hwt.math import log2ceil
 from hwt.pyUtils.typingFuture import override
-from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.constants import RESP_OKAY

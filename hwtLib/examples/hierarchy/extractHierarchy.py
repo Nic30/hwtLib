@@ -15,7 +15,6 @@ from hwt.pyUtils.setList import SetList
 from hwt.hwModule import HwModule
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
 from hwt.synthesizer.rtlLevel.exceptions import SignalDriverErr
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 
@@ -334,7 +333,7 @@ def extractNetlistPartToSubmodule(
     return ExtractedHwModule(inputs, priv, outputs)        
 
         
-def extractRegsToSubmodule(regs: Sequence[RtlSyncSignal]) -> ExtractedHwModule:
+def extractRegsToSubmodule(regs: Sequence[RtlSignal]) -> ExtractedHwModule:
     # resolve IO
     inputs: SetList[RtlSignal] = SetList()
     outputs: SetList[RtlSignal] = SetList()

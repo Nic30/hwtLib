@@ -3,16 +3,16 @@
 
 from hwt.code import If, In, Concat
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsCastUtils import fitTo
 from hwt.hwIOs.std import HwIODataRdVld, HwIORegCntrl, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
-from hwt.synthesizer.vectorUtils import fitTo
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.datapump.intf import HwIOAxiRDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.pyUtils.typingFuture import override
 
 
 class CLinkedListReader(HwModule):

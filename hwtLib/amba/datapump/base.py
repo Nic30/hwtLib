@@ -3,6 +3,7 @@ from typing import Union, List
 from hwt.code import If, Switch
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsCastUtils import fitTo_t, fitTo
 from hwt.hdl.types.defs import BIT
 from hwt.hwIOs.std import HwIORdVldSync
 from hwt.hwIOs.utils import addClkRstn
@@ -11,7 +12,6 @@ from hwt.hwParam import HwParam
 from hwt.math import log2ceil, isPow2
 from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.vectorUtils import fitTo, fitTo_t
 from hwtLib.amba.axi3 import Axi3_addr, Axi3
 from hwtLib.amba.axi3Lite import Axi3Lite_addr
 from hwtLib.amba.axi4 import Axi4, Axi4_addr

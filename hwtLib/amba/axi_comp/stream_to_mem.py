@@ -3,6 +3,7 @@
 
 from hwt.code import Concat, If, Switch
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsCastUtils import fitTo
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIODataRdVld
@@ -10,7 +11,6 @@ from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.pyUtils.typingFuture import override
-from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint

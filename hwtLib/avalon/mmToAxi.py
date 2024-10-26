@@ -1,7 +1,7 @@
 from hwt.code import Switch, If
+from hwt.hdl.types.bitsCastUtils import fitTo
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwParam import HwParam
-from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.constants import CACHE_DEFAULT, BURST_INCR, LOCK_DEFAULT, \
