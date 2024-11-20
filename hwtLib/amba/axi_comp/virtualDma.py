@@ -94,35 +94,6 @@ class AxiVirtualDma(AbstractComponentBuilder):
         connectDp(self.parent, r, dp, self.end)
         return r.get, r.dataOut
 
-    # def read_to_reg(self, t: HdlType, dst: Union[RtlSyncSignal, HwIOStruct],
-    #                ready: RtlSignal, id_=0,
-    #                tmpl: Optional[TransTmpl]=None,
-    #                frames: Optional[List[FrameTmpl]]=None
-    #                ):
-    #    """
-    #    :note: same as :meth:`AxiMemRead.read` just store the result in to a register.
-    #
-    #    :return: signal which is 1 when last part of the data is beeing stored in to thes register.
-    #    """
-    #
-    #    return addr, last
-    #
-    # def read_out_of_order(self, t: HdlType, allocate, receive, deallocate,
-    #                      tmpl: Optional[TransTmpl]=None,
-    #                      frames: Optional[List[FrameTmpl]]=None,
-    #                      ):
-    #    """
-    #    Rest of the paramters described in :meth:`~.AxiMemRead.read`
-    #    """
-    #
-    #    return addr, rData
-    #
-    # def read_out_of_order_to_reg(self, t: HdlType, allocate, receive, deallocate,
-    #                             dst: Union[RtlSyncSignal, HwIOStruct], ready: RtlSignal,
-    #                             tmpl: Optional[TransTmpl]=None,
-    #                             frames: Optional[List[FrameTmpl]]=None,
-    #                             ):
-    #    return addr, id, last
 
     def write(self, t: HdlType, id_=0,
               tmpl: Optional[TransTmpl]=None,
