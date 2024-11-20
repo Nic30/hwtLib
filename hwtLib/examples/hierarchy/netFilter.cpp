@@ -21,7 +21,7 @@ SC_MODULE(HeadFieldExtractor) {
     }
 
     void assig_process_dout_data() {
-        dout_data.write(sc_uint<64>("0bXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
+        dout_data.write(sc_uint<64>("0xXXXXXXXXXXXXXXXX"));
     }
 
     void assig_process_dout_last() {
@@ -33,7 +33,7 @@ SC_MODULE(HeadFieldExtractor) {
     }
 
     void assig_process_headers_data() {
-        headers_data.write(sc_uint<64>("0bXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
+        headers_data.write(sc_uint<64>("0xXXXXXXXXXXXXXXXX"));
     }
 
     void assig_process_headers_last() {
@@ -74,7 +74,7 @@ SC_MODULE(PatternMatch) {
     }
 
     void assig_process_match_data() {
-        match_data.write(sc_uint<64>("0bXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
+        match_data.write(sc_uint<64>("0xXXXXXXXXXXXXXXXX"));
     }
 
     void assig_process_match_last() {
@@ -151,7 +151,7 @@ SC_MODULE(Filter) {
     }
 
     void assig_process_cfg_r_data() {
-        cfg_r_data.write(sc_uint<64>("0bXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
+        cfg_r_data.write(sc_uint<64>("0xXXXXXXXXXXXXXXXX"));
     }
 
     void assig_process_cfg_r_resp() {
@@ -171,7 +171,7 @@ SC_MODULE(Filter) {
     }
 
     void assig_process_dout_data() {
-        dout_data.write(sc_uint<64>("0bXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
+        dout_data.write(sc_uint<64>("0xXXXXXXXXXXXXXXXX"));
     }
 
     void assig_process_dout_last() {
@@ -227,7 +227,7 @@ SC_MODULE(Exporter) {
     }
 
     void assig_process_dout_data() {
-        dout_data.write(sc_uint<64>("0bXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
+        dout_data.write(sc_uint<64>("0xXXXXXXXXXXXXXXXX"));
     }
 
     void assig_process_dout_last() {

@@ -28,7 +28,8 @@ class RamSingleClock(HwModule):
         it can be int or tuple of READ_WRITE, WRITE, READ
         to specify rw access for each port separately
     :ivar HAS_BE: HwParam, if True the write ports will have byte enable signal
-
+    :ivar READ_LATENCY: latency in clock cycles from read enable=1 to read data appear on the output
+        0=distmem, 1=BRAM
     .. hwt-autodoc::
     """
     PORT_CLS = HwIOBramPort_noClk
@@ -41,6 +42,7 @@ class RamSingleClock(HwModule):
         self.HAS_BE = HwParam(False)
         self.MAX_BLOCK_DATA_WIDTH = HwParam(None)
         self.INIT_DATA = HwParam(None)
+        self.READ_LATENCY = HwParam(1)
 
     def _declr_ports(self):
         PORTS = self.PORT_CNT
@@ -66,7 +68,7 @@ class RamSingleClock(HwModule):
             self.port = ports
 
     def _declr_children(self):
-        # for the case where this memory will be relized using multiple memory blocks
+        # for the case where this memory will be realized using multiple memory blocks
         children = HObjList()
         MAX_DW = self.MAX_BLOCK_DATA_WIDTH
         if MAX_DW is not None and MAX_DW < self.DATA_WIDTH:
@@ -93,9 +95,9 @@ class RamSingleClock(HwModule):
         if port.HAS_BE:
             assert port.DATA_WIDTH % 8 == 0, port.DATA_WIDTH
             # we for each byte separate
-            #drive.append(
+            # drive.append(
             #    mem[port.addr](apply_write_with_mask(mem[port.addr], port.din, port.we))
-            #)
+            # )
             for b_i, be in enumerate(port.we):
                 low = b_i * 8
                 drive.append(
@@ -117,30 +119,36 @@ class RamSingleClock(HwModule):
         return drive
 
     @staticmethod
-    def connect_port(clk: RtlSignal, port: HwIOBramPort_noClk, mem: RtlSignal):
+    def connect_HwIOBramPort_noClk_to_mem(clk: RtlSignal, read_latency, port: HwIOBramPort_noClk, mem: RtlSignal):
         if port.HAS_R and port.HAS_W:
-            If(clk._onRisingEdge(),
-                If(port.en,
-                    *RamSingleClock.mem_write(mem, port),
-                    port.dout(mem[port.addr]),
-                ).Else(
-                    port.dout(None),
-                ),
-            )
+            rStm = \
+            If(port.en,
+                *RamSingleClock.mem_write(mem, port),
+                port.dout(mem[port.addr]),
+            ).Else(
+                port.dout(None),
+            ),
         elif port.HAS_R:
-            If(clk._onRisingEdge(),
-                If(port.en,
-                    port.dout(mem[port.addr])
-                )
+            rStm = \
+            If(port.en,
+                port.dout(mem[port.addr])
             )
         elif port.HAS_W:
-            If(clk._onRisingEdge(),
-                If(port.en,
-                   *RamSingleClock.mem_write(mem, port),
-                )
+            rStm = \
+            If(port.en,
+               *RamSingleClock.mem_write(mem, port),
             )
         else:
             raise AssertionError("Bram port has to have at least write or read part")
+
+        if read_latency == 0:
+            pass
+        elif read_latency == 1:
+            If(clk._onRisingEdge(),
+               rStm
+            )
+        else:
+            raise NotImplementedError(read_latency)
 
     def delegate_to_children(self):
         MAX_DW = self.MAX_BLOCK_DATA_WIDTH
@@ -181,13 +189,13 @@ class RamSingleClock(HwModule):
             self._mem = self._sig("ram_memory", dt, def_val=self.INIT_DATA)
 
             for p in self.port:
-                self.connect_port(self.clk, p, self._mem)
+                self.connect_HwIOBramPort_noClk_to_mem(self.clk, self.READ_LATENCY, p, self._mem)
 
 
 @serializeParamsUniq
 class RamMultiClock(HwModule):
     """
-    RAM where each port has an independet clock.
+    RAM where each port has an independent clock.
     It can be configured to true dual port RAM etc.
     It can also be configured to have write mask or to be composed from multiple smaller memories.
 
@@ -216,7 +224,7 @@ class RamMultiClock(HwModule):
             self._mem = self._sig("ram_memory", dt, self.INIT_DATA)
 
             for p in self.port:
-                RamSingleClock.connect_port(p.clk, p, self._mem)
+                RamSingleClock.connect_HwIOBramPort_noClk_to_mem(p.clk, self.READ_LATENCY, p, self._mem)
 
 
 if __name__ == "__main__":

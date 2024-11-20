@@ -21,10 +21,10 @@ END ENTITY;
 ARCHITECTURE rtl OF HeadFieldExtractor IS
 BEGIN
     din_ready <= 'X';
-    dout_data <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    dout_data <= X"XXXXXXXXXXXXXXXX";
     dout_last <= 'X';
     dout_valid <= 'X';
-    headers_data <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    headers_data <= X"XXXXXXXXXXXXXXXX";
     headers_last <= 'X';
     headers_valid <= 'X';
 END ARCHITECTURE;
@@ -47,7 +47,7 @@ END ENTITY;
 ARCHITECTURE rtl OF PatternMatch IS
 BEGIN
     din_ready <= 'X';
-    match_data <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    match_data <= X"XXXXXXXXXXXXXXXX";
     match_last <= 'X';
     match_valid <= 'X';
 END ARCHITECTURE;
@@ -100,12 +100,12 @@ BEGIN
     cfg_aw_ready <= 'X';
     cfg_b_resp <= "XX";
     cfg_b_valid <= 'X';
-    cfg_r_data <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    cfg_r_data <= X"XXXXXXXXXXXXXXXX";
     cfg_r_resp <= "XX";
     cfg_r_valid <= 'X';
     cfg_w_ready <= 'X';
     din_ready <= 'X';
-    dout_data <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    dout_data <= X"XXXXXXXXXXXXXXXX";
     dout_last <= 'X';
     dout_valid <= 'X';
     headers_ready <= 'X';
@@ -130,7 +130,7 @@ END ENTITY;
 ARCHITECTURE rtl OF Exporter IS
 BEGIN
     din_ready <= 'X';
-    dout_data <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    dout_data <= X"XXXXXXXXXXXXXXXX";
     dout_last <= 'X';
     dout_valid <= 'X';
 END ARCHITECTURE;

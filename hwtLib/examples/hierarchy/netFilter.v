@@ -13,10 +13,10 @@ module HeadFieldExtractor (
     output wire headers_valid
 );
     assign din_ready = 1'bx;
-    assign dout_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+    assign dout_data = 64'hxxxxxxxxxxxxxxxx;
     assign dout_last = 1'bx;
     assign dout_valid = 1'bx;
-    assign headers_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+    assign headers_data = 64'hxxxxxxxxxxxxxxxx;
     assign headers_last = 1'bx;
     assign headers_valid = 1'bx;
 endmodule
@@ -31,7 +31,7 @@ module PatternMatch (
     output wire match_valid
 );
     assign din_ready = 1'bx;
-    assign match_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+    assign match_data = 64'hxxxxxxxxxxxxxxxx;
     assign match_last = 1'bx;
     assign match_valid = 1'bx;
 endmodule
@@ -76,12 +76,12 @@ module Filter (
     assign cfg_aw_ready = 1'bx;
     assign cfg_b_resp = 2'bxx;
     assign cfg_b_valid = 1'bx;
-    assign cfg_r_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+    assign cfg_r_data = 64'hxxxxxxxxxxxxxxxx;
     assign cfg_r_resp = 2'bxx;
     assign cfg_r_valid = 1'bx;
     assign cfg_w_ready = 1'bx;
     assign din_ready = 1'bx;
-    assign dout_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+    assign dout_data = 64'hxxxxxxxxxxxxxxxx;
     assign dout_last = 1'bx;
     assign dout_valid = 1'bx;
     assign headers_ready = 1'bx;
@@ -98,7 +98,7 @@ module Exporter (
     output wire dout_valid
 );
     assign din_ready = 1'bx;
-    assign dout_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+    assign dout_data = 64'hxxxxxxxxxxxxxxxx;
     assign dout_last = 1'bx;
     assign dout_valid = 1'bx;
 endmodule

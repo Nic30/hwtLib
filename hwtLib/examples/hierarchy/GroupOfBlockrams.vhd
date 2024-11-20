@@ -2,7 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    RAM where each port has an independet clock.
+--    RAM where each port has an independent clock.
 --    It can be configured to true dual port RAM etc.
 --    It can also be configured to have write mask or to be composed from multiple smaller memories.
 --
@@ -17,7 +17,8 @@ ENTITY RamMultiClock IS
         HAS_BE : BOOLEAN := FALSE;
         INIT_DATA : STRING := "None";
         MAX_BLOCK_DATA_WIDTH : STRING := "None";
-        PORT_CNT : INTEGER := 2
+        PORT_CNT : INTEGER := 2;
+        READ_LATENCY : INTEGER := 1
     );
     PORT(
         port_0_addr : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -48,7 +49,7 @@ BEGIN
                 END IF;
                 port_0_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_0_addr)));
             ELSE
-                port_0_dout <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+                port_0_dout <= X"XXXXXXXXXXXXXXXX";
             END IF;
         END IF;
     END PROCESS;
@@ -61,7 +62,7 @@ BEGIN
                 END IF;
                 port_1_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_1_addr)));
             ELSE
-                port_1_dout <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+                port_1_dout <= X"XXXXXXXXXXXXXXXX";
             END IF;
         END IF;
     END PROCESS;
@@ -71,6 +72,7 @@ BEGIN
     ASSERT INIT_DATA = "None" REPORT "Generated only for this value" SEVERITY failure;
     ASSERT MAX_BLOCK_DATA_WIDTH = "None" REPORT "Generated only for this value" SEVERITY failure;
     ASSERT PORT_CNT = 2 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT READ_LATENCY = 1 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -101,7 +103,7 @@ END ENTITY;
 
 ARCHITECTURE rtl OF GroupOfBlockrams IS
     --
-    --    RAM where each port has an independet clock.
+    --    RAM where each port has an independent clock.
     --    It can be configured to true dual port RAM etc.
     --    It can also be configured to have write mask or to be composed from multiple smaller memories.
     --
@@ -116,7 +118,8 @@ ARCHITECTURE rtl OF GroupOfBlockrams IS
             HAS_BE : BOOLEAN := FALSE;
             INIT_DATA : STRING := "None";
             MAX_BLOCK_DATA_WIDTH : STRING := "None";
-            PORT_CNT : INTEGER := 2
+            PORT_CNT : INTEGER := 2;
+            READ_LATENCY : INTEGER := 1
         );
         PORT(
             port_0_addr : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -164,7 +167,8 @@ BEGIN
         HAS_BE => FALSE,
         INIT_DATA => "None",
         MAX_BLOCK_DATA_WIDTH => "None",
-        PORT_CNT => 2
+        PORT_CNT => 2,
+        READ_LATENCY => 1
     ) PORT MAP(
         port_0_addr => sig_bramR_port_0_addr,
         port_0_clk => sig_bramR_port_0_clk,
@@ -185,7 +189,8 @@ BEGIN
         HAS_BE => FALSE,
         INIT_DATA => "None",
         MAX_BLOCK_DATA_WIDTH => "None",
-        PORT_CNT => 2
+        PORT_CNT => 2,
+        READ_LATENCY => 1
     ) PORT MAP(
         port_0_addr => sig_bramW_port_0_addr,
         port_0_clk => sig_bramW_port_0_clk,
