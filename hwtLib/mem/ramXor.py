@@ -3,12 +3,12 @@
 
 from hwt.code import Xor
 from hwt.constants import READ_WRITE, WRITE, READ
-from hwt.hwIOs.utils import propagateClk, addClkRst
-from hwt.serializer.mode import serializeParamsUniq
 from hwt.hObjList import HObjList
+from hwt.hwIOs.utils import propagateClk, addClkRst
 from hwt.hwParam import HwParam
-from hwtLib.mem.ram import RamSingleClock
 from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
+from hwtLib.mem.ram import RamSingleClock
 
 
 @serializeParamsUniq
@@ -21,14 +21,15 @@ class RamXorSingleClock(RamSingleClock):
         https://doi.org/10.1145/2145694.2145730
         https://doi.org/10.1145/2629629
 
-    :note: The bitwise XOR operation is commutative, associative, and hasthe following properties
+    :note: The bitwise XOR operation is commutative, associative, and has the following properties
         1. A^0 = A
         2. B^B = 0
         3. A^B^B=A
         The third property, which follows from the first two, implies that we can XOR two values A and B together,
-        and recover A by XORing the result with B. This componnet uses this principe to generate additional write ports.
+        and recover A by XORing the result with B. This component uses this principle to generate additional write ports.
 
     :see: :class:`~.RamSingleClock`
+    :ivar PRIMITIVE_MEMORY_PORTS: memory port of native memory from which this memory is built.
 
     .. hwt-autodoc::
     """
@@ -99,7 +100,7 @@ class RamXorSingleClock(RamSingleClock):
             assert r_ports
             w_ports = self._w_ports
             assert w_ports
-            # 1. construct a matrix N x N where N is a number of wrie ports
+            # 1. construct a matrix N x N where N is a number of write ports
             # the diagonal is set to None because we do not need to synchronize the port with itself
             w_rams = HObjList(
                 HObjList(
