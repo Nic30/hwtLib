@@ -9,7 +9,7 @@ module FullAdder (
     output reg s
 );
     always @(a, b, ci) begin: assig_process_co
-        co = a & b | (a & ci) | (b & ci);
+        co = a & b | a & ci | b & ci;
     end
 
     always @(a, b, ci) begin: assig_process_s
