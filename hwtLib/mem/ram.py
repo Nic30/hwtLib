@@ -127,7 +127,7 @@ class RamSingleClock(HwModule):
                 port.dout(mem[port.addr]),
             ).Else(
                 port.dout(None),
-            ),
+            )
         elif port.HAS_R:
             rStm = \
             If(port.en,
