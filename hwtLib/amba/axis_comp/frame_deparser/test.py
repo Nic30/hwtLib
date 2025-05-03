@@ -10,7 +10,8 @@ from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import axi4s_send_bytes, axi4s_recieve_bytes
+from hwtLib.amba.axi4s import Axi4StreamFrameUtils, axi4s_send_bytes,\
+    axi4s_receive_bytes
 from hwtLib.amba.axis_comp.frame_deparser import Axi4S_frameDeparser
 from hwtLib.amba.axis_comp.frame_deparser.test_types import s1field, \
     s1field_composit0, s3field, s2Pading, unionOfStructs, unionSimple, \
@@ -97,8 +98,7 @@ class Axi4S_frameDeparser_TC(SimTestCase):
                                     [(MAGIC, self.m, 1)])
 
     def test_1Field_halfvalid(self, randomized=False):
-        self.instantiate(s1field, DATA_WIDTH=128,
-                                   randomized=randomized)
+        self.instantiate(s1field, DATA_WIDTH=128, randomized=randomized)
         dut = self.dut
         MAGIC = 3
         dut.dataIn.item0._ag.data.append(MAGIC)
@@ -108,7 +108,9 @@ class Axi4S_frameDeparser_TC(SimTestCase):
             t *= 2
 
         self.runSim(t * Time.ns)
-        offset, f = axi4s_recieve_bytes(dut.dataOut)
+
+        fu = Axi4StreamFrameUtils.from_HwIO(dut.dataOut)
+        offset, f = fu.receive_bytes(dut.dataOut._ag.data)
         self.assertEqual(offset, 0)
         self.assertSequenceEqual(f, [MAGIC, 0, 0, 0,
                                      0, 0, 0, 0])
@@ -474,10 +476,10 @@ class Axi4S_frameDeparser_TC(SimTestCase):
         if randomized:
             t *= 3
         self.runSim(t * Time.ns)
-        offset, f = axi4s_recieve_bytes(dut.dataOut)
+        offset, f = axi4s_receive_bytes(dut.dataOut)
         self.assertEqual(offset, 0)
         self.assertValSequenceEqual(f, list(range(1, 3 + 4)))
-        offset, f = axi4s_recieve_bytes(dut.dataOut)
+        offset, f = axi4s_receive_bytes(dut.dataOut)
         self.assertEqual(offset, 0)
         self.assertValSequenceEqual(f, list(range(8, 12 + 4)))
         self.assertEmpty(dut.dataOut._ag.data)
@@ -514,7 +516,7 @@ class Axi4S_frameDeparser_TC(SimTestCase):
             ref.append(list(chain(d0, d1)))
         self.runSim(t * CLK_PERIOD)
         for i, ref_f in enumerate(ref):
-            f_offset, f = axi4s_recieve_bytes(dut.dataOut)
+            f_offset, f = axi4s_receive_bytes(dut.dataOut)
             self.assertValEqual(f_offset, 0)
             self.assertValSequenceEqual(f, ref_f, i)
 
@@ -558,9 +560,16 @@ class Axi4S_frameDeparser_TC(SimTestCase):
                 dut.dataIn._select._ag.data.append(0)
             ref.append(d)
         self.runSim(t * CLK_PERIOD)
+
+        fu = Axi4StreamFrameUtils.from_HwIO(dut.dataOut)
+        # reinterpret strb as keep because we would like to cut off invalidated prefix data bytes
+        # to simplify checking in test
+        fu.USE_STRB = False
+        fu.USE_KEEP = True
+        dataOutData = dut.dataOut._ag.data
         for i, ref_f in enumerate(ref):
             ref_offset, ref_data = ref_f
-            f_offset, f = axi4s_recieve_bytes(dut.dataOut)
+            f_offset, f = fu.receive_bytes(dataOutData)
             self.assertEqual(f_offset, ref_offset)
             self.assertValSequenceEqual(f, ref_data)
 

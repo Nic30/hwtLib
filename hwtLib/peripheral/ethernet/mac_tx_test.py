@@ -1,7 +1,7 @@
 from binascii import crc32
 
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import axi4s_send_bytes, axi4s_recieve_bytes
+from hwtLib.amba.axi4s import axi4s_send_bytes, axi4s_receive_bytes
 from hwtLib.peripheral.ethernet.mac import EthernetMac
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import byte_list_to_be_int
@@ -35,7 +35,7 @@ class EthernetMacTx_8b_TC(SimTestCase):
         self.assertEmpty(dut.phy_tx._ag.data)
 
     def pop_tx_frame(self):
-        return axi4s_recieve_bytes(self.dut.phy_tx)
+        return axi4s_receive_bytes(self.dut.phy_tx)
 
     def send_tx_frame(self, data):
         axi4s_send_bytes(self.dut.eth.tx, data)

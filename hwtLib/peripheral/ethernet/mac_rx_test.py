@@ -1,12 +1,11 @@
 from itertools import chain
 
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import axi4s_recieve_bytes, packAxi4SFrame
 from hwtLib.peripheral.ethernet.mac import EthernetMac
 from hwtLib.peripheral.ethernet.mac_tx_test import REF_FRAME, REF_CRC
-from hwtLib.types.ctypes import uint8_t
 from hwtLib.types.net.ethernet import eth_addr_format
 from hwtSimApi.constants import CLK_PERIOD
+from hwtLib.amba.axi4s import Axi4StreamFrameUtils
 
 
 class EthernetMacRx_8b_TC(SimTestCase):
@@ -31,11 +30,11 @@ class EthernetMacRx_8b_TC(SimTestCase):
     def test_single(self):
         dut = self.dut
         rx_frame_bytes = list(chain(REF_FRAME, REF_CRC))
-        t = uint8_t[len(rx_frame_bytes)]
         # :attention: strb signal is reinterpreted as a keep signal
-        rx_data = packAxi4SFrame(self.DW, t.from_py(rx_frame_bytes),
-                                withStrb=True)
-        if dut.USE_STRB:
+        rxFu = Axi4StreamFrameUtils(self.DW, USE_STRB=True)
+        rx_data = rxFu.pack_frame(rx_frame_bytes)
+        
+        if dut.USE_KEEP:
             rx_data_for_agent = ((d, m, 0, last) for d, m, last in rx_data)
         else:
             rx_data_for_agent = ((d, 0, last) for d, _, last in rx_data)
@@ -45,7 +44,9 @@ class EthernetMacRx_8b_TC(SimTestCase):
         )
 
         self.runSim(CLK_PERIOD * (2 * len(dut.phy_rx._ag.data) + 10))
-        o, f = axi4s_recieve_bytes(dut.eth.rx)
+        
+        txFu = Axi4StreamFrameUtils.from_HwIO(dut.eth.rx)
+        o, f = txFu.receive_bytes(dut.eth.rx._ag.data)
         self.assertEqual(o, 0)
         self.assertValSequenceEqual(f, REF_FRAME)
         self.assertEmpty(dut.eth.rx._ag.data)

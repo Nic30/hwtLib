@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, If
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.stream import HStream
+from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIOVldSync
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
-from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.stream import HStream
-from hwt.hdl.types.struct import HStruct
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axi4s_fullduplex import Axi4StreamFullDuplex
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
@@ -22,8 +23,6 @@ from hwtLib.peripheral.ethernet._axis_eq import Axi4S_eq
 from hwtLib.peripheral.ethernet.constants import ETH_BITRATE
 from hwtLib.peripheral.ethernet.vldsynced_data_err_last import VldSyncedDataErrLast
 from hwtLib.types.net.ethernet import eth_mac_t, eth_addr_parse
-from hwt.pyUtils.typingFuture import override
-
 
 CRC32_RESIDUE = 0x2144df1c
 
@@ -69,7 +68,7 @@ class EthernetMac(HwModule):
     @override
     def hwDeclr(self):
         addClkRstn(self)
-        self.USE_STRB = self.DATA_WIDTH > 8
+        self.USE_KEEP = self.DATA_WIDTH > 8
         with self._hwParamsShared():
             if self.HAS_TX:
                 self.phy_tx = Axi4Stream()._m()
@@ -78,7 +77,7 @@ class EthernetMac(HwModule):
                 self.phy_rx = VldSyncedDataErrLast()
 
             self.eth = Axi4StreamFullDuplex()
-            self.eth.USE_STRB = self.USE_STRB
+            self.eth.USE_KEEP = self.USE_KEEP
             self.eth.IS_BIGENDIAN = True
 
     def _rx_mac_filter(self):
@@ -117,7 +116,7 @@ class EthernetMac(HwModule):
 
         def propagate_config(u):
             u.DATA_WIDTH = self.DATA_WIDTH
-            u.USE_STRB = self.USE_STRB
+            u.USE_KEEP = self.USE_KEEP
 
         dst_mac_parser = Axi4S_frameParser(HStruct(
             (HStream(eth_mac_t, frame_len=(1, 1)), "dst"),
@@ -153,11 +152,11 @@ class EthernetMac(HwModule):
                     fcs_cutter.dataIn,
                     crc.dataIn):
             inp.data(din.data)
-            if self.USE_STRB:
+            if self.USE_KEEP:
                 if inp is crc.dataIn:
                     inp.mask(din.mask)
                 else:
-                    inp.strb(din.mask)
+                    inp.keep(din.mask)
             inp.last(din.last)
         crc.dataIn.vld(din.vld)
         # drop fcs, was checked on original stream
@@ -181,7 +180,6 @@ class EthernetMac(HwModule):
            err_in_this_frame(din.vld & Or(*errors))
         )
         out_fifo.dataIn_discard((din.vld & Or(*errors)) | err_in_this_frame)
-
 
         # postpone procesing of last word until we know the result of fcs check
         dout = self.eth.rx
@@ -212,16 +210,16 @@ class EthernetMac(HwModule):
             (HBits(32), "fcs"),
         )
 
-        ff = Axi4S_frameDeparser(Eth_frame_t)
+        deparser = Axi4S_frameDeparser(Eth_frame_t)
         crc = Crc()
         crc.setConfig(CRC_32)
         crc.MASK_GRANULARITY = 8
         crc.LATENCY = 0
-        for c in (ff, crc):
+        deparser.USE_STRB = self.USE_KEEP
+        for c in (deparser, crc):
             c.DATA_WIDTH = self.DATA_WIDTH
-            c.USE_STRB = self.USE_STRB
         self.tx_crc = crc
-        self.tx_frame_gen = ff
+        self.tx_frame_gen = deparser
         propagateClkRstn(self)
         crc.dataIn(self.eth.tx,
                 exclude=[
@@ -229,41 +227,43 @@ class EthernetMac(HwModule):
                     self.eth.tx.valid,
                     crc.dataIn.vld,
                     crc.dataIn.rd,
-                    *([self.eth.tx.strb,
+                    *([self.eth.tx.keep,
                        crc.dataIn.mask,
-                       ] if self.USE_STRB else []),
+                       ] if self.USE_KEEP else []),
                 ]
         )
-        ff.dataIn.data(self.eth.tx,
+        deparser.dataIn.data(self.eth.tx,
                        exclude=[
                            self.eth.tx.ready,
                            self.eth.tx.valid,
-                           *([self.eth.tx.strb,
-                              ff.dataIn.data.strb,
-                              ] if self.USE_STRB else []),
+                           *([self.eth.tx.keep,
+                              deparser.dataIn.data.strb,
+                              ] if self.USE_KEEP else []),
                        ]
         )
         StreamNode([self.eth.tx],
-                   [crc.dataIn, ff.dataIn.data]).sync()
-        if self.USE_STRB:
-            ff.dataIn.data.strb(self.eth.tx.strb)
-            crc.dataIn.mask(self.eth.tx.strb)
+                   [crc.dataIn, deparser.dataIn.data]).sync()
+        if self.USE_KEEP:
+            deparser.dataIn.data.strb(self.eth.tx.keep)
+            crc.dataIn.mask(self.eth.tx.keep)
         fcs_tmp = self._reg("fcs_tmp", crc.dataOut._dtype)
         fcs_vld = self._reg("fcs_vld", def_val=0)
         # [TODO] check if this is required in order to save mux
         If(crc.dataIn.vld & crc.dataIn.last,
             fcs_tmp(crc.dataOut),
-            ff.dataIn.fcs.data(crc.dataOut),
-            fcs_vld(~ff.dataIn.fcs.rd)
+            deparser.dataIn.fcs.data(crc.dataOut),
+            fcs_vld(~deparser.dataIn.fcs.rd)
         ).Else(
-            ff.dataIn.fcs.data(fcs_tmp),
-            If(ff.dataIn.fcs.rd,
+            deparser.dataIn.fcs.data(fcs_tmp),
+            If(deparser.dataIn.fcs.rd,
                 fcs_vld(0),
             )
         )
-        ff.dataIn.fcs.vld(fcs_vld | (crc.dataIn.vld & crc.dataIn.last))
+        deparser.dataIn.fcs.vld(fcs_vld | (crc.dataIn.vld & crc.dataIn.last))
 
-        self.phy_tx(ff.dataOut)
+        self.phy_tx(deparser.dataOut, exclude=[self.phy_tx.keep, deparser.dataOut.strb, ] if self.USE_KEEP else None)
+        if self.USE_KEEP:
+            self.phy_tx.keep(deparser.dataOut.strb)
 
     @override
     def hwImpl(self):
@@ -275,7 +275,7 @@ class EthernetMac(HwModule):
 
 if __name__ == "__main__":
     from hwt.synth import to_rtl_str
-    
+
     m = EthernetMac()
     m.DATA_WIDTH = 16
     # m.HAS_TX = False

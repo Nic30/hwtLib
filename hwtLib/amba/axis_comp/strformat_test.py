@@ -8,7 +8,7 @@ from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import Axi4Stream, axi4s_recieve_bytes, axi4s_send_bytes
+from hwtLib.amba.axi4s import Axi4Stream, axi4s_receive_bytes, axi4s_send_bytes
 from hwtLib.amba.axis_comp.strformat_fn import axiS_strFormat
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.constants import CLK_PERIOD
@@ -120,7 +120,7 @@ class Axi4S_strFormat_TC(SimTestCase):
         self.runSim(200 * CLK_PERIOD)
 
         for _ in range(3):
-            frame = axi4s_recieve_bytes(dut.out)
+            frame = axi4s_receive_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, "0b{0:08b}, 0o{0:04o}, {0:03d}, 0x{0:02x}, 0x{0:02X}".format(13))
 
@@ -129,7 +129,7 @@ class Axi4S_strFormat_TC(SimTestCase):
         self.runSim(200 * CLK_PERIOD)
 
         for _ in range(3):
-            frame = axi4s_recieve_bytes(dut.out)
+            frame = axi4s_receive_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, "0b{0:08b}, 0o{0:04o}, {0:03d}, 0x{0:02x}, 0x{0:02X}".format(13))
 
@@ -139,7 +139,7 @@ class Axi4S_strFormat_TC(SimTestCase):
         self.runSim(50 * CLK_PERIOD)
 
         for _ in range(3):
-            frame = axi4s_recieve_bytes(dut.out)
+            frame = axi4s_receive_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, 'test 1234')
 
@@ -153,7 +153,7 @@ class Axi4S_strFormat_TC(SimTestCase):
         self.runSim(200 * CLK_PERIOD)
 
         for s_ref in strings:
-            frame = axi4s_recieve_bytes(dut.out)
+            frame = axi4s_receive_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, "str0:{0:s}".format(s_ref))
 
@@ -173,7 +173,7 @@ class Axi4S_strFormat_TC(SimTestCase):
         self.runSim(200 * CLK_PERIOD)
 
         for s_ref in strings:
-            frame = axi4s_recieve_bytes(dut.out)
+            frame = axi4s_receive_bytes(dut.out)
             s = bytes(frame[1]).decode("utf-8")
             self.assertEqual(s, "{0:s}{1:s}xyz{2:s}".format(*s_ref))
 

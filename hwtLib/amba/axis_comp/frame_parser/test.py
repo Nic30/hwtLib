@@ -4,17 +4,18 @@
 from collections import deque
 from math import inf
 import os
+from typing import Tuple
 
 from hwt.constants import Time
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import HdlType_select
+from hwt.hwIO import HwIO
 from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.pyUtils.testUtils import TestMatrix
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import packAxi4SFrame, \
-    unpackAxi4SFrame, axi4s_recieve_bytes
+from hwtLib.amba.axi4s import axi4s_receive_bytes, Axi4StreamFrameUtils
 from hwtLib.amba.axis_comp.frame_deparser.test_types import unionOfStructs, unionSimple
 from hwtLib.amba.axis_comp.frame_parser import Axi4S_frameParser
 from hwtLib.amba.axis_comp.frame_parser.test_types import structManyInts, \
@@ -23,8 +24,6 @@ from hwtLib.amba.axis_comp.frame_parser.test_types import structManyInts, \
     ref_unionSimple0, ref_unionSimple1, ref_unionSimple2, ref_unionSimple3
 from hwtLib.types.ctypes import uint16_t, uint8_t
 from hwtSimApi.constants import CLK_PERIOD
-from hwt.hwIO import HwIO
-
 
 TEST_DW = [
     15, 16, 32, 51, 64,
@@ -52,13 +51,13 @@ class Axi4S_frameParserTC(SimTestCase):
             self.randomize(hwIO)
 
     def mySetUp(self, dataWidth, structTemplate, randomize=False,
-                use_strb=False, use_keep=False):
+                use_strb=False, use_keep=False) -> Tuple[Axi4S_frameParser, Axi4StreamFrameUtils]:
         dut = Axi4S_frameParser(structTemplate)
         dut.USE_STRB = use_strb
         dut.USE_KEEP = use_keep
         dut.DATA_WIDTH = dataWidth
         if self.DEFAULT_BUILD_DIR is not None:
-            # because otherwise files gets mixed in parralel test execution
+            # because otherwise files gets mixed in parallel test execution
             test_name = self.getTestName()
             u_name = dut._getDefaultName()
             unique_name = f"{test_name:s}_{u_name:s}_dw{dataWidth:d}_r{randomize:d}"
@@ -69,19 +68,21 @@ class Axi4S_frameParserTC(SimTestCase):
             build_dir = None
         self.compileSimAndStart(dut, unique_name=unique_name,
                                 build_dir=build_dir)
-        # because we want to prevent resuing of this class in TestCase.setUp()
+        # because we want to prevent reusing of this class in TestCase.setUp()
         self.__class__.rtl_simulator_cls = None
         if randomize:
             self.randomizeIntf(dut.dataIn)
             self.randomizeIntf(dut.dataOut)
-        return dut
+        fu = Axi4StreamFrameUtils(dataWidth, USE_STRB=use_strb, USE_KEEP=use_keep)
+        return dut, fu
 
-    def test_packAxi4SFrame(self):
+    def test_pack_frame(self):
         t = structManyInts
         for DW in TEST_DW:
             d1 = t.from_py(ref0_structManyInts)
-            f = deque(packAxi4SFrame(DW, d1))
-            d2 = unpackAxi4SFrame(t, f, lambda x: x[0])
+            fu = Axi4StreamFrameUtils(DW)
+            f = deque(fu.pack_frame(d1))
+            d2 = fu.unpack_frame(t, f)
 
             for k in ref0_structManyInts.keys():
                 self.assertEqual(getattr(d1, k), getattr(d2, k), (DW, k))
@@ -93,7 +94,7 @@ class Axi4S_frameParserTC(SimTestCase):
 
     @testMatrix
     def test_structManyInts_nop(self, dataWidth, randomize):
-        dut = self.mySetUp(dataWidth, structManyInts, randomize)
+        dut, _ = self.mySetUp(dataWidth, structManyInts, randomize)
 
         self.runMatrixSim(30 * CLK_PERIOD, dataWidth, randomize)
         for hwIO in dut.dataOut._hwIOs:
@@ -102,12 +103,10 @@ class Axi4S_frameParserTC(SimTestCase):
     @testMatrix
     def test_structManyInts_2x(self, dataWidth, randomize):
         t = structManyInts
-        dut = self.mySetUp(dataWidth, t, randomize)
+        dut, fu = self.mySetUp(dataWidth, t, randomize)
 
-        dut.dataIn._ag.data.extend(packAxi4SFrame(
-            dataWidth, t.from_py(ref0_structManyInts)))
-        dut.dataIn._ag.data.extend(packAxi4SFrame(
-            dataWidth, t.from_py(ref1_structManyInts)))
+        dut.dataIn._ag.data.extend(fu.pack_frame(t.from_py(ref0_structManyInts)))
+        dut.dataIn._ag.data.extend(fu.pack_frame(t.from_py(ref1_structManyInts)))
 
         if randomize:
             # {DW: t}
@@ -133,7 +132,7 @@ class Axi4S_frameParserTC(SimTestCase):
     @testMatrix
     def test_unionOfStructs_nop(self, dataWidth, randomize):
         t = unionOfStructs
-        dut = self.mySetUp(dataWidth, t, randomize)
+        dut, _ = self.mySetUp(dataWidth, t, randomize)
         t = 15 * CLK_PERIOD
 
         self.runMatrixSim(t, dataWidth, randomize)
@@ -144,10 +143,10 @@ class Axi4S_frameParserTC(SimTestCase):
     @testMatrix
     def test_unionOfStructs_noSel(self, dataWidth, randomize):
         t = unionOfStructs
-        dut = self.mySetUp(dataWidth, t, randomize)
+        dut, fu = self.mySetUp(dataWidth, t, randomize)
 
         for d in [ref_unionOfStructs0, ref_unionOfStructs2]:
-            dut.dataIn._ag.data.extend(packAxi4SFrame(dataWidth, t.from_py(d)))
+            dut.dataIn._ag.data.extend(fu.pack_frame(t.from_py(d)))
 
         t = 15 * CLK_PERIOD
         self.runMatrixSim(t, dataWidth, randomize)
@@ -159,11 +158,11 @@ class Axi4S_frameParserTC(SimTestCase):
     @testMatrix
     def test_unionOfStructs(self, dataWidth, randomize):
         t = unionOfStructs
-        dut = self.mySetUp(dataWidth, t, randomize)
+        dut, fu = self.mySetUp(dataWidth, t, randomize)
 
         for d in [ref_unionOfStructs0, ref_unionOfStructs2,
                   ref_unionOfStructs1, ref_unionOfStructs3]:
-            dut.dataIn._ag.data.extend(packAxi4SFrame(dataWidth, t.from_py(d)))
+            dut.dataIn._ag.data.extend(fu.pack_frame(t.from_py(d)))
         dut.dataOut._select._ag.data.extend([0, 1, 0, 1])
 
         if randomize:
@@ -198,11 +197,11 @@ class Axi4S_frameParserTC(SimTestCase):
     @testMatrix
     def test_simpleUnion(self, dataWidth, randomize):
         t = unionSimple
-        dut = self.mySetUp(dataWidth, t, randomize)
+        dut, fu = self.mySetUp(dataWidth, t, randomize)
 
         for d in [ref_unionSimple0, ref_unionSimple2,
                   ref_unionSimple1, ref_unionSimple3]:
-            dut.dataIn._ag.data.extend(packAxi4SFrame(dataWidth, t.from_py(d)))
+            dut.dataIn._ag.data.extend(fu.pack_frame(t.from_py(d)))
         dut.dataOut._select._ag.data.extend([0, 1, 0, 1])
 
         t = 300 * Time.ns
@@ -241,20 +240,19 @@ class Axi4S_frameParserTC(SimTestCase):
             (HStream(HBits(8), frame_len=frame_len), "frame0"),
             (uint16_t, "footer"),
         )
-        dut = self.mySetUp(dataWidth, T, randomize, use_strb=True)
+        dut, fu = self.mySetUp(dataWidth, T, randomize, use_strb=True)
         dut.dataIn._ag.data.extend(
-            packAxi4SFrame(dataWidth,
-                          T.from_py({"frame0": [i + 1 for i in range(frame_len)],
-                                     "footer": 2}),
-                          withStrb=True,
-                          )
+            fu.pack_frame(
+                T.from_py({"frame0": [i + 1 for i in range(frame_len)],
+                           "footer": 2}),
             )
+        )
         t = 20
         if randomize:
             t *= 3
 
         self.runMatrixSim2(t, dataWidth, frame_len, randomize)
-        off, f = axi4s_recieve_bytes(dut.dataOut.frame0)
+        off, f = axi4s_receive_bytes(dut.dataOut.frame0)
         self.assertEqual(off, 0)
         self.assertValSequenceEqual(f, [i + 1 for i in range(frame_len)])
         self.assertValSequenceEqual(dut.dataOut.footer._ag.data, [2])
@@ -269,7 +267,7 @@ class Axi4S_frameParserTC(SimTestCase):
             wires correctly
         """
         if not optional_start and frame_len == 0:
-            # filtering tests which does not make sence from the test matrix
+            # filtering tests which does not make sense from the test matrix
             return
 
         prefix_padding, suffix_padding = prefix_suffix_as_padding
@@ -283,13 +281,13 @@ class Axi4S_frameParserTC(SimTestCase):
         if not suffix_padding:
             fieldsToUse.add("footer")
         _T = HdlType_select(T, fieldsToUse)
-        dut = self.mySetUp(dataWidth, _T, randomize, use_strb=True)
+        dut, fu = self.mySetUp(dataWidth, _T, randomize, use_strb=True)
         v = T.from_py({
             "frame0": [i + 1 for i in range(frame_len)],
             "footer": frame_len + 1
         })
         dut.dataIn._ag.data.extend(
-            packAxi4SFrame(dataWidth, v, withStrb=True)
+            fu.pack_frame(v)
         )
         t = 20
         if randomize:
@@ -298,7 +296,7 @@ class Axi4S_frameParserTC(SimTestCase):
         self.runMatrixSim2(t, dataWidth, frame_len, randomize, name_extra=f"_startOpt{int(optional_start):d}")
 
         if not prefix_padding:
-            off, f = axi4s_recieve_bytes(dut.dataOut.frame0)
+            off, f = axi4s_receive_bytes(dut.dataOut.frame0)
             self.assertEqual(off, 0)
             self.assertValSequenceEqual(f, [i + 1 for i in range(frame_len)])
 
@@ -315,8 +313,9 @@ class Axi4S_frameParserTC(SimTestCase):
             wires correctly
         """
         if not optional_end and frame_len == 0:
-            # filtering tests which does not make sence from the test matrix
+            # filtering tests which does not make sense from the test matrix
             return
+
         prefix_padding, suffix_padding = prefix_suffix_as_padding
         T = HStruct(
             (uint8_t, "header"),
@@ -328,13 +327,13 @@ class Axi4S_frameParserTC(SimTestCase):
         if not suffix_padding:
             fieldsToUse.add("frame0")
         _T = HdlType_select(T, fieldsToUse)
-        dut = self.mySetUp(dataWidth, _T, randomize, use_strb=True)
+        dut, fu = self.mySetUp(dataWidth, _T, randomize, use_strb=True)
         v = T.from_py({
             "header": frame_len + 1,
             "frame0": [i + 1 for i in range(frame_len)],
         })
         dut.dataIn._ag.data.extend(
-            packAxi4SFrame(dataWidth, v, withStrb=True)
+            fu.pack_frame(v)
         )
         t = 20
         if randomize:
@@ -346,7 +345,7 @@ class Axi4S_frameParserTC(SimTestCase):
             self.assertValSequenceEqual(dut.dataOut.header._ag.data, [frame_len + 1])
 
         if not suffix_padding:
-            off, f = axi4s_recieve_bytes(dut.dataOut.frame0)
+            off, f = axi4s_receive_bytes(dut.dataOut.frame0)
             self.assertEqual(off, 0)
             self.assertValSequenceEqual(f, [i + 1 for i in range(frame_len)])
 
@@ -354,7 +353,7 @@ class Axi4S_frameParserTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([Axi4S_frameParserTC("test_header_stream")])
+    # suite = unittest.TestSuite([Axi4S_frameParserTC("test_pack_frame")])
     suite = testLoader.loadTestsFromTestCase(Axi4S_frameParserTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

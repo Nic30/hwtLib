@@ -8,7 +8,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import axi4s_recieve_bytes, axi4s_send_bytes
+from hwtLib.amba.axi4s import axi4s_receive_bytes, axi4s_send_bytes
 from hwtLib.amba.axis_comp.frame_join import Axi4S_FrameJoin
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -30,7 +30,7 @@ class Axi4S_FrameJoin_1x_1B_TC(SimTestCase):
         axi4s_send_bytes(self.dut.dataIn[input_i], data_B, offset=offset)
 
     def recive(self):
-        return axi4s_recieve_bytes(self.dut.dataOut)
+        return axi4s_receive_bytes(self.dut.dataOut)
 
     def randomize_all(self):
         for din in self.dut.dataIn:
@@ -62,7 +62,7 @@ class Axi4S_FrameJoin_1x_1B_TC(SimTestCase):
         self.runSim(CLK_PERIOD * (
             len(IN_FRAMES) * len(OUT_FRAMES[0]) * 20 + 100))
         for (ref_offset, ref_frame) in OUT_FRAMES:
-            offset, frame = axi4s_recieve_bytes(self.dut.dataOut)
+            offset, frame = axi4s_receive_bytes(self.dut.dataOut)
 
             self.assertEqual(offset, ref_offset)
             self.assertSequenceEqual(frame, ref_frame)

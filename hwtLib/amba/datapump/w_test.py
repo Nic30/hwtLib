@@ -8,8 +8,8 @@ from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi3Lite import Axi3Lite
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.axi4s import Axi4StreamFrameUtils
 from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
-from hwtLib.amba.axi4s import axi4s_recieve_bytes
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.datapump.r_aligned_test import Axi4_rDatapumpTC, Axi_datapumpTC
 from hwtLib.amba.datapump.w import Axi_wDatapump
@@ -213,10 +213,16 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
                         self.aTrans(0x100 + i * addr_step, WORDS, 0)
                     )
             self.assertValSequenceEqual(aw, aw_ref)
-
+            
+            fuW = Axi4StreamFrameUtils.from_HwIO(dut.axi.w)
+            # reinterpret strb as keep because we would like to cut off invalidated prefix data bytes
+            # to simplify checking in test
+            fuW.USE_KEEP = True
+            fuW.USE_STRB = False
+            
             for ref_frame in ref_w_frames:
                 if hasattr(dut.axi.w, "id"):
-                    offset, id_, w_data = axi4s_recieve_bytes(dut.axi.w)
+                    offset, id_, w_data = fuW.receive_bytes(w)
                     self.assertEqual(id_, 0)
                 elif dut.axi.LEN_WIDTH == 0:
                     offset = None
@@ -230,7 +236,7 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
                                 B = int(data[(B_i + 1) * 8: B_i * 8])
                                 w_data.append(B)
                 else:
-                    offset, w_data = axi4s_recieve_bytes(dut.axi.w)
+                    offset, w_data = fuW.receive_bytes(w)
                 self.assertEqual(offset, 1)
                 self.assertSequenceEqual(w_data, ref_frame)
 
@@ -447,7 +453,7 @@ Axi_wDatapumpTCs = [
 if __name__ == "__main__":
     import unittest
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([Axi4Lite_wDatapump_alignas8TC("test_simpleUnalignedWithData")])
+    # suite = unittest.TestSuite([Axi4_wDatapumpTC("test_simpleUnalignedWithData_5x_2words_r")])
     loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in Axi_wDatapumpTCs]
     suite = unittest.TestSuite(loadedTcs)
     runner = unittest.TextTestRunner(verbosity=3)

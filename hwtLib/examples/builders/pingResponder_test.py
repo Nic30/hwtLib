@@ -8,7 +8,7 @@ from hwt.math import sizeof
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import Bits3valToInt
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.amba.axi4s import unpackAxi4SFrame, packAxi4SFrame
+from hwtLib.amba.axi4s import Axi4StreamFrameUtils
 from hwtLib.examples.builders.pingResponder import Axi4SPingResponder, \
     echoFrame_t
 from hwtLib.types.net.ethernet import eth_addr_parse, ETHER_TYPE
@@ -152,14 +152,15 @@ class Axi4SPingResponderTC(SimTestCase):
     def test_reply1x(self):
         dut = self.dut
         f = self.create_ICMP_echo_frame()
-
-        dut.rx._ag.data.extend(packAxi4SFrame(self.DATA_WIDTH, f, withStrb=False))
+        
+        fu = Axi4StreamFrameUtils(self.DATA_WIDTH)
+        dut.rx._ag.data.extend(fu.pack_frame(f))
         dut.myIp._ag.data.append(
             int.from_bytes(socket.inet_aton("192.168.0.2"), byteorder="little")
         )
         self.runSim(50 * CLK_PERIOD)
 
-        res = unpackAxi4SFrame(echoFrame_t, dut.tx._ag.data)
+        res = fu.unpack_frame(echoFrame_t, dut.tx._ag.data)
         model_res = pingResponder_model(f)
 
         _res = iterBits(res, bitsInOne=8, skipPadding=False)

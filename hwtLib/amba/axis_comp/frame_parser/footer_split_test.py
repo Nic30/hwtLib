@@ -5,7 +5,7 @@ import os
 
 from hwt.pyUtils.testUtils import TestMatrix
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import axi4s_send_bytes, axi4s_recieve_bytes
+from hwtLib.amba.axi4s import Axi4StreamFrameUtils
 from hwtLib.amba.axis_comp.frame_parser.footer_split import Axi4S_footerSplit
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -37,7 +37,15 @@ class Axi4S_footerSplitTC(SimTestCase):
         return dut
 
     def assertFrameEqual(self, output_i, ref_offset, ref_data):
-        off, data = axi4s_recieve_bytes(self.dut.dataOut[output_i])
+        axis = self.dut.dataOut[output_i]
+        ag_data = axis._ag.data
+        fu = Axi4StreamFrameUtils.from_HwIO(axis)
+        if fu.USE_STRB:
+            # reinterpret strb as keep because we would like to cut off invalidated prefix data bytes
+            # to simplify checking in test
+            fu.USE_KEEP = True
+            fu.USE_STRB = False
+        off, data = fu.receive_bytes(ag_data)
         self.assertEqual(off, ref_offset)
         self.assertValSequenceEqual(data, ref_data)
 
@@ -72,10 +80,12 @@ class Axi4S_footerSplitTC(SimTestCase):
 
         def gen_data(n_bits):
             return [v & 0xff for v in range(offset, offset + n_bits // 8)]
+        
+        fu = Axi4StreamFrameUtils.from_HwIO(dut.dataIn)
 
         for _ in range(N):
             for frame_len in (frame_len0, frame_len1):
-                axi4s_send_bytes(dut.dataIn, gen_data((frame_len + footer_width)))
+                fu.send_bytes(gen_data((frame_len + footer_width)), dut.dataIn._ag.data)
                 expected0.append((0,
                                   gen_data(frame_len)))
                 offset += frame_len // 8
@@ -124,21 +134,21 @@ class Axi4S_footerSplitTC(SimTestCase):
     @TestMatrix(TEST_FRAME_SIZES,
                 [0, ] + TEST_FRAME_SIZES,
                 [0, ] + TEST_FRAME_SIZES)
-    def test_frames_8_randomized(self, footer_width,
+    def test_frames_8b_randomized(self, footer_width,
                                  frame_len0, frame_len1):
         self._test_frames(8, footer_width, frame_len0, frame_len1, False)
 
     @TestMatrix(TEST_FRAME_SIZES,
                 [0, ] + TEST_FRAME_SIZES,
                 [0, ] + TEST_FRAME_SIZES)
-    def test_frames_16_randomized(self, footer_width,
+    def test_frames_16b_randomized(self, footer_width,
                                   frame_len0, frame_len1):
         self._test_frames(16, footer_width, frame_len0, frame_len1, True)
 
     @TestMatrix(TEST_FRAME_SIZES,
                 [0, ] + TEST_FRAME_SIZES,
                 [0, ] + TEST_FRAME_SIZES)
-    def test_frames_24_randomized(self, footer_width,
+    def test_frames_24b_randomized(self, footer_width,
                                   frame_len0, frame_len1):
         self._test_frames(24, footer_width, frame_len0, frame_len1, True)
 
@@ -154,7 +164,7 @@ if __name__ == '__main__':
     # useParallelTest = False
 
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([Axi4S_footerSplitTC("test_frames_8_randomized")])
+    # suite = unittest.TestSuite([Axi4S_footerSplitTC("test_frames_16b_randomized")])
     suite = testLoader.loadTestsFromTestCase(Axi4S_footerSplitTC)
     
     runner = unittest.TextTestRunner(verbosity=3)

@@ -115,199 +115,247 @@ class Axi4StreamAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
         UniversalRdVldSyncAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
 
 
-def packAxi4SFrame(dataWidth: int, structVal: Union[HConst, Sequence[int]], withStrb=False)\
-        ->Generator[Union[Tuple[Optional[int], int, int],
-                           Tuple[Optional[int], int]], None, None]:
-    """
-    pack data of structure into words on axis interface
-    Words are tuples (data, last) or (data, mask, last) depending on args.
-    
-    :param structVal: value to be send, HConst instance or list of int for each byte
-    
-    :returns: generator of tuples (data, strb, isLast), strb is ommited if withStrb=False
-    
-    """
-    if not isinstance(structVal, HConst):
-        try:
-            valByteCnt = len(structVal)
-        except:
-            structVal = tuple(structVal)
-            valByteCnt = len(structVal)
-
-        if valByteCnt != 0:
-            structVal = uint8_t[valByteCnt].from_py(structVal)
-        else:
-            structVal = []
-
-    if structVal == []:
-        if withStrb:
-            yield (None, 0, 1)
-        else:
-            yield (None, 1)
-        return
-
-    if withStrb:
-        byte_cnt = dataWidth // 8
-
-    words = iterBits(structVal, bitsInOne=dataWidth,
-                     skipPadding=False, fillup=True)
-    for last, d in iter_with_last(words):
-        assert d._dtype.bit_length() == dataWidth, d._dtype.bit_length()
-        if withStrb:
-            word_mask = 0
-            for B_i in range(byte_cnt):
-                m = get_bit_range(d.vld_mask, B_i * 8, 8)
-                if m == 0xff:
-                    word_mask = set_bit(word_mask, B_i)
-                else:
-                    assert m == 0, ("Each byte has to be entirely valid"
-                                    " or entirely invalid,"
-                                    " because of mask granularity", m)
-            yield (d, word_mask, last)
-        else:
-            yield (d, last)
+Axi4StreamAgentWordType = Union[
+    Tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst],
+    Tuple[HBitsConst, HBitsConst, HBitsConst],
+    Tuple[HBitsConst, HBitsConst]
+]
 
 
-def concatDataStrbLastFlags(frameBeats: Sequence[Tuple[HBitsConst, int, int]], strbT: HBits):
-    for data, strb, last in frameBeats:
-        yield Concat(BIT.from_py(last), strbT.from_py(strb), data)
+class Axi4StreamFrameUtils():
 
+    def __init__(self, DATA_WIDTH: int, USE_STRB=False, USE_KEEP=False, USE_ID=False, BYTE_WIDTH=8):
+        self.DATA_WIDTH = DATA_WIDTH
+        self.BYTE_WIDTH = BYTE_WIDTH
+        self.BYTE_CNT = DATA_WIDTH // BYTE_WIDTH
+        self.USE_STRB = USE_STRB
+        self.USE_KEEP = USE_KEEP
+        self.USE_ID = USE_ID
+        self.maskT = HBits(DATA_WIDTH // self.BYTE_WIDTH)
 
-def unpackAxi4SFrame(structT: HdlType, frameData: Deque[Union[HBitsConst, int]], getDataFn=None, dataWidth=None) -> HConst:
-    """
-    opposite of packAxi4SFrame
-    """
-    if getDataFn is None:
+    @classmethod
+    def from_HwIO(cls, axis: Axi4Stream):
+        USE_ID = bool(getattr(axis, "ID_WIDTH", 0))
+        if getattr(axis, "USER_WIDTH", 0):
+            raise NotImplementedError()
 
-        def _getDataFn(x):
-            return x[0]
+        USE_KEEP = hasattr(axis, "keep")
+        USE_STRB = hasattr(axis, "strb")
+        if USE_KEEP and USE_STRB:
+            raise NotImplementedError()
+        return Axi4StreamFrameUtils(axis.DATA_WIDTH, USE_STRB=USE_STRB, USE_KEEP=USE_KEEP, USE_ID=USE_ID)
 
-        getDataFn = _getDataFn
+    @staticmethod
+    def _getWordDataFn(wordTuple:Tuple[HConst]):
+        return wordTuple[0]
 
-    res = HConst_from_words(structT, frameData, getDataFn, dataWidth)
-    if dataWidth is None:
-        dataWidth = frameData[0][0]._dtype.bit_length()
+    def pack_frame(self, structVal: Union[HConst, Sequence[int]])\
+            ->Generator[Union[Tuple[Optional[int], int, int],
+                               Tuple[Optional[int], int]], None, None]:
+        """
+        pack data of structure into words on axis interface
+        Words are tuples (data, last) or (data, mask, last) depending on args.
+        
+        :param structVal: value to be send, HConst instance or list of int for each byte
+        
+        :returns: generator of tuples (data, strb, isLast), strb is omitted if withStrb=False
+        """
+        DATA_WIDTH = self.DATA_WIDTH
+        withStrb = self.USE_STRB or self.USE_KEEP
+        if self.USE_STRB and  self.USE_KEEP:
+            raise NotImplementedError()
+        if not isinstance(structVal, HConst):
+            try:
+                valByteCnt = len(structVal)
+            except:
+                structVal = tuple(structVal)
+                valByteCnt = len(structVal)
 
-    for _ in range(ceil(structT.bit_length() / dataWidth)):
-        frameData.popleft()
-
-    return res
-
-
-def _axi4s_recieve_bytes(ag_data: Deque[Union[
-                                        Tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst],
-                                        Tuple[HBitsConst, HBitsConst, HBitsConst],
-                                        Tuple[HBitsConst, HBitsConst]]],
-                        D_B: int, use_keep: bool, use_id: bool) -> Tuple[int, List[int]]:
-    """
-    :param ag_data: list of axi stream words, number of item in tuple depends on use_keep and use_id
-    :param use_keep: specifies if input tuples contain keep mask
-    :param use_id: specifies if input tuples contain axi stream id
-    :param D_B: number of bytes in word
-    """
-    offset = None
-    data_B = []
-    last = False
-    first = True
-    current_id = 0
-    mask_all = mask(D_B)
-    while ag_data:
-        _d = ag_data.popleft()
-        if use_id:
-            if use_keep:
-                id_, data, keep, last = _d
-                keep = int(keep)
+            if valByteCnt != 0:
+                structVal = uint8_t[valByteCnt].from_py(structVal)
             else:
-                id_, data, last = _d
-                keep = mask_all
-            id_ = int(id_)
+                structVal = []
+
+        if structVal == []:
+            if withStrb:
+                yield (None, 0, 1)
+            else:
+                yield (None, 1)
+            return
+
+        if withStrb:
+            byte_cnt = DATA_WIDTH // 8
+
+        words = iterBits(structVal, bitsInOne=DATA_WIDTH,
+                         skipPadding=False, fillup=True)
+        for last, d in iter_with_last(words):
+            assert d._dtype.bit_length() == DATA_WIDTH, d._dtype.bit_length()
+            if withStrb:
+                word_mask = 0
+                for B_i in range(byte_cnt):
+                    m = get_bit_range(d.vld_mask, B_i * 8, 8)
+                    if m == 0xff:
+                        word_mask = set_bit(word_mask, B_i)
+                    else:
+                        assert m == 0, ("Each byte has to be entirely valid"
+                                        " or entirely invalid,"
+                                        " because of mask granularity", m)
+                yield (d, word_mask, last)
+            else:
+                yield (d, last)
+
+    def unpack_frame(self, structT: HdlType, frameData: Deque[Union[HBitsConst, int]]) -> HConst:
+        """
+        opposite of :meth:`~.pack_frame"
+        """
+        res = HConst_from_words(structT, frameData, self._getWordDataFn, self.DATA_WIDTH)
+        for _ in range(ceil(structT.bit_length() / self.DATA_WIDTH)):
+            frameData.popleft()
+
+        return res
+
+    def concatWordBits(self, frameBeats: Sequence[Tuple[HBitsConst, int, int]]):
+        maskT = self.maskT
+        if self.USE_ID:
+            raise NotImplementedError()
+
+        if self.USE_KEEP and self.USE_STRB:
+            for data, strb, keep, last in frameBeats:
+                yield Concat(BIT.from_py(last), maskT.from_py(strb), maskT.from_py(keep), data)
+        elif self.USE_KEEP or self.USE_STRB:
+            for data, strb, last in frameBeats:
+                yield Concat(BIT.from_py(last), maskT.from_py(strb), data)
         else:
+            for data, last in frameBeats:
+                yield Concat(BIT.from_py(last), data)
+
+    def receive_bytes(self, ag_data: Deque[Axi4StreamAgentWordType]) -> Tuple[int, List[int]]:
+        """
+        :param ag_data: list of axi stream words, number of item in tuple depends on use_keep and use_id
+        :param use_keep: specifies if input tuples contain keep mask
+        :param use_id: specifies if input tuples contain axi stream id
+        :param D_B: number of bytes in word
+        """
+        offset = None
+        data_B = []
+        last = False
+        first = True
+        id_ = current_id = 0
+        BYTE_CNT = self.BYTE_CNT
+        BYTE_WIDTH = self.BYTE_WIDTH
+        BYTE_MASK = mask(BYTE_WIDTH)
+        mask_all = mask(BYTE_CNT)
+        use_id = self.USE_ID
+        use_keep = self.USE_KEEP
+        use_strb = self.USE_STRB
+        while ag_data:
+            _d = ag_data.popleft()
+            if use_id:
+                id_ = _d[0]
+                id_ = int(id_)
+                _d = _d[1:]
+
             if use_keep:
-                data, keep, last = _d
-                keep = int(keep)
+                if use_strb:
+                    data, strb, keep, last = _d
+                    strb = int(strb)
+                    keep = int(keep)
+                else:
+                    data, keep, last = _d
+                    strb = mask_all
+                    keep = int(keep)
+            elif use_strb:
+                data, strb, last = _d
+                strb = int(strb)
+                keep = mask_all
             else:
                 data, last = _d
+                strb = mask_all
                 keep = mask_all
-            id_ = 0
 
-        last = int(last)
-        if keep == 0:
-            assert not data_B, "Empty word in the middle of the packet"
-            assert last, "Empty word at the beginning of the packet"
-            offset = 0
+            # assert strb & ~keep == 0
+            last = int(last)
+            if keep == 0:
+                assert not data_B, "Empty word in the middle of the packet"
+                assert last, "Empty word at the beginning of the packet"
+                offset = 0
 
-        if offset is None:
-            # first iteration
-            # expecting potential 0s in keep and the rest 1
-            for i in range(D_B):
-                # i represents number of 0 from te beginning of of the keep
-                # value
-                if keep & (1 << i):
-                    offset = i
-                    break
-            assert offset is not None, keep
-        for i in range(D_B):
-            if get_bit(keep, i):
-                d = get_bit_range(data.val, i * 8, 8)
-                if get_bit_range(data.vld_mask, i * 8, 8) != 0xff:
-                    raise AssertionError(
-                        "Data not valid but it should be"
-                        f" based on strb/keep B_i:{i:d}, 0x{keep:x}, 0x{data.vld_mask:x}")
-                data_B.append(d)
+            if offset is None:
+                # first iteration
+                # expecting potential 0s in keep and the rest 1
+                m = keep
+                for i in range(BYTE_CNT):
+                    # i represents number of 0 from te beginning of of the keep
+                    # value
+                    if m & (1 << i):
+                        offset = i
+                        break
+                assert offset is not None, (strb, keep)
 
-        if first:
-            offset_mask = mask(offset)
-            assert offset_mask & keep == 0, (offset_mask, keep)
-            first = False
-            current_id = id_
-        elif not last:
-            assert keep == mask_all, (keep, "Does not support non-full words in the non-last word of the frame")
-        if not first:
-            assert current_id == id_, ("id changed in frame beats", current_id, "->", id_)
-        if last:
-            break
+            for i in range(BYTE_CNT):
+                if get_bit(keep, i):
+                    if get_bit(strb, i):
+                        d = get_bit_range(data.val, i * BYTE_WIDTH, BYTE_WIDTH)
+                        if get_bit_range(data.vld_mask, i * BYTE_WIDTH, BYTE_WIDTH) != BYTE_MASK:
+                            raise AssertionError(
+                                "Data not valid but it should be"
+                                f" based on strb/keep B_i:{i:d}, 0x{keep:x}, 0x{data.vld_mask:x}")
+                    else:
+                        if last and get_bit_range(strb, i, BYTE_CNT - i) == 0:
+                            # skip invalid suffix bytes in last word
+                            break
+                        if first and not data_B:
+                            # skip prefix of invalid bytes in first word
+                            continue
+                        d = None
+                    data_B.append(d)
 
-    if not last:
-        if data_B:
-            raise ValueError("Unfinished frame", data_B)
+            if first:
+                offset_mask = mask(offset)
+                assert offset_mask & keep &strb == 0, (offset_mask, strb, keep)
+                first = False
+                current_id = id_
+            elif not last:
+                assert keep == mask_all, (keep, "Does not support non-full words in the non-last word of the frame")
+            if not first:
+                assert current_id == id_, ("id changed in frame beats", current_id, "->", id_)
+            if last:
+                break
+
+        if not last:
+            if data_B:
+                raise ValueError("Unfinished frame", data_B)
+            else:
+                raise ValueError("No frame available")
+
+        if use_id:
+            return offset, id_, data_B
         else:
-            raise ValueError("No frame available")
+            return offset, data_B
 
-    if use_id:
-        return offset, id_, data_B
-    else:
-        return offset, data_B
+    def send_bytes(self, data_B: Union[bytes, List[int]], ag_data: Deque[Axi4StreamAgentWordType], offset:int=0)\
+            ->List[Tuple[int, int, int]]:
+        if data_B:
+            if isinstance(data_B, bytes):
+                data_B = [int(x) for x in data_B]
+            t = uint8_t[len(data_B) + offset]
+            _data_B = t.from_py([None for _ in range(offset)] + data_B)
+        else:
+            _data_B = data_B
+        # :attention: strb signal is reinterpreted as a keep signal
+        f = self.pack_frame(_data_B)
+        ag_data.extend(f)
+        return f
 
 
-def axi4s_recieve_bytes(axis: Axi4Stream) -> Tuple[int, List[int]]:
+def axi4s_receive_bytes(axis: Axi4Stream) -> Tuple[int, List[int]]:
     """
     Read data from AXI Stream agent in simulation
     and use keep signal to mask out unused bytes
     """
     ag_data = axis._ag.data
-    D_B = axis.DATA_WIDTH // 8
-    USE_ID = bool(getattr(axis, "ID_WIDTH", 0))
-    if getattr(axis, "USER_WIDTH", 0):
-        raise NotImplementedError()
-
-    USE_KEEP = hasattr(axis, "keep")
-    USE_STRB = hasattr(axis, "strb")
-    if USE_KEEP and USE_STRB:
-        raise NotImplementedError()
-    use_keep = USE_KEEP | USE_STRB
-    return _axi4s_recieve_bytes(ag_data, D_B, use_keep, USE_ID)
-
-
-def _axi4s_send_bytes(axis: Axi4Stream, data_B: List[int], withStrb:bool, offset:int)\
-        ->List[Tuple[int, int, int]]:
-    if data_B:
-        t = uint8_t[len(data_B) + offset]
-        _data_B = t.from_py([None for _ in range(offset)] + data_B)
-    else:
-        _data_B = data_B
-    # :attention: strb signal is reinterpreted as a keep signal
-    return packAxi4SFrame(axis.DATA_WIDTH, _data_B,
-        withStrb=withStrb)
+    fu = Axi4StreamFrameUtils.from_HwIO(axis)
+    return fu.receive_bytes(ag_data)
 
 
 def axi4s_send_bytes(axis: Axi4Stream, data_B: Union[List[int], bytes], offset=0) -> None:
@@ -323,11 +371,8 @@ def axi4s_send_bytes(axis: Axi4Stream, data_B: Union[List[int], bytes], offset=0
         raise NotImplementedError()
     if axis.USE_KEEP and axis.USE_STRB:
         raise NotImplementedError()
-    withStrb = axis.USE_KEEP | axis.USE_STRB
-    if isinstance(data_B, bytes):
-        data_B = [int(x) for x in data_B]
-    f = _axi4s_send_bytes(axis, data_B, withStrb, offset)
-    axis._ag.data.extend(f)
+    fu = Axi4StreamFrameUtils.from_HwIO(axis)
+    fu.send_bytes(data_B, axis._ag.data, offset=offset)
 
 
 def axi4s_mask_propagate_best_effort(src: Axi4Stream, dst: Axi4Stream):
