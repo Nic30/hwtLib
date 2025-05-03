@@ -8,10 +8,10 @@ module ExampleRom (
     end
 
     initial begin
-        rom[0] = 3;
-        rom[1] = 10;
-        rom[2] = 12;
-        rom[3] = 99;
+        rom[0] = 8'h03;
+        rom[1] = 8'h0a;
+        rom[2] = 8'h0c;
+        rom[3] = 8'h63;
     end
 
 endmodule
