@@ -5,13 +5,13 @@ from binascii import crc32
 import sys
 
 from hwt.constants import Time
+from hwt.hdl.types.bits import HBits
 from hwt.pyUtils.arrayQuery import grouper
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crc import Crc
 from hwtLib.logic.crcComb_test import stoi
 from hwtLib.logic.crcPoly import CRC_32
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.types.bits import HBits
 
 
 # , crc_hqx
@@ -273,6 +273,8 @@ class CrcTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     testLoader = unittest.TestLoader()
+    
+    # suite = unittest.TestSuite([CrcTC("test_simple_mask_3_outof_4")])
     suite = testLoader.loadTestsFromTestCase(CrcTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

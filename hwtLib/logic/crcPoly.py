@@ -17,6 +17,8 @@ Library of common CRC configurations
 :note: http://reveng.sourceforge.net/crc-catalogue/all.htm
 :note: https://github.com/nanpuyue/crc/blob/master/CRC.txt
 """
+from copy import copy
+from typing import Type, Self
 
 
 class CRC_POLY:
@@ -29,6 +31,16 @@ class CRC_POLY:
     REFIN = False
     REFOUT = False
     XOROUT = 0
+
+    @classmethod
+    def without_REFOU_and_XOROUT(cls) -> Type[Self]:
+        if not cls.REFOUT and cls.XOROUT == 0:
+            return cls
+        else:
+            c = copy(cls)
+            c.REFOUT = False
+            c.XOROUT = 0
+            return c
 
 
 class CRC_1(CRC_POLY):
@@ -333,15 +345,17 @@ class CRC_16_IBM(CRC_POLY):
     REFOUT = True
     WIDTH = 16
 
+
 class CRC_16_USB:
-    POLY=0x8005
-    INIT=0XFFFF
-    REFIN=True
-    REFOUT=True
-    XOROUT=0XFFFF
-    CHECK=0XB4C8
-    RESIDUE=0XB001
-    WIDTH=16
+    POLY = 0x8005
+    INIT = 0XFFFF
+    REFIN = True
+    REFOUT = True
+    XOROUT = 0XFFFF
+    CHECK = 0XB4C8
+    RESIDUE = 0XB001
+    WIDTH = 16
+
 
 class CRC_16_OpenSafety_A(CRC_POLY):
     "Used in safety fieldbus"

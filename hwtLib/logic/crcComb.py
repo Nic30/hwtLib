@@ -11,13 +11,13 @@ from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.logic.crcPoly import CRC_5_USB
+from hwtLib.logic.crcPoly import CRC_5_USB, CRC_POLY
 from hwtLib.logic.crcUtils import parsePolyStr
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_bits_in_bytes, \
     bit_list_reversed_endianity
-from hwt.pyUtils.typingFuture import override
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -27,6 +27,9 @@ class CrcComb(HwModule):
     """
     CRC generator,
     polynomial can be string in usual format or integer ("x^3+x+1" or 0b1011)
+
+    :note: Padding of data with 0 bits may be used to compute crc for smaller bitwidths.
+        If the CRC is reflected, then pad from LSB side. If the CRC is not reflected, then pad from MSB side.
 
     :ivar ~.DATA_WIDTH: width of data in signal
     :ivar ~.POLY: specified CRC polynome, str, int or HBits value
@@ -46,12 +49,14 @@ class CrcComb(HwModule):
     def hwConfig(self):
         self.DATA_WIDTH = HwParam(7 + 4)
         self.IN_IS_BIGENDIAN = HwParam(False)
+        self.POLY_TY = HwParam(CRC_5_USB)
         self.setConfig(CRC_5_USB)
 
-    def setConfig(self, crcConfigCls):
+    def setConfig(self, crcConfigCls: Tuple[CRC_POLY]):
         """
         Apply configuration from CRC configuration class
         """
+        self.POLY_TY = crcConfigCls
         word_t = HBits(crcConfigCls.WIDTH)
         self.POLY = word_t.from_py(crcConfigCls.POLY)
         self.POLY_WIDTH = crcConfigCls.WIDTH
@@ -68,20 +73,18 @@ class CrcComb(HwModule):
             self.dataOut = HwIOVectSignal(self.POLY_WIDTH)._m()
 
     @staticmethod
-    def parsePoly(POLY, POLY_WIDTH) -> List[int]:
+    def parsePoly(POLY: int, POLY_WIDTH: int) -> List[int]:
         """
         :return: list of bits from polynome, extra MSB 1 is added
             len of this list is POLY_WIDTH + 1
         """
         PW = int(POLY_WIDTH)
-        poly = int(POLY)  # [TODO] poly in str
-        if isinstance(poly, str):
-            polyCoefs = parsePolyStr(poly, PW)
-        elif isinstance(poly, int):
+        if isinstance(POLY, str):
+            polyCoefs = parsePolyStr(POLY, PW)
+        else:
+            poly = int(POLY)
             polyCoefs = [get_bit(poly, i)
                          for i in range(PW)]
-        else:
-            raise NotImplementedError()
 
         # LSB is usuaaly 1
         return polyCoefs, PW
@@ -98,7 +101,7 @@ class CrcComb(HwModule):
         :param polyBits: list of bits in specified polynome
         :note: all bits are in format LSB downto MSB
         :return: crc_mask contains rows where each row describes which bits
-            should be XORed to get bit of resut
+            should be XORed to get bit of result
             row is [mask_for_state_reg, mask_for_data]
         """
         DW = data_width
@@ -206,8 +209,8 @@ if __name__ == "__main__":
     # m.REFIN = m.REFOUT = False
     # m.IN_IS_BIGENDIAN = True
     # https://github.com/nandland/nandland/blob/master/CRC/Verilog/source/CRC_16_CCITT_Parallel.v
-    #from hwtLib.logic.crcPoly import CRC_16_CCITT
-    #m.setConfig(CRC_16_CCITT)
-    #m.DATA_WIDTH = 16
+    # from hwtLib.logic.crcPoly import CRC_16_CCITT
+    # m.setConfig(CRC_16_CCITT)
+    # m.DATA_WIDTH = 16
 
     print(to_rtl_str(m))
