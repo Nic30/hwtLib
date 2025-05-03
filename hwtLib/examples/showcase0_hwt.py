@@ -84,13 +84,13 @@ class Showcase0(HwModule):
         f(r)
         # assig_process_fallingEdgeRam
         If(clk._onFallingEdge(),
-            fallingEdgeRam[r_1](a[8:0]._reinterpret_cast(HBits(8, signed=True))),
-            k(Concat(HBits(24).from_py(0), fallingEdgeRam[r_1]._reinterpret_cast(HBits(8, signed=False))._reinterpret_cast(HBits(8))))
+            fallingEdgeRam[r_1](a._trunc(8)._reinterpret_cast(HBits(8, signed=True))),
+            k(fallingEdgeRam[r_1]._reinterpret_cast(HBits(8, signed=False))._zext(32)._reinterpret_cast(HBits(32)))
         )
         # assig_process_fitted
-        fitted(a[16:0]._reinterpret_cast(HBits(16)))
+        fitted(a._trunc(16)._reinterpret_cast(HBits(16)))
         # assig_process_g
-        g(Concat(Concat(a[1] & b[1], a[0] ^ b[0] | a[1]), a[6:0]._reinterpret_cast(HBits(6))))
+        g(Concat(Concat(a[1] & b[1], a[0] ^ b[0] | a[1]), a._trunc(6)._reinterpret_cast(HBits(6))))
         # assig_process_h
         If(a[2]._eq(1),
             If(r._eq(1),

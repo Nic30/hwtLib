@@ -115,7 +115,7 @@ class AddressSpaceProbe(object):
                 return
 
         # walk endpoints where this signal is connected
-        for e in mainSig.endpoints:
+        for e in mainSig._rtlEndpoints:
             if isinstance(e, HOperatorNode) and not isEventDependentOp(e):
                 ep = getEpSignal(mainSig, e)
                 yield from self.walkToConverter(ep, offset)

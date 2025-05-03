@@ -125,9 +125,9 @@ class RegWhereNextIsOnlyOutput(DReg):
     def hwImpl(self):
         r = self._reg("r")
         # if clk._risingEdge():
-        #    r = r.next
-        # r.next = r
-        self.dout(r.next)
+        #    r = r._rtlNextSig
+        # r._rtlNextSig = r
+        self.dout(r._rtlNextSig)
 
 
 class LatchReg(HwModule):

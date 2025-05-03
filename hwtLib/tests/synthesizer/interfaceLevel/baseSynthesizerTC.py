@@ -17,7 +17,7 @@ class BaseSynthesizerTC(unittest.TestCase):
 
     def assertDir(self, dut: HwModule, portName: str, direction: DIRECTION):
         try:
-            p = self.getPort(dut._ctx.hwModDec, portName)
+            p = self.getPort(dut._rtlCtx.hwModDec, portName)
         except NoValueExc:  # pragma: no cover
             self.assertTrue(False, f"port {portName:s} exists")
         self.assertEqual(p.direction, direction, f"port {portName:s} should have direction {direction:s}")

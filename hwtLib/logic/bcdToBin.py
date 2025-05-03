@@ -41,7 +41,7 @@ class BcdToBin(HwModule):
     def hwImpl(self):
         st_t = HEnum("state_t", ["IDLE", "LOAD_SR", "CONVERTING", "DONE"])
         st = self._reg("st", st_t, def_val=st_t.IDLE)
-        sr_shift = st.next._eq(st_t.CONVERTING)
+        sr_shift = st._rtlNextSig._eq(st_t.CONVERTING)
 
         bcd = self.din
         bin_ = self.dout
@@ -63,7 +63,7 @@ class BcdToBin(HwModule):
             d_sig = (d < 7)._ternary(d, d - 3)
             digits.append(d_sig)
 
-        If(st.next._eq(st_t.LOAD_SR),
+        If(st._rtlNextSig._eq(st_t.LOAD_SR),
            bcd_sr(bcd.data),
            binary_sr(0),
         ).Elif(sr_shift,

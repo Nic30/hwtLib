@@ -398,7 +398,7 @@ class CuckooHashTable(HashTableCore):
         lookupResNext = rename_signal(
             self,
             (state._eq(fsm_t.idle) & self.lookupRes.rd) |
-            (state._eq(fsm_t.lookupResAck) & (state.next != fsm_t.lookupResAck)),
+            (state._eq(fsm_t.lookupResAck) & (state._rtlNextSig != fsm_t.lookupResAck)),
             "lookupResNext")
         # synchronize all lookupRes from all tables
         StreamNode(masters=[t.lookupRes for t in self.tables]).sync(lookupResNext)

@@ -69,26 +69,26 @@ BEGIN
     assig_process_fallingEdgeRam: PROCESS(clk)
         VARIABLE tmpCastExpr_0 : UNSIGNED(7 DOWNTO 0);
         VARIABLE tmpCastExpr_2 : SIGNED(7 DOWNTO 0);
-        VARIABLE tmpCastExpr_1 : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpCastExpr_1 : UNSIGNED(31 DOWNTO 0);
     BEGIN
-        tmpCastExpr_0 := a(7 DOWNTO 0);
+        tmpCastExpr_0 := RESIZE(a, 8);
         tmpCastExpr_2 := fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1)));
-        tmpCastExpr_1 := UNSIGNED(tmpCastExpr_2);
+        tmpCastExpr_1 := RESIZE(UNSIGNED(tmpCastExpr_2), 32);
         IF FALLING_EDGE(clk) THEN
             fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1))) <= SIGNED(tmpCastExpr_0);
-            k <= X"000000" & STD_LOGIC_VECTOR(tmpCastExpr_1);
+            k <= STD_LOGIC_VECTOR(tmpCastExpr_1);
         END IF;
     END PROCESS;
     assig_process_fitted: PROCESS(a)
         VARIABLE tmpCastExpr_0 : UNSIGNED(15 DOWNTO 0);
     BEGIN
-        tmpCastExpr_0 := a(15 DOWNTO 0);
+        tmpCastExpr_0 := RESIZE(a, 16);
         fitted <= STD_LOGIC_VECTOR(tmpCastExpr_0);
     END PROCESS;
     assig_process_g: PROCESS(a, b)
         VARIABLE tmpCastExpr_0 : UNSIGNED(5 DOWNTO 0);
     BEGIN
-        tmpCastExpr_0 := a(5 DOWNTO 0);
+        tmpCastExpr_0 := RESIZE(a, 6);
         g <= (a(1) AND b(1)) & ((a(0) XOR b(0)) OR a(1)) & STD_LOGIC_VECTOR(tmpCastExpr_0);
     END PROCESS;
     assig_process_h: PROCESS(a, r)

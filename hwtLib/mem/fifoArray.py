@@ -185,7 +185,7 @@ class FifoArray(HwModule):
         item_last = self._reg("item_last", item_mask_t, def_val=0)
         # an address on where next item should be inserted
         insert_addr_next = self._reg("insert_addr_next", addr_t, def_val=0)
-        insert_addr_next(oneHotToBin(self, rename_signal(self, ~item_valid.next, "item_become_invalid")))  # get index of first non valid
+        insert_addr_next(oneHotToBin(self, rename_signal(self, ~item_valid._rtlNextSig, "item_become_invalid")))  # get index of first non valid
 
         pop = self.pop
         insert = self.insert

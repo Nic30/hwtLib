@@ -38,8 +38,8 @@ def mkLutRamCls(DATA_WIDTH):
         def hwImpl(self):
             s = self._sig
             wclk_in = s("wclk_in")
-            mem = self._ctx.sig("mem", HBits(DATA_WIDTH),
-                                def_val=self.INIT)
+            mem = self._sig("mem", HBits(DATA_WIDTH),
+                            def_val=self.INIT)
             a_in = s("a_in", HBits(6))
             d_in = s("d_in")
             we_in = s("we_in")

@@ -5,13 +5,12 @@ from math import ceil, log10
 
 from hwt.code import If, Switch, Concat
 from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import log2ceil
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
 from hwt.pyUtils.typingFuture import override
 
 
@@ -78,7 +77,7 @@ class BinToBcd(HwModule):
                     bin_r(din.data)
                 ))\
             .Case(st_t.busy,
-                bin_r(bin_r[INPUT_WIDTH - 1:]._concat(BIT.from_py(0)))) # bin_r <<= 1
+                bin_r(bin_r << 1))
 
         Switch(state)\
             .Case(st_t.busy,
@@ -95,7 +94,7 @@ class BinToBcd(HwModule):
             if g != 0:
                 prev(bcdp[g - 1])
             else:
-                prev(bin_r[INPUT_WIDTH-1]._concat(HBits(3).from_py(0)))
+                prev(bin_r.getMsb()._concat(HBits(3).from_py(0)))
 
             s = self._sig(f"s_{g:d}", HBits(4))
             s(bcdp[g] << 1 | prev >> 3),
@@ -111,6 +110,8 @@ class BinToBcd(HwModule):
 
 if __name__ == "__main__":
     from hwt.synth import to_rtl_str
-    
+    from hwt.serializer.simModel import SimModelSerializer
+
     m = BinToBcd()
-    print(to_rtl_str(m))
+    m.INPUT_WIDTH = 8
+    print(to_rtl_str(m, serializer_cls=SimModelSerializer))

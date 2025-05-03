@@ -39,11 +39,11 @@ class HwModuleWrapper(HwModule):
 
             origToWrapInfMap[hwIO] = hwIO_copy
 
-        ei = self._ctx.hwIOs
+        ei = self._rtlCtx.hwIOs
         for hwIO in self._hwIOs:
             self._loadHwIODeclarations(hwIO, True)
             assert hwIO._isExtern
-            hwIO._signalsForHwIO(self._ctx, ei,
+            hwIO._signalsForHwIO(self._rtlCtx, ei,
                                    self._store_manager.name_scope,
                                    reverse_dir=True)
 

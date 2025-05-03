@@ -51,7 +51,7 @@ def consumeExpr(e: Union[RtlSignal, HConst],
             seenObjs.extend((d, e, c))
             inputs.append(c)
         else:
-            for ep in e.endpoints:
+            for ep in e._rtlEndpoints:
                 if ep not in seenObjs:
                     inputs.append(e)
                     return
@@ -116,8 +116,8 @@ class ExtractedHwModule(HwModule):
         outerIo = outerIoMap.get(o, None)
         # drop operand cache items for expressions which will not be moved to this netlist
         # Must replace o with outerIo in every use of o outside of this unit
-        assert o.ctx is self._ctx, o
-        for ep in tuple(o.endpoints):
+        assert o._rtlCtx is self._rtlCtx, o
+        for ep in tuple(o._rtlEndpoints):
             if ep in priv:
                 toTranslate.append(ep)
             else:
@@ -132,7 +132,7 @@ class ExtractedHwModule(HwModule):
                     assert isinstance(ep, HOperatorNode), ep
                     if ep in priv:
                         assert o not in ep.perands, (o, ep)
-                        assert ep.result.ctx is self._ctx, ep
+                        assert ep.result._rtlCtx is self._rtlCtx, ep
                     else:
                         # replace operand of the operator node
                         ep._replace_input(o, outerIo)
@@ -142,7 +142,7 @@ class ExtractedHwModule(HwModule):
             if isinstance(v, HConst):
                 continue
             v: RtlSignal
-            if v.ctx is self._ctx:
+            if v._rtlCtx is self._rtlCtx:
                 continue
             try:
                 d = v.singleDriver()
@@ -168,7 +168,7 @@ class ExtractedHwModule(HwModule):
         toTranslate: Deque[Union[HOperatorNode, HdlStatement, HdlPortItem]] = deque()
         for i in self._externInputs:
             i: RtlSignal
-            toTranslate.extend(ep for ep in i.endpoints if ep in priv)
+            toTranslate.extend(ep for ep in i._rtlEndpoints if ep in priv)
 
         # if the signal is private, it is necessary to mark it as not hidden
         # in order to provide handle for subexpression replace (_replace_input)
@@ -180,7 +180,7 @@ class ExtractedHwModule(HwModule):
 
             if isinstance(obj, HdlStatement):
                 stm: HdlStatement = obj
-                ctx = self._parent._ctx
+                ctx = self._parent._rtlCtx
                 assert stm in ctx.statements
 
                 newInputs: Optional[List[Union[RtlSignal, HConst]]] = []
@@ -191,7 +191,7 @@ class ExtractedHwModule(HwModule):
                         newInputs = None
                         break
                     else:
-                        assert _i.ctx is self._ctx, (i, _i)
+                        assert _i._rtlCtx is self._rtlCtx, (i, _i)
                         newInputs.append(_i)
 
                 if newInputs is None:
@@ -205,13 +205,13 @@ class ExtractedHwModule(HwModule):
                         
                 for o in stm._outputs:
                     # move signal to a specified netlist
-                    o.ctx.signals.remove(o)
-                    o.ctx = self._ctx
-                    o.ctx.signals.add(o)
+                    o._rtlCtx.signals.remove(o)
+                    o._rtlCtx = self._rtlCtx
+                    o._rtlCtx.signals.add(o)
                     self._handleUpdateForOutput(o, translation, interOuts, outerIoMap, toTranslate)
 
                 ctx.statements.remove(stm)
-                self._ctx.statements.add(stm)
+                self._rtlCtx.statements.add(stm)
                 translation[stm] = stm
                 stm._clean_signal_meta()
 
@@ -227,7 +227,7 @@ class ExtractedHwModule(HwModule):
                                 newOps = None
                                 break
                             else:
-                                assert _op.ctx is self._ctx
+                                assert _op._rtlCtx is self._rtlCtx
                                 newOps.append(_op)
                         else:
                             assert isinstance(op, HConst), op
@@ -238,23 +238,23 @@ class ExtractedHwModule(HwModule):
                         continue
                     # create a new copy of this object in this unit
                     newSig = obj.operator._evalFn(*newOps)
-                    assert newSig.ctx is self._ctx, newSig
-                    assert obj.result.ctx is not self._ctx, obj.result
+                    assert newSig._rtlCtx is self._rtlCtx, newSig
+                    assert obj.result._rtlCtx is not self._rtlCtx, obj.result
                     
                 else:
                     # move this object to his unit, move is done by translation of operand
                     # and by move is result signal to the netlist of this unit
                     # move signal to a specified netlist
                     o = obj.result
-                    if o.ctx is not self._ctx:
-                        o.ctx.signals.remove(o)
-                        o.ctx = self._ctx
-                        o.ctx.signals.add(o)
+                    if o._rtlCtx is not self._rtlCtx:
+                        o._rtlCtx.signals.remove(o)
+                        o._rtlCtx = self._rtlCtx
+                        o._rtlCtx.signals.add(o)
                     
                     translated = True
                     for op in tuple(obj.operands):
                         if isinstance(op, RtlSignal):
-                            if op.ctx is self._ctx:
+                            if op._rtlCtx is self._rtlCtx:
                                 continue
                             _op = translation.get(op)
                             if _op is None:
@@ -262,7 +262,7 @@ class ExtractedHwModule(HwModule):
                                 translated = False
                                 break
                             else:
-                                assert _op.ctx is self._ctx
+                                assert _op._rtlCtx is self._rtlCtx
                                 obj._replace_input(op, _op)
 
                     if not translated:
@@ -273,7 +273,7 @@ class ExtractedHwModule(HwModule):
 
                 translation[obj.result] = newSig
                 translation[obj] = newSig.singleDriver()
-                toTranslate.extend(ep for ep in obj.result.endpoints if ep in priv)
+                toTranslate.extend(ep for ep in obj.result._rtlEndpoints if ep in priv)
         
                 outerIo = outerIoMap.get(obj.result, None)
                 if outerIo is not None:
@@ -288,7 +288,7 @@ class ExtractedHwModule(HwModule):
         translation = {i: self._ioMap[i]._sig for i in self._externInputs}
         interOuts = {i: self._ioMap[i]._sig for i in self._externOutputs}
         self._cleanThisSubunitRtlSignals()
-        super(ExtractedHwModule, self)._signalsForSubHwModuleEntity(self._parent._ctx, "sig_" + self._name)
+        super(ExtractedHwModule, self)._signalsForSubHwModuleEntity(self._parent._rtlCtx, "sig_" + self._name)
         
         outerIo = {i: self._ioMap[i]._sig for i in chain(self._externInputs, self._externOutputs)}
         self._moveOrCopyCircuitFromParent(translation, interOuts, outerIo)
@@ -299,7 +299,7 @@ class ExtractedHwModule(HwModule):
         self._outerIo = outerIo
         
     def _signalsForSubHwModuleEntity(self, context: RtlNetlist, prefix: str):
-        assert context is self._parent._ctx, self
+        assert context is self._parent._rtlCtx, self
         assert prefix == "sig_" + self._name, (prefix, self._name) 
         for i in chain(self._externInputs, self._externOutputs):
             self._ioMap[i]._sig = self._outerIo[i]
@@ -317,7 +317,7 @@ def extractNetlistPartToSubmodule(
     for o in outputs:
         inputs.discard(o)
         usedOnlyInternally = True
-        for ep in o.endpoints:
+        for ep in o._rtlEndpoints:
             if ep not in priv:
                 usedOnlyInternally = False
                 break
@@ -341,7 +341,7 @@ def extractRegsToSubmodule(regs: Sequence[RtlSignal]) -> ExtractedHwModule:
     
     for r in regs:
         dffStm = r.singleDriver()._cut_off_drivers_of(r)
-        dffNextStm = r.next.singleDriver()._cut_off_drivers_of(r.next)
+        dffNextStm = r._rtlNextSig.singleDriver()._cut_off_drivers_of(r._rtlNextSig)
         priv.extend((dffStm, dffNextStm))
     
         for stm in (dffStm, dffNextStm):

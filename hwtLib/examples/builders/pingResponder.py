@@ -76,7 +76,7 @@ class Axi4SPingResponder(HwModule):
             if isinstance(In, HwIOStruct):
                 self.req_load(In, reg, freeze)
             elif isinstance(reg, HConst) or \
-                    (isinstance(reg, HwIOSignal) and (isinstance(reg._sig, HConst) or reg._sig.next is None)):
+                    (isinstance(reg, HwIOSignal) and (isinstance(reg._sig, HConst) or reg._sig._rtlNextSig is None)):
                 # we have an exact value to use, ignore this input
                 In.rd(1)
                 continue

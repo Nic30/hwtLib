@@ -57,7 +57,7 @@ class SimpleIndexingRangeJoin(HwModule):
     def hwImpl(self):
         self.a[2:0](self.b)
         self.a[4:2](self.c)
-        assert len(self.a._sig.drivers) == 2
+        assert len(self.a._sig._rtlDrivers) == 2
 
 
 class IndexingInernRangeSplit(HwModule):

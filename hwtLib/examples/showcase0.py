@@ -28,13 +28,13 @@ There are several examples:
 """
 
 from hwt.code import If, Concat, Switch
+from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.hObjList import HObjList
 from hwt.hwModule import HwModule
-from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 from hwt.pyUtils.typingFuture import override
+from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 
 
 def foo(condition0, statements, condition1, fallback0, fallback1):
@@ -147,7 +147,7 @@ class Showcase0(HwModule):
 
         # by _reg function usual d-register can be instantiated
         # to be able to use this this unit has to have clock defined
-        # (you can force any signal as clock if you call self._ctx._reg directly)
+        # (you can force any signal as clock if you call self._rtlCtx._reg directly)
         # default type is BIT
         r = self._reg("r", def_val=0)
 
@@ -236,9 +236,9 @@ class Showcase0(HwModule):
         # note that rams are usually working on rising edge
         fRam = self._sig("fallingEdgeRam", int8_t[4])
         If(self.clk._onFallingEdge(),
-           # fit can extend signal and also shrink it
-           fRam[r1](a, fit=True),
-           self.k(fRam[r1]._unsigned(), fit=True)
+           # fit can extend signal and also shrink it (sext/zext based on sing of the type)
+           fRam[r1](a, fit=True), # trunc
+           self.k(fRam[r1]._unsigned(), fit=True) # zext
         )
 
 

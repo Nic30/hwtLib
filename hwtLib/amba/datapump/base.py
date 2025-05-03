@@ -186,9 +186,9 @@ class AxiDatapumpBase(HwModule):
             dispatchNode = StreamNode(
                 [req, ],
                 [axiA, transInfo],
-                skipWhen={req: transPartPending.next},
+                skipWhen={req: transPartPending._rtlNextSig},
                 extraConds={
-                    req:~transPartPending.next,
+                    req:~transPartPending._rtlNextSig,
                     axiA: req.vld & ~alignmentError,
                     transInfo: req.vld & ~alignmentError
                 }

@@ -200,7 +200,7 @@ class MdioAgent(SyncAgentBase):
                 data = pop_int(rx_bits, mdio.D_W)
                 self.on_write(self.acutal_req[1], self.acutal_req[2], data)
                 self.reset_state()
-                # print(self.sim.now / Time.ns, "write_data_recieved")
+                # print(self.sim.now / Time.ns, "write_data_received")
                 assert not rx_bits
 
         elif self.tx_bits_tmp:

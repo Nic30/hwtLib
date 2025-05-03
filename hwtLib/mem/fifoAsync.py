@@ -71,7 +71,7 @@ class FifoAsync(Fifo):
             reg_init_val=0)
         for _ in range(2):
             cdc_builder.add_out_reg()
-        reg_gray(binToGray(reg_bin.next))
+        reg_gray(binToGray(reg_bin._rtlNextSig))
         reg_gray_out_clk = cdc_builder.path[-1]
 
         # because vivado generates _replica of reg_bin and reworks the gray register
@@ -96,7 +96,7 @@ class FifoAsync(Fifo):
         w_full = self._reg("w_full", def_val=0, **clk_in)
         # wbin - rbin == 2^Nl https://zipcpu.com/blog/2018/07/06/afifo.html
         # first two bits inverted, rest equal
-        w_full(w_gray.next._eq(Concat(~r_gray_in_clk[AW + 1:AW - 1],
+        w_full(w_gray._rtlNextSig._eq(Concat(~r_gray_in_clk[AW + 1:AW - 1],
                                        r_gray_in_clk[AW - 1:])))
         din.wait(w_full)
         w_en = din.en & ~w_full
@@ -113,7 +113,7 @@ class FifoAsync(Fifo):
             )
 
         r_empty = self._reg("r_empty", def_val=1, **clk_out)
-        r_empty(r_gray.next._eq(w_gray_out_clk))
+        r_empty(r_gray._rtlNextSig._eq(w_gray_out_clk))
         dout.wait(r_empty)
         r_en = dout.en & ~r_empty
         If(r_en,

@@ -16,12 +16,12 @@ def getBaseCond(c):
     """
     isNegated = False
     try:
-        drivers = c.drivers
+        drivers = c._rtlDrivers
     except AttributeError:
         return (c, isNegated)
 
     if len(drivers) == 1:
-        d = list(c.drivers)[0]
+        d = list(c._rtlDrivers)[0]
         if isinstance(d, HOperatorNode) and d.operator == HwtOps.NOT:
             c = d.operands[0]
             isNegated = True

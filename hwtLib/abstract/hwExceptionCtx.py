@@ -70,7 +70,7 @@ class HwExceptionCtx():
         p._registerHwIO(name, hwIO, isPrivate=False)
         p._loadHwIODeclarations(hwIO, True)
         hwIO._signalsForHwIO(
-            p._ctx, p._ctx.hwIOs, p._store_manager.name_scope,
+            p._rtlCtx, p._rtlCtx.hwIOs, p._store_manager.name_scope,
             reverse_dir=True)
 
     def _HwModule_makePublicHwIOPrivateInImpl(self, hwIO: ExceptionHandleInterface):
@@ -83,17 +83,17 @@ class HwExceptionCtx():
 
         for s in HwIO_walkSignals(hwIO):
             if s._direction == INTF_DIRECTION.SLAVE:
-                ep = s._sig.endpoints
+                ep = s._sig._rtlEndpoints
                 ep.remove(s._hdlPort)
 
             elif s._direction == INTF_DIRECTION.MASTER:
-                dr = s._sig.drivers
+                dr = s._sig._rtlDrivers
                 dr.remove(s._hdlPort)
             else:
                 raise ValueError(s._direction)
 
-            s._sig.ctx.hwIOs.pop(s._sig)
-            self.parent._ctx.hwModDec.ports.remove(s._hdlPort)
+            s._sig._rtlCtx.hwIOs.pop(s._sig)
+            self.parent._rtlCtx.hwModDec.ports.remove(s._hdlPort)
             s._hdlPort = None
             s._isExtern = False
 
@@ -160,7 +160,7 @@ class HwExceptionCtx():
         for hwIO in self.parent._private_hwIOs:
             if isinstance(hwIO, ExceptionHandleInterface) and\
                     isinstance(hwIO._exception, exception_cls) and \
-                    not hwIO.rd._sig.drivers:
+                    not hwIO.rd._sig._rtlDrivers:
                 yield hwIO
 
         for hwIO in tuple(self.parent._hwIOs):
@@ -175,7 +175,7 @@ class HwExceptionCtx():
         for u in self.parent._subHwModules:
             for hwIO in u._hwIOs:
                 if isinstance(hwIO, ExceptionHandleInterface) and \
-                        not hwIO.rd._sig.drivers and\
+                        not hwIO.rd._sig._rtlDrivers and\
                         isinstance(hwIO._exception, exception_cls):
                     yield hwIO
 
@@ -187,12 +187,12 @@ class HwExceptionCtx():
         :note: The exception is considered uncached if its rd signal is not driven.
         """
         for hwIO in tuple(self.parent._private_hwIOs):
-            if isinstance(hwIO, ExceptionHandleInterface) and not hwIO.rd._sig.drivers:
+            if isinstance(hwIO, ExceptionHandleInterface) and not hwIO.rd._sig._rtlDrivers:
                 raise NotImplementedError(hwIO)
 
         for u in self.parent._subHwModules:
             for hwIO in u._hwIOs:
-                if isinstance(hwIO, ExceptionHandleInterface) and not hwIO.rd._sig.drivers:
+                if isinstance(hwIO, ExceptionHandleInterface) and not hwIO.rd._sig._rtlDrivers:
                     raise_hwIO = hwIO.__copy__()._m()
                     self._HwModule_registerPublicHwIOInImpl(
                         raise_hwIO,

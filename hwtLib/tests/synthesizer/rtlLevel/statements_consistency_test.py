@@ -19,13 +19,13 @@ from hwtLib.tests.synthesizer.interfaceLevel.subHwModuleSynthesisTC import synth
 class StatementsConsistencyTC(unittest.TestCase):
     def check_consistency(self, dut: HwModule):
         synthesised(dut)
-        c = dut._ctx
+        c = dut._rtlCtx
         for s in c.signals:
-            for e in s.endpoints:
+            for e in s._rtlEndpoints:
                 if isinstance(e, HdlStatement):
                     self.assertIs(e.parentStm, None, (s, e))
                     self.assertIn(e, c.statements)
-            for d in s.drivers:
+            for d in s._rtlDrivers:
                 if isinstance(d, HdlStatement):
                     self.assertIs(d.parentStm, None, (s, d))
                     self.assertIn(d, c.statements)
@@ -44,7 +44,7 @@ class StatementsConsistencyTC(unittest.TestCase):
     def test_rm_statement(self):
         dut = SimpleIfStatement3()
         self.check_consistency(dut)
-        stms = dut._ctx.statements
+        stms = dut._rtlCtx.statements
         self.assertEqual(len(stms), 1)
         self.assertIsInstance(list(stms)[0], HdlAssignmentContainer)
 
@@ -52,8 +52,8 @@ class StatementsConsistencyTC(unittest.TestCase):
         dut = SimpleAsyncRam()
         self.check_consistency(dut)
 
-        self.assertEqual(len(dut.addr_in._sigInside.endpoints), 1)
-        self.assertEqual(len(dut.addr_out._sigInside.endpoints), 1)
+        self.assertEqual(len(dut.addr_in._sigInside._rtlEndpoints), 1)
+        self.assertEqual(len(dut.addr_out._sigInside._rtlEndpoints), 1)
 
     def test_if_inputs_correc(self):
         dut = Segment7()
@@ -68,7 +68,7 @@ class StatementsConsistencyTC(unittest.TestCase):
         self.check_consistency(dut)
 
         # test if there is not a latch
-        for stm in dut._ctx.statements:
+        for stm in dut._rtlCtx.statements:
             if stm._event_dependent_from_branch != 0:
                 diff = stm._enclosed_for.symmetric_difference(stm._outputs)
                 self.assertEqual(diff, set(), f"\n{stm}")

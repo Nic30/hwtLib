@@ -48,7 +48,7 @@ class SignalCdcBuilder():
     def _parent(self):
         i = self.path[0]
         if isinstance(i, RtlSignalBase):
-            return i.ctx.parent
+            return i._rtlCtx.parent
         else:
             # interface
             i = i._parent

@@ -143,7 +143,7 @@ class Axi4StoreQueueWritePropagating(AxiWriteAggregator):
         )
 
         ram_r = self.data_ram.port[2]
-        ram_r.en.vld(found_in_ram_flag.next)
+        ram_r.en.vld(found_in_ram_flag._rtlNextSig)
         ram_r.addr(oneHotToBin(self, in_ram_flag, "in_ram_index"))
 
         # CLK_PERIOD 2

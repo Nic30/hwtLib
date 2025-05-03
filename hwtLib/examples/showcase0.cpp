@@ -83,23 +83,19 @@ SC_MODULE(Showcase0) {
     }
 
     void assig_process_fallingEdgeRam() {
-        sc_signal<sc_uint<32>> tmpConcat_0;
-        tmpConcat_0.write((sc_uint<24>("0x000000"), static_cast<sc_uint<8>>(static_cast<sc_uint<8>>(fallingEdgeRam[r_1])), ));
-        {
-            (fallingEdgeRam[r_1]).write(static_cast<sc_int<8>>(a.read().range(sc_int<32>("0x00000008"), sc_int<32>("0x00000000"))));
-            k = tmpConcat_0.read();
-        }
+        (fallingEdgeRam[r_1]).write(static_cast<sc_int<8>>(static_cast<sc_uint<8>>(a.read())));
+        k = static_cast<sc_uint<32>>(static_cast<sc_uint<32>>(static_cast<sc_uint<8>>(fallingEdgeRam[r_1])));
     }
 
     void assig_process_fitted() {
-        fitted.write(static_cast<sc_uint<16>>(a.read().range(sc_int<32>("0x00000010"), sc_int<32>("0x00000000"))));
+        fitted.write(static_cast<sc_uint<16>>(static_cast<sc_uint<16>>(a.read())));
     }
 
     void assig_process_g() {
         sc_signal<sc_uint<2>> tmpConcat_1;
         sc_signal<sc_uint<8>> tmpConcat_0;
         tmpConcat_1.write((a.read()[sc_int<32>("0x00000001")] & b.read()[sc_int<32>("0x00000001")], a.read()[sc_int<32>("0x00000000")] ^ b.read()[sc_int<32>("0x00000000")] | a.read()[sc_int<32>("0x00000001")], ));
-        tmpConcat_0.write((tmpConcat_1.read(), static_cast<sc_uint<6>>(a.read().range(sc_int<32>("0x00000006"), sc_int<32>("0x00000000"))), ));
+        tmpConcat_0.write((tmpConcat_1.read(), static_cast<sc_uint<6>>(static_cast<sc_uint<6>>(a.read())), ));
         g.write(tmpConcat_0.read());
     }
 

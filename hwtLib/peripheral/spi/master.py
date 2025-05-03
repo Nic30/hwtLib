@@ -158,7 +158,7 @@ class SpiMaster(HwModule):
 
         self.spi.clk(clkOut)  # clk idle value is high
 
-        clkRisign, clkFalling = builder.edgeDetector(clkIntern.next,
+        clkRisign, clkFalling = builder.edgeDetector(clkIntern._rtlNextSig,
                                                      rise=True,
                                                      fall=True,
                                                      initVal=1)

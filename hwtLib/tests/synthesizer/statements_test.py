@@ -197,8 +197,8 @@ class StatementsTC(unittest.TestCase):
     def test_If_solvable_comb_loop(self):
         dut = If_solvable_comb_loop()
         synthesised(dut)
-        b_d = dut.b.drivers
-        c_d = dut.c._sigInside.drivers
+        b_d = dut.b._rtlDrivers
+        c_d = dut.c._sigInside._rtlDrivers
         self.assertEqual(len(b_d), 1)
         self.assertEqual(len(c_d), 1)
         self.assertIsNot(b_d[0], c_d[0])
@@ -216,8 +216,8 @@ class StatementsTC(unittest.TestCase):
     def test_If_solvable_comb_loop_nested(self):
         dut = If_solvable_comb_loop_nested()
         synthesised(dut)
-        b_d = dut.b.drivers
-        c_d = dut.c._sigInside.drivers
+        b_d = dut.b._rtlDrivers
+        c_d = dut.c._sigInside._rtlDrivers
         self.assertEqual(len(b_d), 1)
         self.assertEqual(len(c_d), 1)
         self.assertIsNot(b_d[0], c_d[0])

@@ -27,8 +27,8 @@ class BasicSignalMethodsTC(unittest.TestCase):
         clk = n.sig("ap_clk")
         a = n.sig("a", clk=clk)
 
-        self.assertEqual(len(a.drivers), 1)
-        _if = a.drivers[0]
+        self.assertEqual(len(a._rtlDrivers), 1)
+        _if = a._rtlDrivers[0]
         self.assertIsInstance(_if, If)
 
         self.assertEqual(len(_if.ifTrue), 1)
@@ -36,7 +36,7 @@ class BasicSignalMethodsTC(unittest.TestCase):
         self.assertEqual(len(_if.elIfs), 0)
 
         assig = _if.ifTrue[0]
-        self.assertEqual(assig.src, a.next)
+        self.assertEqual(assig.src, a._rtlNextSig)
         self.assertEqual(assig.dst, a)
 
         self.assertIs(_if.cond, clk._onRisingEdge())
@@ -47,9 +47,9 @@ class BasicSignalMethodsTC(unittest.TestCase):
         rst = c.sig("ap_rst")
         a = c.sig("a", clk=clk, syncRst=rst, def_val=0)
 
-        self.assertEqual(len(a.drivers), 1)
+        self.assertEqual(len(a._rtlDrivers), 1)
 
-        _if = a.drivers[0]
+        _if = a._rtlDrivers[0]
         self.assertIsInstance(_if, If)
 
         self.assertIs(_if.cond, clk._onRisingEdge())
@@ -70,7 +70,7 @@ class BasicSignalMethodsTC(unittest.TestCase):
         self.assertEqual(a_reset.src, BIT.from_py(0))
 
         self.assertIsInstance(a_next, HdlAssignmentContainer)
-        self.assertEqual(a_next.src, a.next)
+        self.assertEqual(a_next.src, a._rtlNextSig)
 
     def test_indexOps(self):
         c, interf = IndexOps()

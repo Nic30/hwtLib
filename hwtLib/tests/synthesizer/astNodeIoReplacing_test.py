@@ -10,7 +10,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
         nl = RtlNetlist()
         sigs = [nl.sig(chr(ord("a") + i)) for i in range(n)]
         for s in sigs:
-            s.hidden = False
+            s._isUnnamedExpr = False
         return nl, sigs
 
     def test_If_simple_replace_input(self):
@@ -29,8 +29,8 @@ class AstNodeIoReplacingTC(unittest.TestCase):
                       b(0)
                   )
         self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
-        self.assertEqual(a.endpoints, [])
-        self.assertEqual(c.endpoints, [stm, stm_ref])
+        self.assertEqual(a._rtlEndpoints, [])
+        self.assertEqual(c._rtlEndpoints, [stm, stm_ref])
         self.assertEqual(stm._inputs, [c])
 
     def test_If_elif_replace_input(self):
@@ -54,9 +54,9 @@ class AstNodeIoReplacingTC(unittest.TestCase):
                       c(0)
                   )
         self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
-        self.assertEqual(a.endpoints, [(c & a).singleDriver(),
+        self.assertEqual(a._rtlEndpoints, [(c & a).singleDriver(),
                                        a._isOn().singleDriver()])
-        self.assertEqual(c.endpoints, [(c & a).singleDriver(),
+        self.assertEqual(c._rtlEndpoints, [(c & a).singleDriver(),
                                        (c & d).singleDriver()])
         self.assertEqual(stm._inputs, [d, c & d])
         self.assertEqual(stm._outputs, [b, c])
@@ -87,8 +87,8 @@ class AstNodeIoReplacingTC(unittest.TestCase):
         )
         self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
         self.assertEqual(stm._inputs, [c, ])
-        self.assertNotIn(stm, a.endpoints)
-        self.assertIn(stm, c.endpoints)
+        self.assertNotIn(stm, a._rtlEndpoints)
+        self.assertIn(stm, c._rtlEndpoints)
     
     def test_If_nested_withExpr(self):
         _, (a, b, c) = self.sigs_by_n(3)
@@ -115,9 +115,9 @@ class AstNodeIoReplacingTC(unittest.TestCase):
             b(0)
         )
         self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
-        self.assertNotIn(stm, a.endpoints)
-        self.assertIn(stm, (~c).endpoints)
-        self.assertIn(stm, c.endpoints)
+        self.assertNotIn(stm, a._rtlEndpoints)
+        self.assertIn(stm, (~c)._rtlEndpoints)
+        self.assertIn(stm, c._rtlEndpoints)
 
     def test_Switch_simple(self):
         _, (a, b, c) = self.sigs_by_n(3)
@@ -138,8 +138,8 @@ class AstNodeIoReplacingTC(unittest.TestCase):
             b(0)
         )
         self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
-        self.assertNotIn(stm, a.endpoints)
-        self.assertIn(stm, c.endpoints)
+        self.assertNotIn(stm, a._rtlEndpoints)
+        self.assertIn(stm, c._rtlEndpoints)
 
 
 if __name__ == '__main__':

@@ -135,7 +135,7 @@ class ClkBuilder(AbstractComponentBuilder):
         :param sig: signal to detect edges on
         :param rise: if True signal for rise detecting will be returned
         :param fall: if True signal for fall detecting will be returned
-        :param last: last value for sig (use e.g. when you have register and it's next signal (sig=reg.next, last=reg))
+        :param last: last value for sig (use e.g. when you have register and it's next signal (sig=reg._rtlNextSig, last=reg))
             if last is None last register will be automatically generated
         :param initVal: if last is None initVal will be used as its initialization value
         :return: signals which is high on on rising/falling edge or both (specified by rise, fall parameter)

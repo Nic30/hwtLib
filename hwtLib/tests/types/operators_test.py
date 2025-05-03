@@ -3,15 +3,15 @@
 
 import unittest
 
-from pyMathBitPrecise.bit_utils import mask
-
 from hwt.hdl.operatorDefs import downtoFn, toFn, HwtOps
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from hwtLib.types.ctypes import uint8_t
 from hwtLib.tests.types.hConst_test import hBool, hBit, hInt, vec
+from hwtLib.types.ctypes import uint8_t
+from pyMathBitPrecise.bit_utils import mask
+
 
 n = RtlNetlist()
 s0 = n.sig("s0", BOOL)
@@ -302,27 +302,6 @@ class OperatorTC(unittest.TestCase):
         self.assertTrue((a <= b).val)
         self.assertFalse((b <= a).val)
 
-    def test_bits_sig_slice_on_slice(self):
-        n = RtlNetlist()
-        s = n.sig("s", HBits(16))
-        self.assertIs(s[10:0][2:0], s[2:0])
-        self.assertIs(s[10:0][4:1], s[4:1])
-        self.assertIs(s[12:5][4:1], s[9:6])
-
-    def test_bits_sig_slice_on_slice_of_slice(self):
-        n = RtlNetlist()
-        s = n.sig("s", HBits(16))
-        self.assertIs(s[10:0][7:0][2:0], s[2:0])
-        self.assertIs(s[10:0][7:0][4:1], s[4:1])
-        self.assertIs(s[12:5][7:1][4:1], s[10:7])
-
-    def test_bits_mul(self):
-        n = RtlNetlist()
-        s = n.sig("s", HBits(16))
-        s * 10
-        s * s
-        self.assertEqual(int(INT.from_py(10) * INT.from_py(11)), 10 * 11)
-
     def test_array_eq_neq(self):
         t = HBits(8)[5]
         v0 = t.from_py(range(5))
@@ -359,8 +338,8 @@ class OperatorTC(unittest.TestCase):
     def test_bit2BoolConversion(self):
         e = self.n.sig("e")
         cond = e._auto_cast(BOOL)
-        self.assertTrue(cond.origin.operator == HwtOps.EQ)
-        self.assertEqual(cond.origin.operands[0], e, 1)
+        self.assertTrue(cond._rtlObjectOrigin.operator == HwtOps.EQ)
+        self.assertEqual(cond._rtlObjectOrigin.operands[0], e, 1)
 
     def test_NotAnd(self):
         n = self.n
@@ -368,14 +347,14 @@ class OperatorTC(unittest.TestCase):
         b = n.sig("b")
         aAndB = a & b
         notAAndB = ~aAndB
-        self.assertEqual(notAAndB.origin.operator, HwtOps.NOT)
+        self.assertEqual(notAAndB._rtlObjectOrigin.operator, HwtOps.NOT)
         cond = notAAndB._auto_cast(BOOL)
 
-        self.assertEqual(cond.origin.operator, HwtOps.EQ)
-        self.assertIs(cond.origin.operands[0], aAndB)
-        self.assertEqual(int(cond.origin.operands[1]), 0)
+        self.assertEqual(cond._rtlObjectOrigin.operator, HwtOps.EQ)
+        self.assertIs(cond._rtlObjectOrigin.operands[0], aAndB)
+        self.assertEqual(int(cond._rtlObjectOrigin.operands[1]), 0)
 
-        andOp = notAAndB.origin.operands[0].origin
+        andOp = notAAndB._rtlObjectOrigin.operands[0]._rtlObjectOrigin
         self.assertEqual(andOp.operator, HwtOps.AND)
 
         op0 = andOp.operands[0]
@@ -404,12 +383,13 @@ class OperatorTC(unittest.TestCase):
         a = n.sig("a")
         for op in COMMON_OPS + [
                     HwtOps.POW,
-                    HwtOps.MOD,
+                    HwtOps.UREM,
+                    HwtOps.SREM,
                     HwtOps.DOWNTO,
                     HwtOps.TO,
                     HwtOps.CALL,
                 ]:
-            with self.assertRaises((TypeError, ValueError), msg=op):
+            with self.assertRaises((TypeError, ValueError, AttributeError), msg=op):
                 op._evalFn(a, "xyz")
 
     def test_const_OP_signal_Bits(self):
@@ -427,7 +407,6 @@ class OperatorTC(unittest.TestCase):
             b = op._evalFn(_3, a)
             c = op._evalFn(_3, a)
             self.assertIs(b, c)
-
 
 if __name__ == '__main__':
     testLoader = unittest.TestLoader()

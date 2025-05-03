@@ -135,7 +135,7 @@ class FifoDrop(Fifo):
                 wr_ptr_tmp(wr_ptr_tmp + 1)
             ),
             If(din.commit,
-               wr_ptr(wr_ptr_tmp.next)
+               wr_ptr(wr_ptr_tmp._rtlNextSig)
             )
         )
 
@@ -164,7 +164,7 @@ class FifoDrop(Fifo):
 
         # looped logic
         If(din.en & din.commit,
-            looped(looped_tmp.next)
+            looped(looped_tmp._rtlNextSig)
         ).Elif(dout.en & rd_ptr._eq(MAX_DEPTH),
             looped(False)
         )

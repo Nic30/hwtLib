@@ -39,7 +39,7 @@ module Showcase0 (
     wire[1:0] r_next_1;
     reg[7:0] rom[0:3];
     always @(a, b) begin: assig_process_c
-        c = a + $signed(b);
+        c = a + $unsigned(b);
     end
 
     always @(a) begin: assig_process_cmp_0
@@ -72,8 +72,8 @@ module Showcase0 (
 
     assign f = r;
     always @(negedge clk) begin: assig_process_fallingEdgeRam
-        fallingEdgeRam[r_1] <= $unsigned(a[7:0]);
-        k <= {24'h000000, $signed(fallingEdgeRam[r_1])};
+        fallingEdgeRam[r_1] <= $signed(a[7:0]);
+        k <= {24'h000000, $unsigned(fallingEdgeRam[r_1])};
     end
 
     always @(a) begin: assig_process_fitted
@@ -135,10 +135,10 @@ module Showcase0 (
     end
 
     initial begin
-        rom[0] = 0;
-        rom[1] = 1;
-        rom[2] = 2;
-        rom[3] = 3;
+        rom[0] = 8'h00;
+        rom[1] = 8'h01;
+        rom[2] = 8'h02;
+        rom[3] = 8'h03;
     end
 
 endmodule

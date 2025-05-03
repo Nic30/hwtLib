@@ -371,7 +371,7 @@ class Usb2DeviceCore(HwModule):
         # Time since T0 (start of HS reset)
         usb_rst_time_q = self._reg("usb_rst_time_q", HBits(log2ceil(HS_RESET_TIME)), def_val=0)
 
-        If((st != st_t.WAIT_RST) & st.next._eq(st_t.WAIT_RST),
+        If((st != st_t.WAIT_RST) & st._rtlNextSig._eq(st_t.WAIT_RST),
            # Entering wait for reset state
            usb_rst_time_q(0),
         ).Elif(st._eq(st_t.WAIT_RST) & (utmi.LineState != USB_LINE_STATE.SE0),

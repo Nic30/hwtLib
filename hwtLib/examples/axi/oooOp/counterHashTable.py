@@ -64,12 +64,12 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
 
     def key_compare(self, st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
         return (
-            st0.valid.next & 
-            st1.valid.next & 
-            st0.addr.next._eq(st1.addr.next) &
-            st0.transaction_state.original_data.item_valid._sig.next & 
-            st1.data.item_valid._sig.next & 
-            st0.transaction_state.original_data.key._sig.next._eq(st1.data.key._sig.next)
+            st0.valid._rtlNextSig & 
+            st1.valid._rtlNextSig & 
+            st0.addr._rtlNextSig._eq(st1.addr._rtlNextSig) &
+            st0.transaction_state.original_data.item_valid._sig._rtlNextSig & 
+            st1.data.item_valid._sig._rtlNextSig & 
+            st0.transaction_state.original_data.key._sig._rtlNextSig._eq(st1.data.key._sig._rtlNextSig)
         )
 
     def get_latest_key_match(self, st: OOOOpPipelineStage):
@@ -119,7 +119,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
 
             res = (
                 src_st.valid & 
-                # dst_st.valid.next & 
+                # dst_st.valid._rtlNextSig & 
                 prev_stage.valid & 
                 (
                     op._eq(OP.SWAP) | (

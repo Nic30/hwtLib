@@ -214,7 +214,7 @@ class RmiiAdapter(HwModule):
         )
 
         reg1_vld(st._eq(st_t.data) & last_in_B)
-        If(reg1_vld.next,
+        If(reg1_vld._rtlNextSig,
            reg1(actual_rx_B),
         )
         err = st._eq(st_t.error)
