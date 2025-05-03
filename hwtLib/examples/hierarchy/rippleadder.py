@@ -35,7 +35,8 @@ class FullAdder(HwModule):
 
 
 # [wrong] the class is missing serializeParamsUniq decorator,
-# this means taht it will be serialized as a new module/entity for each instance, but it is not required
+# this means that it will be serialized as a new module/entity for each instance,
+# but it is not required because instances with same p_wordlength are the same
 class RippleAdder0(HwModule):
     """
     .. hwt-autodoc::
@@ -81,10 +82,10 @@ class RippleAdder0(HwModule):
         u_fa2.a(self.a[2])
         u_fa3.a(self.a[3])
 
-        u_fa0.b(self.a[0])
-        u_fa1.b(self.a[1])
-        u_fa2.b(self.a[2])
-        u_fa3.b(self.a[3])
+        u_fa0.b(self.b[0])
+        u_fa1.b(self.b[1])
+        u_fa2.b(self.b[2])
+        u_fa3.b(self.b[3])
 
         # [wrong] Why use bits of "c" singal if we can connect ports directly
         u_fa0.ci(self.c[0])
@@ -92,13 +93,13 @@ class RippleAdder0(HwModule):
         self.c[1](u_fa0.co)
         u_fa1.ci(self.c[1])
 
-        self.c[2](u_fa0.co)
+        self.c[2](u_fa1.co)
         u_fa2.ci(self.c[2])
 
-        self.c[3](u_fa0.co)
+        self.c[3](u_fa2.co)
         u_fa3.ci(self.c[3])
 
-        self.c[4](u_fa0.co)
+        self.c[4](u_fa3.co)
 
         # [wrong] why to assing each bit separately if we can assing it all it once from concat of fa.s io
         self.s[0](u_fa0.s)

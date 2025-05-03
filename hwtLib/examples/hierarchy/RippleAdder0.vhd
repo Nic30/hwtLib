@@ -101,20 +101,20 @@ BEGIN
         co => sig_fa3_co,
         s => sig_fa3_s
     );
-    c <= sig_fa0_co & sig_fa0_co & sig_fa0_co & sig_fa0_co & ci;
+    c <= sig_fa3_co & sig_fa2_co & sig_fa1_co & sig_fa0_co & ci;
     co <= c(4);
     s <= sig_fa3_s & sig_fa2_s & sig_fa1_s & sig_fa0_s;
     sig_fa0_a <= a(0);
-    sig_fa0_b <= a(0);
+    sig_fa0_b <= b(0);
     sig_fa0_ci <= c(0);
     sig_fa1_a <= a(1);
-    sig_fa1_b <= a(1);
+    sig_fa1_b <= b(1);
     sig_fa1_ci <= c(1);
     sig_fa2_a <= a(2);
-    sig_fa2_b <= a(2);
+    sig_fa2_b <= b(2);
     sig_fa2_ci <= c(2);
     sig_fa3_a <= a(3);
-    sig_fa3_b <= a(3);
+    sig_fa3_b <= b(3);
     sig_fa3_ci <= c(3);
     ASSERT p_wordlength = 4 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
