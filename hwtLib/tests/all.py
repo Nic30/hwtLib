@@ -237,6 +237,7 @@ from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
 from hwtLib.tests.types.hConst_test import HConstTC
 from hwtLib.tests.types.hStructConst_test import HStructConstTC
 from hwtLib.tests.types.hUnion_test import HUnionTC
+from hwtLib.tests.types.operatorMul_test import OperatorMulTC
 from hwtLib.tests.types.operators_test import OperatorTC
 from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
 from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
@@ -246,7 +247,6 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import Axi4S_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
-
 
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
     AxiInterconnectMatrixAddrCrossbar_TCs
@@ -281,6 +281,7 @@ suite = testSuiteFromTCs(
     SimpleSubModule3TC,
     HwModuleToHwModuleConnectionTC,
     OperatorTC,
+    OperatorMulTC,
     HwIOStruct_operatorTC,
     CastTc,
     BitsSlicingTC,

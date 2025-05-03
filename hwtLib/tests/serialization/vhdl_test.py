@@ -14,6 +14,9 @@ from hwtLib.tests.serialization.assignToCastAndSlices import AssignToASlice0, \
     AssignToASliceOfReg1a, AssignToASliceOfReg1b, AssignToASliceOfReg2a, AssignToASliceOfReg2b, \
     AssignToASliceOfReg3a, AssignToASliceOfReg3b, AssignToASliceOfReg3c, \
     AssignToASliceOfReg3d
+from hwtLib.tests.serialization.hBitsMul import ExampleHBitsMul0a, \
+    ExampleHBitsMul0b, ExampleHBitsMul1a, ExampleHBitsMul1b, ExampleHBitsMulS1a, \
+    ExampleHBitsMulS1b, ExampleHBitsMul1c
 
 
 class TernaryInConcatExample(HwModule):
@@ -46,7 +49,7 @@ class TernaryInConcatExample(HwModule):
 class Vhdl2008Serializer_TC(BaseSerializationTC):
     __FILE__ = __file__
 
-    def test_add_to_slice_vhdl(self):
+    def test_TernaryInConcatExample_vhdl(self):
         m = TernaryInConcatExample()
         self.assert_serializes_as_file(m, "TernaryInConcatExample.vhd")
 
@@ -102,13 +105,41 @@ class Vhdl2008Serializer_TC(BaseSerializationTC):
         m = AssignToASliceOfReg3d()
         self.assert_serializes_as_file(m, "AssignToASliceOfReg3d.vhd")
 
+    def test_ExampleHBitsMul0a(self):
+        m = ExampleHBitsMul0a()
+        self.assert_serializes_as_file(m, "ExampleHBitsMul0a.vhd")
+
+    def test_ExampleHBitsMul0b(self):
+        m = ExampleHBitsMul0b()
+        self.assert_serializes_as_file(m, "ExampleHBitsMul0b.vhd")
+
+    def test_ExampleHBitsMul1a(self):
+        m = ExampleHBitsMul1a()
+        self.assert_serializes_as_file(m, "ExampleHBitsMul1a.vhd")
+
+    def test_ExampleHBitsMul1b(self):
+        m = ExampleHBitsMul1b()
+        self.assert_serializes_as_file(m, "ExampleHBitsMul1b.vhd")
+
+    def test_ExampleHBitsMul1c(self):
+        m = ExampleHBitsMul1c()
+        self.assert_serializes_as_file(m, "ExampleHBitsMul1c.vhd")
+
+    def test_ExampleHBitsMulS1a(self):
+        m = ExampleHBitsMulS1a()
+        self.assert_serializes_as_file(m, "ExampleHBitsMulS1a.vhd")
+
+    def test_ExampleHBitsMulS1b(self):
+        m = ExampleHBitsMulS1b()
+        self.assert_serializes_as_file(m, "ExampleHBitsMulS1b.vhd")
+
 
 if __name__ == '__main__':
     import unittest
     # from hwt.synth import to_rtl_str
     # print(to_rtl_str(TernaryInConcatExample()))
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([Vhdl2008Serializer_TC("test_basic_data_pass")])
+    # suite = unittest.TestSuite([Vhdl2008Serializer_TC("test_AssignToASlice0")])
     suite = testLoader.loadTestsFromTestCase(Vhdl2008Serializer_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
