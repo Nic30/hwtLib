@@ -48,7 +48,7 @@ class Axi4S_frameDeparser(Axi4SCompBase, TemplateConfigured):
 
     :note: if special frame format is required,
         it can be specified by TransTmpl instance and list of FrameTmpl
-        (Input data structure can be splited into multiple frames as required)
+        (Input data structure can be split into multiple frames as required)
 
     :note: names in the picture are just illustrative
 

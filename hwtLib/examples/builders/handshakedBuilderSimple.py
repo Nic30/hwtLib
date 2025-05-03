@@ -80,7 +80,7 @@ class HandshakedBuilderSimpleTC(SimTestCase):
 
         self.runSim(200 * Time.ns)
 
-        # check if data was recieved on "b" interface
+        # check if data was received on "b" interface
         self.assertValSequenceEqual(dut.b._ag.data, [1, 2, 3, 4])
 
 

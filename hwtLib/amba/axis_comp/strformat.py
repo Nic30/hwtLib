@@ -64,14 +64,14 @@ class Axi4S_strFormatItem():
         self.digits = digits
 
     def __repr__(self):
-        return f"<Axi4S_strFormatItem {self.member_path}, {self.format_type}, {self.digits}>"
+        return f"<{self.__class__.__name__:s} {self.member_path}, {self.format_type}, {self.digits}>"
 
 
 class HdlType_to_Interface_with_Axi4Stream(HdlType_to_HwIO):
 
     def apply(self, dtype: HdlType, field_path: Optional[TypePath]=None) -> HwIO:
         """
-        Run the connversion
+        Run the conversion
         """
         if isinstance(dtype, HStream):
             assert dtype.element_t == HBits(8), dtype
@@ -87,7 +87,7 @@ class HdlType_to_Interface_with_Axi4Stream(HdlType_to_HwIO):
 @serializeParamsUniq
 class Axi4S_strFormat(HwModule):
     """
-    Generate compomonent which does same thing as printf just in hw.
+    Generate component which does same thing as printf just in hw.
     The output string is stream of encoded characters. The ending '0' is not appended.
     And 'last' signal of Axi4Stream is used instead.
 

@@ -25,10 +25,10 @@ class DRegTC(SimTestCase):
         expected = [0, 0, 1, 0, 1, 0, 1, None, None, 0]
 
         self.runSim(11 * CLK_PERIOD)
-        recieved = self.dut.dout._ag.data
+        received = self.dut.dout._ag.data
 
         # check simulation results
-        self.assertValSequenceEqual(recieved, expected)
+        self.assertValSequenceEqual(received, expected)
 
 
 class DoubleRRegTC(SimTestCase):
@@ -45,10 +45,10 @@ class DoubleRRegTC(SimTestCase):
 
         self.runSim(10 * CLK_PERIOD)
 
-        recieved = self.dut.dout._ag.data
+        received = self.dut.dout._ag.data
 
         # check simulation results
-        self.assertValSequenceEqual(recieved, expected)
+        self.assertValSequenceEqual(received, expected)
 
 
 class DReg_asyncRstTC(SimTestCase):

@@ -135,7 +135,7 @@ class UsbHostAgent(UsbAgent):
         max_packet_size = self.get_max_packet_size(addr, endp, USB_ENDPOINT_DIR.IN)
 
         pid = pid_init
-        # start recieveing the data
+        # start receiveing the data
         yield from self.send(UsbPacketToken(USB_PID.TOKEN_IN, addr, endp))
         # can receive data or STALL if the descriptor is not present
         d_raw = yield from self.receive(NOT_SPECIFIED)

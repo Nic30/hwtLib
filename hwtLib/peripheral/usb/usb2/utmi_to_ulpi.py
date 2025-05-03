@@ -141,7 +141,7 @@ class Utmi_to_Ulpi(HwModule):
         utmi_linestate_q = self._reg("utmi_linestate_q", HBits(2), def_val=0)
         utmi_data_q = self._reg("utmi_data_q", HBits(8), def_val=0)
 
-        # interupts are cleared once new RX CMD is recieved and it does not contain the event flag
+        # interupts are cleared once new RX CMD is received and it does not contain the event flag
         utmi_interrupt_q = self._reg("utmi_interrupt_q", utmi_interrupt_t,
                                      def_val=ulpi_reg_usb_interrupt_status_t_reset_default)
         utmi.interrupt(utmi_interrupt_q)

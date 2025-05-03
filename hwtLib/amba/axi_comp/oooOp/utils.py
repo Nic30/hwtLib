@@ -21,7 +21,7 @@ class OOOOpPipelineStage():
     :ivar state: state loaded from the state_array (current meta state)
     :ivar data: currently loaded data from the bus
     :ivar valid: validity flag for whole stage
-    :ivar ready: if 1 the stage can recieve data on next clock edge, otherwise
+    :ivar ready: if 1 the stage can receive data on next clock edge, otherwise
         the stage stalls
     :ivar collision_detect: the list of flags (sotored in register) if flag is 1
         it means that the value should be updated from stage on that index

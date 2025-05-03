@@ -1,7 +1,8 @@
+from typing import Optional
+
 from hwt.hwModule import HwModule
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.handshaked.compBase import HandshakedCompBase
-from typing import Optional
 
 
 class Axi4SCompBase(HandshakedCompBase):
@@ -17,24 +18,24 @@ class Axi4SCompBase(HandshakedCompBase):
         HwModule.__init__(self, hdlName=hdlName)
 
     @classmethod
-    def get_valid_signal(cls, hwIO):
+    def get_valid_signal(cls, hwIO: Axi4Stream):
         return hwIO.valid
 
     @classmethod
-    def get_ready_signal(cls, hwIO):
+    def get_ready_signal(cls, hwIO: Axi4Stream):
         return hwIO.ready
 
-    def getDataWidthDependent(self, intf):
+    def getDataWidthDependent(self, hwIO: Axi4Stream):
         s = []
-        s.append(intf.data)
+        s.append(hwIO.data)
 
         try:
-            s.append(intf.strb)
+            s.append(hwIO.strb)
         except AttributeError:
             pass
 
         try:
-            s.append(intf.keep)
+            s.append(hwIO.keep)
         except AttributeError:
             pass
         return s

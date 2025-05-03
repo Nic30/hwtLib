@@ -120,7 +120,7 @@ class Axi4SFifoCopy(Axi4SCompBase, HandshakedFifo):
         if self.ID_WIDTH > 0:
             replace_id = self._reg("replace_id",
                 HStruct(
-                    (dout.id._dtype, "val"),
+                    (dout.id._dtype, "value"),
                     (BIT, "vld")
                 ),
                 def_val={"vld": 0}
@@ -128,13 +128,13 @@ class Axi4SFifoCopy(Axi4SCompBase, HandshakedFifo):
             id_from_fifo = [a for a in data_connections if a.dst is dout.id._sig]
             assert id_from_fifo
             If(replace_id.vld,
-               dout.id(replace_id.val)
+               dout.id(replace_id.value)
             ).Else(
                 *id_from_fifo
             )
             If(dout.last & rd(dout) & vld(dout),
                replace_id.vld(self.dataOut_copy_frame),
-               replace_id.val(self.dataOut_replacement_id),
+               replace_id.value(self.dataOut_replacement_id),
             )
 
         fOut.en((rd(dout) | ~out_vld) & ~fOut.wait)
