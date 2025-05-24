@@ -199,6 +199,8 @@ class Showcase0(HwModule):
         # names of generated signals are patched to avoid collisions automatically
         r0 = self._reg("r", HBits(2), def_val=0)
         r1 = self._reg("r", HBits(2), def_val=0)
+        # all processes with the similar statement structure are merged to reduce HDL code size
+        # in this case processes for registers are merged into one
 
         r0(self.i)
         r1(r0)

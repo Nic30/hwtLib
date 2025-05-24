@@ -81,7 +81,7 @@ module Showcase0 (
     end
 
     always @(a, b) begin: assig_process_g
-        g = {{a[1] & b[1], a[0] ^ b[0] | a[1]}, a[5:0]};
+        g = {{a[1] & $signed(b[1]), a[0] ^ $signed(b[0]) | a[1]}, a[5:0]};
     end
 
     always @(a, r) begin: assig_process_h

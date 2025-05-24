@@ -42,7 +42,7 @@ USE IEEE.numeric_std.ALL;
 --    
 ENTITY SpiMaster IS
     GENERIC(
-        FREQ : INTEGER := 100000000;
+        CLK_FREQ : INTEGER := 100000000;
         HAS_MISO : BOOLEAN := TRUE;
         HAS_MOSI : BOOLEAN := TRUE;
         HAS_RX : BOOLEAN := TRUE;
@@ -229,7 +229,7 @@ BEGIN
             rxReg <= rxReg_next;
         END IF;
     END PROCESS;
-    ASSERT FREQ = 100000000 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT CLK_FREQ = 100000000 REPORT "Generated only for this value" SEVERITY failure;
     ASSERT HAS_MISO = TRUE REPORT "Generated only for this value" SEVERITY failure;
     ASSERT HAS_MOSI = TRUE REPORT "Generated only for this value" SEVERITY failure;
     ASSERT HAS_RX = TRUE REPORT "Generated only for this value" SEVERITY failure;

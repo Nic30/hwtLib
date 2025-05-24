@@ -11,12 +11,8 @@ END ENTITY;
 ARCHITECTURE rtl OF TmpVarExample1 IS
 BEGIN
     assig_process_b: PROCESS(a)
-        VARIABLE tmpTypeConv_0 : BOOLEAN;
-        VARIABLE tmpTypeConv_1 : BOOLEAN;
     BEGIN
-        tmpTypeConv_0 := a(15 DOWNTO 0) = X"0001";
-        tmpTypeConv_1 := a(31 DOWNTO 16) = X"0001";
-        IF tmpTypeConv_0 AND tmpTypeConv_1 THEN
+        IF (a(15 DOWNTO 0) = X"0001") = FALSE AND (a(31 DOWNTO 16) = X"0001") = FALSE THEN
             b <= X"00000000";
         ELSE
             b <= X"00000001";
