@@ -1,8 +1,10 @@
 from math import ceil
+from typing import Optional, Union
 
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.struct import HStruct
 from hwt.math import shiftIntArray
 from hwt.pyUtils.arrayQuery import grouper
@@ -42,9 +44,10 @@ class SimRam():
     :ivar ~.data: memory dict
     """
 
-    def __init__(self, cellSize, parent=None):
+    def __init__(self, cellSize:int, parent=None):
         """
-        :param cellWidth: width of items in memory
+        :param cellSize: specifies the number of bytes of word
+            (byte is unit of the addres and it does not have to be 8b)
         :param clk: clk signal for synchronization
         :param parent: parent instance of SimRam
                        (memory will be shared with this instance)
@@ -52,9 +55,9 @@ class SimRam():
 
         self.parent = parent
         if parent is None:
-            self.data = {}
+            self.data: dict[int, Union[int, HBitsConst]] = {}
         else:
-            self.data = parent.data
+            self.data: dict[int, Union[int, HBitsConst]] = parent.data
         self.cellSize = cellSize
         self.prevAllocatedAddrEnd = 0
 
@@ -122,14 +125,13 @@ class SimRam():
             initValues = shiftIntArray(initValues, self.cellSize * 8, shift * 8)
             wordCnt += 1
 
-        d = self.data
-
         if initValues is not None:
             if size != self.cellSize:
                 initValues = list(reshapedInitItems(
                     size, self.cellSize, initValues))
             assert len(initValues) == wordCnt, (len(initValues), wordCnt)
 
+        d = self.data
         for i in range(wordCnt):
             tmp = indx + i
 
@@ -162,7 +164,7 @@ class SimRam():
                 out.append(v)
         return out
 
-    def getBits(self, start, end, sign):
+    def getBits(self, start: int, end: int, sign:Optional[bool]) -> HBitsConst:
         """
         Gets value of bits between selected range from memory
 
