@@ -532,16 +532,19 @@ suite = testSuiteFromTCs(
 )
 
 
-def main():
+def unittestMain(suite: TestSuite):
     # runner = TextTestRunner(verbosity=2, failfast=True)
     runner = TextTestRunner(verbosity=2)
 
-    try:
-        from concurrencytest import ConcurrentTestSuite, fork_for_tests
-        useParallelTest = True
-    except ImportError:
-        # concurrencytest is not installed, use regular test runner
+    if len(sys.argv) > 1 and sys.argv[1] == "--singlethread":
         useParallelTest = False
+    else:
+        try:
+            from concurrencytest import ConcurrentTestSuite, fork_for_tests
+            useParallelTest = True
+        except ImportError:
+            # concurrencytest is not installed, use regular test runner
+            useParallelTest = False
     # useParallelTest = False
 
     if useParallelTest:
@@ -554,4 +557,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    unittestMain(suite)
