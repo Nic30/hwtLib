@@ -92,9 +92,9 @@ class TmpVarSignCast(HwModule):
     @override
     def hwDeclr(self) -> None:
         self.a = HwIOSignal()
-        self.b = HwIOSignal(dtype=HBits(1, signed=False))
-        self.c = HwIOSignal(dtype=HBits(1, signed=False))._m()
-        self.d = HwIOSignal(dtype=HBits(1, signed=False))._m()
+        self.b = HwIOSignal(HBits(1, signed=False))
+        self.c = HwIOSignal(HBits(1, signed=False))._m()
+        self.d = HwIOSignal(HBits(1, signed=False))._m()
 
         self.e = HwIOVectSignal(2)
         self.i = HwIOSignal()
@@ -105,6 +105,52 @@ class TmpVarSignCast(HwModule):
         self.c(self.a + self.b)
         self.d(self.b + self.a)
         self.o(self.e[self.i])
+
+
+class TmpVarSExtBool(HwModule):
+
+    @override
+    def hwDeclr(self) -> None:
+        self.a = HwIOSignal(HBits(8, signed=False))
+        self.b = HwIOSignal(HBits(8, signed=False))
+
+        self.o0 = HwIOSignal()._m()
+        self.o0_2b = HwIOSignal(HBits(2))._m()
+        self.o0_2b_u = HwIOSignal(HBits(2, signed=False))._m()
+        self.o0_2b_s = HwIOSignal(HBits(2, signed=True))._m()
+
+        self.o0_3b = HwIOSignal(HBits(3))._m()
+        self.o0_3b_u = HwIOSignal(HBits(3, signed=False))._m()
+        self.o0_3b_s = HwIOSignal(HBits(3, signed=True))._m()
+
+    @override
+    def hwImpl(self) -> None:
+        c = self.a < self.b
+
+        self.o0(c)
+        self.o0_2b(c._sext(2))
+        self.o0_2b_u(c._sext(2)._cast_sign(False))
+        self.o0_2b_s(c._sext(2)._cast_sign(True))
+
+        self.o0_3b(c._sext(3))
+        self.o0_3b_u(c._sext(3)._cast_sign(False))
+        self.o0_3b_s(c._sext(3)._cast_sign(True))
+
+
+class TmpVarZExtBool(TmpVarSExtBool):
+
+    @override
+    def hwImpl(self) -> None:
+        c = self.a < self.b
+
+        self.o0(c)
+        self.o0_2b(c._zext(2))
+        self.o0_2b_u(c._zext(2)._cast_sign(False))
+        self.o0_2b_s(c._zext(2)._cast_sign(True))
+
+        self.o0_3b(c._zext(3))
+        self.o0_3b_u(c._zext(3)._cast_sign(False))
+        self.o0_3b_s(c._zext(3)._cast_sign(True))
 
 
 class Serializer_tmpVar_TC(BaseSerializationTC):
@@ -131,12 +177,30 @@ class Serializer_tmpVar_TC(BaseSerializationTC):
     def test_TmpVarSignCast_vhdl(self):
         self.assert_serializes_as_file(TmpVarSignCast(), "TmpVarSignCast.vhd")
 
+    def test_TmpVarSExtBool_vhdl(self):
+        self.assert_serializes_as_file(TmpVarSExtBool(), "TmpVarSExtBool.vhd")
+
+    def test_TmpVarSExtBool_verilog(self):
+        self.assert_serializes_as_file(TmpVarSExtBool(), "TmpVarSExtBool.v")
+
+    def test_TmpVarSExtBool_SystemC(self):
+        self.assert_serializes_as_file(TmpVarSExtBool(), "TmpVarSExtBool.cpp")
+
+    def test_TmpVarZExtBool_vhdl(self):
+        self.assert_serializes_as_file(TmpVarZExtBool(), "TmpVarZExtBool.vhd")
+
+    def test_TmpVarZExtBool_verilog(self):
+        self.assert_serializes_as_file(TmpVarZExtBool(), "TmpVarZExtBool.v")
+
+    def test_TmpVarZExtBool_SystemC(self):
+        self.assert_serializes_as_file(TmpVarZExtBool(), "TmpVarZExtBool.cpp")
+
 
 if __name__ == '__main__':
     import unittest
 
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([Serializer_tmpVar_TC("test_TmpVarExample1_vhdl")])
+    # suite = unittest.TestSuite([Serializer_tmpVar_TC("test_TmpVarSExtBool_SystemC")])
     suite = testLoader.loadTestsFromTestCase(Serializer_tmpVar_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
