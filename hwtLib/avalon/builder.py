@@ -1,12 +1,12 @@
 from typing import Optional, Callable, Type
 
+from hwt.hwIO import HwIO
 from hwt.hwModule import HwModule
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.builder import AxiBuilder
 from hwtLib.avalon.mmToAxi import AvalonMm_to_Axi4
 from hwtLib.avalon.mm_buff import AvalonMmBuff
-from hwt.hwIO import HwIO
 
 
 class AvalonMmBuilder(AbstractComponentBuilder):
