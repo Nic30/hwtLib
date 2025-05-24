@@ -22,6 +22,10 @@ class DSP48E1(HwModule):
     DSP hardblock in Xilinx 7 series (2x pre adder, multiplier, ALU)
 
     :see: https://www.xilinx.com/support/documentation/user_guides/ug479_7Series_DSP48E1.pdf
+    
+    .. figure:: ./_static/xilinx_DSP48E1_basic.png
+
+    .. hwt-autodoc::
     """
 
     @override
