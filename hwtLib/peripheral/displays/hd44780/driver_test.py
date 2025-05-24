@@ -15,7 +15,7 @@ class Hd44780Driver8bTC(SimTestCase):
     def setUpClass(cls):
         cls.dut = dut = Hd44780Driver()
         dut.LCD_FREQ = int(1e6)
-        dut.FREQ = dut.LCD_FREQ * 4
+        dut.CLK_FREQ = dut.LCD_FREQ * 4
         cls.CLK = int(freq_to_period(dut.LCD_FREQ))
         cls.compileSim(dut)
 

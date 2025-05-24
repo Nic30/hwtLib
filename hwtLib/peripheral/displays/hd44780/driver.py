@@ -85,12 +85,11 @@ class Hd44780Driver(HwModule):
         self.LCD_DATA_WIDTH = HwParam(8)
         self.LCD_FREQ = HwParam(int(270e3))
         # frequency of this component to compute timing for LCD control
-        self.FREQ = HwParam(int(100e6))
+        self.CLK_FREQ = HwParam(int(100e6))
 
     @override
     def hwDeclr(self):
         addClkRstn(self)
-        self.clk.FREQ = self.FREQ
         with self._hwParamsShared(prefix="LCD_"):
             self.dataOut = HwIOHd44780()._m()
         self.dataIn = HwIODataRdVld()
@@ -240,7 +239,7 @@ class Hd44780Driver(HwModule):
         LCD_DW = self.LCD_DATA_WIDTH
         assert LCD_DW in (4, 8), LCD_DW
         cmd_timer_rst = self._sig("cmd_timer_rst")
-        HALF_LCD_PERIOD = ceil(self.FREQ / (self.LCD_FREQ * 2))
+        HALF_LCD_PERIOD = ceil(self.CLK_FREQ / (self.LCD_FREQ * 2))
         LCD_CLK_PER = 2 * HALF_LCD_PERIOD
         lcd_clk_en, = ClkBuilder(self, self.clk).timers([
             ("lcd_clk_en", LCD_CLK_PER),

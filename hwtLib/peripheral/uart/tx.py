@@ -21,7 +21,7 @@ class UartTx(HwModule):
     """
     @override
     def hwConfig(self):
-        self.FREQ = HwParam(int(100e6))
+        self.CLK_FREQ = HwParam(int(100e6))
         # number of bits per second
         self.BAUD = HwParam(115200)
         # self.PARITY = HwParam(None)
@@ -41,7 +41,7 @@ class UartTx(HwModule):
         START_BIT = BIT.from_py(0)
         STOP_BIT = BIT.from_py(1)
         BITS_TO_SEND = 1 + 8 + 1
-        BIT_RATE = self.FREQ // self.BAUD
+        BIT_RATE = self.CLK_FREQ // self.BAUD
 
         assert BIT_RATE >= 1
 

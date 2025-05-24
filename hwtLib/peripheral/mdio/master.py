@@ -87,7 +87,7 @@ class MdioMaster(HwModule):
     """
     Master for MDIO interface.
 
-    :ivar ~.FREQ: frequency of input clock
+    :ivar ~.CLK_FREQ: frequency of input clock
     :ivar ~.MDIO_FREQ: frequency of output MDIO clock
 
     * based on:
@@ -100,7 +100,7 @@ class MdioMaster(HwModule):
 
     @override
     def hwConfig(self):
-        self.FREQ = HwParam(int(100e6))
+        self.CLK_FREQ = HwParam(int(100e6))
         self.MDIO_FREQ = HwParam(int(2.5e6))
 
     @override

@@ -173,12 +173,12 @@ class Spi(HwIO):
         self.SLAVE_CNT = HwParam(1)
         self.HAS_MISO = HwParam(True)
         self.HAS_MOSI = HwParam(True)
-        self.FREQ = HwParam(HwIOClk.DEFAULT_FREQ)
+        self.CLK_FREQ = HwParam(HwIOClk.DEFAULT_FREQ)
 
     @override
     def hwDeclr(self):
         self.clk = HwIOClk()
-        self.clk.FREQ = self.FREQ
+        self.clk.FREQ = self.CLK_FREQ
 
         assert self.HAS_MOSI or self.HAS_MISO
         if self.HAS_MOSI:

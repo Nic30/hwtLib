@@ -13,8 +13,8 @@ class UartTxTC(SimTestCase):
     def setUpClass(cls):
         dut = cls.dut = UartTx()
         dut.BAUD = 115200
-        dut.FREQ = 115200
-        cls.CLK_PERIOD = int(freq_to_period(dut.FREQ))
+        dut.CLK_FREQ = 115200
+        cls.CLK_PERIOD = int(freq_to_period(dut.CLK_FREQ))
         cls.compileSim(dut)
 
     def setUp(self):
@@ -56,7 +56,7 @@ class UartTxTC(SimTestCase):
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.runSim((10 * len(t) + 20) * self.CLK_PERIOD * (self.dut.FREQ // self.dut.BAUD))
+        self.runSim((10 * len(t) + 20) * self.CLK_PERIOD * (self.dut.CLK_FREQ // self.dut.BAUD))
         self.assertEqual(self.getStr(), t)
 
 

@@ -8,7 +8,7 @@ from ipCorePackager.intfIpMeta import IntfIpMeta
 
 class RgmiiChannel(HwIO):
     """
-    :note: clk.FREQ can be 125 MHz, 25 MHz, or 2.5 MHz
+    :note: CLK_FREQ can be 125 MHz, 25 MHz, or 2.5 MHz
         with ±50 ppm tolerance based on the selected speed.
 
     .. hwt-autodoc::
@@ -16,12 +16,12 @@ class RgmiiChannel(HwIO):
 
     @override
     def hwConfig(self):
-        self.FREQ = HwParam(int(125e6))
+        self.CLK_FREQ = HwParam(int(125e6))
 
     @override
     def hwDeclr(self):
         self.clk = HwIOClk()
-        self.clk.FREQ = self.FREQ
+        self.clk.FREQ = self.CLK_FREQ
         with self._associated(clk=self.clk):
             self.d = HwIOVectSignal(4)
             self.ctl = HwIOSignal()

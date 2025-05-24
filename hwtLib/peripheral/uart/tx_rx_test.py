@@ -18,7 +18,7 @@ class TestHwModule_uart(HwModule):
     @override
     def hwConfig(self):
         self.DATA_WIDTH = HwParam(8)
-        self.FREQ = HwParam(115200 * 16)
+        self.CLK_FREQ = HwParam(115200 * 16)
         self.BAUD = HwParam(115200)
         self.OVERSAMPLING = HwParam(16)
 
@@ -47,9 +47,9 @@ class UartTxRxTC(SimTestCase):
     def setUpClass(cls):
         dut = cls.dut = TestHwModule_uart()
         dut.BAUD = 115200
-        dut.FREQ = 115200 * 16
+        dut.CLK_FREQ = 115200 * 16
         dut.OVERSAMPLING = 16
-        cls.CLK_PERIOD = int(freq_to_period(dut.FREQ))
+        cls.CLK_PERIOD = int(freq_to_period(dut.CLK_FREQ))
         cls.compileSim(dut)
 
     def getStr(self):

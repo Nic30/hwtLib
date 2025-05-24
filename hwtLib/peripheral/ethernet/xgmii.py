@@ -44,7 +44,7 @@ class XgmiiChannel(HwIO):
     @override
     def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
-        self.FREQ = HwParam(int(156.25e6))
+        self.CLK_FREQ = HwParam(int(156.25e6))
         self.IS_DDR = HwParam(True)
         self.ALIGNMENT = HwParam(1)
 
@@ -52,7 +52,7 @@ class XgmiiChannel(HwIO):
     def hwDeclr(self):
         assert self.ALIGNMENT > 0 and self.ALIGNMENT < self.DATA_WIDTH // 8, self.ALIGNMENT
         self.clk = HwIOClk()
-        self.clk.FREQ = self.FREQ
+        self.clk.FREQ = self.CLK_FREQ
         self._make_association(clk=self.clk)
         self.d = HwIOVectSignal(self.DATA_WIDTH)
         self.c = HwIOVectSignal(self.DATA_WIDTH // 8)

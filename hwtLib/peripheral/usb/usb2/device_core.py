@@ -57,8 +57,8 @@ class Usb2DeviceCore(HwModule):
 
     @override
     def hwConfig(self):
-        self.DESCRIPTORS: UsbDescriptorBundle = HwParam(None)
         self.CLK_FREQ = HwParam(int(60e6))
+        self.DESCRIPTORS: UsbDescriptorBundle = HwParam(None)
         self.PRE_NEGOTIATED_TO: Optional[USB_VER] = HwParam(None)
 
     @override
@@ -66,7 +66,6 @@ class Usb2DeviceCore(HwModule):
         assert isinstance(self.DESCRIPTORS, UsbDescriptorBundle), self.DESCRIPTORS
         self.ENDPOINT_CONFIG = self.DESCRIPTORS.get_endpoint_meta()
         addClkRstn(self)
-        self.clk.FREQ = self.CLK_FREQ
 
         self.phy = Utmi_8b()
         self.ep: UsbEndpointInterface = UsbEndpointInterface()._m()

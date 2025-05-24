@@ -14,9 +14,9 @@ class UartRxBasicTC(SimTestCase):
     def setUpClass(cls):
         dut = cls.dut = UartRx()
         dut.OVERSAMPLING = cls.OVERSAMPLING = 16
-        dut.FREQ = cls.FREQ = 115200 * cls.OVERSAMPLING
+        dut.CLK_FREQ = cls.CLK_FREQ = 115200 * cls.OVERSAMPLING
         dut.BAUD = cls.BAUD = 115200
-        cls.CLK_PERIOD = int(freq_to_period(dut.FREQ))
+        cls.CLK_PERIOD = int(freq_to_period(dut.CLK_FREQ))
         cls.compileSim(dut)
 
     def getStr(self):
@@ -32,7 +32,7 @@ class UartRxBasicTC(SimTestCase):
         STOP_BIT = 1
 
         rx = self.dut.rxd._ag.data
-        os = self.FREQ // self.BAUD
+        os = self.CLK_FREQ // self.BAUD
         for ch in string:
             rx.extend([START_BIT for _ in range(os)])
             for i in range(8):
@@ -49,7 +49,7 @@ class UartRxBasicTC(SimTestCase):
         t = "simple"
         self.sendStr(t)
         self.runSim(self.OVERSAMPLING *
-                    (self.FREQ // self.BAUD) * (len(t) + 5) * self.CLK_PERIOD)
+                    (self.CLK_FREQ // self.BAUD) * (len(t) + 5) * self.CLK_PERIOD)
         self.assertEqual(self.getStr(), t)
 
 
@@ -58,14 +58,14 @@ class UartRxTC(UartRxBasicTC):
     @classmethod
     def setUpClass(cls):
         cls.OVERSAMPLING = 16
-        cls.FREQ = 115200 * cls.OVERSAMPLING * 4
+        cls.CLK_FREQ = 115200 * cls.OVERSAMPLING * 4
         cls.BAUD = 115200
 
         dut = cls.dut = UartRx()
         dut.BAUD = cls.BAUD
-        dut.FREQ = cls.FREQ
+        dut.CLK_FREQ = cls.CLK_FREQ
         dut.OVERSAMPLING = cls.OVERSAMPLING
-        cls.CLK_PERIOD = int(freq_to_period(dut.FREQ))
+        cls.CLK_PERIOD = int(freq_to_period(dut.CLK_FREQ))
         cls.compileSim(dut)
 
 

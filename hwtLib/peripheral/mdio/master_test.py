@@ -9,7 +9,7 @@ class MdioMasterTC(SimTestCase):
     @classmethod
     def setUpClass(cls):
         dut = cls.dut = MdioMaster()
-        dut.FREQ = int(10e6)
+        dut.CLK_FREQ = int(10e6)
         cls.MDIO_CLK = int((1e9 / dut.MDIO_FREQ) * Time.ns)
         cls.compileSim(dut)
 

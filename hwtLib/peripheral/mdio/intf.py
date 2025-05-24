@@ -63,12 +63,12 @@ class Mdio(HwIO):
 
     @override
     def hwConfig(self):
-        self.FREQ = HwParam(self.DEFAULT_FREQ)
+        self.CLK_FREQ = HwParam(self.DEFAULT_FREQ)
 
     @override
     def hwDeclr(self):
         self.c = HwIOClk()
-        self.c.FREQ = self.FREQ
+        self.c.FREQ = self.CLK_FREQ
         with self._associated(clk=self.c):
             self.io = HwIOTristateSig()
 

@@ -68,13 +68,13 @@ class Rmii(HwIO):
     @override
     def hwConfig(self):
         self.CLK_MASTER_DIR = HwParam(DIRECTION.IN)
-        self.FREQ = HwParam(int(50e6))
+        self.CLK_FREQ = HwParam(int(50e6))
         self.DATA_WIDTH = HwParam(2)
 
     @override
     def hwDeclr(self):
         self.ref_clk = HwIOClk(masterDir=self.CLK_MASTER_DIR)
-        self.ref_clk.FREQ = self.FREQ
+        self.ref_clk.FREQ = self.CLK_FREQ
         with self._hwParamsShared():
             with self._associated(clk=self.ref_clk):
                 self.tx = RmiiTxChannel()

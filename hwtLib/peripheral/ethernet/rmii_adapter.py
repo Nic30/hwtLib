@@ -26,7 +26,7 @@ class RmiiAdapter(HwModule):
     :attention: inside of packet the tx.vld has to stay 1
         otherwise the underflow error will appear and frame data will
         be corrupted
-    :ivar ~.FREQ: specifies the clk.FREQ for this core,
+    :ivar ~.CLK_FREQ: specifies the clk.FREQ for this core,
         f None it means that clk and eth.ref_clk is the same signal
         and synchronisation is not required
     :ivar ~.ASYNC_BUFF_DEPTH: depth of asynchronous buffers
@@ -38,7 +38,7 @@ class RmiiAdapter(HwModule):
 
     @override
     def hwConfig(self):
-        self.FREQ = HwParam(None)
+        self.CLK_FREQ = HwParam(None)
         self.ASYNC_BUFF_DEPTH = HwParam(None)
 
     @override
@@ -46,10 +46,10 @@ class RmiiAdapter(HwModule):
         addClkRstn(self)
         self.eth = Rmii()._m()
 
-        if self.FREQ is None:
-            self.clk.FREQ = self.eth.FREQ
+        if self.CLK_FREQ is None:
+            self.clk.FREQ = self.eth.CLK_FREQ
         else:
-            self.clk.FREQ = self.FREQ
+            self.clk.FREQ = self.CLK_FREQ
 
         self.tx = Axi4Stream()
         self.rx = VldSyncedDataErrLast()._m()

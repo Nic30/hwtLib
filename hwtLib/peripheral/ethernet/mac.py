@@ -56,7 +56,7 @@ class EthernetMac(HwModule):
 
     @override
     def hwConfig(self):
-        self.FREQ = HwParam(int(100e6))
+        self.CLK_FREQ = HwParam(int(100e6))
         self.BITRATE = HwParam(ETH_BITRATE.M_100M)
         self.DATA_WIDTH = HwParam(8)
         self.DEFAULT_MAC_ADDR = HwParam("01:23:45:67:89:AB")

@@ -19,7 +19,7 @@ class UartRx(HwModule):
     """
     @override
     def hwConfig(self):
-        self.FREQ = HwParam(int(100e6))
+        self.CLK_FREQ = HwParam(int(100e6))
         self.BAUD = HwParam(115200)
         self.OVERSAMPLING = HwParam(16)
 
@@ -39,7 +39,7 @@ class UartRx(HwModule):
 
         os = int(self.OVERSAMPLING)
         baud = int(self.BAUD)
-        freq = int(self.FREQ)
+        freq = int(self.CLK_FREQ)
         assert freq >= baud * os, "Frequency too low for current Baud rate and oversampling"
         assert os >= 8 and (os & (os - 1)) == 0, "Invalid oversampling value"
 
@@ -52,7 +52,7 @@ class UartRx(HwModule):
         RxD_data = self._reg("RxD_data", HBits(1 + 8))
         startBitWasNotStartbit = self._sig("startBitWasNotStartbit")
         # it can happen that there is just glitch on wire and bit was not startbit only begin was resolved wrong
-        sampleTick = clkBuilder.timer(("sampleTick", self.FREQ // self.BAUD // self.OVERSAMPLING),
+        sampleTick = clkBuilder.timer(("sampleTick", self.CLK_FREQ // self.BAUD // self.OVERSAMPLING),
                                       enableSig=en,
                                       rstSig=~en)
 
