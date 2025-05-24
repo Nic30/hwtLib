@@ -18,6 +18,11 @@ class AvalonStWire(HwModule):
         addClkRstn(self)
         self.dataIn = AvalonST()
         self.dataOut = AvalonST()._m()
+        for i in (self.dataIn, self.dataOut):
+            i.USE_EMPTY = True
+            i.ERROR_WIDTH = 1
+            i.maxChannel = 2
+            
 
     @override
     def hwImpl(self):
@@ -46,8 +51,8 @@ class AvalonStAgentTC(SimTestCase):
         dut = self.dut
         N = 10
 
-        #channel, data, error, startOfPacket, endOfPacket
-        d = [(1, i, 0, i == 0, i == N - 1) for i in range(N)]
+        #channel, data, empty, error, startOfPacket, endOfPacket
+        d = [(1, i, 0, 0, i == 0, i == N - 1) for i in range(N)]
         dut.dataIn._ag.data.extend(d)
 
         self.runSim((N + 10) * self.CLK)
@@ -61,8 +66,8 @@ class AvalonStAgentTC(SimTestCase):
         dut = self.dut
         N = 40
 
-        #channel, data, error, startOfPacket, endOfPacket
-        d = [(1, i, 0, i == 0, i == N - 1) for i in range(N)]
+        #channel, data, empty, error, startOfPacket, endOfPacket
+        d = [(1, i, 0, 0, i == 0, i == N - 1) for i in range(N)]
         dut.dataIn._ag.data.extend(d)
         self.randomize(dut.dataIn)
         self.randomize(dut.dataOut)
