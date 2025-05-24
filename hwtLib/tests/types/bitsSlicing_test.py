@@ -22,7 +22,7 @@ class BitsSlicingTC(unittest.TestCase):
         if not (isinstance(first, int) and isinstance(second, int)):
             if not isinstance(first, HConst):
                 first = first.staticEval()
-    
+
             if not isinstance(second, HConst):
                 if isinstance(second, int):
                     first = int(first)
@@ -30,10 +30,10 @@ class BitsSlicingTC(unittest.TestCase):
                                                          second, msg=msg)
                 else:
                     second = second.staticEval()
-    
+
             first = (first.val, first.vld_mask, first._dtype.bit_length())
             second = (second.val, second.vld_mask, second._dtype.bit_length())
-    
+
         unittest.TestCase.assertEqual(self, first, second, msg=msg)
 
     def assertStrEq(self, first, second, msg=None, serializer=Vhdl2008Serializer):
@@ -140,6 +140,28 @@ class BitsSlicingTC(unittest.TestCase):
         self.assertStrEqC(sigS._zext(10), "static_cast<sc_int<10>>(static_cast<sc_uint<8>>(sigS.read()))")
         self.assertStrEqC(sigV._zext(10), "static_cast<sc_uint<10>>(sigV.read())")
 
+    def test_slice_bits_signed(self):
+        n = RtlNetlist()
+        sigU = n.sig("sigU", uint8_t, def_val=128)
+        sigI = n.sig("sigI", int8_t, def_val=64)
+        
+        self.assertEqual(sigU._trunc(4)._dtype.signed, False)
+        self.assertEqual(sigI._trunc(4)._dtype.signed, True)
+        self.assertStrEq(sigU._trunc(4), "RESIZE(sigU,4)")
+        self.assertStrEq(sigI._trunc(4), "RESIZE(sigI,4)")
+
+        self.assertStrEqV(sigU._trunc(4), "sigU[3:0]")
+        self.assertStrEqV(sigI._trunc(4), "$signed(sigI[3:0])")
+
+        self.assertEqual(sigU[8:4]._dtype.signed, False)
+        self.assertEqual(sigI[8:4]._dtype.signed, True)
+
+        self.assertStrEq(sigU[8:4], "sigU(7DOWNTO4)")
+        self.assertStrEq(sigI[8:4], "sigI(7DOWNTO4)")
+        
+        self.assertStrEqV(sigU[8:4], "sigU[7:4]")
+        self.assertStrEqV(sigI[8:4], "$signed(sigI[7:4])")
+
     def test_HBits_sig_slice_on_slice(self):
         n = RtlNetlist()
         s = n.sig("s", HBits(16))
@@ -228,7 +250,7 @@ class BitsSlicingTC(unittest.TestCase):
         self.assertEqual(b[:8], b.getMsb()._sext(4))
         self.assertEqual(b[10:6], a[:6]._sext(4))
         self.assertEqual(b[8:4], a[8:4])
-    
+
     def test_HBits_concat_to_zext_in_concat(self):
         n = RtlNetlist()
         a = n.sig("a", dtype=HBits(8))
@@ -243,7 +265,7 @@ class BitsSlicingTC(unittest.TestCase):
         c = Concat(aMsb, b)
         self.assertEqual(c, Concat(a._sext(8 + 4 + 1), c0))
 
-        
+
 if __name__ == "__main__":
     testLoader = unittest.TestLoader()
     # suite = unittest.TestSuite([BitsSlicingTC("test_HBits_concat_to_zext_in_concat")])
