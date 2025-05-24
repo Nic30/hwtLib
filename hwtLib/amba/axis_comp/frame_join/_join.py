@@ -5,16 +5,17 @@ from math import inf
 from typing import Optional, List, Callable, Tuple
 
 from hwt.code import If, Switch, SwitchLogic, Or, And
+from hwt.hObjList import HObjList
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils
 from hwtLib.abstract.frame_utils.join.fsm import input_B_dst_to_fsm
 from hwtLib.abstract.frame_utils.join.state_trans_item import StateTransItem
@@ -22,7 +23,6 @@ from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.amba.axis_comp.frame_join.input_reg import FrameJoinInputReg, \
     UnalignedJoinRegIntf
 from pyMathBitPrecise.bit_utils import bit_list_to_int
-from hwt.pyUtils.typingFuture import override
 
 
 class Axi4S_FrameJoin(HwModule):
