@@ -9,6 +9,7 @@ from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignmentUtilsTC
 from hwtLib.abstract.frame_utils.join.test import FrameJoinUtilsTC
 from hwtLib.abstract.template_configured_test import TemplateConfigured_TC
+from hwtLib.amba.axi4ss_simAgent_test import Axi4StreamSegmentedAgent_TC
 from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrTCs
 from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import \
@@ -247,6 +248,7 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import Axi4S_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
+
 
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
     AxiInterconnectMatrixAddrCrossbar_TCs
@@ -487,6 +489,7 @@ suite = testSuiteFromTCs(
     *AxiCacheWriteAllocWawOnlyWritePropagatingTCs,
 
     Axi_ag_TC,
+    Axi4StreamSegmentedAgent_TC,
     Axi4_streamToMemTC,
     ArrayItemGetterTC,
     ArrayItemGetter2in1WordTC,
