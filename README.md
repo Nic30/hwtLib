@@ -95,3 +95,4 @@ sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/r
 * [EttusResearch/fpga](https://github.com/EttusResearch/fpga) - SV - SDR focused
 * [WangXuan95 repositories](https://github.com/WangXuan95?tab=repositories) - SV - Compression/Image processing focused
 * [fpganinja/taxi](https://github.com/fpganinja/taxi) - SV - generic IO/utility modules
+* [CESNET/ndk-fpga](https://github.com/CESNET/ndk-fpga) - VHDL/SV - high-speed networking
