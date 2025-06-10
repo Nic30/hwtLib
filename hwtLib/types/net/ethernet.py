@@ -2,6 +2,8 @@ from typing import Union, List
 
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.defs import BIT
+
 
 vlan_t = HBits(12)
 eth_mac_t = HBits(6 * 8)
@@ -13,24 +15,29 @@ EthPreamble_t = HStruct(
     (HBits(8), "startOfFrameDelimiter"),
     name="EthPreamble_t"
 )
-
+EthType_t = HBits(2 * 8)
 Eth2Header_t = HStruct(
     (eth_mac_t, "dst"),
     (eth_mac_t, "src"),
-    (HBits(2 * 8), "type"), # :see: :class:`~.ETHER_TYPE`
+    (EthType_t, "type"),  # :see: :class:`~.ETHER_TYPE`
     name="Eth2Header_t"
 )
 
-Tag802_1q = HStruct(
-    (HBits(16), "tpid"),
+Tag802_1q = HStruct( # inserted before Eth2Header_t.type, :see: :prop:`ETHER_TYPE.VLAN_1Q`
+    (EthType_t, "tpid"), # Tag Protocol identifier (ETHER_TYPE)
     (HBits(16), "tci")
+)
+Tag802_1q_tci_t = HStruct(
+ (HBits(3), "pcp"), # Priority Code Point
+ (BIT, "dei"), # Drop Eligle Indicator
+ (HBits(12), "vid"), # VLAN ID
 )
 
 Eth802_1qHeader_t = HStruct(
     (eth_mac_t, "dst"),
     (eth_mac_t, "src"),
     (Tag802_1q, "tag"),
-    (HBits(2 * 8), "type"),
+    (EthType_t, "type"),
     name="Eth802_1qHeader_t"
 )
 
@@ -62,3 +69,11 @@ def eth_addr_parse(macStr:str):
     splited = macStr.split(":")
     splited = map(lambda num: int(num, 16).to_bytes(1, byteorder='big'), splited)
     return b"".join(splited)
+
+
+def eth_protocol_efficiency(PACKET_SIZE: int):
+    """
+    Return the efficiency (1.-overhead) of ethernet for specified packet size in octets 
+    """
+    return (PACKET_SIZE / (PACKET_SIZE + 7 + 1 + 12  # preambule + SFD + IPG
+                           ))
