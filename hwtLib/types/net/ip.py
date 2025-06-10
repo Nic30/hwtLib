@@ -59,3 +59,9 @@ IPv6Header_t = HStruct(
     (ipv6_t, "dst"),
     name="IPv6Header_t"
 )
+IPv6ExtCommonHeader_t = HStruct(
+    (HBits(8), "nextHeader"), (HBits(8), "headerExtensionLen", (HBits(16+32), "data")),
+    name="IPv6ExtCommonHeader_t"
+)
+
+
