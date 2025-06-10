@@ -15,13 +15,14 @@ class AvalonST(HwIODataRdVld):
     Avalon stream interface
 
     :note: handshaked stream with channel, error, sof, eof signal
+    
     Based on Avalon Interface Specifications Updated for Intel Quartus Prime Design Suite: 20.1
     
     :ivar USE_EMPTY: add "empty" signal which represents the number of symbols that are empty
     :ivar dataBitsPerSymbol: symbol represents minimal unit of transfered data, it is unit for units of "empty" signal
     :ivar readyLatency: if 0 the interface works as a typical (AXI4 Stream) ready/valid handshake.
-      if >0 the ready signaling is delayed. The ready cycle is when source received delayed
-      ready=1 from the sink, The source may assert valid only in ready cycle (when it is receiving delayed ready=1)
+        if >0 the ready signaling is delayed. The ready cycle is when source received delayed
+        ready=1 from the sink, The source may assert valid only in ready cycle (when it is receiving delayed ready=1)
     :ivar readyAllowance: defines how many data can sink capture with ready=False, if None readyAllowance=readyLatency
     :note: readyLatency/readyAllowance are parameters of FIFO implemented on sink side
         the "ready" represents "almost-full" of this FIFO,

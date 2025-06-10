@@ -15,7 +15,7 @@ class Segment7(HwModule):
 
     Display pin connection on image below.
 
-    .. code-block:: raw
+    .. code-block:: text
 
         -------------
         |     0     |
