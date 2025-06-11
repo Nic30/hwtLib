@@ -8,7 +8,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Display pin connection on image below.
 --
---    .. code-block:: raw
+--    .. code-block:: text
 --
 --        -------------
 --        |     0     |
