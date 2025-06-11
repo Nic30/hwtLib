@@ -234,7 +234,7 @@ hwt_buildreport_tables = [
     ("yosys_builds", ("lut", "ff", "latch", "bram", "uram", "dsp"))
 ]
 
-hwt_buildreport_database_name = "_static/hwt_buildreport_database.db"
+# hwt_buildreport_database_name = "_static/hwt_buildreport_database.db"
 
 excluded_tests = list(find_files("../", "*_test.py")) +\
                  list(find_files("../", "test.py")) +\
