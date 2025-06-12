@@ -65,9 +65,9 @@ class HwExceptionCtx():
         self.catch_instances = []
         self.name = name
 
-    def _HwModule_registerPublicHwIOInImpl(self, hwIO: ExceptionHandleInterface, name:str):
+    def _HwModule_registerPublicHwIOInImpl(self, hwIO: ExceptionHandleInterface, name:str, onParentPropertyPath: tuple[Union[str, int], ...]):
         p = self.parent
-        p._registerHwIO(name, hwIO, isPrivate=False)
+        p._registerHwIO(name, hwIO, onParentPropertyPath, False)
         p._loadHwIODeclarations(hwIO, True)
         hwIO._signalsForHwIO(
             p._rtlCtx, p._rtlCtx.hwIOs, p._store_manager.name_scope,
@@ -118,9 +118,11 @@ class HwExceptionCtx():
 
         # add a raise interace in impl phase of the HwModule instance
         raiseHwIO = ExceptionHandleInterface(exception)._m()
+        onParentPropertyPath: tuple[Union[str, int], ...] = (AbstractComponentBuilder._findSuitableName(self, err_name), )
         self._HwModule_registerPublicHwIOInImpl(
             raiseHwIO,
-            AbstractComponentBuilder._findSuitableName(self, err_name)
+            onParentPropertyPath[0],
+            onParentPropertyPath
         )
         object.__setattr__(p, raiseHwIO._name, raiseHwIO)
 
@@ -194,9 +196,11 @@ class HwExceptionCtx():
             for hwIO in u._hwIOs:
                 if isinstance(hwIO, ExceptionHandleInterface) and not hwIO.rd._sig._rtlDrivers:
                     raise_hwIO = hwIO.__copy__()._m()
+                    name = AbstractComponentBuilder._findSuitableName(self, hwIO._exception.__class__.__name__)
                     self._HwModule_registerPublicHwIOInImpl(
                         raise_hwIO,
-                        AbstractComponentBuilder._findSuitableName(self, hwIO._exception.__class__.__name__)
+                        name,
+                        (name, )
                     )
                     object.__setattr__(self.parent, raise_hwIO._name, raise_hwIO)
                     raise_hwIO(hwIO)

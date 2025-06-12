@@ -55,6 +55,14 @@ class HStructConstTC(unittest.TestCase):
         self.assertEqual(int(v[0].y), 1)
         self.assertEqual(int(v[1].y), 3)
         self.assertEqual(int(v[3].y), 7)
+    
+    #def test_HStruct_withHArray(self):
+    #    t = HStruct(
+    #        (uint8_t[4], "data")
+    #    )
+    #    
+    #    self.
+        
         
 
 if __name__ == "__main__":
