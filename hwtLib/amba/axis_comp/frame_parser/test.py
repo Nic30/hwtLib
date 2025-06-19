@@ -8,6 +8,7 @@ from typing import Tuple
 
 from hwt.constants import Time
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import HdlType_select
@@ -24,6 +25,7 @@ from hwtLib.amba.axis_comp.frame_parser.test_types import structManyInts, \
     ref_unionSimple0, ref_unionSimple1, ref_unionSimple2, ref_unionSimple3
 from hwtLib.types.ctypes import uint16_t, uint8_t
 from hwtSimApi.constants import CLK_PERIOD
+
 
 TEST_DW = [
     15, 16, 32, 51, 64,
@@ -50,7 +52,7 @@ class Axi4S_frameParserTC(SimTestCase):
         else:
             self.randomize(hwIO)
 
-    def mySetUp(self, dataWidth, structTemplate, randomize=False,
+    def mySetUp(self, dataWidth: int, structTemplate: HdlType, randomize=False,
                 use_strb=False, use_keep=False) -> Tuple[Axi4S_frameParser, Axi4StreamFrameUtils]:
         dut = Axi4S_frameParser(structTemplate)
         dut.USE_STRB = use_strb
@@ -87,13 +89,13 @@ class Axi4S_frameParserTC(SimTestCase):
             for k in ref0_structManyInts.keys():
                 self.assertEqual(getattr(d1, k), getattr(d2, k), (DW, k))
 
-    def runMatrixSim(self, time, dataWidth, randomize):
+    def runMatrixSim(self, time: int, dataWidth: int, randomize: bool):
         test_name = self.getTestName()
         vcd_name = f"{test_name:s}_dw{dataWidth:d}_r{randomize:d}.vcd"
         self.runSim(time, name=os.path.join(self.DEFAULT_LOG_DIR, vcd_name))
 
     @testMatrix
-    def test_structManyInts_nop(self, dataWidth, randomize):
+    def test_structManyInts_nop(self, dataWidth: int, randomize: bool):
         dut, _ = self.mySetUp(dataWidth, structManyInts, randomize)
 
         self.runMatrixSim(30 * CLK_PERIOD, dataWidth, randomize)
@@ -101,7 +103,7 @@ class Axi4S_frameParserTC(SimTestCase):
             self.assertEmpty(hwIO._ag.data)
 
     @testMatrix
-    def test_structManyInts_2x(self, dataWidth, randomize):
+    def test_structManyInts_2x(self, dataWidth: int, randomize: bool):
         t = structManyInts
         dut, fu = self.mySetUp(dataWidth, t, randomize)
 
@@ -130,7 +132,7 @@ class Axi4S_frameParserTC(SimTestCase):
             self.assertValSequenceEqual(hwIO._ag.data, d, n)
 
     @testMatrix
-    def test_unionOfStructs_nop(self, dataWidth, randomize):
+    def test_unionOfStructs_nop(self, dataWidth: int, randomize: bool):
         t = unionOfStructs
         dut, _ = self.mySetUp(dataWidth, t, randomize)
         t = 15 * CLK_PERIOD
@@ -141,7 +143,7 @@ class Axi4S_frameParserTC(SimTestCase):
                 self.assertEmpty(cHwIO._ag.data)
 
     @testMatrix
-    def test_unionOfStructs_noSel(self, dataWidth, randomize):
+    def test_unionOfStructs_noSel(self, dataWidth: int, randomize: bool):
         t = unionOfStructs
         dut, fu = self.mySetUp(dataWidth, t, randomize)
 
@@ -156,7 +158,7 @@ class Axi4S_frameParserTC(SimTestCase):
                 self.assertEmpty(cHwIO._ag.data)
 
     @testMatrix
-    def test_unionOfStructs(self, dataWidth, randomize):
+    def test_unionOfStructs(self, dataWidth: int, randomize: bool):
         t = unionOfStructs
         dut, fu = self.mySetUp(dataWidth, t, randomize)
 
@@ -195,7 +197,7 @@ class Axi4S_frameParserTC(SimTestCase):
                 self.assertValSequenceEqual(cHwIO._ag.data, vals, (hwIO._name, n))
 
     @testMatrix
-    def test_simpleUnion(self, dataWidth, randomize):
+    def test_simpleUnion(self, dataWidth: int, randomize: bool):
         t = unionSimple
         dut, fu = self.mySetUp(dataWidth, t, randomize)
 
@@ -229,13 +231,13 @@ class Axi4S_frameParserTC(SimTestCase):
 
             self.assertValSequenceEqual(i._ag.data, [v0, v1], i._name)
 
-    def runMatrixSim2(self, t, dataWidth, frame_len, randomize, name_extra=""):
+    def runMatrixSim2(self, t, dataWidth: int, frame_len: int, randomize: bool, name_extra: str=""):
         test_name = self.getTestName()
         vcd_name = f"{test_name:s}_dw{dataWidth:d}_len{frame_len:d}_r{randomize:d}{name_extra:s}.vcd"
         self.runSim(t * CLK_PERIOD, name=os.path.join(self.DEFAULT_LOG_DIR, vcd_name))
 
     @TestMatrix([8, 16, 32], [1, 2, 5], [False, True])
-    def test_const_size_stream(self, dataWidth, frame_len, randomize):
+    def test_const_size_stream(self, dataWidth: int, frame_len: int, randomize: bool):
         T = HStruct(
             (HStream(HBits(8), frame_len=frame_len), "frame0"),
             (uint16_t, "footer"),
@@ -260,7 +262,8 @@ class Axi4S_frameParserTC(SimTestCase):
     @TestMatrix([32], [0, 1, 2, 5], [(False, False),
                                      (False, True),
                                      (True, False)], [False, True], [False, True])
-    def test_stream_and_footer(self, dataWidth, frame_len, prefix_suffix_as_padding, randomize, optional_start):
+    def test_stream_and_footer(self, dataWidth: int, frame_len: int, prefix_suffix_as_padding: tuple[bool, bool],
+                               randomize: bool, optional_start: bool):
         """
         :note: Footer separation is tested in Axi4S_footerSplitTC
             and this test only check that the Axi4S_frameParser can connect
@@ -306,7 +309,8 @@ class Axi4S_frameParserTC(SimTestCase):
     @TestMatrix([8], [0, 1, 2, 5], [(False, False),
                                     (False, True),
                                     (True, False)], [False, True], [False, True])
-    def test_header_stream(self, dataWidth, frame_len, prefix_suffix_as_padding, randomize, optional_end):
+    def test_header_stream(self, dataWidth: int, frame_len: int, prefix_suffix_as_padding: tuple[bool, bool],
+                               randomize: bool, optional_end: bool):
         """
         :note: Footer separation is tested in Axi4S_footerSplitTC
             and this test only check that the Axi4S_frameParser can connect
