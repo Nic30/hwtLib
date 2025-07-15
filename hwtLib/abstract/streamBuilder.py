@@ -55,7 +55,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         :param set_params_fn: function which updates parameters as is required
             (parameters are already shared with self.end interface)
         """
-
+        assert hwModuleCls is not NotImplemented
         m = hwModuleCls(self.getHwIOCls())
         if update_params:
             m._updateHwParamsFrom(self.end)
