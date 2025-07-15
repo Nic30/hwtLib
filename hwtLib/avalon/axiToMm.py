@@ -139,6 +139,7 @@ class Axi4_to_AvalonMm(BusBridge):
     @override
     def hwImpl(self) -> None:
         avalon: AvalonMM = self.m
+        assert avalon.waitRequestAllowance == 0
         axi = self.s
 
         addr_tmp = self._reg(
