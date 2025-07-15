@@ -1,5 +1,3 @@
-from collections import deque
-
 from hwt.constants import DIRECTION, READ, WRITE, NOP, READ_WRITE
 from hwt.hwIO import HwIO
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
@@ -23,10 +21,15 @@ class AvalonMM(HwIO):
     """
     Avalon Memory Mapped interface
 
-    :note: handshaked, shared address and response channel
+    :note: 1 address+writedata channel (ready, valid sync),
+           1 read data channel (valid only sync),
+           1 write response channel (valid only sync),
 
     https://www.intel.com/content/dam/altera-www/global/en_US/pdfs/literature/manual/mnl_avalon_spec.pdf
-
+    
+    :ivar waitRequestAllowance: works on same principe as :prop:`AvalonST.readyAllowance`, it specicifies  how many
+        transactions may be buffered in destination and thus how many transaction can source send even when ready=0 (waitRequest=1)
+    
     .. hwt-autodoc::
     """
 
@@ -35,6 +38,7 @@ class AvalonMM(HwIO):
         self.ADDR_WIDTH = HwParam(32)
         self.DATA_WIDTH = HwParam(32)
         self.MAX_BURST = HwParam(0)
+        self.waitRequestAllowance = HwParam(0)
 
     @override
     def hwDeclr(self):
@@ -46,7 +50,7 @@ class AvalonMM(HwIO):
         self.write = HwIOSignal()
 
         self.address = HwIOVectSignal(self.ADDR_WIDTH)
-        # ready from slave to mark that next request can not be accepted
+        # ready_n from slave to mark that next request can not be accepted
         self.waitRequest = HwIOSignal(masterDir=IN)
 
         self.readData = HwIOVectSignal(self.DATA_WIDTH, masterDir=IN)

@@ -31,6 +31,7 @@ class AvalonMm_to_Axi4(BusBridge):
             self.m: Axi4 = Axi4()._m()
 
     def hwImpl(self) -> None:
+        assert self.waitRequestAllowance == 0
         avmm_buff = AvalonMmBuff()
         avmm_buff._updateHwParamsFrom(self.s)
         avmm_buff.ADDR_BUFF_DEPTH = 1

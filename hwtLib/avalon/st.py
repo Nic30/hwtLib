@@ -1,13 +1,13 @@
 from typing import Optional
 
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.defs import BIT
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
 from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIOSignal
 from hwt.hwParam import HwParam
 from hwt.math import log2ceil
 from hwt.pyUtils.typingFuture import override
 from hwtSimApi.hdlSimulator import HdlSimulator
-from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.defs import BIT
 
 
 class AvalonST(HwIODataRdVld):
@@ -23,13 +23,18 @@ class AvalonST(HwIODataRdVld):
     :ivar readyLatency: if 0 the interface works as a typical (AXI4 Stream) ready/valid handshake.
         if >0 the ready signaling is delayed. The ready cycle is when source received delayed
         ready=1 from the sink, The source may assert valid only in ready cycle (when it is receiving delayed ready=1)
-    :ivar readyAllowance: defines how many data can sink capture with ready=False, if None readyAllowance=readyLatency
+    :note: if readyLatency > the ready is delayed inside of the source and Avalon-ST itself will use non-delayed value
+    :ivar readyAllowance: defines how many data can sink capture with ready=False, if it is set to None then readyAllowance=readyLatency
     :note: readyLatency/readyAllowance are parameters of FIFO implemented on sink side
         the "ready" represents "almost-full" of this FIFO,
         readyLatency=almost-full-remaining-size-1,
         readyAllowance=FIFO total size-1. 
         e.g. readyLatency=0, readyAllowance=1 can buffer 1 item with ready=0
-        
+    
+    .. figure:: ./_static/avalon_st_readyLatency_readyAllowance.png
+        Avalon Interface Specifications Updated for Intel Quartus Prime Design Suite: 20.1, https://cdrdv2.intel.com/v1/dl/getContent/667068?fileName=mnl_avalon_spec-683091-667068.pdf
+        Figure 27 - anotated
+    
     .. hwt-autodoc::
     """
 
@@ -46,6 +51,10 @@ class AvalonST(HwIODataRdVld):
 
     @override
     def hwDeclr(self):
+        if self.readyAllowance is not None:
+            assert self.readyAllowance >= self.readyLatency
+        else:
+            self.readyAllowance = self.readyLatency
         # fundamentals
         if self.maxChannel:
             self.channel = HwIOVectSignal(log2ceil(self.maxChannel))
@@ -56,8 +65,8 @@ class AvalonST(HwIODataRdVld):
             self.error = HwIOVectSignal(self.ERROR_WIDTH)
         # packet transfer signals
         pktSignalT = BIT if self.packetsPerClock else HBits(self.packetsPerClock)
-        self.endOfPacket = HwIOSignal(pktSignalT)
         self.startOfPacket = HwIOSignal(pktSignalT)
+        self.endOfPacket = HwIOSignal(pktSignalT)
 
     @override
     def _initSimAgent(self, sim: HdlSimulator):
