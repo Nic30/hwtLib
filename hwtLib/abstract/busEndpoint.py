@@ -5,13 +5,6 @@ from typing import Union, Tuple, Type
 
 from hwt.code import Switch, Concat
 from hwt.constants import INTF_DIRECTION
-from hwt.hwIOs.hwIO_map import HwIOObjMap_get_by_field_path, HwIOObjMap, \
-    walkHwIOStructAndHwIOObjMap, HTypeFromHwIOObjMap
-from hwt.hwIOs.std import HwIOBramPort_noClk, HwIORegCntrl, HwIOSignal, HwIODataVld
-from hwt.hwIOs.hwIOStruct import HwIOStruct
-from hwt.hwIOs.hwIOUnion import HwIOUnionSink, HwIOUnionSource
-from hwt.hwIOs.utils import addClkRstn
-from hwt.hwModule import HwModule
 from hwt.hObjList import HObjList
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
@@ -20,14 +13,21 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.structUtils import field_path_get_type, HdlType_select
+from hwt.hwIO import HwIO
+from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOUnion import HwIOUnionSink, HwIOUnionSource
+from hwt.hwIOs.hwIO_map import HwIOObjMap_get_by_field_path, HwIOObjMap, \
+    walkHwIOStructAndHwIOObjMap, HTypeFromHwIOObjMap
+from hwt.hwIOs.std import HwIOBramPort_noClk, HwIORegCntrl, HwIOSignal, HwIODataVld
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwModule import HwModule
 from hwt.mainBases import RtlSignalBase
 from hwt.math import log2ceil, inRange, isPow2
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.typePath import TypePath
 from hwtLib.abstract.addressStepTranslation import AddressStepTranslation
 from ipCorePackager.constants import DIRECTION
-from hwt.hwIO import HwIO
-from hwt.pyUtils.typingFuture import override
 
 
 def TransTmpl_get_min_addr(t: TransTmpl):
