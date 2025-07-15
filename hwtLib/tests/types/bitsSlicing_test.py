@@ -144,7 +144,7 @@ class BitsSlicingTC(unittest.TestCase):
         n = RtlNetlist()
         sigU = n.sig("sigU", uint8_t, def_val=128)
         sigI = n.sig("sigI", int8_t, def_val=64)
-        
+
         self.assertEqual(sigU._trunc(4)._dtype.signed, False)
         self.assertEqual(sigI._trunc(4)._dtype.signed, True)
         self.assertStrEq(sigU._trunc(4), "RESIZE(sigU,4)")
@@ -158,7 +158,7 @@ class BitsSlicingTC(unittest.TestCase):
 
         self.assertStrEq(sigU[8:4], "sigU(7DOWNTO4)")
         self.assertStrEq(sigI[8:4], "sigI(7DOWNTO4)")
-        
+
         self.assertStrEqV(sigU[8:4], "sigU[7:4]")
         self.assertStrEqV(sigI[8:4], "$signed(sigI[7:4])")
 
@@ -264,6 +264,22 @@ class BitsSlicingTC(unittest.TestCase):
         aMsb = a.getMsb()
         c = Concat(aMsb, b)
         self.assertEqual(c, Concat(a._sext(8 + 4 + 1), c0))
+
+    def test_HBits_slice_signCast(self):
+        n = RtlNetlist()
+        a = n.sig("a", dtype=HBits(8))
+        aSigned = a._signed()
+        aSlice = aSigned[4:1]
+        self.assertStrEqV(aSlice, "$signed(a[3:1])")
+        aMsb = aSigned[7]
+        self.assertStrEqV(aMsb, "$signed(a[7])")
+        aBit0 = aSigned[0]
+        aBit0Trunc = aSigned._trunc(1)
+        self.assertIs(aBit0, aBit0Trunc)
+        self.assertStrEqV(aBit0, "$signed(a[0])")
+
+        aBit1 = aSigned[1]
+        self.assertStrEqV(aBit1, "$signed(a[1])")
 
 
 if __name__ == "__main__":
