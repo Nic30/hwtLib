@@ -17,6 +17,7 @@ class AvalonST(HwIODataRdVld):
     :note: handshaked stream with channel, error, sof, eof signal
     
     Based on Avalon Interface Specifications Updated for Intel Quartus Prime Design Suite: 20.1
+    https://cdrdv2.intel.com/v1/dl/getContent/667068?fileName=mnl_avalon_spec-683091-667068.pdf
     
     :ivar USE_EMPTY: add "empty" signal which represents the number of symbols that are empty
     :ivar dataBitsPerSymbol: symbol represents minimal unit of transfered data, it is unit for units of "empty" signal
@@ -34,7 +35,8 @@ class AvalonST(HwIODataRdVld):
     .. figure:: ./_static/avalon_st_readyLatency_readyAllowance.png
         Avalon Interface Specifications Updated for Intel Quartus Prime Design Suite: 20.1, https://cdrdv2.intel.com/v1/dl/getContent/667068?fileName=mnl_avalon_spec-683091-667068.pdf
         Figure 27 - anotated
-    
+    :attention: if maxChannel of src > dst only frames with low enought number are forwarded if connected in Quartus.
+        if src.maxChannel=8, dst.maxChannel=0 then only frames for channel=0 will be forwarded
     .. hwt-autodoc::
     """
 
@@ -51,13 +53,16 @@ class AvalonST(HwIODataRdVld):
 
     @override
     def hwDeclr(self):
+        # :see: Avalon Interface Specifications 5.9.1. Data Transfers Using readyLatency and readyAllowance
         if self.readyAllowance is not None:
-            assert self.readyAllowance >= self.readyLatency
+            assert self.readyAllowance >= self.readyLatency, (self.readyAllowance, self.readyLatency)
         else:
             self.readyAllowance = self.readyLatency
+
         # fundamentals
         if self.maxChannel:
             self.channel = HwIOVectSignal(log2ceil(self.maxChannel))
+
         HwIODataRdVld.hwDeclr(self)
         if self.USE_EMPTY:
             self.empty = HwIOVectSignal(log2ceil(self.DATA_WIDTH // self.dataBitsPerSymbol))
