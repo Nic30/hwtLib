@@ -13,10 +13,11 @@ class AbstractComponentBuilder(object):
     Helper class which simplifies instantiation of commonly used components
     with configuration based on input/output interface
 
-    :ivar ~.compId: used for sequential number of components
+    :ivar ~.parent: unit in which will be all units created by this builder instantiated
+    :ivar ~.compId: last component sequential number, used to avoid name collisions
     :ivar ~.lastComp: last builded component
     :ivar ~.end: last interface of data-path
-
+    :ivar ~.name: prefix for all instantiated units
     :attention: input port is taken from self.end
     """
 
@@ -32,6 +33,7 @@ class AbstractComponentBuilder(object):
         self.lastComp = None
         self.end = srcInterface
         if name is None:
+            assert srcInterface is not None
             name = "gen_" + getSignalName(srcInterface)
 
         self.name = name
