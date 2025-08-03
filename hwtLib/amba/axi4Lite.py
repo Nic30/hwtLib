@@ -2,7 +2,7 @@ from hwt.hwIOs.std import HwIOVectSignal
 from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi3Lite import IP_Axi3Lite, Axi3Lite, Axi3Lite_r, \
     Axi3Lite_b, Axi3Lite_w, Axi3Lite_addr, Axi3Lite_addrAgent
-from hwtLib.amba.axi_common import AxiMap
+from hwtLib.amba.axi_common import AxiMap, Axi_hs
 from hwtLib.amba.constants import PROT_DEFAULT
 from hwtSimApi.hdlSimulator import HdlSimulator
 
@@ -16,8 +16,9 @@ class Axi4Lite_addr(Axi3Lite_addr):
 
     @override
     def hwDeclr(self):
-        super(Axi4Lite_addr, self).hwDeclr()
+        self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         self.prot = HwIOVectSignal(3)
+        Axi_hs.hwDeclr(self)
 
     @override
     def _initSimAgent(self, sim: HdlSimulator):
