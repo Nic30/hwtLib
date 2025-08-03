@@ -8,6 +8,7 @@ from hwt.code import Concat
 from hwt.hdl.const import HConst
 from hwt.hdl.operatorDefs import HwtOps
 from hwt.hdl.types.bits import HBits
+from hwt.serializer.generic.tmpVarConstructor import TmpVarNotConstructableError
 from hwt.serializer.systemC import SystemCSerializer
 from hwt.serializer.verilog import VerilogSerializer
 from hwt.serializer.vhdl import Vhdl2008Serializer
@@ -115,13 +116,16 @@ class BitsSlicingTC(unittest.TestCase):
         self.assertStrEq(sigV._trunc(4), "sigV(3DOWNTO0)")
         self.assertStrEqV(sigV._trunc(4), "sigV[3:0]")
         self.assertStrEqC(sigV._trunc(4), "static_cast<sc_uint<4>>(sigV.read())")
-
-        self.assertStrEq(sigU._sext(10), "UNSIGNED(RESIZE(SIGNED(sigU),10))")
+        
+        with self.assertRaises(TmpVarNotConstructableError):
+            self.assertStrEq(sigU._sext(10), "UNSIGNED(RESIZE(SIGNED(sigU),10))")
         self.assertStrEq(sigS._sext(10), "RESIZE(sigS,10)")
-        self.assertStrEq(sigV._sext(10), "STD_LOGIC_VECTOR(RESIZE(SIGNED(sigV),10))")
+        with self.assertRaises(TmpVarNotConstructableError):
+            self.assertStrEq(sigV._sext(10), "STD_LOGIC_VECTOR(RESIZE(SIGNED(sigV),10))")
 
         self.assertStrEqV(sigU._sext(10), "{{2{sigU[7]}},sigU}")
-        self.assertStrEqV(sigS._sext(10), "{{2{sigS[7]}},sigS}")
+        with self.assertRaises(TmpVarNotConstructableError):
+            self.assertStrEqV(sigS._sext(10), "{{2{sigS[7]}},sigS}")
         self.assertStrEqV(sigV._sext(10), "{{2{sigV[7]}},sigV}")
 
         self.assertStrEqC(sigU._sext(10), "static_cast<sc_uint<10>>(static_cast<sc_int<8>>(sigU.read()))")
@@ -129,11 +133,14 @@ class BitsSlicingTC(unittest.TestCase):
         self.assertStrEqC(sigV._sext(10), "static_cast<sc_uint<10>>(static_cast<sc_int<8>>(sigV.read()))")
 
         self.assertStrEq(sigU._zext(10), "RESIZE(sigU,10)")
-        self.assertStrEq(sigS._zext(10), "SIGNED(RESIZE(UNSIGNED(sigS),10))")
-        self.assertStrEq(sigV._zext(10), "STD_LOGIC_VECTOR(RESIZE(UNSIGNED(sigV),10))")
+        with self.assertRaises(TmpVarNotConstructableError):
+            self.assertStrEq(sigS._zext(10), "SIGNED(RESIZE(UNSIGNED(sigS),10))")
+        with self.assertRaises(TmpVarNotConstructableError):
+            self.assertStrEq(sigV._zext(10), "STD_LOGIC_VECTOR(RESIZE(UNSIGNED(sigV),10))")
 
         self.assertStrEqV(sigU._zext(10), "{2'b00,sigU}")
-        self.assertStrEqV(sigS._zext(10), "{2'b00,sigS}")
+        with self.assertRaises(TmpVarNotConstructableError):
+            self.assertStrEqV(sigS._zext(10), "{2'b00,sigS}")
         self.assertStrEqV(sigV._zext(10), "{2'b00,sigV}")
 
         self.assertStrEqC(sigU._zext(10), "static_cast<sc_uint<10>>(sigU.read())")

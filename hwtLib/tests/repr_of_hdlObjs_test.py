@@ -36,7 +36,7 @@ class ReprOfHdlObjsTC(unittest.TestCase):
         ae(a < b, "a < b")
 
         d = ctx.sig("d", HBits(8))
-        ae(d[1:0], "d._trunc(1)")
+        ae(d[1:0], "d[0]")
         ae(d << 1, "Concat(d._trunc(7), HBits(1).from_py(0))")
         ae(d >> 1, "d[8:1]._zext(8)")
 
