@@ -160,3 +160,7 @@ class Axi4SBuilder(AbstractStreamBuilder):
         self.lastComp = m
         self.end = m.dataOut
         return self
+
+    def to_avalonSt(self) -> "AvalonSTBuilder":
+        from hwtLib.avalon.st_comp.avalonStBuilder import AvalonSTBuilder
+        return AvalonSTBuilder.from_axis(self.parent, self.end, self.name)
