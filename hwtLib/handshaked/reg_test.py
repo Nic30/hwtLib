@@ -45,6 +45,11 @@ class HandshakedRegL2D1TC(HandshakedRegL1D0TC):
     DELAY = 1
 
 
+class HandshakedRegL0_1D0TC(HandshakedRegL1D0TC):
+    LATENCY = (0, 1)
+    DELAY = 0
+
+
 class HandshakedRegL1_2D0TC(HandshakedRegL1D0TC):
     LATENCY = (1, 2)
     DELAY = 0
@@ -52,6 +57,7 @@ class HandshakedRegL1_2D0TC(HandshakedRegL1D0TC):
 
 HandshakedRegTCs = [
     HandshakedRegL1D0TC,
+    HandshakedRegL0_1D0TC,
     HandshakedRegL2D1TC,
     HandshakedRegL1_2D0TC,
 ]

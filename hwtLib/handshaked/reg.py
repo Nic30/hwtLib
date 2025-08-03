@@ -21,10 +21,12 @@ class HandshakedReg(HandshakedCompBase):
     Register for HwIODataRdVld interfaces
 
     :note: latency and delay can be specified as well as HwIO class
-    :note: if LATENCY == (1, 2) the ready chain is broken.
+    :note: if LATENCY == (1, 2) or (0, 1) the ready chain is broken.
         That there is an extra register for potential data overflow and
         no combinational path between input ready, valid and output ready/valid exists.
-
+        The variant with latency (0, 1) known as Skid buffer.
+    :note: if  this generates Skid buffer,
+        the ready chain is broken. 
     :ivar INIT_DATA: a reset value of register (data is transfered from this register after reset)
         (an item for each stage of register, typically just 1 item)
         e.g. if register has latency=1 and interface has just data:uint8_t signal
@@ -46,6 +48,52 @@ class HandshakedReg(HandshakedCompBase):
         with self._hwParamsShared():
             self.dataIn = self.hwIOCls()
             self.dataOut = self.hwIOCls()._m()
+
+    def _implSkidBuff(self, inVld: RtlSignal, inRd: RtlSignal, inData: List[RtlSignal],
+                      outVld: RtlSignal, outRd: RtlSignal):
+        """
+        latency 0-1, dealy 0, pass input directly to output and if output.ready=0, store data
+        in internal buffer and wait until it is consummed before setting input.ready=1 again.
+        Breaks ready chain but has combination path on "valid".
+ 
+        https://github.com/j-marjanovic/chisel-stuff/blob/master/example-14-pcie-endpoint/src/main/scala/pcie_endpoint/SkidBuffer.scala
+        """
+        hasInit = False
+        if self.INIT_DATA:
+            if len(self.INIT_DATA) > 1:
+                raise NotImplementedError()
+            else:
+                initData = self.INIT_DATA[0]
+                hasInit = True
+        else:
+            initData = [NOT_SPECIFIED for _ in inData]
+
+        isOccupied = self._reg("latency1_isOccupied", def_val=hasInit)
+        regs_we = self._sig('latency1_reg_we')
+        outData = []
+        assert len(initData) == len(inData)
+        for iin, init in zip(inData, initData):
+            r = self._reg('latency1_reg_' + getSignalName(iin), iin._dtype,
+                          def_val=None if init is NOT_SPECIFIED else init)
+
+            If(regs_we,
+                r(iin)
+            )
+            outData.append(isOccupied._ternary(r, iin))
+
+        If(isOccupied,
+            inRd(0),
+            regs_we(0), 
+            If(outRd,
+                isOccupied(0)
+            )
+        ).Else(
+            inRd(1),
+            regs_we(inVld & ~outRd), 
+            isOccupied(inVld & ~outRd)
+        )
+        outVld(isOccupied | inVld)
+        return outData
 
     def _impl_latency(self, inVld: RtlSignal, inRd: RtlSignal, inData: List[RtlSignal],
                       outVld: RtlSignal, outRd: RtlSignal, prefix:str, initData: list,
@@ -195,8 +243,18 @@ class HandshakedReg(HandshakedCompBase):
 
         no_init = [NOT_SPECIFIED for _ in data(In)]
         hasInit = False
-        if LATENCY == (1, 2):
-            # ready chain break
+
+        if LATENCY == (0, 1):
+            # ready chain break, skid buffer
+            if DELAY != 0:
+                raise NotImplementedError()
+
+            in_vld, in_rd, in_data = vld(In), rd(In), data(In)
+            out_vld, out_rd = vld(Out), rd(Out)
+            outData = self._implSkidBuff(in_vld, in_rd, in_data, out_vld, out_rd)
+
+        elif LATENCY == (0, 1) or LATENCY == (1, 2):
+            # ready chain break, similar to FIFO
             if DELAY != 0:
                 raise NotImplementedError()
 
