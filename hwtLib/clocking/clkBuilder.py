@@ -165,18 +165,28 @@ class ClkBuilder(AbstractComponentBuilder):
         else:
             return (riseSig, fallSig)
 
-    def reg_path(self, din, number_of_regs, name=None, def_val=None):
+    def regPipe(self, din: Union[RtlSignal, HwIO],
+                number_of_regs: int,
+                name: Optional[str]=None,
+                def_val: Optional[Sequence]=None) -> list[Union[RtlSignal, HwIO]]:
         """
         Instantiate path of registers used to delay the signal or to filter IO
 
-        :return: the last register in path
+        :return: the list of newly created registers and din as a first item
         """
+        assert number_of_regs >= 0, number_of_regs
         if name is None:
-            name = "reg_path"
-        for i in range(number_of_regs):
+            name = "regPipe"
+
+        if def_val is None:
+            def_val = [None for _ in range(number_of_regs)]
+
+        regs = [din, ]
+        for i, def_val_item in enumerate(def_val):
             reg = self.parent._reg(f"{name:s}_{i:d}",
-                                   dtype=din._dtype, def_val=def_val)
+                                   dtype=din._dtype, def_val=def_val_item)
             reg(din)
+            regs.append(reg)
             din = reg
 
-        return din
+        return regs

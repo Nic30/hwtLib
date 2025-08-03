@@ -152,7 +152,7 @@ class I2cMasterBitCtrl(HwModule):
     def filter(self, name, sig):
         """attempt to remove glitches"""
         filter0 = ClkBuilder(self, self.clk, "filter")\
-            .reg_path(sig, 2, "filter", def_val=0)
+            .regPipe(sig, 2, "filter", def_val=[0, 0])[-1]
 
         # let filter_cnt to be shared between filters
         try:
