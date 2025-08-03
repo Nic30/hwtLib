@@ -61,6 +61,8 @@ from hwtLib.avalon.endpoint_test import AvalonMmEndpointTCs
 from hwtLib.avalon.mm_buff_test import AvalonMmBuff_TC
 from hwtLib.avalon.sim.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.sim.stAgent_test import AvalonStAgentTC
+from hwtLib.avalon.st_comp.avalonStLatencyAdapter_test import AvalonStCastReadyLatencyAndAllowance_TCs
+from hwtLib.avalon.st_comp.avalonStToAxi4s_test import AvalonStToAxi4streamAndBack_TC
 from hwtLib.cesnet.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
 from hwtLib.cesnet.mi32.endpoint_test import Mi32EndpointTCs
 from hwtLib.cesnet.mi32.interconnectMatrix_test import Mi32InterconnectMatrixTC
@@ -435,6 +437,8 @@ suite = testSuiteFromTCs(
     AvalonMmBram_TC,
     *AxiToAvalonMm_TCs,
     AvalonStAgentTC,
+    *AvalonStCastReadyLatencyAndAllowance_TCs,
+    AvalonStToAxi4streamAndBack_TC,
     AvalonMmBuff_TC,
 
     # axi tests
