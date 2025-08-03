@@ -46,7 +46,8 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
                          name: str,
                          set_params_fn:Optional[Callable[[HwModule], None]]=None,
                          update_params=True,
-                         propagate_clk_rst=True):
+                         propagate_clk_rst=True,
+                         connect_in_out=True):
         """
         Instantiate generic component and connect basics
 
@@ -67,14 +68,14 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             self._propagateClkRstn(m)
 
         self.lastComp = m
-
-        if self.master_to_slave:
-            m.dataIn(self.end)
-            self.end = m.dataOut
-        else:
-            self.end(m.dataOut)
-            self.end = m.dataIn
-
+        if connect_in_out:
+            if self.master_to_slave:
+                m.dataIn(self.end)
+                self.end = m.dataOut
+            else:
+                self.end(m.dataOut)
+                self.end = m.dataIn
+    
         return self
 
     @classmethod
