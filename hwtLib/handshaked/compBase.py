@@ -1,4 +1,4 @@
-from typing import Type, Union, Optional, List
+from typing import Type, Optional, List
 
 from hwt.hwIOs.std import HwIODataRdVld, HwIORdVldSync, HwIOSignal
 from hwt.hwParam import HwParam
