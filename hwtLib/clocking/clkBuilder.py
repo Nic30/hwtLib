@@ -1,28 +1,23 @@
-from typing import Tuple, Union, List
+from typing import Tuple, Union, List, Optional, Sequence
 
 from hwt.code import If
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
-from hwt.math import log2ceil
 from hwt.hwIO import HwIO
+from hwt.math import log2ceil
 from hwt.synthesizer.interfaceLevel.hwModuleImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
 
-
 AnySig = Union[RtlSignal, HwIO]
 # https://github.com/BrianHGinc/Verilog-Floating-Point-Clock-Divider/blob/main/hdl/BHG_FP_clk_divider.v
+
 
 class ClkBuilder(AbstractComponentBuilder):
     """
     Helper object which simplifies construction
     of the oversampling, shared timers, edge detector, ... logic
-
-    :ivar ~.compId: last component id used to avoid name collisions
-    :ivar ~.parent: unit in which will be all units created by this builder instantiated
-    :ivar ~.name: prefix for all instantiated units
-    :ivar ~.end: interface where builder ended
     """
 
     def timers(self, periods: List[Union[int, Tuple[str, int]]],
@@ -56,13 +51,17 @@ class ClkBuilder(AbstractComponentBuilder):
 
         return [timer.tick for timer in timers]
 
-    def timer(self, period, enableSig=None, rstSig=None):
+    def timer(self, period:Union[int, Tuple[str, int]],
+              enableSig: Union[RtlSignal, HwIO, None]=None,
+              rstSig: Union[RtlSignal, HwIO, None]=None):
         """
         Same as :func:`.ClkBuilder.timers`, just for single timer intance
         """
         return self.timers([period, ], enableSig=enableSig, rstSig=rstSig)[0]
 
-    def timerDynamic(self, periodSig, enableSig=None, rstSig=None) -> RtlSignal:
+    def timerDynamic(self, periodSig,
+                     enableSig: Union[RtlSignal, HwIO, None]=None,
+                     rstSig: Union[RtlSignal, HwIO, None]=None) -> RtlSignal:
         """
         Same as timer, just period is signal which can be configured dynamically
         """
@@ -91,7 +90,10 @@ class ClkBuilder(AbstractComponentBuilder):
         timer.tick(tick)
         return timer.tick
 
-    def oversample(self, sig, sampleCount, sampleTick, rstSig=None) -> Tuple[RtlSignal, RtlSignal]:
+    def oversample(self, sig: Union[RtlSignal, HwIO],
+                   sampleCount: int,
+                   sampleTick: Union[RtlSignal, HwIO],
+                   rstSig: Union[RtlSignal, HwIO, None]=None) -> Tuple[RtlSignal, RtlSignal]:
         """
         [TODO] last sample is not sampled correctly
 
@@ -130,7 +132,11 @@ class ClkBuilder(AbstractComponentBuilder):
         oversampled(oversampleCntr > (sampleCount // 2 - 1))
         return oversampled, sampleDoneTick
 
-    def edgeDetector(self, sig, rise=False, fall=False, last=None, initVal=0):
+    def edgeDetector(self, sig: Union[RtlSignal, HwIO],
+                     rise:bool=False,
+                     fall:bool=False,
+                     last: Union[RtlSignal, HwIO, None]=None,
+                     initVal=0):
         """
         :param sig: signal to detect edges on
         :param rise: if True signal for rise detecting will be returned

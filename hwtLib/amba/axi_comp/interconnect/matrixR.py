@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import propagateClkRstn
-from hwt.hObjList import HObjList
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwt.pyUtils.typingFuture import override
 
 
 class AxiInterconnectMatrixR(AxiInterconnectCommon):
