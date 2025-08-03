@@ -24,6 +24,7 @@ class Axi4S_fifoMeasuring(HwModule):
 
     .. hwt-autodoc:: _example_Axi4S_fifoMeasuring
     """
+    REG_CLS = NotImplementedError
 
     @override
     def hwConfig(self):

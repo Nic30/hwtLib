@@ -25,6 +25,8 @@ class Axi4SFifoDrop(Axi4SCompBase, HandshakedFifoDrop):
     .. hwt-autodoc:: _example_Axi4SFifoDrop
     """
 
+    REG_CLS = NotImplementedError
+
     @override
     def hwDeclr(self):
         HandshakedFifo.hwDeclr(self)

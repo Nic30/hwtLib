@@ -4,16 +4,17 @@
 from typing import Tuple, List
 
 from hwt.code import If
+from hwt.constants import NOT_SPECIFIED
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsRtlSignal import HBitsRtlSignal
 from hwt.hwIOs.std import HwIOFifoWriter, HwIOFifoReader, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
-from hwt.constants import NOT_SPECIFIED
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
 from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
@@ -21,6 +22,7 @@ from hwt.pyUtils.typingFuture import override
 class Fifo(HwModule):
     """
     Generic FIFO usually mapped to BRAM.
+    :note: 1clk to write, 1clk to read 
 
     :ivar ~.EXPORT_SIZE: parameter, if true "size" signal will be exported
     :ivar ~.size: optional signal with count of items stored in this fifo
@@ -49,6 +51,8 @@ class Fifo(HwModule):
     def hwDeclr(self):
         assert self.DEPTH > 0, \
             "Fifo is disabled in this case, do not use it entirely"
+        assert self.DEPTH > 1, \
+            "Fifo DEPTH must be >1 in order to fifo pointers to work correctly"
 
         addClkRstn(self)
         with self._hwParamsShared():
@@ -70,6 +74,7 @@ class Fifo(HwModule):
         index_t = HBits(log2ceil(DEPTH), signed=False)
         # assert isPow2(DEPTH), DEPTH
         MAX_DEPTH = DEPTH - 1
+        assert MAX_DEPTH > 0, MAX_DEPTH
         s = self._sig
         r = self._reg
         fifo_write = s("fifo_write")
@@ -122,6 +127,32 @@ class Fifo(HwModule):
 
         return ack_ptr_list
 
+    def constructFifoSizeLogic(self, fifo_read: HBitsRtlSignal, fifo_write: HBitsRtlSignal):
+        size = self._reg("size_reg", self.size._dtype, len(self.INIT_DATA))
+        If(fifo_read,
+            If(~fifo_write,
+               size(size - 1)
+            )
+        ).Else(
+            If(fifo_write,
+               size(size + 1)
+            )
+        )
+        self.size(size)
+
+    def constructFifoSpaceLogic(self, fifo_read: HBitsRtlSignal, fifo_write: HBitsRtlSignal):
+        space = self._reg("space_reg", self.space._dtype, self.DEPTH - len(self.INIT_DATA))
+        If(fifo_read,
+            If(~fifo_write,
+               space(space + 1)
+            )
+        ).Else(
+            If(fifo_write,
+               space(space - 1)
+            )
+        )
+        self.space(space)
+
     @override
     def hwImpl(self):
         DEPTH = self.DEPTH
@@ -130,7 +161,6 @@ class Fifo(HwModule):
         din = self.dataIn
 
         s = self._sig
-        r = self._reg
         ((fifo_write, wr_ptr), (fifo_read, rd_ptr),) = self.fifo_pointers(
             DEPTH, (din.en, din.wait), [(dout.en, dout.wait), ])
 
@@ -166,30 +196,10 @@ class Fifo(HwModule):
             )
 
         if self.EXPORT_SIZE:
-            size = r("size_reg", self.size._dtype, len(self.INIT_DATA))
-            If(fifo_read,
-                If(~fifo_write,
-                   size(size - 1)
-                )
-            ).Else(
-                If(fifo_write,
-                   size(size + 1)
-                )
-            )
-            self.size(size)
+            self.constructFifoSizeLogic(fifo_read, fifo_write)
 
         if self.EXPORT_SPACE:
-            space = r("space_reg", self.space._dtype, DEPTH - len(self.INIT_DATA))
-            If(fifo_read,
-                If(~fifo_write,
-                   space(space + 1)
-                )
-            ).Else(
-                If(fifo_write,
-                   space(space - 1)
-                )
-            )
-            self.space(space)
+            self.constructFifoSpaceLogic(fifo_read, fifo_write)
 
 
 def _example_Fifo():
@@ -206,6 +216,6 @@ def _example_Fifo():
 
 if __name__ == "__main__":
     from hwt.synth import to_rtl_str
-    
+
     m = _example_Fifo()
     print(to_rtl_str(m))

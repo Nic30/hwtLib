@@ -27,6 +27,7 @@ class Axi4SRegCopy(Axi4SCompBase, HandshakedFifo):
     .. hwt-autodoc::
     """
 
+    REG_CLS = NotImplementedError
     @override
     def hwDeclr(self):
         Axi4SFifoCopy._declr_io(self)
@@ -63,8 +64,8 @@ class Axi4SRegCopy(Axi4SCompBase, HandshakedFifo):
 @serializeParamsUniq
 class Axi4SFifoCopy(Axi4SCompBase, HandshakedFifo):
     """
-    Synchronous fifo for axi-stream interface which can copy last frame or work
-    as a regular fifo.
+    Synchronous FIFO for axi-stream interface which can copy last frame or work
+    as a regular FIFO.
 
     :note: DEPTH > axis.MAX_FRAME_LEN
 
@@ -73,6 +74,7 @@ class Axi4SFifoCopy(Axi4SCompBase, HandshakedFifo):
     .. hwt-autodoc:: _example_Axi4SFifoCopy
     """
     FIFO_CLS = FifoCopy
+    REG_CLS = NotImplementedError
 
     def _declr_io(self):
         HandshakedFifo._declr_io(self)
