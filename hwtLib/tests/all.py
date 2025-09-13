@@ -9,7 +9,7 @@ from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignmentUtilsTC
 from hwtLib.abstract.frame_utils.join.test import FrameJoinUtilsTC
 from hwtLib.abstract.template_configured_test import TemplateConfigured_TC
-from hwtLib.amba.axi4ss_simAgent_test import Axi4StreamSegmentedAgent_TC
+from hwtLib.amba.axi4SSegmented_simAgent_test import Axi4StreamSegmentedAgent_TC
 from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrTCs
 from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import \
