@@ -36,6 +36,7 @@ class AvalonStToAxi4streamAndBack_TC(SimTestCase):
     @override
     def setUpClass(cls):
         cls.dut = _TestAvalonStToAxi4streamAndBack()
+        cls.dut.DATA_WIDTH = 8
         cls.compileSim(cls.dut)
 
     def formatData(self, data: list[int]) -> list[tuple[int, int]]:
