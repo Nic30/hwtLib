@@ -1,9 +1,11 @@
-from typing import Optional
+from typing import Optional, Union
 
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.defs import BIT
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
-from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIOSignal
+from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIOSignal, HwIORdSync, \
+    HwIOVldSync
 from hwt.hwParam import HwParam
 from hwt.math import log2ceil
 from hwt.pyUtils.typingFuture import override
@@ -48,8 +50,16 @@ class AvalonST(HwIODataRdVld):
         self.readyLatency:int = HwParam(0)
         self.readyAllowance: Optional[int] = HwParam(None)
         self.ERROR_WIDTH:int = HwParam(0)
-        self.USE_EMPTY:bool = HwParam(False)
+        self.USE_EMPTY:bool = HwParam(None)
+        self.SUPPORT_ZLP: bool = HwParam(False)
         self.packetsPerClock = HwParam(1)
+
+    @staticmethod
+    def _getWidthOfEmpty(SEGMENT_DATA_WIDTH: int, BYTE_WIDTH: int, SUPPORT_ZLP: bool):
+        return log2ceil((SEGMENT_DATA_WIDTH // BYTE_WIDTH) + (1 if SUPPORT_ZLP else 0))
+
+    def _getWidthOfEmptyForSelf(self):
+        return self._getWidthOfEmpty(self.DATA_WIDTH // self.packetsPerClock, self.dataBitsPerSymbol, self.SUPPORT_ZLP)
 
     @override
     def hwDeclr(self):
@@ -58,31 +68,43 @@ class AvalonST(HwIODataRdVld):
             assert self.readyAllowance >= self.readyLatency, (self.readyAllowance, self.readyLatency)
         else:
             self.readyAllowance = self.readyLatency
+        if self.USE_EMPTY is None:
+            self.USE_EMPTY = self.DATA_WIDTH > self.dataBitsPerSymbol or self.SUPPORT_ZLP
 
         # fundamentals
         if self.maxChannel:
             self.channel = HwIOVectSignal(log2ceil(self.maxChannel))
 
-        HwIODataRdVld.hwDeclr(self)
+        self.data = HwIOVectSignal(self.DATA_WIDTH)
         if self.USE_EMPTY:
-            self.empty = HwIOVectSignal(log2ceil(self.DATA_WIDTH // self.dataBitsPerSymbol))
+            self.empty = HwIOVectSignal(self._getWidthOfEmptyForSelf())
         if self.ERROR_WIDTH:
             self.error = HwIOVectSignal(self.ERROR_WIDTH)
         # packet transfer signals
         pktSignalT = BIT if self.packetsPerClock else HBits(self.packetsPerClock)
         self.startOfPacket = HwIOSignal(pktSignalT)
         self.endOfPacket = HwIOSignal(pktSignalT)
+        HwIOVldSync.hwDeclr(self)
+        HwIORdSync.hwDeclr(self)
 
     @override
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = AvalonSTAgent(sim, self)
 
 
+AvalonSTAgentWordType = Union[
+    # (channel?, data, error?, startOfPacket, endOfPacket)
+    tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst, HBitsConst],
+    tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst],
+    tuple[HBitsConst, HBitsConst, HBitsConst],
+]
+
+
 class AvalonSTAgent(HwIODataRdVldAgent):
     """
     Simulation Agent for AvalonST interface
     Data is stored in .data property and data format
-    is tuple (channel, data, error, startOfPacket, endOfPacket)
+    is tuple
     """
 
     def __init__(self, sim: HdlSimulator, hwIO: AvalonST, allowNoReset=False):
@@ -93,7 +115,7 @@ class AvalonSTAgent(HwIODataRdVldAgent):
         HwIODataRdVldAgent.__init__(self, sim, hwIO, allowNoReset)
 
     @override
-    def get_data(self):
+    def get_data(self) -> AvalonSTAgentWordType:
         hwIO = self.hwIO
         d = []
         if hwIO.maxChannel:
@@ -109,7 +131,7 @@ class AvalonSTAgent(HwIODataRdVldAgent):
         return tuple(d)
 
     @override
-    def set_data(self, data):
+    def set_data(self, data: Optional[AvalonSTAgentWordType]):
         hwIO = self.hwIO
         if data is None:
             if hwIO.maxChannel:
