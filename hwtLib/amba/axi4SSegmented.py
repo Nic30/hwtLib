@@ -1,8 +1,8 @@
 from collections import deque
-from typing import List, Tuple, Union, Sequence, Generator, Optional, Deque, \
+from math import ceil
+from typing import Union, Deque, \
     Self
 
-from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwt.code import segment_get, Concat
 from hwt.hObjList import HObjList
 from hwt.hdl.const import HConst
@@ -10,20 +10,15 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.hdl.types.structValBase import HStructConstBase
 from hwt.hwIOs.agents.rdVldSync import UniversalRdVldSyncAgent
 from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwParam import HwParam
 from hwt.math import log2ceil
 from hwt.pyUtils.typingFuture import override
-from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.amba.axi4s import Axi4StreamFrameUtils
 from hwtLib.amba.axi_common import Axi_user, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.hdlSimulator import HdlSimulator
-from pyMathBitPrecise.bit_utils import get_bit_range
 
 
 class Axi4StreamSegmented(Axi_hs, Axi_user):
@@ -45,14 +40,17 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
     
     Ethernet DATA_WIDTH SEGMENT_CNT Frequency[MHz]
     ======== ========== =========== ==============
-    40G      128        1           312.5
-    50G      256        2           195.3125
-    100G     384        3           260.5
-    400G     1024       4           400
+    40G       128       1           312.5 [0]
+    50G       256       2           195.3125 [0]
+    100G      384       3           260.5 [0]
+    100G      512       1           390.625 [2]
+    400G     1024       8           390.625 [3]
+    600G     1536       12          390.625 [3]
     
-    https://www.xilinx.com/content/dam/xilinx/publications/presentations/xilinx_network_security_offerings.pdf
-    https://www.intel.com/content/www/us/en/docs/programmable/773413.html
-
+    [0] https://www.xilinx.com/content/dam/xilinx/publications/presentations/xilinx_network_security_offerings.pdf
+    [1] https://www.intel.com/content/www/us/en/docs/programmable/773413.html
+    [2] https://cdrdv2.intel.com/v1/dl/getContent/827074?fileName=ug20085-683100-827074.pdf
+    [3] https://docs.amd.com/r/en-US/pg369-dcmac
     .. hwt-autodoc::
     """
 
@@ -67,15 +65,58 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
         self.PACK_SEGMENT_BITS:bool = HwParam(False)
 
     @staticmethod
+    def getWastedBandwidthPercent(SEGMENT_CNT:int, DATA_WIDTH: int, PACKET_WIDTH: int):
+        assert DATA_WIDTH % SEGMENT_CNT == 0, (DATA_WIDTH, SEGMENT_CNT)
+        SEGMENT_WIDTH = DATA_WIDTH // SEGMENT_CNT
+        leftover = PACKET_WIDTH % SEGMENT_WIDTH
+        wasted = SEGMENT_WIDTH - leftover
+        packetSegmentCnt = ceil(PACKET_WIDTH / SEGMENT_WIDTH)
+        return wasted / (packetSegmentCnt * SEGMENT_WIDTH)
+
+    @classmethod
+    def getEffectiveThroughput(cls, CLK_FREQ: Union[float, int], SEGMENT_CNT: int, DATA_WIDTH: int, PACKET_WIDTH: int):
+        efficiency = cls.getWastedBandwidthPercent(SEGMENT_CNT, DATA_WIDTH, PACKET_WIDTH)
+        return CLK_FREQ * DATA_WIDTH * (1. - efficiency)
+
+    @classmethod
+    def getMinNumberOfSegments(cls, BITRATE: Union[float, int], DATA_WIDTH: int, CLK_FREQ: float, MIN_PACKET_WIDTH: int):
+        """
+        :param MIN_PACKET_WIDTH: the width of most waistful packet, e.g. (64 + 1) * 8b for ethernet    
+        """
+        assert BITRATE <= CLK_FREQ * DATA_WIDTH
+        segmentCnt = 1
+        while True:
+            ebpsMinPkt = cls.getEffectiveThroughput(CLK_FREQ, segmentCnt, DATA_WIDTH, MIN_PACKET_WIDTH)
+            segmentWidth = DATA_WIDTH // segmentCnt
+            if MIN_PACKET_WIDTH < segmentWidth:
+                ebpsMinPkt = min(ebpsMinPkt, cls.getEffectiveThroughput(CLK_FREQ, segmentCnt, DATA_WIDTH, segmentWidth + 8))
+            if ebpsMinPkt >= BITRATE:
+                break
+
+            segmentCnt += 1
+            while DATA_WIDTH % segmentCnt != 0 or (DATA_WIDTH // segmentCnt) % 8 != 0:
+                segmentCnt += 1
+                if segmentCnt >= DATA_WIDTH // 8:
+                    raise AssertionError("Clock frequency too low")
+
+        return segmentCnt
+
+    @staticmethod
     def _hasEmpty(SEGMENT_DATA_WIDTH: int, BYTE_WIDTH: int, SUPPORT_ZLP: bool):
         return SEGMENT_DATA_WIDTH > BYTE_WIDTH or SUPPORT_ZLP
+
+    @staticmethod
+    def _hasEnable(SEGMENT_CNT: int):
+        return SEGMENT_CNT > 1
 
     @staticmethod
     def _getWidthOfEmpty(SEGMENT_DATA_WIDTH: int, BYTE_WIDTH: int, SUPPORT_ZLP: bool):
         return log2ceil((SEGMENT_DATA_WIDTH // BYTE_WIDTH) + (1 if SUPPORT_ZLP else 0))
 
-    @override
-    def hwDeclr(self):
+    def resolveTypes(self):
+        if hasattr(self, "USER_SEGMENT_T"):
+            return
+
         SEGMENT_CNT = self.SEGMENT_CNT
         BYTE_WIDTH = self.BYTE_WIDTH
         SEGMENT_DATA_WIDTH = self.SEGMENT_DATA_WIDTH
@@ -83,6 +124,7 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
         assert SEGMENT_DATA_WIDTH % BYTE_WIDTH == 0, (SEGMENT_DATA_WIDTH, BYTE_WIDTH)
         assert BYTE_WIDTH <= SEGMENT_DATA_WIDTH, (SEGMENT_DATA_WIDTH, BYTE_WIDTH)
         USE_EMPTY = self._hasEmpty(SEGMENT_DATA_WIDTH, BYTE_WIDTH, self.SUPPORT_ZLP)
+        USE_ENABLE = self._hasEnable(SEGMENT_CNT)
         EMPTY_WIDTH = self._getWidthOfEmpty(SEGMENT_DATA_WIDTH, BYTE_WIDTH, self.SUPPORT_ZLP)
 
         # :note: 1st member of struct is on bit 0
@@ -90,7 +132,7 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
             # ENABLE 1 indicates that the associated data signal contains valid data,
             # and that the other flags on the associated user_* signals are valid
             # :note: enable is there to spare MUXes on for other struct members in not populated segments
-            (BIT, "enable"),
+           * (((BIT, "enable"),) if USE_ENABLE else ()),
             # SOF 1 indicates that the associated data segment contains the beginning of a new frame
             * (((BIT, "sof"),) if self.USE_SOF else ()),
             # EOF indicates end of frame
@@ -102,6 +144,15 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
             # for 8B interface: 0 == 8 bytes valid, 7 == 1 byte valid, ...
             * (((HBits(EMPTY_WIDTH), "empty"),) if USE_EMPTY else ()),
         )
+        self.WORD_T = HStruct(
+            (HBits(SEGMENT_DATA_WIDTH)[SEGMENT_CNT], "data"),
+            (self.USER_SEGMENT_T[SEGMENT_CNT], "user")
+        )
+
+    @override
+    def hwDeclr(self):
+        self.resolveTypes()
+        SEGMENT_CNT = self.SEGMENT_CNT
         if self.PACK_SEGMENT_BITS:
             self.data = HwIOVectSignal(SEGMENT_CNT * self.SEGMENT_DATA_WIDTH)
             self.user = HwIOVectSignal(SEGMENT_CNT * self.USER_SEGMENT_T.bit_length())
@@ -124,7 +175,7 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
 
 
 # tuple of segments
-Axi4StreamSegmentedAgentWordType = Tuple[Tuple[HBitsConst, HConst], ...]
+Axi4StreamSegmentedAgentWordType = tuple[tuple[HBitsConst, HConst], ...]
 
 
 class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
@@ -240,7 +291,7 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
                         uIO.empty.write(u.empty)
 
 
-_Axi4StreamSegmentedWordOfSegment = Tuple[HBitsConst, HConst]
+_Axi4StreamSegmentedWordOfSegment = tuple[HBitsConst, HConst]
 
 
 class _Axi4StreamSegmentedWord():
@@ -248,7 +299,7 @@ class _Axi4StreamSegmentedWord():
     :ivar segmentWords: word of data and control signals encoded in user signal for a single segment
     """
 
-    def __init__(self, segmentWords:Tuple[Deque[HBitsConst], Deque[HConst]], SEGMENT_CNT:int):
+    def __init__(self, segmentWords:tuple[Deque[HBitsConst], Deque[HConst]], SEGMENT_CNT:int):
         self.segmentWords = segmentWords
         self.SEGMENT_CNT = SEGMENT_CNT
 
@@ -260,7 +311,7 @@ class _Axi4StreamSegmentedWord():
         return (segmentIndex, self.segmentWords[0].popleft(), self.segmentWords[1].popleft())
 
     @classmethod
-    def popSegmentWordFromAgentData(cls, ag_data:Deque[Tuple[HBitsConst, HConst]], SEGMENT_CNT:int) -> Self:
+    def popSegmentWordFromAgentData(cls, ag_data:Deque[tuple[HBitsConst, HConst]], SEGMENT_CNT:int) -> Self:
         cur = ag_data[0]
         if not isinstance(cur, _Axi4StreamSegmentedWord):
             segments = (deque(cur[0]), deque(cur[1]))
@@ -273,212 +324,22 @@ class _Axi4StreamSegmentedWord():
         return segmentData
 
 
-class Axi4StreamSegmentedFrameUtils(Axi4StreamFrameUtils):
+if __name__ == "__main__":
 
-    def __init__(self, SEGMENT_DATA_WIDTH:int, SEGMENT_CNT:int, USER_SEGMENT_T: HStruct, BYTE_WIDTH:int=8,
-                 SUPPORT_ZLP:bool=False, USE_SOF:bool=False, ERROR_WIDTH:int=0, PACK_SEGMENT_BITS:bool=False):
-        self.SEGMENT_CNT = SEGMENT_CNT
-        self.BYTE_WIDTH = BYTE_WIDTH
-        self.SEGMENT_DATA_WIDTH = SEGMENT_DATA_WIDTH
-        self.SEGMENT_BYTE_CNT = SEGMENT_DATA_WIDTH // BYTE_WIDTH
-        assert SEGMENT_DATA_WIDTH % BYTE_WIDTH == 0
-        self.USER_SEGMENT_T = USER_SEGMENT_T
-        self.SUPPORT_ZLP = SUPPORT_ZLP
-        self.USE_SOF = USE_SOF
-        self.ERROR_WIDTH = ERROR_WIDTH
-        self.PACK_SEGMENT_BITS = PACK_SEGMENT_BITS
-        self.USE_EMPTY = Axi4StreamSegmented._hasEmpty(SEGMENT_DATA_WIDTH, BYTE_WIDTH, SUPPORT_ZLP)
+    ref = [
+        # (40e9 , 128, 1, 312.5e6),
+        # (50e9 , 256, 2, 195.3125e6),
+        # (100e9, 384, 3, 260.5e6),
+        # (100e9, 512, 1, 390.625e6),
+        # (400e9, 1024, 8, 390.625e6),
+        # (600e9, 1536, 12, 390.625e6),
+        # (600e9, 768, 4, 1000e6),
+        (100e9, 112, 4, 1000e6),
 
-    @override
-    @classmethod
-    def from_HwIO(cls, axiss: Axi4StreamSegmented):
-        return cls(axiss.SEGMENT_DATA_WIDTH,
-                   axiss.SEGMENT_CNT,
-                   axiss.USER_SEGMENT_T,
-                   SUPPORT_ZLP=axiss.SUPPORT_ZLP,
-                   USE_SOF=axiss.USE_SOF,
-                   ERROR_WIDTH=axiss.ERROR_WIDTH,
-                   PACK_SEGMENT_BITS=axiss.PACK_SEGMENT_BITS)
+    ]
 
-    @override
-    def pack_frame(self, structVal: Union[HConst, Sequence[int]])\
-            ->Generator[Tuple[Optional[HBitsConst], HBitsConst], None, None]:
-        """
-        pack data of structure into words on Axi4StreamSegmented interface
-        
-        :param structVal: value to be send, HConst instance or list of int for each byte
-        
-        :returns: generator of tuples tuples (data, USER_SEGMENT_T)
-        """
-        if not isinstance(structVal, HConst):
-            try:
-                valByteCnt = len(structVal)
-            except:
-                structVal = tuple(structVal)
-                valByteCnt = len(structVal)
-
-            if valByteCnt != 0:
-                structVal = uint8_t[valByteCnt].from_py(structVal)
-            else:
-                structVal = []
-
-        byte_cnt = self.SEGMENT_BYTE_CNT
-        USER_SEGMENT_T = self.USER_SEGMENT_T
-        USE_SOF = self.USE_SOF
-        USE_EMPTY = self.USE_EMPTY
-        ERROR_WIDTH = self.ERROR_WIDTH
-        if structVal == []:
-            userData = {"enable":1, "eof":1}
-            if USE_EMPTY:
-                userData["empty"] = byte_cnt
-            if USE_SOF:
-                userData["sof"] = 1
-            if ERROR_WIDTH:
-                userData["err"] = 0
-
-            yield (None, USER_SEGMENT_T.from_py(userData))
-            return
-
-        dataWidth = self.SEGMENT_DATA_WIDTH
-        words = iterBits(structVal, bitsInOne=dataWidth,
-                         skipPadding=False, fillup=True)
-        first = True
-        for last, data in iter_with_last(words):
-            assert data._dtype.bit_length() == dataWidth, data._dtype.bit_length()
-            sof = first
-            if first:
-                first = False
-            eof = last
-
-            userData = {"enable":1, "eof":eof}
-            if USE_EMPTY:
-                if last:
-                    leftOverSize = (structVal._dtype.bit_length() // self.BYTE_WIDTH) % byte_cnt
-                    if leftOverSize:
-                        empty = byte_cnt - leftOverSize
-                    else:
-                        empty = 0
-                else:
-                    empty = 0
-                userData["empty"] = empty
-
-            if USE_SOF:
-                userData["sof"] = sof
-
-            if ERROR_WIDTH:
-                userData["err"] = 0
-
-            yield (data, USER_SEGMENT_T.from_py(userData))
-
-    def concatWordBits(self, frameBeats: Sequence[Tuple[HBitsConst, HStructConstBase]]):
-        for data, user in frameBeats:
-            word = [data, ]  # in lowest bits first format
-            for f in user._dtype.fields:
-                word.append(getattr(user, f.name))
-
-            yield Concat(*reversed(word))
-
-    @override
-    def send_bytes(self, data_B:Union[bytes, List[int]], ag_data:Deque[Axi4StreamSegmentedAgentWordType], offset:int=0) -> List[Tuple[int, int, int]]:
-        if data_B:
-            if isinstance(data_B, bytes):
-                data_B = [int(x) for x in data_B]
-            t = uint8_t[len(data_B) + offset]
-            _data_B = t.from_py([None for _ in range(offset)] + data_B)
-        else:
-            assert self.SUPPORT_ZLP
-            _data_B = data_B
-
-        f = self.pack_frame(_data_B)
-        SEGMENT_CNT = self.SEGMENT_CNT
-        if ag_data:
-            # possibly fill unused segments into last word
-            lastWord = ag_data[-1]
-            if len(lastWord) < SEGMENT_CNT:
-                newSegmentsForLastWord = []
-                for _ in range(SEGMENT_CNT - len(lastWord)):
-                    try:
-                        newSegmentsForLastWord.append(next(f))
-                    except StopIteration:
-                        break
-                ag_data[-1] = tuple((*lastWord, *newSegmentsForLastWord))
-
-        eof = False
-        while not eof:
-            segments = []
-            for _ in range(SEGMENT_CNT):
-                try:
-                    seg = next(f)
-                    segments.append(seg)
-                except StopIteration:
-                    eof = True
-                    break
-                if segments:
-                    ag_data.append(tuple(segments))
-
-    @override
-    def receive_bytes(self, ag_data:Deque[Tuple[HBitsConst, HConst]]) -> Tuple[int, List[Union[int, HBitsConst]], bool]:
-        """
-        :param ag_data: list of axi stream segmented words, number of item in tuple depends on use_keep and use_id
-        :returns: tuple (startSegmentIndex, data bytes, had error flag)
-        """
-        data_B = []
-        sof = True
-        eof = False
-        err = 0
-        first = True
-        SEGMENT_BYTE_CNT = self.SEGMENT_BYTE_CNT
-        SEGMENT_CNT = self.SEGMENT_CNT
-        USE_SOF = self.USE_SOF
-        ERROR_WIDTH = self.ERROR_WIDTH
-
-        while ag_data:
-            try:
-                _segmentIndex, data, user = _Axi4StreamSegmentedWord.popSegmentWordFromAgentData(ag_data, SEGMENT_CNT)
-            except IndexError:
-                break
-            enable = bool(user.enable)
-            if data_B:
-                assert enable, "All segments between sof-eof must have enable=1 or whole word must have valid=0"
-            else:
-                if not enable:
-                    # skipping unused segments before end of frame
-                    continue
-
-            if USE_SOF:
-                sof = bool(user.sof)
-                assert sof == first, ("Soft must be 1 in the first segment of the frame", sof, first)
-            else:
-                sof = first
-
-            if ERROR_WIDTH:
-                ERROR_WIDTH |= int(user.err)
-
-            eof = bool(user.eof)
-            empty = int(user.empty)
-            if empty != 0:
-                assert eof, "non-full word in the middle of the packet"
-
-            for i in range(SEGMENT_BYTE_CNT - empty):
-                d = get_bit_range(data.val, i * 8, 8)
-                if get_bit_range(data.vld_mask, i * 8, 8) != 0xff:
-                    raise AssertionError(
-                        "Data not valid but it should be"
-                        f' based on value of "empty" B_i:{i:d}, empty:{empty:d}, vld_mask:0x{data.vld_mask:x}')
-                data_B.append(d)
-
-            if first:
-                segmentIndex = _segmentIndex
-                first = False
-
-            if eof:
-                break
-
-        if not eof:
-            if data_B:
-                raise ValueError("Unfinished frame", data_B)
-            else:
-                raise ValueError("No frame available")
-
-        return segmentIndex, data_B, err
+    PACKET_WIDTH = (64 + 1) * 8
+    for bitrate, dataWidth, refSegmentCnt, freq in ref:
+        segmentCnt = Axi4StreamSegmented.getMinNumberOfSegments(bitrate, dataWidth, freq, PACKET_WIDTH)
+        print(bitrate / 1e9, segmentCnt, segmentCnt == refSegmentCnt)
 
