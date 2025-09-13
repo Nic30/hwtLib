@@ -2,15 +2,16 @@ from collections import deque
 from typing import Type, List, Tuple, Optional, Union
 
 from hwt.code import If
+from hwt.hObjList import HObjList
 from hwt.hwIOs.std import HwIORdVldSync
 from hwt.hwModule import HwModule
-from hwt.hObjList import HObjList
 from hwt.mainBases import RtlSignalBase
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.interfaceLevel.utils import HwIO_walkSignals
+from hwt.synthesizer.typePath import TypePath
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 from hwtLib.abstract.debug_bus_monitor import monitor_of, connect_to_HwIOMonitor
 from ipCorePackager.constants import DIRECTION, INTF_DIRECTION
-from hwt.pyUtils.typingFuture import override
 
 
 class InHwError(Exception):
@@ -65,7 +66,7 @@ class HwExceptionCtx():
         self.catch_instances = []
         self.name = name
 
-    def _HwModule_registerPublicHwIOInImpl(self, hwIO: ExceptionHandleInterface, name:str, onParentPropertyPath: tuple[Union[str, int], ...]):
+    def _HwModule_registerPublicHwIOInImpl(self, hwIO: ExceptionHandleInterface, name:str, onParentPropertyPath: TypePath):
         p = self.parent
         p._registerHwIO(name, hwIO, onParentPropertyPath, False)
         p._loadHwIODeclarations(hwIO, True)
@@ -118,7 +119,7 @@ class HwExceptionCtx():
 
         # add a raise interace in impl phase of the HwModule instance
         raiseHwIO = ExceptionHandleInterface(exception)._m()
-        onParentPropertyPath: tuple[Union[str, int], ...] = (AbstractComponentBuilder._findSuitableName(self, err_name), )
+        onParentPropertyPath: TypePath = TypePath(AbstractComponentBuilder._findSuitableName(self, err_name),)
         self._HwModule_registerPublicHwIOInImpl(
             raiseHwIO,
             onParentPropertyPath[0],
@@ -149,7 +150,7 @@ class HwExceptionCtx():
         ]
 
     def hw_catch(self, exception_cls: Optional[Union[Type[InHwError], Tuple[Type[InHwError], ...]]]=None)\
-            -> List[Tuple[InHwError, ExceptionHandleInterface]]:
+            ->List[Tuple[InHwError, ExceptionHandleInterface]]:
         """
         Catch all uncatched exceptions by exception class.
 
@@ -200,7 +201,7 @@ class HwExceptionCtx():
                     self._HwModule_registerPublicHwIOInImpl(
                         raise_hwIO,
                         name,
-                        (name, )
+                        TypePath(name,)
                     )
                     object.__setattr__(self.parent, raise_hwIO._name, raise_hwIO)
                     raise_hwIO(hwIO)
