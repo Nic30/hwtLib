@@ -1,7 +1,7 @@
 from hwt.constants import INTF_DIRECTION
-from hwt.hwParam import HwParam
-from hwt.hwModule import HwModule
 from hwt.hwIO import HwIO
+from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 
 
 class HwModuleWrapper(HwModule):
@@ -36,7 +36,7 @@ class HwModuleWrapper(HwModule):
             # hwIO_copy._direction = hwIO._direction
             hwIO_copy._direction = INTF_DIRECTION.opposite(hwIO._direction)
 
-            self._registerHwIO(hwIO._name, hwIO_copy, hwIO_copy._onParentPropertyPath, False)
+            self._registerHwIO(hwIO._name, hwIO_copy, hwIO._onParentPropertyPath, False)
             object.__setattr__(self, hwIO._name, hwIO_copy)
 
             origToWrapInfMap[hwIO] = hwIO_copy
