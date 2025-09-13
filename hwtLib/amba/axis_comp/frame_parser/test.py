@@ -16,7 +16,7 @@ from hwt.hwIO import HwIO
 from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.pyUtils.testUtils import TestMatrix
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import axi4s_receive_bytes, Axi4StreamFrameUtils
+from hwtLib.amba.axi4sSimFrameUtils import axi4s_receive_bytes, Axi4StreamSimFrameUtils
 from hwtLib.amba.axis_comp.frame_deparser.test_types import unionOfStructs, unionSimple
 from hwtLib.amba.axis_comp.frame_parser import Axi4S_frameParser
 from hwtLib.amba.axis_comp.frame_parser.test_types import structManyInts, \
@@ -53,7 +53,7 @@ class Axi4S_frameParserTC(SimTestCase):
             self.randomize(hwIO)
 
     def mySetUp(self, dataWidth: int, structTemplate: HdlType, randomize=False,
-                use_strb=False, use_keep=False) -> Tuple[Axi4S_frameParser, Axi4StreamFrameUtils]:
+                use_strb=False, use_keep=False) -> Tuple[Axi4S_frameParser, Axi4StreamSimFrameUtils]:
         dut = Axi4S_frameParser(structTemplate)
         dut.USE_STRB = use_strb
         dut.USE_KEEP = use_keep
@@ -75,14 +75,14 @@ class Axi4S_frameParserTC(SimTestCase):
         if randomize:
             self.randomizeIntf(dut.dataIn)
             self.randomizeIntf(dut.dataOut)
-        fu = Axi4StreamFrameUtils(dataWidth, USE_STRB=use_strb, USE_KEEP=use_keep)
+        fu = Axi4StreamSimFrameUtils(dataWidth, USE_STRB=use_strb, USE_KEEP=use_keep)
         return dut, fu
 
     def test_pack_frame(self):
         t = structManyInts
         for DW in TEST_DW:
             d1 = t.from_py(ref0_structManyInts)
-            fu = Axi4StreamFrameUtils(DW)
+            fu = Axi4StreamSimFrameUtils(DW)
             f = deque(fu.pack_frame(d1))
             d2 = fu.unpack_frame(t, f)
 

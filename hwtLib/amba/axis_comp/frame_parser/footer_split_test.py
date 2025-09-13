@@ -5,7 +5,7 @@ import os
 
 from hwt.pyUtils.testUtils import TestMatrix
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import Axi4StreamFrameUtils
+from hwtLib.amba.axi4sSimFrameUtils import Axi4StreamSimFrameUtils
 from hwtLib.amba.axis_comp.frame_parser.footer_split import Axi4S_footerSplit
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -39,7 +39,7 @@ class Axi4S_footerSplitTC(SimTestCase):
     def assertFrameEqual(self, output_i, ref_offset, ref_data):
         axis = self.dut.dataOut[output_i]
         ag_data = axis._ag.data
-        fu = Axi4StreamFrameUtils.from_HwIO(axis)
+        fu = Axi4StreamSimFrameUtils.from_HwIO(axis)
         if fu.USE_STRB:
             # reinterpret strb as keep because we would like to cut off invalidated prefix data bytes
             # to simplify checking in test
@@ -81,7 +81,7 @@ class Axi4S_footerSplitTC(SimTestCase):
         def gen_data(n_bits):
             return [v & 0xff for v in range(offset, offset + n_bits // 8)]
         
-        fu = Axi4StreamFrameUtils.from_HwIO(dut.dataIn)
+        fu = Axi4StreamSimFrameUtils.from_HwIO(dut.dataIn)
 
         for _ in range(N):
             for frame_len in (frame_len0, frame_len1):

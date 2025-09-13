@@ -10,7 +10,7 @@ from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import Axi4StreamFrameUtils, axi4s_send_bytes,\
+from hwtLib.amba.axi4sSimFrameUtils import Axi4StreamSimFrameUtils, axi4s_send_bytes,\
     axi4s_receive_bytes
 from hwtLib.amba.axis_comp.frame_deparser import Axi4S_frameDeparser
 from hwtLib.amba.axis_comp.frame_deparser.test_types import s1field, \
@@ -109,7 +109,7 @@ class Axi4S_frameDeparser_TC(SimTestCase):
 
         self.runSim(t * Time.ns)
 
-        fu = Axi4StreamFrameUtils.from_HwIO(dut.dataOut)
+        fu = Axi4StreamSimFrameUtils.from_HwIO(dut.dataOut)
         offset, f = fu.receive_bytes(dut.dataOut._ag.data)
         self.assertEqual(offset, 0)
         self.assertSequenceEqual(f, [MAGIC, 0, 0, 0,
@@ -561,7 +561,7 @@ class Axi4S_frameDeparser_TC(SimTestCase):
             ref.append(d)
         self.runSim(t * CLK_PERIOD)
 
-        fu = Axi4StreamFrameUtils.from_HwIO(dut.dataOut)
+        fu = Axi4StreamSimFrameUtils.from_HwIO(dut.dataOut)
         # reinterpret strb as keep because we would like to cut off invalidated prefix data bytes
         # to simplify checking in test
         fu.USE_STRB = False

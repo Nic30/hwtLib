@@ -8,7 +8,7 @@ from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi3Lite import Axi3Lite
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.amba.axi4s import Axi4StreamFrameUtils
+from hwtLib.amba.axi4sSimFrameUtils import Axi4StreamSimFrameUtils
 from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.datapump.r_aligned_test import Axi4_rDatapumpTC, Axi_datapumpTC
@@ -214,7 +214,7 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
                     )
             self.assertValSequenceEqual(aw, aw_ref)
             
-            fuW = Axi4StreamFrameUtils.from_HwIO(dut.axi.w)
+            fuW = Axi4StreamSimFrameUtils.from_HwIO(dut.axi.w)
             # reinterpret strb as keep because we would like to cut off invalidated prefix data bytes
             # to simplify checking in test
             fuW.USE_KEEP = True

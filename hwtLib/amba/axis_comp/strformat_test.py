@@ -8,7 +8,8 @@ from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
 from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import Axi4Stream, axi4s_receive_bytes, axi4s_send_bytes
+from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axi4sSimFrameUtils import axi4s_receive_bytes, axi4s_send_bytes
 from hwtLib.amba.axis_comp.strformat_fn import axiS_strFormat
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.constants import CLK_PERIOD

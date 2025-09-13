@@ -5,7 +5,7 @@ from hwtLib.peripheral.ethernet.mac import EthernetMac
 from hwtLib.peripheral.ethernet.mac_tx_test import REF_FRAME, REF_CRC
 from hwtLib.types.net.ethernet import eth_addr_format
 from hwtSimApi.constants import CLK_PERIOD
-from hwtLib.amba.axi4s import Axi4StreamFrameUtils
+from hwtLib.amba.axi4sSimFrameUtils import Axi4StreamSimFrameUtils
 
 
 class EthernetMacRx_8b_TC(SimTestCase):
@@ -31,7 +31,7 @@ class EthernetMacRx_8b_TC(SimTestCase):
         dut = self.dut
         rx_frame_bytes = list(chain(REF_FRAME, REF_CRC))
         # :attention: strb signal is reinterpreted as a keep signal
-        rxFu = Axi4StreamFrameUtils(self.DW, USE_STRB=True)
+        rxFu = Axi4StreamSimFrameUtils(self.DW, USE_STRB=True)
         rx_data = rxFu.pack_frame(rx_frame_bytes)
         
         if dut.USE_KEEP:
@@ -45,7 +45,7 @@ class EthernetMacRx_8b_TC(SimTestCase):
 
         self.runSim(CLK_PERIOD * (2 * len(dut.phy_rx._ag.data) + 10))
         
-        txFu = Axi4StreamFrameUtils.from_HwIO(dut.eth.rx)
+        txFu = Axi4StreamSimFrameUtils.from_HwIO(dut.eth.rx)
         o, f = txFu.receive_bytes(dut.eth.rx._ag.data)
         self.assertEqual(o, 0)
         self.assertValSequenceEqual(f, REF_FRAME)

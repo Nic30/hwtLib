@@ -5,12 +5,12 @@ from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.pyUtils.typingFuture import override
-from hwtLib.amba.axi4SSegmented import Axi4StreamSegmented, \
-    Axi4StreamSegmentedFrameUtils
+from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.amba.axi4SSegmented import Axi4StreamSegmented
+from hwtLib.amba.axi4SSegmentedSimFrameUtils import Axi4StreamSegmentedFrameUtils
+from hwtLib.amba.axi4sSimFrameUtils import Axi4StreamSimFrameUtils
 from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.amba.axis_comp.reg import Axi4SReg
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import Axi4StreamFrameUtils
 from hwtSimApi.utils import freq_to_period
 
 
@@ -36,7 +36,7 @@ class BaseAxi4SPktInPktOutTC(SimTestCase):
     Base class for tests which test component which takes 1 frame and produces 1 frame
     Input port should be named "rx", output port should be named "tx"
     """
-    StreamFrameUtils = Axi4StreamFrameUtils
+    StreamFrameUtils = Axi4StreamSimFrameUtils
 
     def _test(self, dut: HwModule, refFramesIn: List[List[int]], refFramesOut: List[List[int]], freq=int(1e6),
               rtlSimTimeMultiplier=2.0,

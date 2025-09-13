@@ -8,7 +8,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4s import axi4s_receive_bytes, axi4s_send_bytes
+from hwtLib.amba.axi4sSimFrameUtils import axi4s_receive_bytes, axi4s_send_bytes
 from hwtLib.amba.axis_comp.frame_join import Axi4S_FrameJoin
 from hwtSimApi.constants import CLK_PERIOD
 

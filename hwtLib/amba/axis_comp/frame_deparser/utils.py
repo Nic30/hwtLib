@@ -1,9 +1,9 @@
+from hwt.code_utils import connect_optional
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwtLib.amba.axi4s import Axi4Stream, axi4s_mask_propagate_best_effort
-from hwt.code_utils import connect_optional
 from hwt.hwIO import HwIO
+from hwtLib.amba.axi4sSimFrameUtils import Axi4Stream, axi4s_mask_propagate_best_effort
 
 
 def _get_only_stream(t: HdlType):
