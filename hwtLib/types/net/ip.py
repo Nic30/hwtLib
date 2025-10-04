@@ -65,3 +65,5 @@ IPv6ExtCommonHeader_t = HStruct(
 )
 
 
+# checksum calculation https://gist.github.com/david-hoze/0c7021434796997a4ca42d7731a7073a
+
