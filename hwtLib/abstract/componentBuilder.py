@@ -86,6 +86,7 @@ class AbstractComponentBuilder(object):
         
         :param firstWithoutCntrSuffix: if True name is used as is if possible if False counter suffix is always added
         """
+        assert name is not None
         if self.name:
             namePrefix = f"{self.name:s}_"
         else:
