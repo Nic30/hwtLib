@@ -77,7 +77,7 @@ class SimFrameUtils(Generic[WordTupleTy]):
 
     def concatWordBits(self, frameBeats: Sequence[WordTupleTy]) -> Generator[HBitsConst, None, None]:
         """
-        Convert word tuple to flat HBitsConst (members of input tuple are typically ints so they need to be cast to correct type first)
+        Convert word tuple (produced by :meth:`~.send_bytes`/:meth:`~.pack_frame`) to flat :class:`HBitsConst` (members of input tuple are typically ints so they need to be cast to correct type first)
         """
         raise NotImplementedError("Override this in your implementation of this abstract class")
 
