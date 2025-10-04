@@ -190,13 +190,14 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
         UniversalRdVldSyncAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
         self.DATA_SEGMENT_T = HBits(hwIO.SEGMENT_DATA_WIDTH)
         self.DATA_SEGMENT_INVALID = self.DATA_SEGMENT_T.from_py(None)
+        self.USE_ENABLE = hwIO._hasEnable(hwIO.SEGMENT_CNT)
         if hwIO.PACK_SEGMENT_BITS:
             assert self._sigCnt == 2, ('expect only "data", "user" signals', self._signals)
             self.USER_SEGMENT_PACKED_T = HBits(hwIO.USER_SEGMENT_T.bit_length())
             self.USER_WORD_T = HBits(self.USER_SEGMENT_PACKED_T.bit_length() * hwIO.SEGMENT_CNT)
         else:
             assert self._sigCnt == 2 * hwIO.SEGMENT_CNT, ('expect only "data", "user" signals', self._signals)
-            self.USER_SEGMENT_DISABLED = hwIO.USER_SEGMENT_T.from_py({"enable":0})
+            self.USER_SEGMENT_DISABLED = hwIO.USER_SEGMENT_T.from_py({"enable": 0} if self.USE_ENABLE else {})
         self.USE_EMPTY = hwIO._hasEmpty(hwIO.SEGMENT_DATA_WIDTH, hwIO.BYTE_WIDTH, hwIO.SUPPORT_ZLP)
 
     def get_data(self):
@@ -218,13 +219,15 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
             USE_SOF = hwIO.USE_SOF
             ERROR_WIDTH = hwIO.ERROR_WIDTH
             USE_EMPTY = self.USE_EMPTY
+            USE_ENABLE = self.USE_ENABLE
             data = [d.read() for d in hwIO.data]
             user = []
             for u in hwIO.user:
                 uVal = {
-                    "enable": u.enable.read(),
                     "eof": u.eof.read(),
                 }
+                if USE_ENABLE:
+                    uVal["enable"] = u.enable.read()
                 if USE_EMPTY:
                     uVal["empty"] = u.empty.read()
                 if ERROR_WIDTH:
@@ -241,6 +244,7 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
         hwIO: Axi4StreamSegmented = self.hwIO
         USE_SOF = hwIO.USE_SOF
         ERROR_WIDTH = hwIO.ERROR_WIDTH
+        USE_ENABLE = self.USE_ENABLE
         USE_EMPTY = self.USE_EMPTY
         if dataWord is None:
             if hwIO.PACK_SEGMENT_BITS:
@@ -250,7 +254,8 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
                 for d in hwIO.data:
                     d.write(None)
                 for u in hwIO.user:
-                    u.enable.write(None)
+                    if USE_ENABLE:
+                        u.enable.write(None)
                     if USE_SOF:
                         u.sof.write(None)
                     u.eof.write(None)
@@ -281,7 +286,8 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
                 for dIO, d in zip(hwIO.data, data):
                     dIO.write(d)
                 for uIO, u in zip(hwIO.user, user):
-                    uIO.enable.write(u.enable)
+                    if USE_ENABLE:
+                        uIO.enable.write(u.enable)
                     if USE_SOF:
                         uIO.sof.write(u.sof)
                     uIO.eof.write(u.eof)

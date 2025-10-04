@@ -29,6 +29,7 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
         self.ERROR_WIDTH = ERROR_WIDTH
         self.PACK_SEGMENT_BITS = PACK_SEGMENT_BITS
         self.USE_EMPTY = Axi4StreamSegmented._hasEmpty(SEGMENT_DATA_WIDTH, BYTE_WIDTH, SUPPORT_ZLP)
+        self.USE_ENABLE = Axi4StreamSegmented._hasEnable(SEGMENT_CNT)
 
     @override
     @classmethod
@@ -55,10 +56,13 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
         byte_cnt = self.SEGMENT_BYTE_CNT
         USER_SEGMENT_T = self.USER_SEGMENT_T
         USE_SOF = self.USE_SOF
+        USE_ENABLE = self.USE_ENABLE
         USE_EMPTY = self.USE_EMPTY
         ERROR_WIDTH = self.ERROR_WIDTH
         if frameIsZeroLen:
-            userData = {"enable":1, "eof":1}
+            userData = {"eof": 1}
+            if USE_ENABLE:
+                userData["enable"] = 1
             if USE_EMPTY:
                 userData["empty"] = byte_cnt
             if USE_SOF:
@@ -80,7 +84,9 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
                 first = False
             eof = last
 
-            userData = {"enable":1, "eof":eof}
+            userData = {"eof":eof}
+            if USE_ENABLE:
+                userData["enable"] = 1
             if USE_EMPTY:
                 if last:
                     leftOverSize = (frameVal._dtype.bit_length() // self.BYTE_WIDTH) % byte_cnt
@@ -102,10 +108,26 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
 
     @override
     def concatWordBits(self, frameBeats: Sequence[Axi4StreamSegmentedAgentWordType]):
-        for data, user in frameBeats:
-            word = [data, ]  # in lowest bits first format
-            for f in user._dtype.fields:
-                word.append(getattr(user, f.name))
+        for segments in frameBeats:
+            # in lowest bits first format
+            assert segments
+            word: list[HBitsConst] = []
+            fillerSegmentCnt = self.SEGMENT_CNT - len(segments)
+            for data, _ in segments:
+                word.append(data)
+            for _ in range(fillerSegmentCnt):
+                word.append(data._dtype.from_py(None))
+
+            for data, user in segments:
+                for f in user._dtype.fields:
+                    word.append(getattr(user, f.name))
+            
+            for _ in range(fillerSegmentCnt):
+                for f in user._dtype.fields:
+                    if f.name == "enable":
+                        word.append(f.dtype.from_py(0))
+                    else:
+                        word.append(f.dtype.from_py(None))
 
             yield Concat(*reversed(word))
 
@@ -123,7 +145,7 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
         f = self.pack_frame(_data_B)
         SEGMENT_CNT = self.SEGMENT_CNT
         if ag_data:
-            # possibly fill unused segments into last word
+            # possibly fill unused segments into existing last word
             lastWord = ag_data[-1]
             if len(lastWord) < SEGMENT_CNT:
                 newSegmentsForLastWord = []
