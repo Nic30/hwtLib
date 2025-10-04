@@ -13,7 +13,7 @@ from hwtLib.avalon.st import AvalonST, AvalonSTAgentWordType
 from pyMathBitPrecise.bit_utils import get_bit_range
 
 
-class AvalonStFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
+class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
     """
     Implementation of SimFrameUtils for AvalonST interface.
     """
@@ -33,8 +33,7 @@ class AvalonStFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
     @override
     @classmethod
     def from_HwIO(cls, hwio: AvalonST) -> Self:
-        return cls(hwio.SEGMENT_DATA_WIDTH,
-                   hwio.SEGMENT_CNT,
+        return cls(hwio.DATA_WIDTH,
                    hwio.USE_EMPTY,
                    SEGMENT_CNT=hwio.packetsPerClock,
                    BYTE_WIDTH=hwio.dataBitsPerSymbol,
