@@ -1,5 +1,8 @@
 import os
 import re
+from subprocess import Popen
+import subprocess
+from tempfile import NamedTemporaryFile
 
 from hwt.hwModule import HwModule
 from hwt.serializer.hwt import HwtSerializer
@@ -23,6 +26,17 @@ class BaseSerializationTC(SimTestCase):
         "py": HwtSerializer,
     }
 
+    def _runDifftoolCommand(self, oldFileName, newFileName):
+        diftool = subprocess.run(["git", "config", "diff.tool"], capture_output=True, text=True).stdout.strip()
+        if diftool == "meld":
+            # :attention: there is widely used diftool named meld, if you already have meld opened
+            #  and run this, it is likely to deadlock (meld 3.22.2, Ubuntu 24.10), if you close all
+            #  opened meld windows. The same may happen if many meld windows open ad once
+            process = Popen(["meld", "--newtab", oldFileName, newFileName])
+        else:
+            process = Popen(["git", "difftool", "--no-index", oldFileName, newFileName])
+        process.wait()
+
     def tearDown(self):
         self.rmSim()
         SimTestCase.tearDown(self)
@@ -41,7 +55,7 @@ class BaseSerializationTC(SimTestCase):
         s = to_rtl_str(m, serializer_cls=ser)
         self.assert_same_as_file(s, file_name)
 
-    def assert_same_as_file(self, s:str, file_name: str, printOnError=False):
+    def assert_same_as_file(self, s:str, file_name: str, printOnError=False, openDifftoolOnError=False):
         assert self.__FILE__ is not None, "This should be set on child class"
         THIS_DIR = os.path.dirname(os.path.realpath(self.__FILE__))
         fn = os.path.join(THIS_DIR, file_name)
@@ -62,4 +76,10 @@ class BaseSerializationTC(SimTestCase):
             if printOnError:
                 print(ref_s)
                 print(s)
+            if openDifftoolOnError:
+                with NamedTemporaryFile(suffix="_new") as newF:
+                    newF.write(s.encode("utf-8"))
+                    newF.flush()
+                    self._runDifftoolCommand(fn, newF.name)
+
             raise
