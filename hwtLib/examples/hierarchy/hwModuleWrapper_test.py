@@ -61,8 +61,8 @@ class HwModuleWrapperTC(BaseSerializationTC):
         to_rtl_str(m)
         self.assertTrue(hasattr(m, "a"))
         self.assertTrue(len(m.a) == 2)
-        self.assertTrue(hasattr(m.a, "0"))
-        self.assertTrue(hasattr(m.a, "1"))
+        self.assertTrue(not hasattr(m.a, "0"))
+        self.assertIs(m.a[0]._parent, m.a)
 
 
 if __name__ == "__main__":
