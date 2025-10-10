@@ -3,7 +3,7 @@
 
 from typing import Union, List
 
-from hwt.code import If, Or
+from hwt.code import If, Or, SwitchLogic
 from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOSignal, HwIODataVld, HwIOVectSignal
 from hwt.hwModule import HwModule
@@ -46,24 +46,14 @@ def oneHotToBin(parent, signals: Union[RtlSignal, HwIOSignal, List[Union[RtlSign
         signals = list(signals)
 
     res = parent._sig(resName, HBits(log2ceil(len(signals))))
-    leadingZeroTop = None
-    for i, s in enumerate(reversed(signals)):
-        connections = res(len(signals) - i - 1)
-
-        if leadingZeroTop is None:
-            leadingZeroTop = connections
-        else:
-            leadingZeroTop = If(s,
-                                connections
-                             ).Else(
-                                leadingZeroTop
-                             )
+    SwitchLogic([(c, (res(i))) for i, c in enumerate(signals[:-1])],
+                default=(res(len(signals) - 1)))
 
     return res
 
 
 if __name__ == "__main__":
     from hwt.synth import to_rtl_str
-    
+
     m = OneHotToBin()
     print(to_rtl_str(m))
