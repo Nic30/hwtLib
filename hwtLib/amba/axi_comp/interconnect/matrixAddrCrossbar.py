@@ -5,10 +5,10 @@ from typing import List, Tuple
 
 from hwt.code import Concat, SwitchLogic, Or
 from hwt.code_utils import rename_signal
-from hwt.hObjList import HObjList
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.defs import BIT
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
@@ -62,27 +62,27 @@ class AxiInterconnectMatrixAddrCrossbar(HwModule):
 
         # fifo for master index for each slave so slave knows
         # which master did read and where is should send it
-        order_m_index_for_s_data_out = HObjList()
+        order_m_index_for_s_data_out = HwIOArray()
         for connected_masters in self.MASTERS_FOR_SLAVE:
             if len(connected_masters) > 1:
-                f = HwIODataRdVld()._m()
+                f = HwIODataRdVld()
                 f.DATA_WIDTH = MASTER_INDEX_WIDTH
             else:
                 f = None
             order_m_index_for_s_data_out.append(f)
-        self.order_m_index_for_s_data_out = order_m_index_for_s_data_out
+        self.order_m_index_for_s_data_out = order_m_index_for_s_data_out._m()
 
-        order_s_index_for_m_data_out = HObjList()
+        order_s_index_for_m_data_out = HwIOArray()
         for slaves in self.MASTERS:
             # fifo for slave index for each master
             # so master knows where it should expect the data
             if len(slaves) > 1:
-                f = HwIODataRdVld()._m()
+                f = HwIODataRdVld()
                 f.DATA_WIDTH = SLAVE_INDEX_WIDTH
             else:
                 f = None
             order_s_index_for_m_data_out.append(f)
-        self.order_s_index_for_m_data_out = order_s_index_for_m_data_out
+        self.order_s_index_for_m_data_out = order_s_index_for_m_data_out._m()
 
     def propagate_addr(self, master_addr_channels, slave_addr_channels)\
             ->List[List[Tuple[RtlSignal, HdlAssignmentContainer]]]:

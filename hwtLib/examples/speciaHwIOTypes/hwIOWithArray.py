@@ -4,14 +4,14 @@
 from hdlConvertorAst.hdlAst._expr import HdlValueId, HdlOp, HdlOpType
 from hdlConvertorAst.translate.verilog_to_basic_hdl_sim_model.utils import hdl_index, \
     hdl_downto
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwt.serializer.vhdl import ToHdlAstVhdl2008
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.types.ctypes import uint8_t
-from hwt.pyUtils.typingFuture import override
 
 
 # class Interface1d(HwModule):
@@ -23,7 +23,7 @@ from hwt.pyUtils.typingFuture import override
 #     @override
 #     def hwDeclr(self):
 #         self.din = HwIOSignal(dtype=uint8_t[self.SIZE])
-#         self.dout = HObjList([HwIOSignal(dtype=uint8_t)._m()
+#         self.dout = HwIOArray([HwIOSignal(dtype=uint8_t)._m()
 #                               for _ in range(self.SIZE)])
 #
 #     @override
@@ -41,8 +41,8 @@ from hwt.pyUtils.typingFuture import override
 #     @override
 #     def hwDeclr(self):
 #         self.din = HwIOSignal(dtype=uint8_t[self.SIZE_X][self.SIZE_Y])
-#         self.dout = HObjList([
-#             HObjList([
+#         self.dout = HwIOArray([
+#             HwIOArray([
 #                 HwIOSignal(dtype=uint8_t)._m()
 #                 for _ in range(self.SIZE_Y)])
 #             for _ in range(self.SIZE_X)
@@ -106,10 +106,10 @@ class HwIOWithVHDLUnconstrainedArrayImportedType(HwModule):
         array1d_t = example_use_vhdl_declared_array1d(self.SIZE_X)
 
         self.din = HwIOSignal(dtype=array1d_t)
-        self.dout = HObjList([
-            HwIOSignal(dtype=uint8_t)._m()
+        self.dout = HwIOArray([
+            HwIOSignal(dtype=uint8_t)
             for _ in range(self.SIZE_X)
-        ])
+        ])._m()
 
     @override
     def hwImpl(self):
@@ -128,7 +128,7 @@ class HwIOWithVHDLUnconstrainedArrayImportedType2(HwModule):
         array1d_t = example_use_vhdl_declared_array1d(self.SIZE_X)
 
         self.dout = HwIOSignal(dtype=array1d_t)._m()
-        self.din = HObjList([
+        self.din = HwIOArray([
             HwIOSignal(dtype=uint8_t)
             for _ in range(self.SIZE_X)
         ])

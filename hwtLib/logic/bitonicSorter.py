@@ -3,7 +3,7 @@
 
 from hwt.code import If
 from hwt.constants import Time
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
@@ -36,12 +36,12 @@ class BitonicSorter(HwModule):
         w = self.DATA_WIDTH
         sig = bool(self.SIGNED)
 
-        self.inputs = HObjList(
+        self.inputs = HwIOArray(
             HwIOVectSignal(w, sig) for _ in range(int(self.ITEMS))
         )
-        self.outputs = HObjList(
-            HwIOVectSignal(w, sig)._m() for _ in range(int(self.ITEMS))
-        )
+        self.outputs = HwIOArray(
+            HwIOVectSignal(w, sig) for _ in range(int(self.ITEMS))
+        )._m()
 
     def bitonic_sort(self, cmpFn, x, layer=0, offset=0):
         if len(x) <= 1:

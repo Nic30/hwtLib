@@ -28,8 +28,8 @@ There are several examples:
 """
 
 from hwt.code import If, Concat, Switch
-from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
@@ -93,9 +93,9 @@ class Showcase0(HwModule):
         # main purpose is to unify names of clock and reset signals
         addClkRstn(self)
 
-        # HObjList is just regular list, it is used to tell HwModule/Interface
+        # HwIOArray and HObjList behaves like python list, it is used to tell HwModule/HwIO
         # to look inside while searching for nested Interface/HwModule instances
-        self.cmp = HObjList(
+        self.cmp = HwIOArray(
             HwIOSignal() for _ in range(6)
         )._m()
 

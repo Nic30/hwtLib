@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.constants import Time
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
@@ -13,8 +13,8 @@ from hwt.simulator.simTestCase import SimTestCase
 
 class ListOfHwIOsSample0(HwModule):
     """
-    Sample unit with HObjList of interfaces (a and b)
-    which is not using items of these HObjList of interfacess
+    Sample unit with HwIOArray of interfaces (a and b)
+    which is not using items of these HwIOArray of interfacess
     and connects list directly to another list
 
     .. hwt-autodoc::
@@ -30,19 +30,17 @@ class ListOfHwIOsSample0(HwModule):
         addClkRstn(self)
         with self._hwParamsShared():
             L = self.LEN
-            self.a = HObjList(HwIODataVld() for _ in range(L))
-            self.b = HObjList(HwIODataVld() for _ in range(L))._m()
+            self.a = HwIOArray(HwIODataVld() for _ in range(L))
+            self.b = HwIOArray(HwIODataVld() for _ in range(L))._m()
 
     @override
     def hwImpl(self):
-        # directly connect arrays, note that we are not using array items
-        # and thats why they are not created
         self.b(self.a)
 
 
 class ListOfHwIOsSample0SliceOnly(HwModule):
     """
-    Sample unit with HObjList of interfaces a and three of output interfaces b
+    Sample unit with HwIOArray of interfaces a and three of output interfaces b
     each interface is connected manually
 
     .. hwt-autodoc::
@@ -57,7 +55,7 @@ class ListOfHwIOsSample0SliceOnly(HwModule):
     def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
-            self.a = HObjList(HwIODataVld() for _ in range(self.LEN))
+            self.a = HwIOArray(HwIODataVld() for _ in range(self.LEN))
             self.b0 = HwIODataVld()._m()
             self.b1 = HwIODataVld()._m()
             self.b2 = HwIODataVld()._m()
@@ -89,7 +87,7 @@ class ListOfHwIOsSample0ConcatOnly(HwModule):
             self.a0 = HwIODataVld()
             self.a1 = HwIODataVld()
             self.a2 = HwIODataVld()
-            self.b = HObjList(HwIODataVld() for _ in range(self.LEN))._m()
+            self.b = HwIOArray(HwIODataVld() for _ in range(self.LEN))._m()
 
     @override
     def hwImpl(self):
@@ -156,6 +154,9 @@ class ListOfHwIOsSample0TC(SimTestCase):
 
 
 if __name__ == "__main__":
+    from hwt.synth import to_rtl_str
+    print(to_rtl_str(ListOfHwIOsSample0ConcatOnly()))
+    
     import unittest
     testLoader = unittest.TestLoader()
     # suite = unittest.TestSuite([ListOfHwIOsSample0TC("test_passData")])
@@ -163,5 +164,3 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    from hwt.synth import to_rtl_str
-    print(to_rtl_str(ListOfHwIOsSample0()))

@@ -5,6 +5,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIO import HwIO
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
@@ -58,7 +59,7 @@ class FrameJoinInputReg(HwModule):
             self.regs = HObjList(
                 UnalignedJoinRegIntf()._m()
                 for _ in range(self.REG_CNT))
-        self.keep_masks = HObjList(
+        self.keep_masks = HwIOArray(
             HwIOVectSignal(self.DATA_WIDTH // 8)
             for _ in range(self.REG_CNT)
         )
@@ -71,7 +72,7 @@ class FrameJoinInputReg(HwModule):
 
     @override
     def hwImpl(self):
-        mask_t = HBits(self.DATA_WIDTH // 8, force_vector=self.DATA_WIDTH==8)
+        mask_t = HBits(self.DATA_WIDTH // 8, force_vector=self.DATA_WIDTH == 8)
         data_fieds = [
             (HBits(self.DATA_WIDTH), "data"),
             (mask_t, "keep"),  # valid= keep != 0

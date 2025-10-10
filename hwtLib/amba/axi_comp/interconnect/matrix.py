@@ -102,7 +102,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
         # instantiate sub interconnects for each independent master-slave connection
         # subgraph (r, w separately)
         self.sub_interconnect_connections = []
-        r_interconnects = HObjList()
+        r_interconnects: HObjList[AxiInterconnectMatrixR] = HObjList()
         masters_with_read_ch = set()
         slaves_with_read_ch = set()
         for r_group in self.connection_groups_r:
@@ -118,7 +118,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
         masters_with_write_ch = set()
         slaves_with_write_ch = set()
-        w_interconnects = HObjList()
+        w_interconnects: HObjList[AxiInterconnectMatrixW] = HObjList()
         for w_group in self.connection_groups_w:
             master_indexes, slave_indexes = w_group
             masters_with_write_ch.update(master_indexes)

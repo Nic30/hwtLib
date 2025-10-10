@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwParam import HwParam
@@ -37,7 +37,7 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
     def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
-            self.drivers = HObjList(
+            self.drivers = HwIOArray(
                 HwIOAxiRDatapump() for _ in range(int(self.DRIVER_CNT))
             )
             self.rDatapump = HwIOAxiRDatapump()._m()

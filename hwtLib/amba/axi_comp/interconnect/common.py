@@ -1,8 +1,8 @@
 from itertools import chain
 from typing import Optional
 
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.utils import addClkRstn
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
 from hwt.math import log2ceil
 from hwtLib.abstract.busInterconnect import BusInterconnect
@@ -24,10 +24,10 @@ class AxiInterconnectCommon(BusInterconnect):
         addClkRstn(self)
         AXI = self.hwIOCls
         with self._hwParamsShared():
-            self.s = HObjList([AXI() for _ in self.MASTERS])
+            self.s = HwIOArray(AXI() for _ in self.MASTERS)
 
         with self._hwParamsShared(exclude=({}, {"ADDR_WIDTH"})):
-            self.m = HObjList([AXI()._m() for _ in self.SLAVES])
+            self.m = HwIOArray(AXI() for _ in self.SLAVES)._m()
 
         for i in chain(self.m, self.s):
             i.HAS_W = has_w

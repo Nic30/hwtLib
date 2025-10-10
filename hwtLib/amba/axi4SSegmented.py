@@ -4,13 +4,13 @@ from typing import Union, Deque, \
     Self
 
 from hwt.code import segment_get, Concat
-from hwt.hObjList import HObjList
 from hwt.hdl.const import HConst
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.agents.rdVldSync import UniversalRdVldSyncAgent
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwParam import HwParam
@@ -157,8 +157,8 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
             self.data = HwIOVectSignal(SEGMENT_CNT * self.SEGMENT_DATA_WIDTH)
             self.user = HwIOVectSignal(SEGMENT_CNT * self.USER_SEGMENT_T.bit_length())
         else:
-            self.data = HObjList(HwIOVectSignal(self.SEGMENT_DATA_WIDTH) for _ in range(SEGMENT_CNT))
-            self.user = HObjList(HdlType_to_HwIO().apply(self.USER_SEGMENT_T) for _ in range(SEGMENT_CNT))
+            self.data = HwIOArray(HwIOVectSignal(self.SEGMENT_DATA_WIDTH) for _ in range(SEGMENT_CNT))
+            self.user = HwIOArray(HdlType_to_HwIO().apply(self.USER_SEGMENT_T) for _ in range(SEGMENT_CNT))
 
         Axi_hs.hwDeclr(self)
 
@@ -191,12 +191,11 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
         self.DATA_SEGMENT_T = HBits(hwIO.SEGMENT_DATA_WIDTH)
         self.DATA_SEGMENT_INVALID = self.DATA_SEGMENT_T.from_py(None)
         self.USE_ENABLE = hwIO._hasEnable(hwIO.SEGMENT_CNT)
+        assert self._sigCnt == 2, ('expect only "data", "user" signals', self._signals)
         if hwIO.PACK_SEGMENT_BITS:
-            assert self._sigCnt == 2, ('expect only "data", "user" signals', self._signals)
             self.USER_SEGMENT_PACKED_T = HBits(hwIO.USER_SEGMENT_T.bit_length())
             self.USER_WORD_T = HBits(self.USER_SEGMENT_PACKED_T.bit_length() * hwIO.SEGMENT_CNT)
         else:
-            assert self._sigCnt == 2 * hwIO.SEGMENT_CNT, ('expect only "data", "user" signals', self._signals)
             self.USER_SEGMENT_DISABLED = hwIO.USER_SEGMENT_T.from_py({"enable": 0} if self.USE_ENABLE else {})
         self.USE_EMPTY = hwIO._hasEmpty(hwIO.SEGMENT_DATA_WIDTH, hwIO.BYTE_WIDTH, hwIO.SUPPORT_ZLP)
 

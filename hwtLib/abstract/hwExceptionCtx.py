@@ -2,7 +2,7 @@ from collections import deque
 from typing import Type, List, Tuple, Optional, Union
 
 from hwt.code import If
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIORdVldSync
 from hwt.hwModule import HwModule
 from hwt.mainBases import RtlSignalBase
@@ -42,7 +42,7 @@ class ExceptionHandleInterface(HwIORdVldSync):
     @override
     def hwDeclr(self):
         HwIORdVldSync.hwDeclr(self)
-        args = HObjList()
+        args = HwIOArray()
         for a in self._exception.hw_args:
             _a = monitor_of(a)
             args.append(_a)

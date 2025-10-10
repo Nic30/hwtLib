@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, Switch
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.amba.axi_comp.interconnect.base import AxiInterconnectBase
 from hwtLib.amba.datapump.intf import HwIOAxiWDatapump
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwt.pyUtils.typingFuture import override
 
 
 @serializeParamsUniq
@@ -37,7 +37,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
     def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
-            self.drivers = HObjList(
+            self.drivers = HwIOArray(
                 HwIOAxiWDatapump()
                 for _ in range(int(self.DRIVER_CNT)))
             self.wDatapump = HwIOAxiWDatapump()._m()
@@ -85,13 +85,13 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         w.valid(selectedDriverVld & fWOut.vld & fAckIn.rd)
         fAckIn.vld(selectedDriverVld & selectedDriverLast & w.ready & fWOut.vld)
 
-        #extraConds = {
+        # extraConds = {
         #    fAckIn: selectedDriverLast
         #    }
-        #for i, d in enumerate(driversW):
+        # for i, d in enumerate(driversW):
         #    extraConds[d] = fWOut.data._eq(i)
         #
-        #StreamNode(masters=[w, fWOut],
+        # StreamNode(masters=[w, fWOut],
         #           slaves=driversW+[fAckIn],
         #           extraConds=extraConds).sync()
 

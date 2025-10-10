@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.constants import Time
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
@@ -34,7 +34,7 @@ class SimpleSubHwModule1(HwModule):
 class ListOfHwIOsSample2(HwModule):
     """
     Example unit which contains two subunits (m0 and m1)
-    and two HObjList of HwIO (a and b)
+    and two HwIOArray of HwIO (a and b)
     first items of this interfaces are connected to m0
     second to m1
 
@@ -50,8 +50,8 @@ class ListOfHwIOsSample2(HwModule):
         addClkRstn(self)
         LEN = 2
         with self._hwParamsShared():
-            self.a = HObjList(Axi4Stream() for _ in range(LEN))
-            self.b = HObjList(Axi4Stream() for _ in range(LEN))._m()
+            self.a = HwIOArray(Axi4Stream() for _ in range(LEN))
+            self.b = HwIOArray(Axi4Stream() for _ in range(LEN))._m()
 
             self.m0 = SimpleSubHwModule1()
             self.m1 = SimpleSubHwModule1()

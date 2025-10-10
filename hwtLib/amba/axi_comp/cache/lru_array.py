@@ -4,9 +4,9 @@
 from hwt.code import If, Or, Concat
 from hwt.code_utils import rename_signal
 from hwt.constants import WRITE, READ
-from hwt.hObjList import HObjList
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOVectSignal, HwIODataRdVld, HwIORdVldSync
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwParam import HwParam
@@ -75,7 +75,7 @@ class AxiCacheLruArray(CacheAddrTypeConfig):
         s.DATA_WIDTH = self.LRU_WIDTH
 
         # used to increment the LRU data in the case of hit
-        self.incr = HObjList(HwIOIndexWayRdVld() for _ in range(self.INCR_PORT_CNT))
+        self.incr = HwIOArray(HwIOIndexWayRdVld() for _ in range(self.INCR_PORT_CNT))
         for i in self.incr:
             i.INDEX_WIDTH = self.INDEX_W
             i.WAY_CNT = self.WAY_CNT

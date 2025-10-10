@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Optional, List, Union, Tuple
+from typing import Optional, List, Union, Tuple, Self
 
 from hwt.code import If, Or
 from hwt.code_utils import connect_optional, rename_signal
+from hwt.hObjList import HObjList
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 from hwt.hdl.transPart import TransPart
@@ -16,14 +17,14 @@ from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.union import HUnion
 from hwt.hdl.types.utils import is_only_padding
-from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal, HwIODataVld
 from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.hwIOs.hwIOUnion import HwIOUnionSource
+from hwt.hwIOs.std import HwIODataRdVld, HwIOSignal, HwIODataVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.serializer.mode import serializeParamsUniq
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.frame_utils.alignment_utils import next_frame_offsets
 from hwtLib.abstract.template_configured import TemplateConfigured, \
@@ -36,7 +37,6 @@ from hwtLib.amba.axis_comp.frame_parser.field_connector import Axi4S_frameParser
 from hwtLib.amba.axis_comp.frame_parser.footer_split import Axi4S_footerSplit
 from hwtLib.amba.axis_comp.frame_parser.word_factory import WordFactory
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.pyUtils.typingFuture import override
 
 
 def is_non_const_stream(t: HdlType):
@@ -227,7 +227,7 @@ class Axi4S_frameParser(Axi4SCompBase, TemplateConfigured):
             # to simplify the parsing logic as these chunks can be handled
             # as usuall and only code specific to this case is handling of overlaps
             # of such a segments
-            children = HObjList()
+            children: HObjList[Optional[Self]] = HObjList()
             separated = list(HdlType_separate(t, is_non_const_stream))
             if len(separated) > 1 or separated[0][0]:
                 # it may be required to delegate this on children

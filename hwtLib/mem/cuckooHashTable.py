@@ -10,20 +10,19 @@ from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIORdVldSync
 from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
-from hwt.math import log2ceil
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
+from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.cuckooHashTable_intf import HwIOCuckooInsert, HwIOCuckooInsertRes
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import HwIOLookupKey, HwIOLookupResult, \
     HwIOHashTable
-from hwt.pyUtils.typingFuture import override
-
 
 ORIGIN_TYPE = HEnum("ORIGIN_TYPE", ["INSERT", "LOOKUP", "DELETE"])
 
@@ -86,9 +85,9 @@ class CuckooHashTable(HashTableCore):
     @override
     def hwDeclr(self):
         self._declr_outer_io()
-        self.tables = HObjList(
-            HwIOHashTable()._m()
-            for _ in range(self.TABLE_CNT))
+        self.tables = HwIOArray(
+            HwIOHashTable()
+            for _ in range(self.TABLE_CNT))._m()
         self.configure_tables(self.tables)
 
     def configure_tables(self, tables: List[HashTableCore]):
@@ -146,7 +145,7 @@ class CuckooHashTable(HashTableCore):
         tables = self.tables
         # one hot encoded index where item should be stored (where was found
         # or where is place)
-        insertTargetOH = self._reg("insertTargetOH", HBits(self.TABLE_CNT, force_vector=self.TABLE_CNT==1))
+        insertTargetOH = self._reg("insertTargetOH", HBits(self.TABLE_CNT, force_vector=self.TABLE_CNT == 1))
 
         res = [t.lookupRes for t in tables]
         insertFinal = self._reg("insertFinal")
@@ -318,15 +317,15 @@ class CuckooHashTable(HashTableCore):
             (state._eq(fsm_t.lookup) & stash.origin_op._eq(ORIGIN_TYPE.INSERT) & stash.reinsert_cntr._eq(0)) |
             (state._eq(fsm_t.lookupResAck) & insertAck & insertFinal & ~isDelete)
         )
-        #If(state._eq(fsm_t.lookup),
+        # If(state._eq(fsm_t.lookup),
         res.key(stash.key)
         res.data(stash.data)
         res.pop(stash.reinsert_cntr._eq(0))
-        #).Else(
+        # ).Else(
         #   res.key(None),
         #   res.data(None),
         #   res.pop(None),
-        #)
+        # )
 
     @override
     def hwImpl(self):
@@ -415,7 +414,7 @@ class CuckooHashTable(HashTableCore):
         self.tables_insert_driver(state, insertTargetOH, insertIndex, stash)
         self.lookupRes_driver(state, lookupFoundOH)
 
-        lookup_en =rename_signal(
+        lookup_en = rename_signal(
             self,
             (state._eq(fsm_t.lookup) & ((stash.reinsert_cntr != 0) | isDelete)) |
             (state._eq(fsm_t.idle) & stash.origin_op._eq(ORIGIN_TYPE.LOOKUP)),

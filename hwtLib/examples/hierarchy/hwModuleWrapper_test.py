@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
@@ -21,7 +21,7 @@ class HwIOArrayExample(HwModule):
     @override
     def hwDeclr(self):
         addClkRstn(self)
-        self.a = HObjList(Axi4Stream() for _ in range(2))
+        self.a = HwIOArray(Axi4Stream() for _ in range(2))
 
     @override
     def hwImpl(self):
@@ -59,9 +59,10 @@ class HwModuleWrapperTC(BaseSerializationTC):
     def test_HwIOs(self):
         m = HwModuleWrapper(HwIOArrayExample())
         to_rtl_str(m)
-        self.assertTrue(hasattr(m, "a_0"))
-        self.assertTrue(hasattr(m, "a_1"))
-        self.assertFalse(hasattr(m, "a"))
+        self.assertTrue(hasattr(m, "a"))
+        self.assertTrue(len(m.a) == 2)
+        self.assertTrue(hasattr(m.a, "0"))
+        self.assertTrue(hasattr(m.a, "1"))
 
 
 if __name__ == "__main__":

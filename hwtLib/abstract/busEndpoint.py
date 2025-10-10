@@ -14,6 +14,7 @@ from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.structUtils import field_path_get_type, HdlType_select
 from hwt.hwIO import HwIO
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.hwIOs.hwIOUnion import HwIOUnionSink, HwIOUnionSource
 from hwt.hwIOs.hwIO_map import HwIOObjMap_get_by_field_path, HwIOObjMap, \
@@ -176,13 +177,13 @@ class BusEndpoint(HwModule):
             if isinstance(t, HArray):
                 e_t = t.element_t
                 if isinstance(e_t, HBits):
-                    p = HObjList()
+                    p = HwIOArray()
                     for i_i in range(int(t.size)):
                         i = BusEndpoint.HwIO_for_Bits(e_t)
                         structHwIO._fieldsToHwIOs[path / i_i] = i
                         p.append(i)
                 elif isinstance(e_t, HStruct):
-                    p = HObjList(
+                    p = HwIOArray(
                         HwIOStruct(t.element_t,
                                    path / i,
                                    instantiateFieldFn=self._mkFieldInterface)

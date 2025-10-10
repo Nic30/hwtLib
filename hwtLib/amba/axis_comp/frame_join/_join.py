@@ -5,11 +5,11 @@ from math import inf
 from typing import Optional, List, Callable, Tuple
 
 from hwt.code import If, Switch, SwitchLogic, Or, And
-from hwt.hObjList import HObjList
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
@@ -72,7 +72,7 @@ class Axi4S_FrameJoin(HwModule):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataOut = Axi4Stream()._m()
-            self.dataIn = HObjList(Axi4Stream() for _ in range(self.input_cnt))
+            self.dataIn = HwIOArray(Axi4Stream() for _ in range(self.input_cnt))
 
     def generate_input_register(self, input_i: int, reg_cnt: int) -> Tuple[List[UnalignedJoinRegIntf], List[RtlSignal], RtlSignal]:
         in_reg = FrameJoinInputReg()

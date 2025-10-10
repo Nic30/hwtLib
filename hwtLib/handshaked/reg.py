@@ -5,6 +5,7 @@ from typing import List, Tuple, Union
 
 from hwt.code import If
 from hwt.constants import NOT_SPECIFIED
+from hwt.hwIOs.hwIOStruct import HwIO_to_HdlType
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwParam import HwParam
 from hwt.pyUtils.arrayQuery import iter_with_last
@@ -83,13 +84,13 @@ class HandshakedReg(HandshakedCompBase):
 
         If(isOccupied,
             inRd(0),
-            regs_we(0), 
+            regs_we(0),
             If(outRd,
                 isOccupied(0)
             )
         ).Else(
             inRd(1),
-            regs_we(inVld & ~outRd), 
+            regs_we(inVld & ~outRd),
             isOccupied(inVld & ~outRd)
         )
         outVld(isOccupied | inVld)
@@ -115,7 +116,7 @@ class HandshakedReg(HandshakedCompBase):
         outData = []
         assert len(initData) == len(inData)
         for iin, init in zip(inData, initData):
-            r = self._reg(prefix + 'reg_' + getSignalName(iin), iin._dtype,
+            r = self._reg(prefix + 'reg_' + getSignalName(iin), HwIO_to_HdlType().apply(iin),
                           def_val=None if init is NOT_SPECIFIED else init)
 
             If(regs_we,

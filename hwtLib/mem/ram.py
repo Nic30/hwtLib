@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Self
+
 from hwt.code import If, Concat
 from hwt.constants import READ_WRITE, WRITE, READ
 from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOBramPort, HwIOClk, HwIOBramPort_noClk
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
@@ -47,7 +50,7 @@ class RamSingleClock(HwModule):
     def _declr_ports(self):
         PORTS = self.PORT_CNT
         with self._hwParamsShared():
-            ports = HObjList()
+            ports = HwIOArray()
             if isinstance(PORTS, int):
                 for _ in range(PORTS):
                     p = self.PORT_CLS()
@@ -69,7 +72,7 @@ class RamSingleClock(HwModule):
 
     def _declr_children(self):
         # for the case where this memory will be realized using multiple memory blocks
-        children = HObjList()
+        children: HObjList[Self] = HObjList()
         MAX_DW = self.MAX_BLOCK_DATA_WIDTH
         if MAX_DW is not None and MAX_DW < self.DATA_WIDTH:
             DW = self.DATA_WIDTH

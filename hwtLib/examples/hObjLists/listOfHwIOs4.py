@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.constants import Time
-from hwt.hObjList import HObjList
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.struct import HStruct, HStructField
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.hwIOs.std import HwIORegCntrl, HwIOBramPort_noClk
 from hwt.hwIOs.utils import addClkRstn
@@ -12,7 +15,6 @@ from hwt.pyUtils.typingFuture import override
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.typePath import TypePath
 from hwtLib.types.ctypes import uint8_t
-
 
 struct0 = HStruct(
     (uint8_t, "f0"),
@@ -48,10 +50,10 @@ class ListOfHwIOsSample4(HwModule):
             field_path = structHwIO._field_path / field.name
             if self.shouldEnterFn(field_path)[0]:
                 if isinstance(t.element_t, HBits):
-                    p = HObjList(HwIORegCntrl() for _ in range(int(t.size)))
+                    p = HwIOArray(HwIORegCntrl() for _ in range(int(t.size)))
                     dw = t.element_t.bit_length()
                 else:
-                    p = HObjList([HwIOStruct(
+                    p = HwIOArray([HwIOStruct(
                         t.element_t,
                         field_path,
                         instantiateFieldFn=self._mkFieldInterface)
@@ -71,13 +73,13 @@ class ListOfHwIOsSample4(HwModule):
     @override
     def hwDeclr(self):
         addClkRstn(self)
-        self.a = HObjList(
+        self.a = HwIOArray(
             HwIOStruct(
                 struct0,
                 tuple(),
                 instantiateFieldFn=self._mkFieldInterface)
             for _ in range(3))
-        self.b = HObjList(
+        self.b = HwIOArray(
             HwIOStruct(
                 struct0,
                 tuple(),

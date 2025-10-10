@@ -1,12 +1,12 @@
 import json
 from math import ceil
-from typing import List, Tuple, Optional, Union, Dict
+from typing import List, Optional, Union, Dict
 
 from hwt.code import If
 from hwt.code_utils import rename_signal
-from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hwIO import HwIO
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.hwIOStruct import HwIO_to_HdlType
 from hwt.hwIOs.hwIO_map import HwIOObjMap, HTypeFromHwIOObjMap
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
@@ -128,7 +128,7 @@ class DebugBusMonitor(HwModule):
             self.s = self._bus_cls()
         # declare an interface with same signals but all inputs for each
         # monitored interface
-        self.monitor = HObjList([
+        self.monitor = HwIOArray([
             monitor_of(d.hwIO) for d in self.monitored_data if not d.is_visual_only()
         ])
         self.io_instantiated = True

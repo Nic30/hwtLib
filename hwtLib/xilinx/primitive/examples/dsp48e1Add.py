@@ -144,7 +144,7 @@ class Dsp48e1Add(HwModule):
         REG_IN = self.REG_IN
         REQUIRES_CASCADE = self.REG_OUT and self.DATA_WIDTH > 48
 
-        dsps = HObjList()
+        dsps: HObjList[DSP48E1] = HObjList()
         for i in range(ceil(self.DATA_WIDTH / 48)):
             dsp = DSP48E1()
             dsp.A_INPUT = "DIRECT"
@@ -218,7 +218,7 @@ class Dsp48e1Add(HwModule):
                     else:
                         ce_0 = clock_enables[i - 1]
                         ce_1 = clock_enables[i]
-                        input_ces = clock_enables[:i - 1] # because the last register is a part of DPS
+                        input_ces = clock_enables[:i - 1]  # because the last register is a part of DPS
 
                 dsp_clock_enables.append((ce_0, ce_1))
 
@@ -318,7 +318,7 @@ class Dsp48e1Add(HwModule):
                 dsp.RSTCTRL,
                 dsp.RSTD,
                 dsp.RSTM,
-                dsp.RSTP,]:
+                dsp.RSTP, ]:
                 _rst(~self.rst_n)
 
         if REQUIRES_CASCADE:

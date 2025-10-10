@@ -3,7 +3,7 @@
 
 from hwt.code import If
 from hwt.constraints import set_max_delay
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOSignal, HwIODataRdVld
 from hwt.hwIOs.utils import addClkRst
 from hwt.hwModule import HwModule
@@ -97,7 +97,7 @@ class HandshakedCdc(HandshakedCompBase):
         Create a registers for data signals with default values
         from :class:`hwt.hwModule.HwModule` parameters and with specified clk/rst
         """
-        regs = HObjList()
+        regs = HwIOArray()
         def_vals = self.DATA_RESET_VAL
         d_sigs = self.get_data(self.dataIn)
 
@@ -147,7 +147,7 @@ class HandshakedCdc(HandshakedCompBase):
 
         next_dataIn = vld(din) & in_ready
         If(next_dataIn,
-            din_data(HObjList(self.get_data(din)))
+            din_data(HwIOArray(self.get_data(din)))
         )
         din_en(din_en ^ next_dataIn)
         out_en_gen.dataIn(din_en)
@@ -160,7 +160,7 @@ class HandshakedCdc(HandshakedCompBase):
         for d_in, d_out in zip(din_data, dout_data):
             set_max_delay(d_in, d_out, FAST_CLK_PERIOD_NS)
 
-        HObjList(self.get_data(dout))(dout_data)
+        HwIOArray(self.get_data(dout))(dout_data)
 
         dout_vld = ~dout_vld_n
         dout_vld_delayed = self._reg("dout_vld_delayed", def_val=0, **dout_clk)

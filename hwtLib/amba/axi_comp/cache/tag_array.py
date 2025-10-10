@@ -4,10 +4,10 @@
 from hwt.code import Or, Concat, If
 from hwt.code_utils import rename_signal
 from hwt.constants import READ, WRITE
-from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.hwIOStruct import HwIOStruct, HdlType_to_HwIO
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal, \
     HwIOBramPort_noClk, HwIODataVld, HwIORdVldSync
@@ -45,7 +45,7 @@ class HwIOAxiCacheTagArrayLookupRes(HwIORdVldSync):
         if self.WAY_CNT > 1:
             self.way = HwIOVectSignal(log2ceil(self.WAY_CNT - 1))
         if self.TAG_T is not None:
-            self.tags = HObjList(HdlType_to_HwIO().apply(self.TAG_T) for _ in range(self.WAY_CNT))
+            self.tags = HwIOArray(HdlType_to_HwIO().apply(self.TAG_T) for _ in range(self.WAY_CNT))
 
         HwIORdVldSync.hwDeclr(self)
 
@@ -125,17 +125,17 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         self.tag_record_t = self.define_tag_record_t()
         addClkRstn(self)
         with self._hwParamsShared():
-            self.lookup = HObjList(
+            self.lookup = HwIOArray(
                 HwIOAddrRdVld()
                 for _ in range(self.PORT_CNT)
             )
-            self.lookupRes = HObjList(
-                HwIOAxiCacheTagArrayLookupRes()._m()
+            self.lookupRes = HwIOArray(
+                HwIOAxiCacheTagArrayLookupRes()
                 for _ in range(self.PORT_CNT)
-            )
+            )._m()
             for i in self.lookupRes:
                 i.TAG_T = self.tag_record_t
-            self.update = HObjList(
+            self.update = HwIOArray(
                 HwIOAxiCacheTagArrayUpdate()
                 for _ in range(self.UPDATE_PORT_CNT)
             )

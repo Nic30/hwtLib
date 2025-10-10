@@ -17,6 +17,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.subHwModuleSynthesisTC import synth
 
 
 class StatementsConsistencyTC(unittest.TestCase):
+
     def check_consistency(self, dut: HwModule):
         synthesised(dut)
         c = dut._rtlCtx

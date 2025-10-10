@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import SwitchLogic
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import propagateClkRstn, addClkRstn
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
-from hwt.pyUtils.typingFuture import override
 
 
 class HsSplitSelect(HandshakedCompBase):
@@ -37,9 +37,9 @@ class HsSplitSelect(HandshakedCompBase):
 
         with self._hwParamsShared():
             self.dataIn = self.hwIOCls()
-            self.dataOut = HObjList(
-                self.hwIOCls()._m() for _ in range(int(self.OUTPUTS))
-            )
+            self.dataOut = HwIOArray(
+                self.hwIOCls() for _ in range(int(self.OUTPUTS))
+            )._m()
 
     def _select_consume_en(self):
         return True

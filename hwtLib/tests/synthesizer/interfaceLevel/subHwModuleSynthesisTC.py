@@ -3,8 +3,8 @@
 
 from hdlConvertorAst.hdlAst._structural import HdlCompInst
 from hwt.constants import DIRECTION
-from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
@@ -38,7 +38,7 @@ class HwModuleWithArrHwIO(EmptyHwModule):
     def hwDeclr(self):
         with self._hwParamsShared():
             self.a = Axi4Stream()
-            self.b = HObjList(Axi4Stream() for _ in range(2))._m()
+            self.b = HwIOArray(Axi4Stream() for _ in range(2))._m()
 
 
 class HwModuleWithArrHwIOParent(HwModule):

@@ -6,10 +6,10 @@ from typing import Tuple, List
 
 from hwt.code import If, SwitchLogic, Concat
 from hwt.code_utils import rename_signal
-from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwParam import HwParam
 from hwt.pyUtils.arrayQuery import iter_with_last
@@ -126,10 +126,10 @@ class Axi4S_footerSplit(Axi4SCompBase):
         addClkRstn(self)
         with self._hwParamsShared():
             self.dataIn = self.hwIOCls()
-            self.dataOut = HObjList([
-                self.hwIOCls()._m(),
-                self.hwIOCls()._m()
-            ])
+            self.dataOut = HwIOArray([
+                self.hwIOCls(),
+                self.hwIOCls()
+            ])._m()
 
     def generate_regs(self, LOOK_AHEAD: int) -> List[Tuple[RtlSignal, RtlSignal,
                                                            RtlSignal, RtlSignal,

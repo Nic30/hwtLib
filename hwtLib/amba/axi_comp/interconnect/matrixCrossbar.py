@@ -5,8 +5,8 @@ from typing import Dict, Set, Optional
 
 from hwt.code import Or, Switch
 from hwt.code_utils import rename_signal
-from hwt.hObjList import HObjList
 from hwt.hwIO import HwIO
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
@@ -53,18 +53,18 @@ class AxiInterconnectMatrixCrossbar(HwModule):
         self.OUTS_FOR_IN = self._masters_for_slave(self.OUTPUTS, self.INPUT_CNT)
 
         with self._hwParamsShared():
-            self.dataIn = HObjList([
+            self.dataIn = HwIOArray([
                 HWIO_CLS()
                 for _ in range(INPUT_CNT)])
 
         with self._hwParamsShared():
-            self.dataOut = HObjList([
-                HWIO_CLS()._m()
-                for _ in range(OUTPUT_CNT)])
+            self.dataOut = HwIOArray([
+                HWIO_CLS()
+                for _ in range(OUTPUT_CNT)])._m()
 
         # master index for each slave so slave knows
         # which master did read and where is should send it
-        order_dout_index_for_din_in = HObjList()
+        order_dout_index_for_din_in = HwIOArray()
         for connected_outs in self.OUTS_FOR_IN:
             if len(connected_outs) > 1:
                 f = HwIODataRdVld()
@@ -74,7 +74,7 @@ class AxiInterconnectMatrixCrossbar(HwModule):
             order_dout_index_for_din_in.append(f)
         self.order_dout_index_for_din_in = order_dout_index_for_din_in
 
-        order_din_index_for_dout_in = HObjList()
+        order_din_index_for_dout_in = HwIOArray()
         # slave index for each master
         # so master knows where it should expect the data
         for connected_ins in self.OUTPUTS:

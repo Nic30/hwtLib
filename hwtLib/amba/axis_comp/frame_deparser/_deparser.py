@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional, Union, Tuple
+from typing import List, Optional, Union, Tuple, Self
 
 from hwt.code import Switch, If, SwitchLogic
 from hwt.hObjList import HObjList
@@ -267,7 +267,7 @@ class Axi4S_frameDeparser(Axi4SCompBase, TemplateConfigured):
         Cls = self.__class__
         assert len(self.sub_t) > 1, "We need to delegate to children only " \
             "if there is something which we can't do in this comp. directly"
-        children = HObjList()
+        children: HObjList[Self] = HObjList()
         for t in self.sub_t:
             _t = _get_only_stream(t)
             if _t is None:

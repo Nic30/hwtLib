@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import And, Or, SwitchLogic
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwParam import HwParam
 from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.compBase import HandshakedCompBase
@@ -26,7 +26,7 @@ class HsJoinPrioritized(HandshakedCompBase):
     @override
     def hwDeclr(self):
         with self._hwParamsShared():
-            self.dataIn = HObjList(
+            self.dataIn = HwIOArray(
                 self.hwIOCls() for _ in range(int(self.INPUTS))
             )
             self.dataOut = self.hwIOCls()._m()

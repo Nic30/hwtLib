@@ -4,8 +4,8 @@
 from math import ceil
 
 from hwt.code import Concat, If, Switch
-from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOSignal, HwIOVectSignal, HwIOBramPort_noClk
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
@@ -59,8 +59,8 @@ class ConcatIndexAssignMix0(HwModule):
 
     @override
     def hwDeclr(self):
-        self.a = HObjList([HwIOVectSignal(2), HwIOVectSignal(2)])
-        self.b = HObjList([HwIOSignal()._m() for _ in range(4)])
+        self.a = HwIOArray([HwIOVectSignal(2), HwIOVectSignal(2)])
+        self.b = HwIOArray(HwIOSignal() for _ in range(4))._m()
 
     @override
     def hwImpl(self) -> None:
@@ -76,8 +76,8 @@ class ConcatIndexAssignMix1(HwModule):
 
     @override
     def hwDeclr(self):
-        self.a = HObjList([HwIOSignal() for _ in range(4)])
-        self.b = HObjList([HwIOVectSignal(2)._m(), HwIOVectSignal(2)._m()])
+        self.a = HwIOArray(HwIOSignal() for _ in range(4))
+        self.b = HwIOArray([HwIOVectSignal(2), HwIOVectSignal(2)])._m()
 
     @override
     def hwImpl(self) -> None:
@@ -93,8 +93,8 @@ class ConcatIndexAssignMix2(HwModule):
 
     @override
     def hwDeclr(self):
-        self.a = HObjList([HwIOVectSignal(2), HwIOVectSignal(4), HwIOVectSignal(2)])
-        self.b = HObjList([HwIOVectSignal(4)._m(), HwIOVectSignal(4)._m()])
+        self.a = HwIOArray([HwIOVectSignal(2), HwIOVectSignal(4), HwIOVectSignal(2)])
+        self.b = HwIOArray([HwIOVectSignal(4), HwIOVectSignal(4)])._m()
 
     @override
     def hwImpl(self) -> None:
@@ -150,6 +150,6 @@ class ConcatIndexAssignMix3(HwModule):
 
 if __name__ == "__main__":
     from hwt.synth import to_rtl_str
-    
+
     m = ConcatIndexAssignMix3()
     print(to_rtl_str(m))

@@ -6,16 +6,16 @@ from typing import Tuple, List
 from hwt.code import Concat, If
 from hwt.code_utils import rename_signal
 from hwt.constants import READ, WRITE
+from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.hwIOs.hwIOStruct import HwIOStructRdVld
 from hwt.hwIOs.hwIOStruct import HwIOStruct
+from hwt.hwIOs.hwIOStruct import HwIOStructRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil, isPow2
-from hwt.hObjList import HObjList
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil, isPow2
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.commonHwIO.addr_data import HwIOAddrDataRdVld
 from hwtLib.handshaked.ramAsAddrDataRdVld import RamAsAddrDataRdVld, HwIORamRdVldR

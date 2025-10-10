@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hObjList import HObjList
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.defs import BIT
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
@@ -121,11 +121,11 @@ class CamMultiPort(Cam):
             Cam._declr_match_io(self)
         else:
             # muliport version
-            self.match = HObjList([HwIODataRdVld() for _ in range(self.MATCH_PORT_CNT)])
+            self.match = HwIOArray([HwIODataRdVld() for _ in range(self.MATCH_PORT_CNT)])
             for m in self.match:
                 m.DATA_WIDTH = self.KEY_WIDTH
 
-            self.out = HObjList([HwIODataRdVld()._m() for _ in range(self.MATCH_PORT_CNT)])
+            self.out = HwIOArray([HwIODataRdVld() for _ in range(self.MATCH_PORT_CNT)])._m()
             for o in self.out:
                 o.DATA_WIDTH = self.ITEMS
 
@@ -137,10 +137,12 @@ class CamMultiPort(Cam):
             for _match, _match_res in zip(self.match, self.out):
                 Cam.matchHandler(self, mem, _match, _match_res)
 
+
 def _example_CamMultiPort():
     m = CamMultiPort()
     m.MATCH_PORT_CNT = 2
     return m
+
 
 if __name__ == "__main__":
     from hwt.synth import to_rtl_str

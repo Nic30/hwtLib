@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.constants import Time
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.pyUtils.typingFuture import override
@@ -35,8 +35,8 @@ class WStrictOrderInterconnecComplex(HwModule):
             self.aw = Axi4_addr()._m()
             self.w = Axi4_w()._m()
             self.b = Axi4_b()
-            self.drivers = HObjList(HwIOAxiWDatapump()
-                                    for _ in range(int(self.DRIVER_CNT)))
+            self.drivers = HwIOArray(HwIOAxiWDatapump()
+                                     for _ in range(int(self.DRIVER_CNT)))
             for d in self.drivers:
                 d.ID_WIDTH = self.ic.ID_WIDTH
 

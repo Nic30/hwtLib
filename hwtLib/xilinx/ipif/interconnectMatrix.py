@@ -3,9 +3,9 @@
 
 from hwt.code import SwitchLogic
 from hwt.hdl.types.defs import BIT
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.utils import addClkRstn
 from hwt.math import log2ceil
-from hwt.hObjList import HObjList
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.xilinx.ipif.hIOIpif import Ipif
 from pyMathBitPrecise.bit_utils import get_bit_range
@@ -26,7 +26,7 @@ class IpifInterconnectMatrix(BusInterconnect):
         self._normalize_config()
         addClkRstn(self)
 
-        slavePorts = HObjList()
+        slavePorts: HwIOArray[Ipif] = HwIOArray()
         for _ in self.MASTERS:
             s = Ipif()
             s._updateHwParamsFrom(self)
@@ -34,14 +34,14 @@ class IpifInterconnectMatrix(BusInterconnect):
 
         self.s = slavePorts
 
-        masterPorts = HObjList()
+        masterPorts: HwIOArray[Ipif] = HwIOArray()
         for _, size in self.SLAVES:
-            m = Ipif()._m()
+            m = Ipif()
             m.ADDR_WIDTH = log2ceil(size - 1)
             m.DATA_WIDTH = self.DATA_WIDTH
             masterPorts.append(m)
 
-        self.m = masterPorts
+        self.m = masterPorts._m()
 
     def hwImpl(self) -> None:
         if len(self.MASTERS) > 1:

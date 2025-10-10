@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import propagateClkRstn
 from hwt.math import log2ceil
@@ -35,7 +36,7 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
 
         # fifo for master index for each slave so slave knows
         # which master did read and where is should send it
-        order_m_index_for_s_data = HObjList()
+        order_m_index_for_s_data: HObjList[HandshakedFifo] = HObjList()
         for connected_masters in masters_for_slave:
             if len(connected_masters) > 1:
                 f = HandshakedFifo(HwIODataRdVld)
@@ -47,7 +48,7 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
         self.order_m_index_for_s_data = order_m_index_for_s_data
         # fifo for slave index for each master
         # so master knows where it should expect the data
-        order_s_index_for_m_data = HObjList()
+        order_s_index_for_m_data: HObjList[HandshakedFifo] = HObjList()
         for connected_slaves in self.MASTERS:
             if len(connected_slaves) > 1:
                 f = HandshakedFifo(HwIODataRdVld)
@@ -74,13 +75,13 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
         addr_crossbar = self.addr_crossbar
         data_crossbar = self.data_crossbar
 
-        master_addr_channels = HObjList([m.ar for m in self.s])
-        slave_addr_channels = HObjList([s.ar for s in self.m])
+        master_addr_channels = HwIOArray(m.ar for m in self.s)
+        slave_addr_channels = HwIOArray(s.ar for s in self.m)
         addr_crossbar.s(master_addr_channels)
         slave_addr_channels(addr_crossbar.m)
-        master_r_channels = HObjList([m.r for m in self.s])
+        master_r_channels = HwIOArray(m.r for m in self.s)
         master_r_channels(data_crossbar.dataOut)
-        slave_r_channels = HObjList([s.r for s in self.m])
+        slave_r_channels = HwIOArray(s.r for s in self.m)
         data_crossbar.dataIn(slave_r_channels)
 
         for m_i, f in enumerate(self.order_s_index_for_m_data):

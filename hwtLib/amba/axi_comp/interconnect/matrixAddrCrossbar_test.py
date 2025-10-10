@@ -25,7 +25,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SimTestCase):
 
     def addr_transaction(self, id_, addr, len_):
         axi_addr = self.dut.m[0]
-        return axi_addr._ag.create_addr_req(addr, len_, _id=id_)
+        return axi_addr._ag.create_addr_req(addr, len_, _id=id_, DATA_WIDTH=self.dut.DATA_WIDTH)
 
     def randomize_all(self):
         dut = self.dut

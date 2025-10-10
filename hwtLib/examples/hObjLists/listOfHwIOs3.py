@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.constants import Time
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
 from hwt.pyUtils.typingFuture import override
@@ -14,8 +14,8 @@ from hwtLib.amba.axi4Lite import Axi4Lite
 
 class ListOfHwIOsSample3(HwModule):
     """
-    Sample unit with HObjList of interfaces (a and b)
-    which is not using items of these HObjList of interfacess
+    Sample unit with HwIOArray of interfaces (a and b)
+    which is not using items of these HwIOArray of interfacess
 
     .. hwt-autodoc::
     """
@@ -30,20 +30,18 @@ class ListOfHwIOsSample3(HwModule):
         addClkRstn(self)
         with self._hwParamsShared():
             S = self.SIZE
-            self.a = HObjList(Axi4Lite() for _ in range(S))
-            self.b = HObjList(Axi4Lite() for _ in range(S))._m()
+            self.a = HwIOArray(Axi4Lite() for _ in range(S))
+            self.b = HwIOArray(Axi4Lite() for _ in range(S))._m()
 
     @override
     def hwImpl(self):
-        # directly connect arrays, note that we are not using array items
-        # and thats why they are not created
         self.b(self.a)
 
 
 class ListOfHwIOsSample3b(ListOfHwIOsSample3):
     """
-    Sample unit with HObjList of interfaces (a and b)
-    which is not using items of these HObjList of interfacess
+    Sample unit with HwIOArray of interfaces (a and b)
+    which is not using items of these HwIOArray of interfacess
 
     .. hwt-autodoc::
     """

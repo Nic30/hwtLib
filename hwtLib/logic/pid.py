@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Add
-from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
@@ -56,7 +56,7 @@ class PidController(HwModule):
         self.input = HwIOVectSignal(self.DATAIN_WIDTH, signed=True)
         self.output = HwIOVectSignal(self.DATAIN_WIDTH, signed=True)._m()
         self.target = HwIOVectSignal(self.DATAIN_WIDTH, signed=True)
-        self.coefs = HObjList(
+        self.coefs = HwIOArray(
             HwIOVectSignal(self.COEF_WIDTH, signed=True)
             for _ in range(4)
         )

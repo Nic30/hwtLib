@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwParam import HwParam
 from hwt.pyUtils.typingFuture import override
 from hwtLib.handshaked.builder import HsBuilder
@@ -37,7 +38,7 @@ class CuckooHashTableWithRam(CuckooHashTable):
 
     @override
     def hwImpl(self):
-        self.tables_tmp = HObjList([HwIOHashTable()._updateHwParamsFrom(t.io) for t in self.table_cores])
+        self.tables_tmp = HwIOArray(HwIOHashTable()._updateHwParamsFrom(t.io) for t in self.table_cores)
 
         for t_io, t in zip(self.tables_tmp, self.table_cores):
             t.io(t_io, exclude={t.io.lookupRes})

@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import propagateClkRstn
 from hwt.hwParam import HwParam
@@ -44,8 +47,8 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
 
         # fifo for master index for each slave so slave knows
         # which master did read and where is should send it
-        order_m_index_for_s_data = HObjList()
-        order_m_index_for_s_b = HObjList()
+        order_m_index_for_s_data: HObjList[Optional[HandshakedFifo]] = HObjList()
+        order_m_index_for_s_b: HObjList[Optional[HandshakedFifo]] = HObjList()
         for connected_masters in masters_for_slave:
             if len(connected_masters) > 1:
                 f_w = HandshakedFifo(HwIODataRdVld)
@@ -61,8 +64,8 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         self.order_m_index_for_s_b = order_m_index_for_s_b
         # fifo for slave index for each master
         # so master knows where it should expect the data
-        order_s_index_for_m_data = HObjList()
-        order_s_index_for_m_b = HObjList()
+        order_s_index_for_m_data: HObjList[Optional[HandshakedFifo]] = HObjList()
+        order_s_index_for_m_b: HObjList[Optional[HandshakedFifo]] = HObjList()
         for connected_slaves in self.MASTERS:
             if len(connected_slaves) > 1:
                 f_w = HandshakedFifo(HwIODataRdVld)
@@ -106,26 +109,28 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         data_crossbar = self.data_crossbar
         b_crossbar = self.b_crossbar
 
-        master_addr_channels = HObjList([m.aw for m in self.s])
-        slave_addr_channels = HObjList([s.aw for s in self.m])
+        master_addr_channels = HwIOArray(m.aw for m in self.s)
+        slave_addr_channels = HwIOArray(s.aw for s in self.m)
         if self.AW_AND_W_WORD_TOGETHER:
-            slave_addr_channels = HObjList([Axi4SBuilder(self, aw, master_to_slave=False).buff(1).end for aw in slave_addr_channels])
+            slave_addr_channels = HwIOArray([Axi4SBuilder(self, aw, master_to_slave=False).buff(1).end
+                                            for aw in slave_addr_channels])
 
         addr_crossbar.s(master_addr_channels)
         slave_addr_channels(addr_crossbar.m)
 
-        master_w_channels = HObjList([m.w for m in self.s])
+        master_w_channels = HwIOArray(m.w for m in self.s)
         if self.AW_AND_W_WORD_TOGETHER:
-            master_w_channels = HObjList([Axi4SBuilder(self, w).buff(1).end for w in master_w_channels])
+            master_w_channels = HwIOArray(Axi4SBuilder(self, w).buff(1).end
+                                           for w in master_w_channels)
 
         data_crossbar.dataIn(master_w_channels)
-        slave_w_channels = HObjList([s.w for s in self.m])
-
+        
+        slave_w_channels = HwIOArray(s.w for s in self.m)
         slave_w_channels(data_crossbar.dataOut)
 
-        master_b_channels = HObjList([m.b for m in self.s])
+        master_b_channels = HwIOArray(m.b for m in self.s)
         master_b_channels(b_crossbar.dataOut)
-        slave_b_channels = HObjList([s.b for s in self.m])
+        slave_b_channels = HwIOArray(s.b for s in self.m)
         b_crossbar.dataIn(slave_b_channels)
 
         for addr_crossbar_s_index_out, f_w, f_b in zip(

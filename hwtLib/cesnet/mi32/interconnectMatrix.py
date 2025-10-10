@@ -3,11 +3,11 @@
 from hwt.code import Switch, If, Or, SwitchLogic
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIODataRdVld
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
-from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
+from hwt.math import log2ceil
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.cesnet.mi32.buff import Mi32Buff
 from hwtLib.cesnet.mi32.intf import Mi32
@@ -31,7 +31,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
         self._normalize_config()
         addClkRstn(self)
 
-        slavePorts = HObjList()
+        slavePorts: HwIOArray[Mi32] = HwIOArray()
         for _ in self.MASTERS:
             s = Mi32()
             s._updateHwParamsFrom(self)
@@ -39,14 +39,14 @@ class Mi32InterconnectMatrix(BusInterconnect):
 
         self.s = slavePorts
 
-        masterPorts = HObjList()
+        masterPorts: HwIOArray[Mi32] = HwIOArray()
         for _, size in self.SLAVES:
-            m = Mi32()._m()
+            m = Mi32()
             m.ADDR_WIDTH = log2ceil(size - 1)
             m.DATA_WIDTH = self.DATA_WIDTH
             masterPorts.append(m)
 
-        self.m = masterPorts
+        self.m = masterPorts._m()
 
         # fifo which keeps index of slave for master read transaction
         # so the interconnect can delivery the read data to master
@@ -131,11 +131,11 @@ class Mi32InterconnectMatrix(BusInterconnect):
 def _example_Mi32InterconnectMatrix():
     AUTO = AUTO_ADDR
     m = Mi32InterconnectMatrix()
-    m.MASTERS = (({0, 1, 2, 3}), )
+    m.MASTERS = (({0, 1, 2, 3}),)
     m.SLAVES = (
         (0x0000, 0x100),
         (0x0100, 0x100),
-        (AUTO,   0x100),
+        (AUTO, 0x100),
         (0x1000, 0x1000),
     )
     return m

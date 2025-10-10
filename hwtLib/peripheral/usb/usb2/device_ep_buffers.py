@@ -2,15 +2,16 @@ from math import ceil
 from typing import Tuple, Optional, List
 
 from hwt.code import Switch, In
+from hwt.hObjList import HObjList
+from hwt.hwIOs.hwIOArray import HwIOArray
 from hwt.hwIOs.std import HwIORdVldSync
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
-from hwt.hObjList import HObjList
-from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
+from hwt.hwParam import HwParam
 from hwtLib.amba.axi4s import Axi4Stream
+from hwtLib.amba.axi4s_fullduplex import Axi4StreamFullDuplex
 from hwtLib.amba.axis_comp.fifoCopy import Axi4SFifoCopy
 from hwtLib.amba.axis_comp.fifoDrop import Axi4SFifoDrop
-from hwtLib.amba.axi4s_fullduplex import Axi4StreamFullDuplex
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.peripheral.usb.descriptors.bundle import UsbEndpointMeta
@@ -36,7 +37,7 @@ class UsbDeviceEpBuffers(HwModule):
         assert self.ENDPOINT_META is not None, "ENDPOINT_META parameter is required"
         addClkRstn(self)
         self.usb_core_io: UsbEndpointInterface = UsbEndpointInterface()
-        eps = HObjList()
+        eps: Optional[Axi4StreamFullDuplex] = HwIOArray()
         for rx, tx in self.ENDPOINT_META:
             if rx is None and tx is None:
                 ep = None
@@ -48,7 +49,7 @@ class UsbDeviceEpBuffers(HwModule):
                 ep.HAS_TX = tx is not None
             eps.append(ep)
 
-        self.ep: HObjList[Axi4StreamFullDuplex] = eps
+        self.ep = eps
 
     def connect_rx_part(self, rx_channels: List[Tuple[int, Axi4Stream, UsbEndpointMeta, Axi4SFifoDrop]]):
         if not rx_channels:
@@ -136,8 +137,8 @@ class UsbDeviceEpBuffers(HwModule):
     def hwImpl(self):
         rx_channels: List[Tuple[int, Axi4Stream, UsbEndpointMeta, Axi4SFifoDrop]] = []
         tx_channels: List[Tuple[int, Axi4Stream, UsbEndpointMeta, Axi4SFifoCopy, HandshakedFifo]] = []
-        rx_fifos = HObjList()
-        tx_fifos = HObjList()
+        rx_fifos: HObjList[Optional[Axi4SFifoDrop]] = HObjList()
+        tx_fifos: HObjList[Optional[Axi4SFifoCopy]] = HObjList()
         tx_packet_buffered_fifos = HObjList()
         for i, (ep, (rx_conf, tx_conf)) in enumerate(zip(self.ep, self.ENDPOINT_META)):
             ep: Optional[Axi4StreamFullDuplex]
