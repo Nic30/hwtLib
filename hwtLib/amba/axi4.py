@@ -1,3 +1,5 @@
+from typing import Optional
+
 from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
 from hwt.hwParam import HwParam
 from hwt.pyUtils.typingFuture import override
@@ -34,6 +36,7 @@ class Axi4_addr(Axi3_addr):
 
 
 class Axi4_addrAgent(Axi4StreamAgent):
+
     def __init__(self, sim: HdlSimulator, hwIO: Axi3_addr, allowNoReset=False):
         BaseAxiAgent.__init__(self, sim, hwIO, allowNoReset=allowNoReset)
 
@@ -61,13 +64,18 @@ class Axi4_addrAgent(Axi4StreamAgent):
                         prot=PROT_DEFAULT,
                         size=_DEFAULT,
                         qos=QOS_DEFAULT,
-                        user=None):
+                        user=None,
+                        DATA_WIDTH:Optional[int]=None):
         """
         Create a default AXI address transaction
         :note: transaction is created and returned but it is not added to a agent data
         """
         if size is _DEFAULT:
-            D_B = self.hwIO._parent.DATA_WIDTH // 8
+            if DATA_WIDTH is None:
+                axi: Axi4 = self.hwIO._parent
+                D_B = axi.DATA_WIDTH // 8
+            else:
+                D_B = DATA_WIDTH // 8
             size = BYTES_IN_TRANS(D_B)
         if self.hwIO.USER_WIDTH:
             return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
@@ -95,6 +103,7 @@ class Axi4_w(Axi_hs, Axi_strb):
 
     .. hwt-autodoc::
     """
+
     @override
     def hwConfig(self):
         self.DATA_WIDTH = HwParam(64)
@@ -161,6 +170,7 @@ class IP_Axi4(IP_Axi3):
     """
     IP core interface meta for Axi4 interface
     """
+
     def __init__(self):
         super(IP_Axi4, self).__init__()
         self.quartus_name = "axi4"

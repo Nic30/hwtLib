@@ -12,7 +12,7 @@ from hwtLib.amba.constants import BYTES_IN_TRANS, BURST_INCR, CACHE_DEFAULT, \
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.component import Component
-
+from typing import Optional
 
 _DEFAULT = object()
 
@@ -85,13 +85,17 @@ class Axi3_addrAgent(Axi4StreamAgent):
                         lock=LOCK_DEFAULT,
                         prot=PROT_DEFAULT,
                         size=_DEFAULT,
-                        user=None):
+                        user=None,
+                        DATA_WIDTH:Optional[int]=None):
         """
         Create a default AXI address transaction
         :note: transaction is created and returned but it is not added to a agent data
         """
         if size is _DEFAULT:
-            D_B = self.hwIO._parent.DATA_WIDTH // 8
+            if DATA_WIDTH is None:
+                D_B = self.hwIO._parent.DATA_WIDTH // 8
+            else:
+                D_B = DATA_WIDTH // 8
             size = BYTES_IN_TRANS(D_B)
         if self.hwIO.USER_WIDTH:
             return (_id, addr, burst, cache, _len, lock, prot, size, user)
@@ -107,6 +111,7 @@ class Axi3_w(Axi_hs, Axi_strb):
 
     .. hwt-autodoc::
     """
+
     @override
     def hwConfig(self):
         self.ID_WIDTH = HwParam(0)
@@ -133,6 +138,7 @@ class Axi3_r(Axi3Lite_r, Axi_id):
 
     .. hwt-autodoc::
     """
+
     @override
     def hwConfig(self):
         Axi_id.hwConfig(self, default_id_width=6)
@@ -190,6 +196,7 @@ class Axi3_b(Axi3Lite_b, Axi_id):
 
     .. hwt-autodoc::
     """
+
     @override
     def hwConfig(self):
         Axi_id.hwConfig(self)
@@ -281,6 +288,7 @@ class IP_Axi3(IP_Axi3Lite):
     """
     IP core interface meta for Axi3 interface
     """
+
     def __init__(self,):
         super(IP_Axi3, self).__init__()
         self.quartus_name = "axi"
