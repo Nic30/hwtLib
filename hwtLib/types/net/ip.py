@@ -17,7 +17,7 @@ class IP_FLAGS():
     DONT_FRAGMENT = 0b010
     MORE_FRAGMENTS = 0b100
 
-
+# [todo] consider using python stdlib _socket.IPPROTO_AH and alike
 class IP_PROTOCOL():
     HOPOPT = 0
     ICMP = 1
@@ -60,7 +60,7 @@ IPv6Header_t = HStruct(
     name="IPv6Header_t"
 )
 IPv6ExtCommonHeader_t = HStruct(
-    (HBits(8), "nextHeader"), (HBits(8), "headerExtensionLen", (HBits(16+32), "data")),
+    (HBits(8), "nextHeader"), (HBits(8), "headerExtensionLen"), (HBits(16+32), "data"), # length of extension header + its data is (headerExtensionLen + 1) * 8 bytes
     name="IPv6ExtCommonHeader_t"
 )
 
