@@ -57,7 +57,7 @@ TCP_header_t = HStruct(
     (uint16_t, "window"),  # Indicates the number of octets of data the sender of this segment is willing to accept from the receiver at one time.
     (HBits(16), "checksum"),
     (uint16_t, "z"), # used to implement interrupt like behavior, forcing some data with higher priority
-#  Options are multiple of 8 bits in length (padded with 0 if smaller). All options are included in the checksum.
+    #  Options are multiple of 8 bits in length (padded with 0 if smaller). All options are included in the checksum.
     name="TCP_header_t"
 )
 
