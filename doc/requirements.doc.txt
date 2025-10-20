@@ -1,3 +1,4 @@
+splinx>=8.2.3
 sphinx_bootstrap_theme
 aafigure
 
