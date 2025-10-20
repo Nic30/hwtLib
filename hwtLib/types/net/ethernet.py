@@ -23,7 +23,7 @@ Eth2Header_t = HStruct(
     name="Eth2Header_t"
 )
 
-Tag802_1q = HStruct( # inserted before Eth2Header_t.type, :see: :prop:`ETHER_TYPE.VLAN_1Q`
+Tag802_1q = HStruct( # inserted before Eth2Header_t.type, :see: :attr:`ETHER_TYPE.VLAN_1Q`
     (EthType_t, "tpid"), # Tag Protocol identifier (ETHER_TYPE)
     (HBits(16), "tci")
 )

@@ -51,6 +51,7 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
     [1] https://www.intel.com/content/www/us/en/docs/programmable/773413.html
     [2] https://cdrdv2.intel.com/v1/dl/getContent/827074?fileName=ug20085-683100-827074.pdf
     [3] https://docs.amd.com/r/en-US/pg369-dcmac
+    
     .. hwt-autodoc::
     """
 

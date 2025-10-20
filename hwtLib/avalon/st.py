@@ -24,21 +24,24 @@ class AvalonST(HwIODataRdVld):
     :ivar USE_EMPTY: add "empty" signal which represents the number of symbols that are empty
     :ivar dataBitsPerSymbol: symbol represents minimal unit of transfered data, it is unit for units of "empty" signal
     :ivar readyLatency: if 0 the interface works as a typical (AXI4 Stream) ready/valid handshake.
-        if >0 the ready signaling is delayed. The ready cycle is when source received delayed
-        ready=1 from the sink, The source may assert valid only in ready cycle (when it is receiving delayed ready=1)
+                        if >0 the ready signaling is delayed. The ready cycle is when source received delayed
+                        ready=1 from the sink, The source may assert valid only in ready cycle (when it is receiving delayed ready=1)
+
     :note: if readyLatency > the ready is delayed inside of the source and Avalon-ST itself will use non-delayed value
     :ivar readyAllowance: defines how many data can sink capture with ready=False, if it is set to None then readyAllowance=readyLatency
     :note: readyLatency/readyAllowance are parameters of FIFO implemented on sink side
-        the "ready" represents "almost-full" of this FIFO,
-        readyLatency=almost-full-remaining-size-1,
-        readyAllowance=FIFO total size-1. 
-        e.g. readyLatency=0, readyAllowance=1 can buffer 1 item with ready=0
-    
+           the "ready" represents "almost-full" of this FIFO,
+           readyLatency=almost-full-remaining-size-1,
+           readyAllowance=FIFO total size-1. 
+           e.g. readyLatency=0, readyAllowance=1 can buffer 1 item with ready=0
+
     .. figure:: ./_static/avalon_st_readyLatency_readyAllowance.png
-        Avalon Interface Specifications Updated for Intel Quartus Prime Design Suite: 20.1, https://cdrdv2.intel.com/v1/dl/getContent/667068?fileName=mnl_avalon_spec-683091-667068.pdf
-        Figure 27 - anotated
+        .. caption:: Avalon Interface Specifications Updated for Intel Quartus Prime Design Suite: 20.1, https://cdrdv2.intel.com/v1/dl/getContent/667068?fileName=mnl_avalon_spec-683091-667068.pdf
+                     Figure 27 - anotated
+
     :attention: if maxChannel of src > dst only frames with low enought number are forwarded if connected in Quartus.
-        if src.maxChannel=8, dst.maxChannel=0 then only frames for channel=0 will be forwarded
+                if src.maxChannel=8, dst.maxChannel=0 then only frames for channel=0 will be forwarded
+    
     .. hwt-autodoc::
     """
 

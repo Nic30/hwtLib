@@ -21,7 +21,7 @@ There are several examples:
    :caption: SystemC IEEE Std 1666-2011
    :linenos:
 
-.. literalinclude:: /../hwtLib/examples/showcase0.hwt.py
+.. literalinclude:: /../hwtLib/examples/showcase0_hwt.py
    :language: python
    :caption: HWT :class:`hwt.hwModule.HwModule` class definition
    :linenos:

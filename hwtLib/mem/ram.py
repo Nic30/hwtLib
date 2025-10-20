@@ -33,6 +33,7 @@ class RamSingleClock(HwModule):
     :ivar HAS_BE: HwParam, if True the write ports will have byte enable signal
     :ivar READ_LATENCY: latency in clock cycles from read enable=1 to read data appear on the output
         0=distmem, 1=BRAM
+    
     .. hwt-autodoc::
     """
     PORT_CLS = HwIOBramPort_noClk

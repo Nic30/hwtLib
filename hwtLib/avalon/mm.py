@@ -27,7 +27,7 @@ class AvalonMM(HwIO):
 
     https://www.intel.com/content/dam/altera-www/global/en_US/pdfs/literature/manual/mnl_avalon_spec.pdf
     
-    :ivar waitRequestAllowance: works on same principe as :prop:`AvalonST.readyAllowance`, it specicifies  how many
+    :ivar waitRequestAllowance: works on same principe as :attr:`AvalonST.readyAllowance`, it specicifies  how many
         transactions may be buffered in destination and thus how many transaction can source send even when ready=0 (waitRequest=1)
     
     .. hwt-autodoc::

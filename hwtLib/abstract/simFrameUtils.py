@@ -18,7 +18,7 @@ class SimFrameUtils(Generic[WordTupleTy]):
     """
     This class is a base class for utility classes which converts between pythonic formats of frames
     and formats used by simulation agents.
-
+    
     :note: The main purpose is to simplify work with the frames and to make test agnostic to a specific stream hwio type.
     """
 
@@ -67,7 +67,7 @@ class SimFrameUtils(Generic[WordTupleTy]):
 
     def unpack_frame(self, structT: HdlType, frameData: Deque[WordTupleTy]) -> HConst:
         """
-        opposite of :meth:`~.pack_frame"
+        opposite of :meth:`~.pack_frame`
         """
         res = HConst_from_words(structT, frameData, self._getWordDataFn, self.DATA_WIDTH)
         for _ in range(ceil(structT.bit_length() / self.DATA_WIDTH)):
@@ -77,7 +77,8 @@ class SimFrameUtils(Generic[WordTupleTy]):
 
     def concatWordBits(self, frameBeats: Sequence[WordTupleTy]) -> Generator[HBitsConst, None, None]:
         """
-        Convert word tuple (produced by :meth:`~.send_bytes`/:meth:`~.pack_frame`) to flat :class:`HBitsConst` (members of input tuple are typically ints so they need to be cast to correct type first)
+        Convert word tuple (produced by :meth:`~.send_bytes` and :meth:`~.pack_frame`) to flat :class:`HBitsConst`
+        (members of input tuple are typically ints so they need to be cast to correct type first)
         """
         raise NotImplementedError("Override this in your implementation of this abstract class")
 
