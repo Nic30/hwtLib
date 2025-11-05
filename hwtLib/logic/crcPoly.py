@@ -17,7 +17,6 @@ Library of common CRC configurations
 :note: http://reveng.sourceforge.net/crc-catalogue/all.htm
 :note: https://github.com/nanpuyue/crc/blob/master/CRC.txt
 """
-from copy import copy
 from typing import Type, Self
 
 
@@ -33,14 +32,44 @@ class CRC_POLY:
     XOROUT = 0
 
     @classmethod
-    def without_REFOU_and_XOROUT(cls) -> Type[Self]:
+    def without_XOROUT(cls) -> Type[Self]:
+        if cls.XOROUT == 0:
+            return cls
+        else:
+
+            # :attention: copy/deepcopy does not clone class objects
+            class CRC_POLY_without_XOROUT(cls):
+                XOROUT = 0
+
+            CRC_POLY_without_XOROUT.__name__ = cls.__name__ + "_without_XOROUT"
+            return CRC_POLY_without_XOROUT
+
+    @classmethod
+    def without_REFOUT(cls) -> Type[Self]:
+        if not cls.REFOUT:
+            return cls
+        else:
+
+            # :attention: copy/deepcopy does not clone class objects
+            class CRC_POLY_without_REFOUT(cls):
+                REFOUT = False
+
+            CRC_POLY_without_REFOUT.__name__ = cls.__name__ + "_without_REFOUT"
+            return CRC_POLY_without_REFOUT
+
+    @classmethod
+    def without_REFOUT_and_XOROUT(cls) -> Type[Self]:
         if not cls.REFOUT and cls.XOROUT == 0:
             return cls
         else:
-            c = copy(cls)
-            c.REFOUT = False
-            c.XOROUT = 0
-            return c
+
+            # :attention: copy/deepcopy does not clone class objects
+            class CRC_POLY_without_REFOUT_and_XOROUT(cls):
+                REFOUT = False
+                XOROUT = 0
+
+            CRC_POLY_without_REFOUT_and_XOROUT.__name__ = cls.__name__ + "_without_REFOUT_and_XOROUT"
+            return CRC_POLY_without_REFOUT_and_XOROUT
 
 
 class CRC_1(CRC_POLY):
