@@ -101,7 +101,7 @@ class Usb2DeviceCommon(HwModule):
 
     def load_usb_device_request(self, rx:Axi4Stream, rst:RtlSignal):
         """
-        :param rx: the port with incomming data
+        :param rx: the port with incoming data
         :param rst: the usb reset or core reset
         """
         setup_byte_cnt = usb_device_request_t.bit_length() // 8

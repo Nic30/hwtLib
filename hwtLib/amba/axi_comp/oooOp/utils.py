@@ -80,7 +80,7 @@ class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
     WRITE_BACK: int  # aw+w in first clock rest of data later
     # wait until the write acknowledge is received and block the pipeline if it is not and
     # previous stage has valid data
-    # consume item from ooo_fifo in last beat of incomming data
+    # consume item from ooo_fifo in last beat of incoming data
     WAIT_FOR_WRITE_ACK: int
     # data which was written in to main memory, used to udate
     # the data which was read in that same time
