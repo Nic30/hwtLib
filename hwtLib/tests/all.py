@@ -235,6 +235,7 @@ from hwtLib.tests.synthesizer.rtlLevel.statements_consistency_test import Statem
 from hwtLib.tests.synthesizer.statementTreesInternal_test import StatementTreesInternalTC
 from hwtLib.tests.synthesizer.statementTrees_test import StatementTreesTC
 from hwtLib.tests.synthesizer.statements_test import StatementsTC
+from hwtLib.tests.time_logging_test_runner import TimeLoggingTestRunner
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
 from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
 from hwtLib.tests.types.hConst_test import HConstTC
@@ -539,28 +540,36 @@ suite = testSuiteFromTCs(
 )
 
 
-def unittestMain(suite: TestSuite):
+def unittestMain(suite: TestSuite, runnerKwargs=dict(verbosity=3), useParallelTest=None, runnerCls=TimeLoggingTestRunner, printTop=True):
     # runner = TextTestRunner(verbosity=2, failfast=True)
-    runner = TextTestRunner(verbosity=2)
+    # runner = TextTestRunner(verbosity=2)
+    runner = runnerCls(**runnerKwargs)
 
     if len(sys.argv) > 1 and sys.argv[1] == "--singlethread":
         useParallelTest = False
     else:
-        try:
-            from concurrencytest import ConcurrentTestSuite, fork_for_tests
-            useParallelTest = True
-        except ImportError:
-            # concurrencytest is not installed, use regular test runner
-            useParallelTest = False
-    # useParallelTest = False
+        if useParallelTest is None or useParallelTest:
+            try:
+                from concurrencytest import ConcurrentTestSuite, fork_for_tests
+                useParallelTest = True
+            except ImportError:
+                # concurrencytest is not installed, use regular test runner
+                if useParallelTest:
+                    raise
+                useParallelTest = False
 
     if useParallelTest:
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         res = runner.run(concurrent_suite)
     else:
         res = runner.run(suite)
+    if printTop:
+        n = 20
+        print(f"-------------------- Top {n} longest tests --------------------")
+        res.printTop(n=n)
     if not res.wasSuccessful():
         sys.exit(1)
+    return res
 
 
 if __name__ == '__main__':
