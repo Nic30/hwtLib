@@ -2,10 +2,9 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Example which is using switch statement to create multiplexer
+--Example which is using switch statement to create multiplexer
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY SwitchStmHwModule IS
     PORT(
         a : IN STD_LOGIC;

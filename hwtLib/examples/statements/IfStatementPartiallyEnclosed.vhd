@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY IfStatementPartiallyEnclosed IS
     PORT(
         a : OUT STD_LOGIC;

@@ -2,14 +2,13 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    RAM where each port has an independent clock.
---    It can be configured to true dual port RAM etc.
---    It can also be configured to have write mask or to be composed from multiple smaller memories.
+--RAM where each port has an independent clock.
+--It can be configured to true dual port RAM etc.
+--It can also be configured to have write mask or to be composed from multiple smaller memories.
 --
---    :note: write-first variant
+--:note: write-first variant
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY RamMultiClock IS
     GENERIC(
         ADDR_WIDTH : INTEGER := 8;
@@ -78,8 +77,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY GroupOfBlockrams IS
     GENERIC(
         ADDR_WIDTH : INTEGER := 8;
@@ -103,14 +101,13 @@ END ENTITY;
 
 ARCHITECTURE rtl OF GroupOfBlockrams IS
     --
-    --    RAM where each port has an independent clock.
-    --    It can be configured to true dual port RAM etc.
-    --    It can also be configured to have write mask or to be composed from multiple smaller memories.
+    --RAM where each port has an independent clock.
+    --It can be configured to true dual port RAM etc.
+    --It can also be configured to have write mask or to be composed from multiple smaller memories.
     --
-    --    :note: write-first variant
+    --:note: write-first variant
     --
-    --    .. hwt-autodoc::
-    --    
+    --.. hwt-autodoc::
     COMPONENT RamMultiClock IS
         GENERIC(
             ADDR_WIDTH : INTEGER := 8;

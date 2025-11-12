@@ -138,12 +138,11 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Stream duplicator for Axi4Stream interfaces
+--Stream duplicator for Axi4Stream interfaces
 --
---    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
+--:see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY Axi4SSplitCopy IS
     GENERIC(
         DATA_WIDTH : INTEGER := 64;
@@ -195,11 +194,10 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    This unit has actually no functionality it is just example
---    of hierarchical design.
+--This unit has actually no functionality it is just example
+--of hierarchical design.
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY NetFilter IS
     GENERIC(
         DATA_WIDTH : INTEGER := 64
@@ -239,12 +237,11 @@ END ENTITY;
 
 ARCHITECTURE rtl OF NetFilter IS
     --
-    --    Stream duplicator for Axi4Stream interfaces
+    --Stream duplicator for Axi4Stream interfaces
     --
-    --    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
+    --:see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
     --
-    --    .. hwt-autodoc::
-    --    
+    --.. hwt-autodoc::
     COMPONENT Axi4SSplitCopy IS
         GENERIC(
             DATA_WIDTH : INTEGER := 64;

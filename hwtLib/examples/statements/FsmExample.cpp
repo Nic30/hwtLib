@@ -1,8 +1,7 @@
 #include <systemc.h>
 
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 SC_MODULE(FsmExample) {
     // ports
     sc_in<sc_uint<1>> a;

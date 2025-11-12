@@ -10,10 +10,10 @@ from hwt.hdl.types.enum import HEnum
 
 class Showcase0(HwModule):
     """
-        Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
+    Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
     
-        .. hwt-autodoc::
-        
+    .. hwt-autodoc::
+    
     """
     def hwDeclr(self):
         # ports

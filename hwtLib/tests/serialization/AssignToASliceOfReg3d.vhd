@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Only a small fragment assigned and then whole signal assigned.
---    
+--Only a small fragment assigned and then whole signal assigned.
 ENTITY AssignToASliceOfReg3d IS
     PORT(
         clk : IN STD_LOGIC;

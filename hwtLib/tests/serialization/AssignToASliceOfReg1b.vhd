@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Register where slices of next signal are set conditionally in multiple branches, nested
---    
+--Register where slices of next signal are set conditionally in multiple branches, nested
 ENTITY AssignToASliceOfReg1b IS
     PORT(
         clk : IN STD_LOGIC;

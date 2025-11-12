@@ -1,8 +1,7 @@
 //
-//    Double Data Rate register
+//Double Data Rate register
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module DDR_Reg (
     input wire clk,
     input wire din,

@@ -249,12 +249,11 @@ SC_MODULE(Exporter) {
 #include <systemc.h>
 
 //
-//    Stream duplicator for Axi4Stream interfaces
+//Stream duplicator for Axi4Stream interfaces
 //
-//    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
+//:see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 SC_MODULE(Axi4SSplitCopy) {
     // ports
     sc_in<sc_uint<64>> dataIn_data;
@@ -320,11 +319,10 @@ SC_MODULE(Axi4SSplitCopy) {
 #include <systemc.h>
 
 //
-//    This unit has actually no functionality it is just example
-//    of hierarchical design.
+//This unit has actually no functionality it is just example
+//of hierarchical design.
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 SC_MODULE(NetFilter) {
     // ports
     sc_in<sc_uint<32>> cfg_ar_addr;

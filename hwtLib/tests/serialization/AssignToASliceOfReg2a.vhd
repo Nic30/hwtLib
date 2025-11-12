@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Register where an overlapping slices of next signal are set conditionally
---    
+--Register where an overlapping slices of next signal are set conditionally
 ENTITY AssignToASliceOfReg2a IS
     PORT(
         clk : IN STD_LOGIC;

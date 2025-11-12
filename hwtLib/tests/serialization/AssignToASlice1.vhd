@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Vector parts driven by expr
---    
+--Vector parts driven by expr
 ENTITY AssignToASlice1 IS
     PORT(
         clk : IN STD_LOGIC;

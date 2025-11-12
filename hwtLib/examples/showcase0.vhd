@@ -2,10 +2,9 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
+--Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY Showcase0 IS
     PORT(
         a : IN UNSIGNED(31 DOWNTO 0);

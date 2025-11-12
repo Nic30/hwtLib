@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Vector parts driven from multi branch statement
---    
+--Vector parts driven from multi branch statement
 ENTITY AssignToASlice2 IS
     PORT(
         clk : IN STD_LOGIC;

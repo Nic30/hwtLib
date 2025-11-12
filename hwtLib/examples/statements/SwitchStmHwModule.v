@@ -1,8 +1,7 @@
 //
-//    Example which is using switch statement to create multiplexer
+//Example which is using switch statement to create multiplexer
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module SwitchStmHwModule (
     input wire a,
     input wire b,

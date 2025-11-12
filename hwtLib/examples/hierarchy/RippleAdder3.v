@@ -1,6 +1,5 @@
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module FullAdder (
     input wire a,
     input wire b,
@@ -18,8 +17,7 @@ module FullAdder (
 
 endmodule
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module RippleAdder3 #(
     parameter p_wordlength = 4
 ) (

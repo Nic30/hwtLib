@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY HwModuleWithParams_0 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 64
@@ -26,8 +25,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY HwModuleWithParams IS
     PORT(
         din_data : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -39,8 +37,7 @@ END ENTITY;
 
 ARCHITECTURE rtl OF HwModuleWithParams IS
     --
-    --    .. hwt-autodoc::
-    --    
+    --.. hwt-autodoc::
     COMPONENT HwModuleWithParams_0 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 64

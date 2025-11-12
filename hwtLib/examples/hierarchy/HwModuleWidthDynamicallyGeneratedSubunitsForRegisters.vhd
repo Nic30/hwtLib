@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    An unit which will extract selected circuit from parent on instantiation.
---    
+--An unit which will extract selected circuit from parent on instantiation.
 ENTITY ExtractedHwModule IS
     PORT(
         clk : IN STD_LOGIC;
@@ -34,8 +33,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    An unit which will extract selected circuit from parent on instantiation.
---    
+--An unit which will extract selected circuit from parent on instantiation.
 ENTITY ExtractedHwModule_0 IS
     PORT(
         clk : IN STD_LOGIC;
@@ -76,8 +74,7 @@ END ENTITY;
 
 ARCHITECTURE rtl OF HwModuleWidthDynamicallyGeneratedSubunitsForRegisters IS
     --
-    --    An unit which will extract selected circuit from parent on instantiation.
-    --    
+    --An unit which will extract selected circuit from parent on instantiation.
     COMPONENT ExtractedHwModule IS
         PORT(
             clk : IN STD_LOGIC;
@@ -87,8 +84,7 @@ ARCHITECTURE rtl OF HwModuleWidthDynamicallyGeneratedSubunitsForRegisters IS
         );
     END COMPONENT;
     --
-    --    An unit which will extract selected circuit from parent on instantiation.
-    --    
+    --An unit which will extract selected circuit from parent on instantiation.
     COMPONENT ExtractedHwModule_0 IS
         PORT(
             clk : IN STD_LOGIC;

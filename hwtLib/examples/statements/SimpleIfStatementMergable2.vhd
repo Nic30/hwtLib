@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY SimpleIfStatementMergable2 IS
     PORT(
         a : IN STD_LOGIC;

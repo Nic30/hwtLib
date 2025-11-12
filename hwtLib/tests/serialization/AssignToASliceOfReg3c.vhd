@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Something not assigned by index at the beggining and then whole signal assigned.
---    
+--Something not assigned by index at the beggining and then whole signal assigned.
 ENTITY AssignToASliceOfReg3c IS
     PORT(
         clk : IN STD_LOGIC;

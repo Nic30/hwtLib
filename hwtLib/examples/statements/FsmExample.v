@@ -1,6 +1,5 @@
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module FsmExample (
     input wire a,
     input wire b,

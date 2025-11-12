@@ -1,11 +1,10 @@
 //
-//    Basic d flip flop
+//Basic d flip flop
 //
-//    :attention: using this unit is pointless because HWToolkit can automatically
-//        generate such a register for any interface and datatype
+//:attention: using this unit is pointless because HWToolkit can automatically
+//    generate such a register for any interface and datatype
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module DReg (
     input wire clk,
     input wire din,

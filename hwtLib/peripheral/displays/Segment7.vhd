@@ -2,28 +2,27 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    7-segment display decoder
+--7-segment display decoder
 --
---    :note: led in display becomes active when output = 0
+--:note: led in display becomes active when output = 0
 --
---    Display pin connection on image below.
+--Display pin connection on image below.
 --
---    .. code-block:: text
+--.. code-block:: text
 --
---        -------------
---        |     0     |
---        -------------
---        | 5 |   | 1 |
---        -------------
---        |     6     |
---        -------------
---        | 4 |   | 2 |
---        -------------
---        |     3     |
---        -------------
+--    -------------
+--    |     0     |
+--    -------------
+--    | 5 |   | 1 |
+--    -------------
+--    |     6     |
+--    -------------
+--    | 4 |   | 2 |
+--    -------------
+--    |     3     |
+--    -------------
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY Segment7 IS
     PORT(
         dataIn : IN STD_LOGIC_VECTOR(3 DOWNTO 0);

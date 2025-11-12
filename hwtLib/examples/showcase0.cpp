@@ -1,10 +1,9 @@
 #include <systemc.h>
 
 //
-//    Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
+//Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 SC_MODULE(Showcase0) {
     // ports
     sc_in<sc_uint<32>> a;

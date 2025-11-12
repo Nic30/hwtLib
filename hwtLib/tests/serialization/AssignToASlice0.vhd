@@ -2,8 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Conversion between vector and bit
---    
+--Conversion between vector and bit
 ENTITY AssignToASlice0 IS
     PORT(
         clk : IN STD_LOGIC;

@@ -2,10 +2,9 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Double Data Rate register
+--Double Data Rate register
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY DDR_Reg IS
     PORT(
         clk : IN STD_LOGIC;

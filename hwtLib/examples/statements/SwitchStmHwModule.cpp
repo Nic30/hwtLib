@@ -1,10 +1,9 @@
 #include <systemc.h>
 
 //
-//    Example which is using switch statement to create multiplexer
+//Example which is using switch statement to create multiplexer
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 SC_MODULE(SwitchStmHwModule) {
     // ports
     sc_in<sc_uint<1>> a;

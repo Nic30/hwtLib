@@ -1,6 +1,5 @@
 //
-//    An unit which will extract selected circuit from parent on instantiation.
-//    
+//An unit which will extract selected circuit from parent on instantiation.
 module ExtractedHwModule (
     input wire clk,
     input wire[7:0] i,
@@ -23,8 +22,7 @@ module ExtractedHwModule (
 
 endmodule
 //
-//    An unit which will extract selected circuit from parent on instantiation.
-//    
+//An unit which will extract selected circuit from parent on instantiation.
 module ExtractedHwModule_0 (
     input wire clk,
     output wire[7:0] r1,

@@ -1,6 +1,5 @@
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module AsyncResetReg (
     input wire clk,
     input wire din,

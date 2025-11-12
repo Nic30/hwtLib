@@ -1,8 +1,7 @@
 //
-//    Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
+//Every HW component class has to be derived from :class:`hwt.hwModule.HwModule` class
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module Showcase0 (
     input wire[31:0] a,
     input wire signed[31:0] b,

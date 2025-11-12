@@ -103,12 +103,11 @@ module Exporter (
     assign dout_valid = 1'bx;
 endmodule
 //
-//    Stream duplicator for Axi4Stream interfaces
+//Stream duplicator for Axi4Stream interfaces
 //
-//    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
+//:see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module Axi4SSplitCopy #(
     parameter DATA_WIDTH = 64,
     parameter DEST_WIDTH = 0,
@@ -187,11 +186,10 @@ module Axi4SSplitCopy #(
 
 endmodule
 //
-//    This unit has actually no functionality it is just example
-//    of hierarchical design.
+//This unit has actually no functionality it is just example
+//of hierarchical design.
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module NetFilter #(
     parameter DATA_WIDTH = 64
 ) (
