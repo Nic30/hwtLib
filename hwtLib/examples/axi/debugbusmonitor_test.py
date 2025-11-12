@@ -31,18 +31,17 @@ class DebugBusMonitorCtlSim(DebugBusMonitorCtl):
             assert not tc.sim_done
             ar_req = axi.ar._ag.create_addr_req(addr)
             axi.ar._ag.data.append(ar_req)
+
             # notify simulator about new request
-            tc.ctl_thread_request_pending = True
-            if tc.ctl_thread_has_requests.locked():
-                tc.ctl_thread_has_requests.release()
+            tc.ctl_thread_has_requests.release()
+            assert self.tc.r_data_available.locked(), "assert that no data from simulator is pending"
 
             r_data = axi.r._ag.data
-            while not r_data:
-                assert not self.tc.sim_done
-                # wait until simulator provides the data
-                self.tc.r_data_available.acquire()
-                tc.ctl_thread_request_pending = False
-            
+            assert not self.tc.sim_done
+            # wait until simulator provides the data
+            self.tc.r_data_available.acquire()
+            assert tc.ctl_thread_has_requests.locked(), "assert that the simulator is waiting on new requets"
+
             d = r_data.popleft()[0]
             try:
                 d = int(d)
@@ -53,13 +52,6 @@ class DebugBusMonitorCtlSim(DebugBusMonitorCtl):
             addr += word_size
 
         return words_to_int(words, word_size, size).to_bytes(size, "little")
-
-
-def run_DebugBusMonitorCtlSim(tc, out_txt, out_dot):
-    db = DebugBusMonitorCtlSim(tc)
-    db.dump_txt(out_txt)
-    db.dump_dot(out_dot)
-    tc.sim_done = True
 
 
 class DebugBusMonitorExampleAxiTC(SimTestCase):
@@ -75,7 +67,6 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
         self.sim_done = False
         self.r_data_available = threading.Lock()
         self.r_data_available.acquire()  # locked means there are no data
-        self.ctl_thread_request_pending = False
         self.ctl_thread_has_requests = threading.Lock()
         self.ctl_thread_has_requests.acquire()  # locked means there are no requests
 
@@ -90,9 +81,9 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
                 self.tc = tc
 
             def append(self, x):
-                if self.tc.r_data_available.locked():
-                    self.tc.r_data_available.release()
                 super(SpyDeque, self).append(x)
+                self.tc.r_data_available.release()
+                tc.ctl_thread_has_requests.acquire()
 
         dut.s.r._ag.data = SpyDeque(self)
         dut.din0._ag.data.extend([1, 2])
@@ -104,32 +95,39 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
             dut.dout1._ag.setEnable(False)
 
         def time_sync():
+            """
+            Make simulator running only when controll tool thread has pending requests
+            """
+            # firstIteration = True
+
+            tc.ctl_thread_has_requests.acquire()
             while True:
-                if dut.s.r._ag.data and tc.r_data_available.locked():
-                    # if more data was produced by simulator notify the tool control thread
-                    tc.r_data_available.release()
                 yield Timer(CLK_PERIOD)
                 if tc.sim_done:
                     raise StopSimumulation()
-                if not tc.ctl_thread_request_pending:
-                    # if no control opration is pending wait until some is requested
-                    tc.ctl_thread_has_requests.acquire()
 
         self.procs.extend([time_sync(), sim_init()])
+
+        sim_thread = threading.Thread(target=self.runSim,
+                                      # actually takes less time as the simulation is stopped after ctl_thread end
+                                      args=(200000 * CLK_PERIOD,))
+        sim_thread.start()
 
         buff_txt = StringIO()
         buff_dot = StringIO()
 
-        ctl_thread = threading.Thread(target=run_DebugBusMonitorCtlSim,
-                                      args=(self, buff_txt, buff_dot))
-        ctl_thread.start()
-        # actually takes less time as the simulation is stopped after ctl_thread end
-        self.runSim(200000 * CLK_PERIOD)
+        db = DebugBusMonitorCtlSim(tc)
+        db.dump_txt(buff_txt)
+        db.dump_dot(buff_dot)
+
         # handle the case where something went wrong and ctl thread is still running
         self.sim_done = True
         if self.r_data_available.locked():
             self.r_data_available.release()
-        ctl_thread.join()
+        if self.ctl_thread_has_requests.locked():
+            self.ctl_thread_has_requests.release()
+
+        sim_thread.join()
 
         d = buff_txt.getvalue()
         self.assertEqual(d, """\
