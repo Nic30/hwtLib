@@ -84,7 +84,7 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
                 first = False
             eof = last
 
-            userData = {"eof":eof}
+            userData = {"eof": eof}
             if USE_ENABLE:
                 userData["enable"] = 1
             if USE_EMPTY:
@@ -121,7 +121,7 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
             for data, user in segments:
                 for f in user._dtype.fields:
                     word.append(getattr(user, f.name))
-            
+
             for _ in range(fillerSegmentCnt):
                 for f in user._dtype.fields:
                     if f.name == "enable":
@@ -166,8 +166,8 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
                 except StopIteration:
                     eof = True
                     break
-                if segments:
-                    ag_data.append(tuple(segments))
+            if segments:
+                ag_data.append(tuple(segments))
 
     @override
     def receive_bytes(self, ag_data:Deque[Axi4StreamSegmentedAgentWordType]) -> tuple[int, list[Union[int, HBitsConst]], bool]:
