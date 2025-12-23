@@ -97,7 +97,7 @@ class FifoAsync(Fifo):
         # wbin - rbin == 2^Nl https://zipcpu.com/blog/2018/07/06/afifo.html
         # first two bits inverted, rest equal
         w_full(w_gray._rtlNextSig._eq(Concat(~r_gray_in_clk[AW + 1:AW - 1],
-                                       r_gray_in_clk[AW - 1:])))
+                                             *((r_gray_in_clk[AW - 1:],) if  AW > 1 else ()))))
         din.wait(w_full)
         w_en = din.en & ~w_full
         If(w_en,
@@ -139,6 +139,6 @@ def _example_FifoAsync():
 
 if __name__ == "__main__":
     from hwt.synth import to_rtl_str
-    
+
     m = _example_FifoAsync()
     print(to_rtl_str(m))

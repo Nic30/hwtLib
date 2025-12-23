@@ -172,7 +172,7 @@ class HandshakedFifo(HandshakedCompBase):
             out_clk = None
             out_rst = None
         else:
-            assert self.DEPTH > 2, self.DEPTH
+            assert self.DEPTH > 2, (self, self.DEPTH)
             (in_clk, in_rst), (out_clk, out_rst) = clk_rst
             f = self.fifo
             f.dataIn_clk(in_clk)
