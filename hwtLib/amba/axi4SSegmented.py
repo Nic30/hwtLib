@@ -1,10 +1,12 @@
 from collections import deque
+from dataclasses import dataclass  # , fields
 from math import ceil
 from typing import Union, Deque, \
     Self
 
 from hwt.code import segment_get, Concat
 from hwt.hdl.const import HConst
+from hwt.hdl.types.bitConstFunctions import AnyHBitsValue
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.defs import BIT
@@ -19,6 +21,39 @@ from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi_common import Axi_user, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
+
+
+@dataclass
+class Axi4StreamSegmentedMockSegmentUserTy():
+    """
+    Mock type to keep python typed for dynamically generated HdlType for Axi4StreamSegmented segment user
+    :attention: in real HStructConst the property is never None, but instead it is not presetnt
+    """
+    enable: AnyHBitsValue | None = None
+    sof: AnyHBitsValue | None = None
+    eof: AnyHBitsValue | None = None
+    err: AnyHBitsValue | None = None
+    empty: AnyHBitsValue | None = None
+
+
+@dataclass
+class Axi4StreamSegmentedMockSegmentTy():
+    """
+    Mock type to keep python typed for dynamically generated HdlType for Axi4StreamSegmented segment
+    """
+    data: AnyHBitsValue
+    user: Axi4StreamSegmentedMockSegmentUserTy
+
+@dataclass
+class Axi4StreamSegmentedMockWordNoPackTy():
+    """
+    Mock type to keep python typed for dynamically generated HdlType for Axi4StreamSegmented segment
+    """
+    data: list[AnyHBitsValue]
+    user: list[Axi4StreamSegmentedMockSegmentUserTy]
+
+# for field in fields(YourDataclass):
+#    print(field.name, getattr(YourDataclass, field.name)
 
 
 class Axi4StreamSegmented(Axi_hs, Axi_user):
@@ -115,6 +150,9 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
         return log2ceil((SEGMENT_DATA_WIDTH // BYTE_WIDTH) + (1 if SUPPORT_ZLP else 0))
 
     def resolveTypes(self):
+        """
+        :see: :class:`~.Axi4StreamSegmentedMockSegmentTy` :class:`~.Axi4StreamSegmentedMockSegmentUserTy`
+        """
         if hasattr(self, "USER_SEGMENT_T"):
             return
 
@@ -163,7 +201,7 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
 
         Axi_hs.hwDeclr(self)
 
-    def unpackSegment(self, segmentIndex:int, v=None):
+    def unpackSegment(self, segmentIndex:int, v=None) -> tuple[AnyHBitsValue, Axi4StreamSegmentedMockSegmentUserTy]:
         if v is None:
             v = self
         data = segment_get(v.data, self.SEGMENT_DATA_WIDTH, segmentIndex)
