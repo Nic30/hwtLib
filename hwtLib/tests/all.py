@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from typing import Optional
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwt.simulator.simTestCase import SimTestCase
@@ -540,7 +541,7 @@ suite = testSuiteFromTCs(
 )
 
 
-def unittestMain(suite: TestSuite, runnerKwargs=dict(verbosity=3), useParallelTest=None, runnerCls=TimeLoggingTestRunner, printTop=True):
+def unittestMain(suite: TestSuite, runnerKwargs=dict(verbosity=3), useParallelTest=None, runnerCls=TimeLoggingTestRunner, printTopLongest:Optional[int]=20):
     # runner = TextTestRunner(verbosity=2, failfast=True)
     # runner = TextTestRunner(verbosity=2)
     runner = runnerCls(**runnerKwargs)
@@ -563,10 +564,9 @@ def unittestMain(suite: TestSuite, runnerKwargs=dict(verbosity=3), useParallelTe
         res = runner.run(concurrent_suite)
     else:
         res = runner.run(suite)
-    if printTop:
-        n = 20
-        print(f"-------------------- Top {n} longest tests --------------------")
-        res.printTop(n=n)
+    if printTopLongest:
+        print(f"-------------------- Top {printTopLongest} longest tests --------------------")
+        res.printTop(n=printTopLongest)
     if not res.wasSuccessful():
         sys.exit(1)
     return res
