@@ -215,6 +215,8 @@ from hwtLib.tests.hwIOStruct_operator_test import HwIOStruct_operatorTC
 from hwtLib.tests.hwIOUnion_test import HwIOUnionTC
 from hwtLib.tests.pyUtils.arrayQuery_test import ArrayQueryTC
 from hwtLib.tests.pyUtils.fileUtils_test import FileUtilsTC
+from hwtLib.tests.pyUtils.setList_test import SetListTC, SetListIpCorePackagerTC, \
+    SetDequeTC
 from hwtLib.tests.repr_of_hdlObjs_test import ReprOfHdlObjsTC
 from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
 from hwtLib.tests.serialization.hdlRename_test import SerializerHdlRename_TC
@@ -276,6 +278,9 @@ suite = testSuiteFromTCs(
     # basic tests
     FileUtilsTC,
     ArrayQueryTC,
+    SetListTC,
+    SetListIpCorePackagerTC,
+    SetDequeTC,
     RtlLvlTC,
     ReprOfHdlObjsTC,
     HdlCommentsTC,
