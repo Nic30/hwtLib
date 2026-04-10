@@ -47,6 +47,7 @@ Physical Layer:
     data descrambling, and receiver clock and data recovery.
     In USB >=3.2 it may have additional RX and TX lane.
   * https://electronics.stackexchange.com/questions/409912/usb-softcore-for-fpga-extra-resistor-on-fpga-transmitter-pin 
+  * https://github.com/f32c/f32c/tree/master/rtl/soc/usb11_phy
 
 :note: USB Documentation, Christopher D. Leary and Devrin TalenDecember 17, 2007
 
