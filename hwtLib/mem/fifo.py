@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Tuple, List
-
 from hwt.code import If
 from hwt.constants import NOT_SPECIFIED
 from hwt.hdl.types.bits import HBits
@@ -61,9 +59,9 @@ class Fifo(HwModule):
         self._declr_size_and_space()
 
     def fifo_pointers(self, DEPTH: int,
-                      write_en_wait: Tuple[RtlSignal, RtlSignal],
-                      read_en_wait_list: List[Tuple[RtlSignal, RtlSignal]])\
-                      ->List[Tuple[RtlSignal, RtlSignal]]:
+                      write_en_wait: tuple[RtlSignal, RtlSignal],
+                      read_en_wait_list: list[tuple[RtlSignal, RtlSignal]])\
+                      ->list[tuple[RtlSignal, RtlSignal]]:
         """
         Create fifo writer and reader pointers and enable/wait logic
         This functions supports multiple reader pointers
@@ -131,7 +129,7 @@ class Fifo(HwModule):
         write_en, write_wait = write_en_wait
         # Update Empty and Full flags
         write_wait(write_ptr._eq(read_ptr) & looped)
-        fifo_write(write_en & (~looped | (write_ptr != read_ptr))) # :note: en & ~wait
+        fifo_write(write_en & (~looped | (write_ptr != read_ptr)))  # :note: en & ~wait
 
         return ack_ptr_list
 
