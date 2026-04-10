@@ -71,7 +71,6 @@ class Cam(HwModule):
         )
 
     def matchHandler(self, mem, key: HwIODataRdVld, match_res: HwIODataRdVld):
-
         key_data = key.data
         if self.USE_VLD_BIT:
             key_data = Concat(key.data, BIT.from_py(1))
