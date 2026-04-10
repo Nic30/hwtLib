@@ -11,19 +11,19 @@ def parity(bit_vector):
     return _mkOp(ne)(*bit_vector)
 
 
-# https://chipress.co/2019/07/09/how-to-implement-pseudo-lru/
 class PseudoLru():
     """
     Tree-PLRU, Pseudo Last Recently Used (LRU) algorithm
     * Often used to select least used value in caches etc.
 
-
-
-    Example for four-way set associative cache (three bits)
-
-    each bit represents one branch point in a binary decision tree; let 1
+    Example for four-way set associative cache (three bits):
+    Each bit represents one branch point in a binary decision tree; let 1
     represent that the left side has been referenced more recently than the
-    right side, and 0 vice-versa
+    right side, and 0 vice-versa. Leaves represent the cachelines.
+
+    * Cache operations by MRU change, https://doi.org/10.1109/12.2208
+    * United States Patent Application 20090113137
+
 
     .. code-block::
 
@@ -67,6 +67,7 @@ class PseudoLru():
         return 2 ** log2ceil(width + 1)
 
     def __init__(self, lru_reg: RtlSignal):
+        # :note: lru_reg width should be WAY_CNT - 1
         assert isPow2(lru_reg._dtype.bit_length() - 1) or lru_reg._dtype.bit_length() == 1, lru_reg._dtype.bit_length()
         self.lru_regs = lru_reg
 
