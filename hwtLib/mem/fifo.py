@@ -68,6 +68,14 @@ class Fifo(HwModule):
         Create fifo writer and reader pointers and enable/wait logic
         This functions supports multiple reader pointers
 
+        :note: Multiple read pointers are useful when the data in fifo passes
+        trouhg multiple states, this efficiently means that instead of
+        two FIFOs betwen some components we can use just 1 with multiple read poiners.
+        For example 1st read pointer may represent if the data is beeing processed (lock)
+        and the second if the data processing was finished and the item in fifo is deallocated (commit).
+
+        :note: *_en are inputs, *_wait, are outputs
+
         :attention: writer pointer next logic check only last reader pointer
         :return: list, tule(en, ptr) for writer and each reader
         """
@@ -78,7 +86,7 @@ class Fifo(HwModule):
         s = self._sig
         r = self._reg
         fifo_write = s("fifo_write")
-        write_ptr = _write_ptr = r("write_ptr", index_t, min(len(self.INIT_DATA), MAX_DEPTH))
+        write_ptr = r("write_ptr", index_t, min(len(self.INIT_DATA), MAX_DEPTH))
         ack_ptr_list = [(fifo_write, write_ptr), ]
         # update writer (head) pointer as needed
         If(fifo_write,
@@ -89,7 +97,8 @@ class Fifo(HwModule):
             )
         )
 
-        write_en, _ = write_en_wait
+        en, _ = write_en_wait
+        ptr = write_ptr
         # instantiate all read pointers
         for i, (read_en, read_wait) in enumerate(read_en_wait_list):
             read_ptr = r(f"read_ptr{i:d}", index_t, 0)
@@ -106,24 +115,23 @@ class Fifo(HwModule):
 
             looped = r(f"looped{i:d}", def_val=False if len(self.INIT_DATA) <= MAX_DEPTH else True)
             # looped logic
-            If(write_en & write_ptr._eq(MAX_DEPTH),
+            If(en & ptr._eq(MAX_DEPTH),
                 looped(True)
             ).Elif(read_en & read_ptr._eq(MAX_DEPTH),
                 looped(False)
             )
 
             # Update Empty and Full flags
-            read_wait(write_ptr._eq(read_ptr) & ~looped)
-            fifo_read(read_en & (looped | (write_ptr != read_ptr)))
+            read_wait(ptr._eq(read_ptr) & ~looped)
+            fifo_read(read_en & (looped | (ptr != read_ptr)))
             # previous reader is next port writer (producer) as it next reader can continue only if previous reader did consume the item
-            write_en, _ = read_en, read_wait
-            write_ptr = read_ptr
+            en, _ = read_en, read_wait
+            ptr = read_ptr
 
         write_en, write_wait = write_en_wait
-        write_ptr = _write_ptr
         # Update Empty and Full flags
         write_wait(write_ptr._eq(read_ptr) & looped)
-        fifo_write(write_en & (~looped | (write_ptr != read_ptr)))
+        fifo_write(write_en & (~looped | (write_ptr != read_ptr))) # :note: en & ~wait
 
         return ack_ptr_list
 
