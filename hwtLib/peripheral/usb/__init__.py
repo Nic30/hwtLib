@@ -81,4 +81,8 @@ The Endpoints may support following types of transfer:
 
 Similar projects:
 * https://github.com/WangXuan95/FPGA-USB-Device
+* https://github.com/im-tomu/valentyusb USB stack written in LiteX 
+* https://github.com/SinSiXX/luna-1 usb sniffer
+
+
 """
