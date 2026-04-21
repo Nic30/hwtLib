@@ -23,7 +23,7 @@ class UsbEndpointInterface(HwIO):
     :attention: if error(rx.user=1) appears during the transfer the frame has to be discarded in the endpoint buffer
         the error flag is latched until end of packet
     :ivar tx: data from device(function) to host
-    :ivar tx_success: tells the endpoint buffer that previously send packet was successfully transfered
+    :ivar tx_success: tells the endpoint buffer that previously send packet was successfully transferred
         and the packet can be deallocated (if tx_sucess.vld & ~tx_sucess.data it means that the packet needs to be re-transmited)
     :note: for Isochronous endpoints tx_sucess always returns success because isochronous transfers do not support
         retransmission

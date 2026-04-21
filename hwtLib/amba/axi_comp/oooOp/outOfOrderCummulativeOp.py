@@ -326,7 +326,7 @@ class OutOfOrderCummulativeOp(HwModule):
         """
         Transceive all data words from stage of pipeline to the bus.
 
-        :param ack: signal which is 1 if the data word is transfered on this write channel
+        :param ack: signal which is 1 if the data word is transferred on this write channel
         """
         if not isinstance(st_data, RtlSignal):
             st_data = HwIO_pack(st_data)

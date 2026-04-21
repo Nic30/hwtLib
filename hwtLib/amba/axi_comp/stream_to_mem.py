@@ -53,7 +53,7 @@ class Axi4streamToMem(HwModule):
         self.DATA_WIDTH = HwParam(32)
         self.CNTRL_AW = HwParam(5)
 
-        # size of data which should be transfered in worlds
+        # size of data which should be transferred in worlds
         self.DATA_LEN = HwParam(33)
         self.MAX_BUTST_LEN = HwParam(16)
         self.REGISTER_MAP = HStruct(
@@ -170,7 +170,7 @@ class Axi4streamToMem(HwModule):
 
     def w_allAck(self, st):
         """
-        In this clk data word will be transfered
+        In this clk data word will be transferred
         """
         st_t = st._dtype
         w_en = st._eq(st_t.writeData) | st._eq(st_t.writeDataLast)

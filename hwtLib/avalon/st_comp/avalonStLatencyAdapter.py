@@ -44,7 +44,7 @@ class AvalonST_latencyAdapter(HwModule):
         dstCreditT = HBits(log2ceil(maxVal + 1))
         # :note: the dstCredit guards the maximum number beats send to dst
         #  it is necessary becase we can not rely only on dst.rd or its delayed value because
-        #  readyAllowance specifies that the data may be transfered even if rd==0
+        #  readyAllowance specifies that the data may be transferred even if rd==0
         dstCredit = self._reg(f"dst_credit", dstCreditT, def_val=0)
         If(ready,
             dstCredit(maxVal)  # restart credit counter if ready=1

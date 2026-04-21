@@ -22,7 +22,7 @@ class AvalonST(HwIODataRdVld):
     https://cdrdv2.intel.com/v1/dl/getContent/667068?fileName=mnl_avalon_spec-683091-667068.pdf
     
     :ivar USE_EMPTY: add "empty" signal which represents the number of symbols that are empty
-    :ivar dataBitsPerSymbol: symbol represents minimal unit of transfered data, it is unit for units of "empty" signal
+    :ivar dataBitsPerSymbol: symbol represents minimal unit of transferred data, it is unit for units of "empty" signal
     :ivar readyLatency: if 0 the interface works as a typical (AXI4 Stream) ready/valid handshake.
                         if >0 the ready signaling is delayed. The ready cycle is when source received delayed
                         ready=1 from the sink, The source may assert valid only in ready cycle (when it is receiving delayed ready=1)

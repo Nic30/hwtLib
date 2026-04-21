@@ -28,7 +28,7 @@ class HandshakedReg(HandshakedCompBase):
         The variant with latency (0, 1) known as Skid buffer.
     :note: if  this generates Skid buffer,
         the ready chain is broken. 
-    :ivar INIT_DATA: a reset value of register (data is transfered from this register after reset)
+    :ivar INIT_DATA: a reset value of register (data is transferred from this register after reset)
         (an item for each stage of register, typically just 1 item)
         e.g. if register has latency=1 and interface has just data:uint8_t signal
         the INIT_DATA will be in format ((0,),)

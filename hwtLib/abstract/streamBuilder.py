@@ -171,7 +171,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         :param delay: delay of buffer (number of clk ticks required to get data to buffer)
         :note: delay can be used as synchronization method or to solve timing related problems
             because it will split valid signal path
-        :param init_data: a reset value of buffer (data is transfered after reset)
+        :param init_data: a reset value of buffer (data is transferred after reset)
             if items=1 and interface has just data:uint8_t signal
             the init_data will be in format ((0,),)
         :note: if latency or delay is None the most optimal value is used
