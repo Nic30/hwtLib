@@ -5,6 +5,7 @@ from hwtLib.types.ctypes import uint8_t, uint16_t
 IPv4 = 4
 IPv6 = 6
 
+# Internet Header Length – Indicates the number of 4-byte blocks in the IPv4 header.
 IHL_DEFAULT = 5
 
 l4port_t = HBits(16)
@@ -16,6 +17,7 @@ ipver_t = HBits(4)
 class IP_FLAGS():
     DONT_FRAGMENT = 0b010
     MORE_FRAGMENTS = 0b100
+
 
 # [todo] consider using python stdlib _socket.IPPROTO_AH and alike
 class IP_PROTOCOL():
@@ -60,10 +62,9 @@ IPv6Header_t = HStruct(
     name="IPv6Header_t"
 )
 IPv6ExtCommonHeader_t = HStruct(
-    (HBits(8), "nextHeader"), (HBits(8), "headerExtensionLen"), (HBits(16+32), "data"), # length of extension header + its data is (headerExtensionLen + 1) * 8 bytes
+    (HBits(8), "nextHeader"), (HBits(8), "headerExtensionLen"), (HBits(16 + 32), "data"),  # length of extension header + its data is (headerExtensionLen + 1) * 8 bytes
     name="IPv6ExtCommonHeader_t"
 )
-
 
 # checksum calculation https://gist.github.com/david-hoze/0c7021434796997a4ca42d7731a7073a
 
