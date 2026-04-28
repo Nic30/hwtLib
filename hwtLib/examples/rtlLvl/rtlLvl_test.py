@@ -5,7 +5,8 @@ import os
 
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.rtlLvl.arithmetic.counter import Counter
-from hwtLib.examples.rtlLvl.arithmetic.leadingZero import LeadingZero
+from hwtLib.examples.rtlLvl.arithmetic.leadingZero import LeadingZero, \
+    LeadingOne, LeadingOneB
 from hwtLib.examples.rtlLvl.axiReaderCore import AxiReaderCore
 from hwtLib.examples.rtlLvl.complexConditions import ComplexConditions
 from hwtLib.examples.rtlLvl.indexOps import IndexOps
@@ -29,6 +30,12 @@ class RtlLvlTC(BaseSerializationTC):
 
     def test_arithmetic_leadingZero(self):
         self.cmp(LeadingZero, os.path.join("arithmetic", "LeadingZero.vhd"))
+
+    def test_arithmetic_leadingOne(self):
+        self.cmp(LeadingOne, os.path.join("arithmetic", "LeadingOne.vhd"))
+
+    def test_arithmetic_leadingOneB(self):
+        self.cmp(LeadingOneB, os.path.join("arithmetic", "LeadingOneB.vhd"))
 
     def test_axiReaderCore(self):
         self.cmp(AxiReaderCore, "AxiReaderCore.vhd")
@@ -55,7 +62,7 @@ class RtlLvlTC(BaseSerializationTC):
 if __name__ == '__main__':
     import unittest
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([RtlLvlTC("test_axiReaderCore")])
     suite = testLoader.loadTestsFromTestCase(RtlLvlTC)
+    # suite = unittest.TestSuite([RtlLvlTC("test_complexConditions")])
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
