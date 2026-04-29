@@ -139,7 +139,7 @@ if __name__ == '__main__':
     # from hwt.synth import to_rtl_str
     # print(to_rtl_str(TernaryInConcatExample()))
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([Vhdl2008Serializer_TC("test_AssignToASlice0")])
     suite = testLoader.loadTestsFromTestCase(Vhdl2008Serializer_TC)
+    # suite = unittest.TestSuite([Vhdl2008Serializer_TC("test_AssignToASliceOfReg1b")])
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

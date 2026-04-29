@@ -200,7 +200,7 @@ if __name__ == '__main__':
     import unittest
 
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([Serializer_tmpVar_TC("test_TmpVarSExtBool_SystemC")])
     suite = testLoader.loadTestsFromTestCase(Serializer_tmpVar_TC)
+    # suite = unittest.TestSuite([Serializer_tmpVar_TC("test_TmpVarExample2_vhdl")])
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

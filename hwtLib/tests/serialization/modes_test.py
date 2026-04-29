@@ -12,6 +12,7 @@ from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
 class SimpleHwModule(HwModule):
+
     @override
     def hwDeclr(self):
         self.a = HwIOSignal()._m()
@@ -33,6 +34,7 @@ class OnceHwModule(SimpleHwModule):
 
 @serializeParamsUniq
 class ParamsUniqHwModule(SimpleHwModule):
+
     @override
     def hwConfig(self):
         self.A = HwParam(0)
@@ -40,6 +42,7 @@ class ParamsUniqHwModule(SimpleHwModule):
 
 
 class ExampleA(HwModule):
+
     @override
     def hwDeclr(self):
         self.a = HwIOVectSignal(7)._m()
