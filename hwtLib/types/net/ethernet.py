@@ -66,6 +66,10 @@ def eth_addr_format(mac: List[Union[int, str]]):
 
 
 def eth_addr_parse(macStr:str):
+    """
+    :return convert Ethernet MAC address to bytes, in big endian format
+        (the first byte is the first one in text form and it has the highest importance)
+    """
     splited = macStr.split(":")
     splited = map(lambda num: int(num, 16).to_bytes(1, byteorder='big'), splited)
     return b"".join(splited)
