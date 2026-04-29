@@ -114,7 +114,7 @@ class Axi4SPingResponderTC(SimTestCase):
                     "ttl": 100,
                     "protocol": IP_PROTOCOL.ICMP,
                     "headerChecksum": 0,
-                    "src": socket.inet_aton(ipSrc),
+                    "src": socket.inet_aton(ipSrc), # byte[0] is the first in string form and has the highest importance
                     "dst": socket.inet_aton(ipDst)
                 },
                 "icmp": {
@@ -176,7 +176,7 @@ class Axi4SPingResponderTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([Axi4SPingResponderTC("test_reply1x")])
     suite = testLoader.loadTestsFromTestCase(Axi4SPingResponderTC)
+    suite = unittest.TestSuite([Axi4SPingResponderTC("test_reply1x")])
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

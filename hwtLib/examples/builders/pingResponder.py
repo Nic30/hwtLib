@@ -16,6 +16,7 @@ from hwtLib.amba.axis_comp.builder import Axi4SBuilder
 from hwtLib.types.net.ethernet import Eth2Header_t
 from hwtLib.types.net.icmp import ICMP_echo_header_t, ICMP_TYPE
 from hwtLib.types.net.ip import IPv4Header_t, ipv4_t
+from pyMathBitPrecise.bit_utils import reverse_byte_order
 
 
 echoFrame_t = HStruct(
@@ -164,8 +165,9 @@ class Axi4SPingResponder(HwModule):
         self.tx(tx)
 
         # update state flags
+        respIpDstBE = reverse_byte_order(resp.ip.dst) # parser/deparser handles the casting to big-endian
         If(self.rx.last & self.rx.valid,
-           sendingReply(self.myIp._eq(resp.ip.dst) & isEchoReq)
+           sendingReply(self.myIp._eq(respIpDstBE) & isEchoReq)
         ).Elif(tx.valid & tx.last,
            sendingReply(0)
         )
