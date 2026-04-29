@@ -51,7 +51,7 @@ class AddressStepTranslation():
                 src_addr_sig = src_addr_sig[:self.align_bits]
 
         # first extend then add if required to prevent value overflow
-        src_addr_sig = src_addr_sig._reinterpret_cast(dst_addr_sig._dtype)
+        src_addr_sig = src_addr_sig._explicit_cast(dst_addr_sig._dtype)
         if dst_offset != 0:
             src_addr_sig = src_addr_sig + dst_offset
 

@@ -124,8 +124,11 @@ class Showcase0(HwModule):
 
         # "call" is overloaded to do assignment
         # it means c = a + b in target HDL
-        # type conversion is can be done by _auto_cast or _reinterpret_cast method call
-        self.c(a + b._auto_cast(a._dtype))
+        # type conversion can be done by _auto_cast, _explicit_cast or _reinterpret_cast method call
+        # * _auto_cast: same type same type with just minor differences.  e.g. name, HBits.negated/force_vector/... flags
+        # * _explicit_cast: cast to a friendly type e.g. HBits with different sign, width
+        # * _reinterpret_cast: raw bit cast to any type of same width e.g. HStruct to HBits
+        self.c(a + b._explicit_cast(a._dtype))
 
         # width of signals is not same, this would raise TypeError on regular assignment,
         # this behavior can be overridden by calling connect with fit=True
@@ -239,7 +242,7 @@ class Showcase0(HwModule):
         fRam = self._sig("fallingEdgeRam", int8_t[4])
         If(self.clk._onFallingEdge(),
            # fit can extend signal and also shrink it (sext/zext based on sing of the type)
-           fRam[r1](a, fit=True), # trunc
+           fRam[r1](a._signed(), fit=True), # trunc
            self.k(fRam[r1]._unsigned(), fit=True) # zext
         )
 
@@ -259,9 +262,9 @@ if __name__ == "__main__":  # alias python main function
     # * new instance has to be created every time because to_rtl_str modifies the unit
     # * serializers are using templates which can be customized
     # serialized code is trying to be human and git friendly
-    print(to_rtl_str(Showcase0(), serializer_cls=HwtSerializer))
-    print(to_rtl_str(Showcase0(), serializer_cls=Vhdl2008Serializer))
-    print(to_rtl_str(Showcase0(), serializer_cls=VerilogSerializer))
+    #print(to_rtl_str(Showcase0(), serializer_cls=HwtSerializer))
+    #print(to_rtl_str(Showcase0(), serializer_cls=Vhdl2008Serializer))
+    #print(to_rtl_str(Showcase0(), serializer_cls=VerilogSerializer))
     print(to_rtl_str(Showcase0(), serializer_cls=SystemCSerializer))
 
     m = Showcase0()

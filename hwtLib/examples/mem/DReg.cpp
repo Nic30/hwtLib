@@ -22,7 +22,7 @@ SC_MODULE(DReg) {
     }
 
     void assig_process_internReg() {
-        if (rst.read() == sc_uint<1>("0b1"))
+        if (rst.read())
             internReg = sc_uint<1>("0b0");
         else
             internReg = internReg_next.read();

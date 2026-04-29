@@ -45,6 +45,7 @@ class AxiResizeTC(SimTestCase):
         in_t = HBits(dut.DATA_WIDTH)[in_words_in_out_word]
         out_t = HBits(dut.OUT_DATA_WIDTH)
         for out_w_i, out_w in enumerate(grouper(in_words_in_out_word, expected, padvalue=0)):
+            # array -> bitvec
             w = in_t.from_py(out_w)._reinterpret_cast(out_t)
             m.data[out_w_i] = w
 

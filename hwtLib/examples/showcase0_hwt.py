@@ -65,7 +65,7 @@ class Showcase0(HwModule):
             3: 3
         })
         # assig_process_c
-        c((a + b._reinterpret_cast(HBits(32, signed=False)))._reinterpret_cast(HBits(32)))
+        c((a + b._explicit_cast(HBits(32, signed=False)))._explicit_cast(HBits(32)))
         # assig_process_cmp_0
         cmp_0(a < 4)
         # assig_process_cmp_1
@@ -79,23 +79,23 @@ class Showcase0(HwModule):
         # assig_process_cmp_5
         cmp_5(b._eq(4))
         # assig_process_contOut
-        contOut(const_private_signal._reinterpret_cast(HBits(32)))
+        contOut(const_private_signal._explicit_cast(HBits(32)))
         # assig_process_f
         f(r)
         # assig_process_fallingEdgeRam
         If(clk._onFallingEdge(),
-            fallingEdgeRam[r_1](a._trunc(8)._reinterpret_cast(HBits(8, signed=True))),
-            k(fallingEdgeRam[r_1]._reinterpret_cast(HBits(8, signed=False))._zext(32)._reinterpret_cast(HBits(32)))
+            fallingEdgeRam[r_1](a._trunc(8)._explicit_cast(HBits(8, signed=True))),
+            k(fallingEdgeRam[r_1]._explicit_cast(HBits(8, signed=False))._zext(32)._explicit_cast(HBits(32)))
         )
         # assig_process_fitted
-        fitted(a._trunc(16)._reinterpret_cast(HBits(16)))
+        fitted(a._trunc(16)._explicit_cast(HBits(16)))
         # assig_process_g
-        g(Concat(Concat(a[1] & b[1], a[0] ^ b[0] | a[1]), a._trunc(6)._reinterpret_cast(HBits(6))))
+        g(Concat(Concat(a[1] & b[1], a[0] ^ b[0] | a[1]), a._trunc(6)._explicit_cast(HBits(6))))
         # assig_process_h
-        If(a[2]._eq(1),
-            If(r._eq(1),
+        If(a[2],
+            If(r,
                 h(0)
-            ).Elif(a[1]._eq(1),
+            ).Elif(a[1],
                 h(1)
             ).Else(
                 h(2)
@@ -103,7 +103,7 @@ class Showcase0(HwModule):
         )
         # assig_process_j
         If(clk._onRisingEdge(),
-            j(rom[r_1]._reinterpret_cast(HBits(8)))
+            j(rom[r_1]._explicit_cast(HBits(8)))
         )
         # assig_process_out
         out(0)
@@ -111,7 +111,7 @@ class Showcase0(HwModule):
         output(None)
         # assig_process_r
         If(clk._onRisingEdge(),
-            If(rst_n._eq(0),
+            If(~rst_n._explicit_cast(HBits(1)),
                 r_1(0),
                 r_0(0),
                 r(0)
@@ -126,7 +126,7 @@ class Showcase0(HwModule):
         # assig_process_r_next_0
         r_next_1(r_0)
         # assig_process_r_next_1
-        If(r._eq(0),
+        If(~r,
             r_next(e)
         ).Else(
             r_next(r)

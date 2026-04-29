@@ -3,18 +3,18 @@
 
 import unittest
 
+from hwt.hdl.commonConstants import b1, b0
 from hwt.hdl.operatorDefs import downtoFn, toFn, HwtOps
 from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.defs import INT, STR, BOOL
+from hwt.hdl.types.defs import INT, STR, BOOL, BIT
 from hwt.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from hwtLib.tests.types.hConst_test import hBool, hBit, hInt, vec
+from hwtLib.tests.types.hConst_test import hBit, hInt, vec
 from hwtLib.types.ctypes import uint8_t
 from pyMathBitPrecise.bit_utils import mask
 
-
 n = RtlNetlist()
-s0 = n.sig("s0", BOOL)
+s0 = n.sig("s0", BIT)
 s1 = n.sig("s1")
 
 andTable = [(None, None, None),
@@ -80,9 +80,9 @@ bitvals = {
 }
 
 boolvals = {
-    1: hBool(1),
-    0: hBool(0),
-    None: hBool(None),
+    1: b1,
+    0: b0,
+    None: BIT.from_py(None),
     s0: s0,
     ~s0:~s0
 }
@@ -111,12 +111,6 @@ class OperatorTC(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.n = RtlNetlist()
-
-    def test_BoolNot(self):
-        for v in [True, False]:
-            res = ~hBool(v)
-            self.assertEqual(res.val, not v)
-            self.assertEqual(res.vld_mask, 1)
 
     def test_BitNot(self):
         for v in [False, True]:
@@ -326,20 +320,22 @@ class OperatorTC(unittest.TestCase):
         self.assertEqual(v.val, 0)
         self.assertEqual(v.vld_mask, 0)
 
-    def test_int_to_bool(self):
+    def test_int_to_BIT(self):
         self.assertFalse(bool(INT.from_py(0)._auto_cast(BOOL)))
         self.assertTrue(bool(INT.from_py(1)._auto_cast(BOOL)))
-        self.assertTrue(bool(INT.from_py(-11)._auto_cast(BOOL)))
-        self.assertTrue(bool(INT.from_py(500)._auto_cast(BOOL)))
-
         with self.assertRaises(ValueError):
-            bool(INT.from_py(None)._auto_cast(BOOL))
+            self.assertTrue(bool(INT.from_py(-11)._auto_cast(BOOL)))
+        with self.assertRaises(ValueError):
+            self.assertTrue(bool(INT.from_py(500)._auto_cast(BOOL)))
+
+        bInv = INT.from_py(None)._auto_cast(BOOL)
+        with self.assertRaises(ValueError):
+            bool(bInv)
 
     def test_bit2BoolConversion(self):
         e = self.n.sig("e")
         cond = e._auto_cast(BOOL)
-        self.assertTrue(cond._rtlObjectOrigin.operator == HwtOps.EQ)
-        self.assertEqual(cond._rtlObjectOrigin.operands[0], e, 1)
+        self.assertIs(cond, e)
 
     def test_NotAnd(self):
         n = self.n
@@ -350,9 +346,7 @@ class OperatorTC(unittest.TestCase):
         self.assertEqual(notAAndB._rtlObjectOrigin.operator, HwtOps.NOT)
         cond = notAAndB._auto_cast(BOOL)
 
-        self.assertEqual(cond._rtlObjectOrigin.operator, HwtOps.EQ)
-        self.assertIs(cond._rtlObjectOrigin.operands[0], aAndB)
-        self.assertEqual(int(cond._rtlObjectOrigin.operands[1]), 0)
+        self.assertIs(cond, notAAndB)
 
         andOp = notAAndB._rtlObjectOrigin.operands[0]._rtlObjectOrigin
         self.assertEqual(andOp.operator, HwtOps.AND)
@@ -407,6 +401,7 @@ class OperatorTC(unittest.TestCase):
             b = op._evalFn(_3, a)
             c = op._evalFn(_3, a)
             self.assertIs(b, c)
+
 
 if __name__ == '__main__':
     testLoader = unittest.TestLoader()

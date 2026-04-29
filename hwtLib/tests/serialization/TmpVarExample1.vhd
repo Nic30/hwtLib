@@ -12,7 +12,7 @@ ARCHITECTURE rtl OF TmpVarExample1 IS
 BEGIN
     assig_process_b: PROCESS(a)
     BEGIN
-        IF (a(15 DOWNTO 0) = X"0001") = FALSE AND (a(31 DOWNTO 16) = X"0001") = FALSE THEN
+        IF NOT (a(15 DOWNTO 0) = X"0001") AND NOT (a(31 DOWNTO 16) = X"0001") THEN
             b <= X"00000000";
         ELSE
             b <= X"00000001";

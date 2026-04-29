@@ -55,7 +55,7 @@ class Mi32SlidingWindow(BusBridge):
         offset_en = s.addr._eq(OFFSET_REG_ADDR)
         offset = self._reg("offset", m.addr._dtype, def_val=0)
         m(s, exclude={m.addr, m.wr, m.ardy})
-        m.addr(offset + s.addr._reinterpret_cast(m.addr._dtype))
+        m.addr(offset + s.addr._explicit_cast(m.addr._dtype))
         m.wr(s.wr & ~offset_en)
         If(offset_en & s.wr,
            offset(s.dwr, fit=True)

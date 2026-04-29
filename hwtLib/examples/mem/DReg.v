@@ -15,7 +15,7 @@ module DReg (
     wire internReg_next;
     assign dout = internReg;
     always @(posedge clk) begin: assig_process_internReg
-        if (rst == 1'b1)
+        if (rst)
             internReg <= 1'b0;
         else
             internReg <= internReg_next;

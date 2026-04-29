@@ -75,22 +75,22 @@ class HandshakedCdc(HandshakedCompBase):
     def propagate_clk(self, m: CdcPulseGen, reverse=False):
         if reverse:
             m.dataIn_clk(self.dataOut_clk)
-            m.dataIn_rst(~self.dataOut_rst_n)
+            m.dataIn_rst(self.dataOut_rst_n._isOn())
             m.dataOut_clk(self.dataIn_clk)
-            m.dataOut_rst(~self.dataIn_rst_n)
+            m.dataOut_rst(self.dataIn_rst_n._isOn())
         else:
             m.dataIn_clk(self.dataIn_clk)
-            m.dataIn_rst(~self.dataIn_rst_n)
+            m.dataIn_rst(self.dataIn_rst_n._isOn())
             m.dataOut_clk(self.dataOut_clk)
-            m.dataOut_rst(~self.dataOut_rst_n)
+            m.dataOut_rst(self.dataOut_rst_n._isOn())
 
     def propagate_in_clk(self, u):
         u.clk(self.dataIn_clk)
-        u.rst(~self.dataIn_rst_n)
+        u.rst(self.dataIn_rst_n._isOn())
 
     def propagate_out_clk(self, u):
         u.clk(self.dataOut_clk)
-        u.rst(~self.dataOut_rst_n)
+        u.rst(self.dataOut_rst_n._isOn())
 
     def create_data_reg(self, name_prefix, clk=None, rst=None):
         """

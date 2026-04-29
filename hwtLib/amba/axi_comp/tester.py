@@ -211,7 +211,7 @@ class AxiTester(HwModule):
 
         aw_vld = st._eq(state_t.wait_aw)
         axi.aw.valid(aw_vld)
-        ar_vld = st._eq(state_t.wait_ar)._reinterpret_cast(BIT)
+        ar_vld = st._eq(state_t.wait_ar)._isOn()
         axi.ar.valid(ar_vld)
 
         r = axi.r

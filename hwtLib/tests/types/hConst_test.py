@@ -5,7 +5,7 @@ from enum import Enum
 import unittest
 
 from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.defs import INT, BIT, BOOL, STR
+from hwt.hdl.types.defs import INT, BIT, STR
 
 
 def hBit(v):
@@ -14,10 +14,6 @@ def hBit(v):
 
 def vec(v, w, signed=None):
     return HBits(w, force_vector=w == 1, signed=signed).from_py(v)
-
-
-def hBool(v):
-    return BOOL.from_py(v)
 
 
 def hStr(v):
@@ -45,14 +41,14 @@ class HConstTC(unittest.TestCase):
         self.assertTrue(vec(1, 1)._eq(vec(1, 1)))
         self.assertTrue(vec(0, 1)._eq(vec(0, 1)))
         self.assertTrue(vec(0, 2)._eq(vec(0, 2)))
-        self.assertTrue(hBool(True)._eq(hBool(True)))
+        self.assertTrue(hBit(True)._eq(hBit(True)))
         v0 = vec(2, 2)
         v1 = v0.__copy__()
         self.assertTrue(v0._eq(v1))
         self.assertTrue(v0._eq(v1))
 
     def test_BOOLNeg(self):
-        v0 = hBool(True)
+        v0 = hBit(True)
         self.assertValEq(~v0, False)
         self.assertValEq(~ ~v0, True)
 
@@ -67,15 +63,15 @@ class HConstTC(unittest.TestCase):
         self.assertValEq(v0._eq(v3), False)
 
     def test_BoolEqualNotEqual(self):
-        v0 = hBool(True)
-        v1 = hBool(True)
+        v0 = hBit(True)
+        v1 = hBit(True)
         self.assertValEq(v0._eq(v1), True)
-        self.assertNotEqual(v0, hBool(False))
+        self.assertNotEqual(v0, hBit(False))
 
     def test_BoolAnd(self):
         for a_in, b_in, out in [(0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 1)]:
-            v0 = hBool(a_in)
-            v1 = hBool(b_in)
+            v0 = hBit(a_in)
+            v1 = hBit(b_in)
             o = v0 & v1
             self.assertValEq(o, out, f"{o.val:d} == {out:d}")
 

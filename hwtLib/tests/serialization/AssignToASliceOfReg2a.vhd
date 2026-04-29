@@ -38,8 +38,10 @@ BEGIN
     END PROCESS;
     r_next <= r_next_15downto12 & r_next_11downto8 & r_next_7downto4 & r_next_3downto0;
     assig_process_r_next_3downto0: PROCESS(data_in_addr, data_in_data, data_in_mask, data_in_vld, r)
+        VARIABLE tmpIndexLhs_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
     BEGIN
-        IF data_in_vld = '1' AND data_in_addr = "0" THEN
+        tmpIndexLhs_0 := NOT data_in_addr;
+        IF (data_in_vld AND tmpIndexLhs_0(0)) = '1' THEN
             IF data_in_mask = X"FF" THEN
                 r_next_3downto0 <= data_in_data(3 DOWNTO 0);
                 r_next_7downto4 <= data_in_data(7 DOWNTO 4);
@@ -57,7 +59,7 @@ BEGIN
     END PROCESS;
     assig_process_r_next_11downto8: PROCESS(data_in_addr, data_in_data, data_in_mask, data_in_vld, r)
     BEGIN
-        IF data_in_vld = '1' AND data_in_addr = "1" THEN
+        IF (data_in_vld AND data_in_addr(0)) = '1' THEN
             IF data_in_mask = X"FF" THEN
                 r_next_11downto8 <= data_in_data(3 DOWNTO 0);
                 r_next_15downto12 <= data_in_data(7 DOWNTO 4);

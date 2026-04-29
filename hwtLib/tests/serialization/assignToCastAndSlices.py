@@ -99,7 +99,8 @@ class AssignToASliceOfReg0(HwModule):
         i.rd(1)
         for _i in range(2):
             start = 8 * _i
-            If(i.vld & i.addr._eq(_i),
+            addrEq = i.addr._eq(_i)
+            If(i.vld & addrEq,
                r[start + 8:start](i.data)
             )
         o(r)

@@ -22,22 +22,18 @@ BEGIN
     e <= d(0);
     assig_process_i: PROCESS(f, g)
         VARIABLE tmp_std_logic2vector_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
-        VARIABLE tmpCastExpr_0 : UNSIGNED(0 DOWNTO 0);
-        VARIABLE tmpTypeConv_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
+        VARIABLE tmpIndexLhs_0 : UNSIGNED(0 DOWNTO 0);
     BEGIN
         tmp_std_logic2vector_0(0) := f;
-        tmpCastExpr_0 := UNSIGNED(tmp_std_logic2vector_0) + UNSIGNED(g);
-        tmpTypeConv_0 := STD_LOGIC_VECTOR(tmpCastExpr_0);
-        i <= tmpTypeConv_0(0);
+        tmpIndexLhs_0 := UNSIGNED(tmp_std_logic2vector_0) + UNSIGNED(g);
+        i <= tmpIndexLhs_0(0);
     END PROCESS;
     assig_process_j: PROCESS(f, g)
         VARIABLE tmp_std_logic2vector_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
-        VARIABLE tmpCastExpr_0 : UNSIGNED(0 DOWNTO 0);
-        VARIABLE tmpTypeConv_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
+        VARIABLE tmpIndexLhs_0 : UNSIGNED(0 DOWNTO 0);
     BEGIN
         tmp_std_logic2vector_0(0) := f;
-        tmpCastExpr_0 := UNSIGNED(g) + UNSIGNED(tmp_std_logic2vector_0);
-        tmpTypeConv_0 := STD_LOGIC_VECTOR(tmpCastExpr_0);
-        j <= tmpTypeConv_0(0);
+        tmpIndexLhs_0 := UNSIGNED(g) + UNSIGNED(tmp_std_logic2vector_0);
+        j <= tmpIndexLhs_0(0);
     END PROCESS;
 END ARCHITECTURE;

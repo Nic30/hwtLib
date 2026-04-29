@@ -113,31 +113,31 @@ class StatementTreesTC(unittest.TestCase):
         tmpl = """
         Switch(st)\\
         .Case(t_state.idle,
-            If((sd0 & sd1)._eq(1),
+            If(sd0 & sd1,
                 st_next(t_state.lenExtr)
             ).Else(
                 st_next(t_state.ts1Wait)
             ))\\
         .Case(t_state.tsWait,
-            If((sd0 & sd1)._eq(1),
+            If(sd0 & sd1,
                 st_next(t_state.lenExtr)
             ).Else(
                 st_next(t_state.ts1Wait)
             ))\\
         .Case(t_state.ts0Wait,
-            If(sd0._eq(1),
+            If(sd0,
                 st_next(t_state.lenExtr)
             ).Else(
                 st_next(st)
             ))\\
         .Case(t_state.ts1Wait,
-            If(sd1._eq(1),
+            If(sd1,
                 st_next(t_state.lenExtr)
             ).Else(
                 st_next(st)
             ))\\
         .Default(
-            If((ctrlFifoVld & ctrlFifoLast)._eq(1),
+            If(ctrlFifoVld & ctrlFifoLast,
                 st_next(t_state.idle)
             ).Else(
                 st_next(st)
@@ -202,33 +202,33 @@ class StatementTreesTC(unittest.TestCase):
         tmpl = """
         Switch(st)\\
         .Case(t_state.idle,
-            If((sd0 & sd1)._eq(1),
+            If(sd0 & sd1,
                 st_next(t_state.lenExtr)
-            ).Elif(ctrlFifoVld._eq(1),
+            ).Elif(ctrlFifoVld,
                 st_next(t_state.tsWait)
             ).Else(
                 st_next(st)
             ))\\
         .Case(t_state.tsWait,
-            If((sd0 & sd1)._eq(1),
+            If(sd0 & sd1,
                 st_next(t_state.lenExtr)
             ).Else(
                 st_next(st)
             ))\\
         .Case(t_state.ts0Wait,
-            If(sd0._eq(1),
+            If(sd0,
                 st_next(t_state.lenExtr)
             ).Else(
                 st_next(st)
             ))\\
         .Case(t_state.ts1Wait,
-            If(sd1._eq(1),
+            If(sd1,
                 st_next(t_state.lenExtr)
             ).Else(
                 st_next(st)
             ))\\
         .Default(
-            If((ctrlFifoVld & ctrlFifoLast)._eq(1),
+            If(ctrlFifoVld & ctrlFifoLast,
                 st_next(t_state.idle)
             ).Else(
                 st_next(st)
@@ -295,37 +295,37 @@ class StatementTreesTC(unittest.TestCase):
         tmpl = """
         Switch(st)\\
         .Case(t_state.idle,
-            If((sd0 & sd1)._eq(1),
+            If(sd0 & sd1,
                 st_next(t_state.lenExtr)
-            ).Elif(sd0._eq(1),
+            ).Elif(sd0,
                 st_next(t_state.ts1Wait)
-            ).Elif(ctrlFifoVld._eq(1),
+            ).Elif(ctrlFifoVld,
                 st_next(t_state.tsWait)
             ).Else(
                 st_next(st)
             ))\\
         .Case(t_state.tsWait,
-            If((sd0 & sd1)._eq(1),
+            If(sd0 & sd1,
                 st_next(t_state.lenExtr)
-            ).Elif(sd0._eq(1),
+            ).Elif(sd0,
                 st_next(t_state.ts1Wait)
             ).Else(
                 st_next(st)
             ))\\
         .Case(t_state.ts0Wait,
-            If(sd0._eq(1),
+            If(sd0,
                 st_next(t_state.lenExtr)
             ).Else(
                 st_next(st)
             ))\\
         .Case(t_state.ts1Wait,
-            If(sd1._eq(1),
+            If(sd1,
                 st_next(t_state.lenExtr)
             ).Else(
                 st_next(st)
             ))\\
         .Default(
-            If((ctrlFifoVld & ctrlFifoLast)._eq(1),
+            If(ctrlFifoVld & ctrlFifoLast,
                 st_next(t_state.idle)
             ).Else(
                 st_next(st)

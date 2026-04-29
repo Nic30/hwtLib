@@ -99,10 +99,10 @@ SC_MODULE(Showcase0) {
     }
 
     void assig_process_h() {
-        if (a.read()[sc_int<32>("0x00000002")] == sc_uint<1>("0b1"))
-            if (r == sc_uint<1>("0b1"))
+        if (a.read()[sc_int<32>("0x00000002")])
+            if (r)
                 h.write(sc_uint<8>("0x00"));
-            else if (a.read()[sc_int<32>("0x00000001")] == sc_uint<1>("0b1"))
+            else if (a.read()[sc_int<32>("0x00000001")])
                 h.write(sc_uint<8>("0x01"));
             else
                 h.write(sc_uint<8>("0x02"));
@@ -121,7 +121,7 @@ SC_MODULE(Showcase0) {
     }
 
     void assig_process_r() {
-        if (rst_n.read() == sc_uint<1>("0b0")) {
+        if (~rst_n.read()) {
             r_1 = sc_uint<2>("0b00");
             r_0 = sc_uint<2>("0b00");
             r = sc_uint<1>("0b0");
@@ -141,7 +141,7 @@ SC_MODULE(Showcase0) {
     }
 
     void assig_process_r_next_1() {
-        if (r == sc_uint<1>("0b0"))
+        if (~r)
             r_next.write(e.read());
         else
             r_next.write(r);

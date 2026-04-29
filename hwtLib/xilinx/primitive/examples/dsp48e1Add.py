@@ -319,7 +319,7 @@ class Dsp48e1Add(HwModule):
                 dsp.RSTD,
                 dsp.RSTM,
                 dsp.RSTP, ]:
-                _rst(~self.rst_n)
+                _rst(self.rst_n._isOn())
 
         if REQUIRES_CASCADE:
             delayed_dsp_outputs = []

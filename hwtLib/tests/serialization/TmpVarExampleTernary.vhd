@@ -35,10 +35,10 @@ BEGIN
     END PROCESS;
     assig_process_g: PROCESS(a, b, c)
         VARIABLE tmpTernaryAutoCast_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
-        VARIABLE tmpTypeConv_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
+        VARIABLE tmpIndexLhs_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
     BEGIN
         tmpTernaryAutoCast_0(0) := a;
-        tmpTypeConv_0 := b WHEN (c = '1') ELSE tmpTernaryAutoCast_0;
-        g <= tmpTypeConv_0(0);
+        tmpIndexLhs_0 := b WHEN (c = '1') ELSE tmpTernaryAutoCast_0;
+        g <= tmpIndexLhs_0(0);
     END PROCESS;
 END ARCHITECTURE;

@@ -29,7 +29,7 @@ SC_MODULE(FsmExample) {
     }
 
     void assig_process_st() {
-        if (rst_n.read() == sc_uint<1>("0b0"))
+        if (~rst_n.read())
             st = 0;
         else
             st = st_next.read();
@@ -38,27 +38,27 @@ SC_MODULE(FsmExample) {
     void assig_process_st_next() {
         switch(st) {
         case 0: {
-                if ((a.read() & b.read()) == sc_uint<1>("0b1"))
+                if (a.read() & b.read())
                     st_next.write(2);
-                else if (b.read() == sc_uint<1>("0b1"))
+                else if (b.read())
                     st_next.write(1);
                 else
                     st_next.write(st);
                 break;
             }
         case 1: {
-                if ((a.read() & b.read()) == sc_uint<1>("0b1"))
+                if (a.read() & b.read())
                     st_next.write(2);
-                else if (a.read() == sc_uint<1>("0b1"))
+                else if (a.read())
                     st_next.write(0);
                 else
                     st_next.write(st);
                 break;
             }
         default:
-                if ((a.read() & ~b.read()) == sc_uint<1>("0b1"))
+                if (a.read() & ~b.read())
                     st_next.write(0);
-                else if ((~a.read() & b.read()) == sc_uint<1>("0b1"))
+                else if (~a.read() & b.read())
                     st_next.write(1);
                 else
                     st_next.write(st);

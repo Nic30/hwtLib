@@ -8,7 +8,7 @@ ENTITY ExtractedHwModule IS
         clk : IN STD_LOGIC;
         i : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         r0 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-        sig_0 : IN BOOLEAN
+        sig_0 : IN STD_LOGIC
     );
 END ENTITY;
 
@@ -19,7 +19,7 @@ BEGIN
     assig_process_r0: PROCESS(clk)
     BEGIN
         IF RISING_EDGE(clk) THEN
-            IF sig_0 THEN
+            IF sig_0 = '1' THEN
                 r0_0 <= X"00";
             ELSE
                 r0_0 <= r0_next;
@@ -38,7 +38,7 @@ ENTITY ExtractedHwModule_0 IS
     PORT(
         clk : IN STD_LOGIC;
         r1 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-        sig_0 : IN BOOLEAN;
+        sig_0 : IN STD_LOGIC;
         sig_uForR0_r0 : IN STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
 END ENTITY;
@@ -50,7 +50,7 @@ BEGIN
     assig_process_r1: PROCESS(clk)
     BEGIN
         IF RISING_EDGE(clk) THEN
-            IF sig_0 THEN
+            IF sig_0 = '1' THEN
                 r1_0 <= X"00";
             ELSE
                 r1_0 <= r1_next;
@@ -80,7 +80,7 @@ ARCHITECTURE rtl OF HwModuleWidthDynamicallyGeneratedSubunitsForRegisters IS
             clk : IN STD_LOGIC;
             i : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
             r0 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            sig_0 : IN BOOLEAN
+            sig_0 : IN STD_LOGIC
         );
     END COMPONENT;
     --
@@ -89,17 +89,17 @@ ARCHITECTURE rtl OF HwModuleWidthDynamicallyGeneratedSubunitsForRegisters IS
         PORT(
             clk : IN STD_LOGIC;
             r1 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            sig_0 : IN BOOLEAN;
+            sig_0 : IN STD_LOGIC;
             sig_uForR0_r0 : IN STD_LOGIC_VECTOR(7 DOWNTO 0)
         );
     END COMPONENT;
     SIGNAL sig_uForR0_clk : STD_LOGIC;
     SIGNAL sig_uForR0_i : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL sig_uForR0_r0 : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    SIGNAL sig_uForR0_sig_0 : BOOLEAN;
+    SIGNAL sig_uForR0_sig_0 : STD_LOGIC;
     SIGNAL sig_uForR1_clk : STD_LOGIC;
     SIGNAL sig_uForR1_r1 : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    SIGNAL sig_uForR1_sig_0 : BOOLEAN;
+    SIGNAL sig_uForR1_sig_0 : STD_LOGIC;
     SIGNAL sig_uForR1_sig_uForR0_r0 : STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
     uForR0_inst: ExtractedHwModule PORT MAP(
@@ -117,8 +117,8 @@ BEGIN
     o <= sig_uForR1_r1;
     sig_uForR0_clk <= clk;
     sig_uForR0_i <= i;
-    sig_uForR0_sig_0 <= rst_n = '0';
+    sig_uForR0_sig_0 <= NOT rst_n;
     sig_uForR1_clk <= clk;
-    sig_uForR1_sig_0 <= rst_n = '0';
+    sig_uForR1_sig_0 <= NOT rst_n;
     sig_uForR1_sig_uForR0_r0 <= sig_uForR0_r0;
 END ARCHITECTURE;

@@ -7,7 +7,7 @@ module TmpVarExample2 (
         reg[1:0] tmp_index_0;
         tmp_concat_0 = {a[31:16] == 16'h0001, a[15:0] == 16'h0001};
         tmp_index_0 = tmp_concat_0 + 2'b01;
-        if (tmp_index_0[1] == 1'b0 & tmp_index_0[0] == 1'b0)
+        if (~tmp_index_0[1] & ~tmp_index_0[0])
             b = 32'h00000000;
         else
             b = 32'h00000001;

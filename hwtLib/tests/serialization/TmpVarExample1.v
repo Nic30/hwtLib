@@ -3,7 +3,7 @@ module TmpVarExample1 (
     output reg[31:0] b
 );
     always @(a) begin: assig_process_b
-        if (a[15:0] == 16'h0001 == 0 & a[31:16] == 16'h0001 == 0)
+        if (~(a[15:0] == 16'h0001) & ~(a[31:16] == 16'h0001))
             b = 32'h00000000;
         else
             b = 32'h00000001;

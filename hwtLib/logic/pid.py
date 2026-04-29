@@ -77,7 +77,7 @@ class PidController(HwModule):
         a = self.coefs
 
         def trim(signal):
-            return signal._reinterpret_cast(self.output._dtype)
+            return signal._explicit_cast(self.output._dtype)
 
         u(Add(u, a[0] * err, a[1] * y[0], a[2] * y[1], a[3] * y[2], key=trim))
         self.output(u)

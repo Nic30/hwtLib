@@ -58,7 +58,7 @@ class IpCoreIntfTest(HwModule):
         self.ram1(self.ram0)
 
         If(self.hsIn.vld,
-           r0(self.difIn.p & ~self.difIn.n)
+           r0(self.difIn.p & self.difIn.n._isOn())
         )
         If(r0,
            self.hsOut(self.hsIn)

@@ -15,6 +15,7 @@ from hwt.pyUtils.typingFuture import override
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.peripheral.mdio.intf import Mdio
 from hwtSimApi.hdlSimulator import HdlSimulator
+from hwt.hdl.types.bitsRtlSignal import HBitsRtlSignal
 
 
 class MdioAddr(HwIO):
@@ -112,8 +113,8 @@ class MdioMaster(HwModule):
         self.req = MdioReq()
 
     def _packet_sequence_timer(self,
-                               mdio_clk_rising,
-                               mdio_clk_falling, rst_n):
+                               mdio_clk_rising: HBitsRtlSignal,
+                               mdio_clk_falling: HBitsRtlSignal, rst: HBitsRtlSignal):
         """
         Create timers for all important events in protocol main FSM
         """
@@ -128,7 +129,7 @@ class MdioMaster(HwModule):
         CNTR_MAX = PRE_W + ADDR_BLOCK_W + TA_W + Mdio.D_W - 1
         timer = self._reg("packet_sequence_timer",
                           dtype=HBits(log2ceil(CNTR_MAX)),
-                          def_val=0, rst=self.rst_n & rst_n)
+                          def_val=0, rst=self.rst_n._isOn() | rst._isOn())
         If(mdio_clk_falling,
            timer(timer + 1)
         )
@@ -156,7 +157,7 @@ class MdioMaster(HwModule):
         idle = self._sig("idle")
         preamble_last, addr_block_last, turnarround_last_en, data_last =\
             self._packet_sequence_timer(
-                mdio_clk_rising, mdio_clk_falling, ~idle)
+                mdio_clk_rising, mdio_clk_falling, idle)
         is_rx = self._reg("is_rx", def_val=0)
 
         # protocol FSM

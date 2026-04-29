@@ -9,7 +9,7 @@ module AsyncResetReg (
     reg internReg = 1'b0;
     assign dout = internReg;
     always @(posedge clk, posedge rst) begin: assig_process_internReg
-        if (rst == 1'b1)
+        if (rst)
             internReg <= 1'b0;
         else
             internReg <= din;

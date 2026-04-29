@@ -113,14 +113,14 @@ class MultiplierBooth(HwModule):
             Switch(Concat(q[0], q_1))
             .Case(0b01,
                 # add multiplicand to left half of product
-                a(add >> 1),
+                a((add >> 1)._vec()),
                 q(Concat(add[0], q[:1])),
             ).Case(0b10,
                 # substract multiplicand from left half of product
-                a(sub >> 1),
+                a((sub >> 1)._vec()),
                 q(Concat(sub[0], q[:1])),
             ).Default(
-                a(a._signed() >> 1),
+                a((a._signed() >> 1)._vec()),
                 q(Concat(a[0], q[:1])),
             ),
             q_1(q[0]),

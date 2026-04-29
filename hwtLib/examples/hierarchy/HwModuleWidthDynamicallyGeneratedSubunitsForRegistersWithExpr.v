@@ -76,12 +76,12 @@ module HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr (
     assign sig_uForR0_clk = clk;
     assign sig_uForR0_i = i;
     always @(rst_n) begin: assig_process_sig_uForR0_sig_0
-        sig_uForR0_sig_0 = rst_n == 1'b0;
+        sig_uForR0_sig_0 = ~rst_n;
     end
 
     assign sig_uForR1_clk = clk;
     always @(rst_n) begin: assig_process_sig_uForR1_sig_0
-        sig_uForR1_sig_0 = rst_n == 1'b0;
+        sig_uForR1_sig_0 = ~rst_n;
     end
 
     assign sig_uForR1_sig_uForR0_r0 = sig_uForR0_r0;

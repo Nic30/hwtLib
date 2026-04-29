@@ -363,7 +363,8 @@ class OutOfOrderCummulativeOp(HwModule):
             w.last(w_word_cntr._eq(word_cnt - 1))
 
         else:
-            w.data(st_data._reinterpret_cast(w.data._dtype))
+            st_data_flat = st_data._reinterpret_cast(HBits(st_data._dtype.bit_length()))
+            w.data(st_data_flat._explicit_cast(w.data._dtype)) # extend if needed
             w.last(1)
 
     def propagate_trans_st(self, stage_from: OOOOpPipelineStage, stage_to: OOOOpPipelineStage):

@@ -35,11 +35,13 @@ BEGIN
     END PROCESS;
     r_next <= r_next_15downto8 & r_next_7downto0;
     assig_process_r_next_15downto8: PROCESS(data_in_addr, data_in_data, data_in_vld, r)
+        VARIABLE tmpIndexLhs_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
     BEGIN
-        IF data_in_vld = '1' AND data_in_addr = "0" THEN
+        tmpIndexLhs_0 := NOT data_in_addr;
+        IF (data_in_vld AND tmpIndexLhs_0(0)) = '1' THEN
             r_next_7downto0 <= data_in_data(7 DOWNTO 0);
             r_next_15downto8 <= data_in_data(15 DOWNTO 8);
-        ELSIF data_in_vld = '1' AND data_in_addr = "1" THEN
+        ELSIF (data_in_vld AND data_in_addr(0)) = '1' THEN
             r_next_7downto0 <= data_in_data(15 DOWNTO 8);
             r_next_15downto8 <= data_in_data(7 DOWNTO 0);
         ELSE

@@ -10,7 +10,7 @@ ENTITY ExtractedHwModule IS
         i1 : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         r0_0 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
         r0_1 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-        sig_0 : IN BOOLEAN
+        sig_0 : IN STD_LOGIC
     );
 END ENTITY;
 
@@ -25,7 +25,7 @@ BEGIN
     assig_process_r0_1: PROCESS(clk)
     BEGIN
         IF RISING_EDGE(clk) THEN
-            IF sig_0 THEN
+            IF sig_0 = '1' THEN
                 r0_1_0 <= X"00";
                 r0_0_0 <= X"00";
             ELSE
@@ -47,7 +47,7 @@ ENTITY ExtractedHwModule_0 IS
         clk : IN STD_LOGIC;
         r1_0 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
         r1_1 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-        sig_0 : IN BOOLEAN;
+        sig_0 : IN STD_LOGIC;
         sig_uForR0_r0_0 : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         sig_uForR0_r0_1 : IN STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
@@ -64,7 +64,7 @@ BEGIN
     assig_process_r1_1: PROCESS(clk)
     BEGIN
         IF RISING_EDGE(clk) THEN
-            IF sig_0 THEN
+            IF sig_0 = '1' THEN
                 r1_1_0 <= X"00";
                 r1_0_0 <= X"00";
             ELSE
@@ -99,7 +99,7 @@ ARCHITECTURE rtl OF HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters IS
             i1 : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
             r0_0 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
             r0_1 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            sig_0 : IN BOOLEAN
+            sig_0 : IN STD_LOGIC
         );
     END COMPONENT;
     --
@@ -109,7 +109,7 @@ ARCHITECTURE rtl OF HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters IS
             clk : IN STD_LOGIC;
             r1_0 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
             r1_1 : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            sig_0 : IN BOOLEAN;
+            sig_0 : IN STD_LOGIC;
             sig_uForR0_r0_0 : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
             sig_uForR0_r0_1 : IN STD_LOGIC_VECTOR(7 DOWNTO 0)
         );
@@ -119,11 +119,11 @@ ARCHITECTURE rtl OF HwModuleWidthDynamicallyGeneratedSubunitsForManyRegisters IS
     SIGNAL sig_uForR0_i1 : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL sig_uForR0_r0_0 : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL sig_uForR0_r0_1 : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    SIGNAL sig_uForR0_sig_0 : BOOLEAN;
+    SIGNAL sig_uForR0_sig_0 : STD_LOGIC;
     SIGNAL sig_uForR1_clk : STD_LOGIC;
     SIGNAL sig_uForR1_r1_0 : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL sig_uForR1_r1_1 : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    SIGNAL sig_uForR1_sig_0 : BOOLEAN;
+    SIGNAL sig_uForR1_sig_0 : STD_LOGIC;
     SIGNAL sig_uForR1_sig_uForR0_r0_0 : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL sig_uForR1_sig_uForR0_r0_1 : STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
@@ -152,9 +152,9 @@ BEGIN
     sig_uForR0_clk <= clk;
     sig_uForR0_i0 <= i0;
     sig_uForR0_i1 <= i1;
-    sig_uForR0_sig_0 <= rst_n = '0';
+    sig_uForR0_sig_0 <= NOT rst_n;
     sig_uForR1_clk <= clk;
-    sig_uForR1_sig_0 <= rst_n = '0';
+    sig_uForR1_sig_0 <= NOT rst_n;
     sig_uForR1_sig_uForR0_r0_0 <= sig_uForR0_r0_0;
     sig_uForR1_sig_uForR0_r0_1 <= sig_uForR0_r0_1;
 END ARCHITECTURE;

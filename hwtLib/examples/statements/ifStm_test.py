@@ -103,7 +103,7 @@ class IfStmTC(BaseSerializationTC):
 
         expected = {
             (HwtOps.AND, 1): 1,
-            (HwtOps.EQ, 1): 1,
+            (HwtOps.NOT, 1): 1,
             (ResourceMUX, 2, 2): 1,
             (ResourceMUX, 2, 4): 1,
             ResourceFF: 2,

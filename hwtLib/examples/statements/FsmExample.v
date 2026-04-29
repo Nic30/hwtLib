@@ -21,7 +21,7 @@ module FsmExample (
     end
 
     always @(posedge clk) begin: assig_process_st
-        if (rst_n == 1'b0)
+        if (~rst_n)
             st <= 0;
         else
             st <= st_next;

@@ -116,8 +116,14 @@ BEGIN
         en => sig_csDecoder_en
     );
     assig_process_clkIntern_next: PROCESS(clkIntern, data_vld, endOfWordDelayed, endOfWordtimerCntr256)
+        VARIABLE tmpBool2std_logic_0 : STD_LOGIC;
     BEGIN
-        IF endOfWordtimerCntr256(3 DOWNTO 0) = X"0" AND (NOT endOfWordDelayed AND data_vld) = '1' THEN
+        IF endOfWordtimerCntr256(3 DOWNTO 0) = X"0" THEN
+            tmpBool2std_logic_0 := '1';
+        ELSE
+            tmpBool2std_logic_0 := '0';
+        END IF;
+        IF (tmpBool2std_logic_0 AND (NOT endOfWordDelayed AND data_vld)) = '1' THEN
             clkIntern_next <= NOT clkIntern;
         ELSE
             clkIntern_next <= clkIntern;
@@ -127,8 +133,14 @@ BEGIN
     clkIntern_next_falling <= NOT clkIntern_next AND clkIntern_next_edgeDetect_last;
     clkIntern_next_rising <= clkIntern_next AND NOT clkIntern_next_edgeDetect_last;
     assig_process_clkOut_next: PROCESS(clkOut, data_vld, endOfWordDelayed, endOfWordtimerCntr256, slaveSelectWaitRequired)
+        VARIABLE tmpBool2std_logic_0 : STD_LOGIC;
     BEGIN
-        IF slaveSelectWaitRequired = '0' AND (endOfWordtimerCntr256(3 DOWNTO 0) = X"0" AND (NOT endOfWordDelayed AND data_vld) = '1') THEN
+        IF endOfWordtimerCntr256(3 DOWNTO 0) = X"0" THEN
+            tmpBool2std_logic_0 := '1';
+        ELSE
+            tmpBool2std_logic_0 := '0';
+        END IF;
+        IF (NOT slaveSelectWaitRequired AND (tmpBool2std_logic_0 AND (NOT endOfWordDelayed AND data_vld))) = '1' THEN
             clkOut_next <= NOT clkOut;
         ELSE
             clkOut_next <= clkOut;
@@ -136,13 +148,28 @@ BEGIN
     END PROCESS;
     data_din <= rxReg;
     data_rd <= endOfWordDelayed;
-    endOfWord <= '1' WHEN (endOfWordtimerCntr256 = X"00" AND (NOT endOfWordDelayed AND data_vld) = '1' AND timersRst = '0') ELSE '0';
+    assig_process_endOfWord: PROCESS(data_vld, endOfWordDelayed, endOfWordtimerCntr256, timersRst)
+        VARIABLE tmpBool2std_logic_0 : STD_LOGIC;
+    BEGIN
+        IF endOfWordtimerCntr256 = X"00" THEN
+            tmpBool2std_logic_0 := '1';
+        ELSE
+            tmpBool2std_logic_0 := '0';
+        END IF;
+        endOfWord <= tmpBool2std_logic_0 AND (NOT endOfWordDelayed AND data_vld) AND NOT timersRst;
+    END PROCESS;
     endOfWordDelayed_next <= endOfWordtimerTick256;
     assig_process_endOfWordtimerCntr256_next: PROCESS(data_vld, endOfWordDelayed, endOfWordtimerCntr256, timersRst)
+        VARIABLE tmpBool2std_logic_0 : STD_LOGIC;
         VARIABLE tmpCastExpr_0 : UNSIGNED(7 DOWNTO 0);
     BEGIN
+        IF endOfWordtimerCntr256 = X"00" THEN
+            tmpBool2std_logic_0 := '1';
+        ELSE
+            tmpBool2std_logic_0 := '0';
+        END IF;
         tmpCastExpr_0 := UNSIGNED(endOfWordtimerCntr256) - UNSIGNED'(X"01");
-        IF timersRst = '1' OR ((NOT endOfWordDelayed AND data_vld) = '1' AND endOfWordtimerCntr256 = X"00") THEN
+        IF (timersRst OR (NOT endOfWordDelayed AND data_vld AND tmpBool2std_logic_0)) = '1' THEN
             endOfWordtimerCntr256_next <= X"FF";
         ELSIF (NOT endOfWordDelayed AND data_vld) = '1' THEN
             endOfWordtimerCntr256_next <= STD_LOGIC_VECTOR(tmpCastExpr_0);
@@ -162,10 +189,16 @@ BEGIN
     sig_csDecoder_din <= data_slave;
     sig_csDecoder_en <= data_vld;
     assig_process_slaveSelectWaitRequired_next: PROCESS(data_last, data_vld, endOfWordDelayed, endOfWordtimerCntr256, endOfWordtimerTick256, slaveSelectWaitRequired)
+        VARIABLE tmpBool2std_logic_0 : STD_LOGIC;
     BEGIN
+        IF endOfWordtimerCntr256(6 DOWNTO 0) = "0000000" THEN
+            tmpBool2std_logic_0 := '1';
+        ELSE
+            tmpBool2std_logic_0 := '0';
+        END IF;
         IF endOfWordtimerTick256 = '1' THEN
             slaveSelectWaitRequired_next <= data_last;
-        ELSIF endOfWordtimerCntr256(6 DOWNTO 0) = "0000000" AND (NOT endOfWordDelayed AND data_vld) = '1' THEN
+        ELSIF (tmpBool2std_logic_0 AND (NOT endOfWordDelayed AND data_vld)) = '1' THEN
             slaveSelectWaitRequired_next <= '0';
         ELSE
             slaveSelectWaitRequired_next <= slaveSelectWaitRequired;
@@ -174,7 +207,16 @@ BEGIN
     spi_clk <= clkOut;
     spi_cs <= NOT sig_csDecoder_dout;
     spi_mosi <= txReg(7);
-    timersRst <= '1' WHEN ((NOT endOfWordDelayed AND data_vld) = '0' OR (slaveSelectWaitRequired = '1' AND (endOfWordtimerCntr256(6 DOWNTO 0) = "0000000" AND (NOT endOfWordDelayed AND data_vld) = '1'))) ELSE '0';
+    assig_process_timersRst: PROCESS(data_vld, endOfWordDelayed, endOfWordtimerCntr256, slaveSelectWaitRequired)
+        VARIABLE tmpBool2std_logic_0 : STD_LOGIC;
+    BEGIN
+        IF endOfWordtimerCntr256(6 DOWNTO 0) = "0000000" THEN
+            tmpBool2std_logic_0 := '1';
+        ELSE
+            tmpBool2std_logic_0 := '0';
+        END IF;
+        timersRst <= NOT (NOT endOfWordDelayed AND data_vld) OR (slaveSelectWaitRequired AND (tmpBool2std_logic_0 AND (NOT endOfWordDelayed AND data_vld)));
+    END PROCESS;
     assig_process_txInitialized: PROCESS(clk)
     BEGIN
         IF RISING_EDGE(clk) THEN

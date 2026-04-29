@@ -54,8 +54,8 @@ class AstNodeIoReplacingTC(unittest.TestCase):
                       c(0)
                   )
         self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
-        self.assertEqual(a._rtlEndpoints, [(c & a).singleDriver(),
-                                       a._isOn().singleDriver()])
+        self.assertIs(a, a._isOn())
+        self.assertEqual(a._rtlEndpoints, [(c & a).singleDriver()])
         self.assertEqual(c._rtlEndpoints, [(c & a).singleDriver(),
                                        (c & d).singleDriver()])
         self.assertEqual(stm._inputs, [d, c & d])

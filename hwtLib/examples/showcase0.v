@@ -100,7 +100,7 @@ module Showcase0 (
     assign out = 1'b0;
     assign output_0 = 1'bx;
     always @(posedge clk) begin: assig_process_r
-        if (rst_n == 1'b0) begin
+        if (~rst_n) begin
             r_1 <= 2'b00;
             r_0 <= 2'b00;
             r <= 1'b0;

@@ -140,6 +140,7 @@ from hwtLib.examples.statements.switchStm_test import SwitchStmTC
 from hwtLib.examples.statements.vldMaskConflictsResolving_test import \
     VldMaskConflictsResolvingTC
 from hwtLib.examples.timers import TimerTC
+from hwtLib.examples.tutorialTypesystem_test import TutorialTypesystemTC
 from hwtLib.handshaked.cdc_test import HandshakedCdc_slow_to_fast_TC, \
     HandshakedCdc_fast_to_slow_TC
 from hwtLib.handshaked.dataRdVldToAxi4Stream_test import DataRdVldToAxi4StreamTCs
@@ -255,7 +256,6 @@ from hwtLib.xilinx.locallink.axis_conv_test import Axi4S_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
 
-
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
     AxiInterconnectMatrixAddrCrossbar_TCs
 
@@ -318,6 +318,7 @@ suite = testSuiteFromTCs(
     PrivateSignalsOfStructTypeTC,
     FrameTmplTC,
     Showcase0TC,
+    TutorialTypesystemTC,
     SimulatorUtilsTC,
     HsFifoJsonLogTC,
     HwIORdSync_agent_TC,
@@ -433,11 +434,11 @@ suite = testSuiteFromTCs(
     Usb2SieDeviceTxTC,
     Usb2CdcVcpTC,
     *UsbipTCs,
-
+    
     BusEndpointTC,
-
+    
     *BramPortEndpointTCs,
-
+    
     # avalon tests
     AvalonMmAgentTC,
     *AvalonMmEndpointTCs,
@@ -447,7 +448,7 @@ suite = testSuiteFromTCs(
     *AvalonStCastReadyLatencyAndAllowance_TCs,
     AvalonStToAxi4streamAndBack_TC,
     AvalonMmBuff_TC,
-
+    
     # axi tests
     SimpleAxiRegsTC,
     AxiTC,
@@ -483,22 +484,22 @@ suite = testSuiteFromTCs(
     *Axi4S_FrameJoin_TCs,
     HandshakedBuilderSimpleTC,
     *EthAddrUpdaterTCs,
-
+    
     RStrictOrderInterconnectTC,
     WStrictOrderInterconnectTC,
     WStrictOrderInterconnect2TC,
     WStrictOrderInterconnectComplexTC,
-
+    
     *AxiInterconnectMatrixAddrCrossbar_TCs,
     *AxiInterconnectMatrixCrossbar_TCs,
     *AxiInterconnectMatrixR_TCs,
     *AxiInterconnectMatrixW_TCs,
-
+    
     *AxiWriteAggregator_TCs,
     *AxiReadAggregator_TCs,
     *Axi4StoreQueueWritePropagating_TCs,
     *AxiCacheWriteAllocWawOnlyWritePropagatingTCs,
-
+    
     Axi_ag_TC,
     Axi4StreamSegmentedAgent_TC,
     Axi4_streamToMemTC,
@@ -513,7 +514,7 @@ suite = testSuiteFromTCs(
     ReorderBufferTC,
     *OooOpExampleCounterArray_TCs,
     *OooOpExampleCounterHashTable_TCs,
-
+    
     # ipif tests
     IpifEndpointTC,
     IpifEndpointDenseTC,
@@ -522,14 +523,14 @@ suite = testSuiteFromTCs(
     IpifBuffTC,
     Axi4Lite_to_IpifTC,
     IpifInterconnectMatrixTC,
-
+    
     Mi32AgentTC,
     Mi32InterconnectMatrixTC,
     Mi32_to_Axi4LiteTC,
     Mi32Axi4LiteBrigesTC,
     Mi32SlidingWindowTC,
     *Mi32EndpointTCs,
-
+    
     # complex units tests
     HwModuleWrapperTC,
     IpCorePackagerTC,
@@ -537,7 +538,7 @@ suite = testSuiteFromTCs(
     *CuckooHashTableWithRamTCs,
     Axi4SPingResponderTC,
     DebugBusMonitorExampleAxiTC,
-
+    
     RmiiAdapterTC,
     ConstraintsXdcClockRelatedTC,
     HsSlrCrossingTC,

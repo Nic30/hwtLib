@@ -130,7 +130,7 @@ BEGIN
     r_next_1 <= r_0;
     assig_process_r_next_1: PROCESS(e, r)
     BEGIN
-        IF NOT r = '1' THEN
+        IF r = '0' THEN
             r_next <= e;
         ELSE
             r_next <= r;

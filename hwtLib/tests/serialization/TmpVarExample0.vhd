@@ -12,12 +12,12 @@ ARCHITECTURE rtl OF TmpVarExample0 IS
 BEGIN
     assig_process_b: PROCESS(a)
         VARIABLE tmpCastExpr_1 : STD_LOGIC_VECTOR(7 DOWNTO 0);
-        VARIABLE tmpTypeConv_0 : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpTruncLhs_0 : UNSIGNED(7 DOWNTO 0);
         VARIABLE tmpCastExpr_0 : UNSIGNED(31 DOWNTO 0);
     BEGIN
         tmpCastExpr_1 := a(7 DOWNTO 0);
-        tmpTypeConv_0 := UNSIGNED(tmpCastExpr_1) + UNSIGNED'(X"04");
-        tmpCastExpr_0 := RESIZE(RESIZE(tmpTypeConv_0, 4), 32);
+        tmpTruncLhs_0 := UNSIGNED(tmpCastExpr_1) + UNSIGNED'(X"04");
+        tmpCastExpr_0 := RESIZE(RESIZE(tmpTruncLhs_0, 4), 32);
         b <= STD_LOGIC_VECTOR(tmpCastExpr_0);
     END PROCESS;
 END ARCHITECTURE;

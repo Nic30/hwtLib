@@ -6,7 +6,7 @@ from math import inf
 from hwt.code import If, Concat
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.defs import BIT, BIT_N
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIOSignal, HwIODataRdVld
@@ -278,7 +278,8 @@ class Usb2SieDeviceRx(HwModule):
         # buffer to assert that the crc error flag is set in last word
         payload = Axi4SBuilder(self, payload).buff(2).end
         payload_end = payload.ready & payload.valid & payload.last
-        crc16.rst_n(self.rst_n & self.enable & ~payload_end)
+        crcRst_n = (~(self.rst_n._isOn() | ~self.enable | payload_end))._reinterpret_cast(BIT_N)
+        crc16.rst_n(crcRst_n)
         payload.ready(1)
 
         # it would be better to use residue
@@ -311,6 +312,6 @@ class Usb2SieDeviceRx(HwModule):
 
 if __name__ == "__main__":
     from hwt.synth import to_rtl_str
-    
+
     m = Usb2SieDeviceRx()
     print(to_rtl_str(m))

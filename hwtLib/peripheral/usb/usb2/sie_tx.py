@@ -4,6 +4,7 @@
 from hwt.code import Concat, If
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.defs import BIT_N
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.std import HwIOSignal
@@ -158,7 +159,7 @@ class Usb2SieDeviceTx(HwModule):
         crc16.DATA_WIDTH = tx_cmd.DATA_WIDTH
         self.crc16 = crc16
 
-        crc16.rst_n(self.rst_n & ~(deparser_data.dataIn.crc16.vld & deparser_data.dataIn.crc16.rd))
+        crc16.rst_n((self.rst_n._isOn() | ~(deparser_data.dataIn.crc16.vld & deparser_data.dataIn.crc16.rd))._reinterpret_cast(BIT_N))
         crc16.dataIn.data(payload_in.data)
         crc16.dataIn.vld(payload_in.valid & payload_in.ready & (payload_in.keep != 0))
 
