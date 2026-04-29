@@ -7,14 +7,15 @@ from typing import List, Optional, Union
 from hwt.code import If, Concat, SwitchLogic, Switch
 from hwt.code_utils import rename_signal
 from hwt.constants import WRITE, READ
+from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.hdlType import HdlType
 from hwt.hwIOs.hwIOStruct import HwIOStruct
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.hwParam import HwParam
-from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.defs import BIT
-from hwt.hdl.types.hdlType import HdlType
 from hwt.math import log2ceil
+from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.interfaceLevel.utils import HwIO_pack
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4 import Axi4, Axi4_addr, Axi4_r, Axi4_w
@@ -28,7 +29,6 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.types.ctypes import uint32_t, uint8_t
 from pyMathBitPrecise.bit_utils import mask
-from hwt.pyUtils.typingFuture import override
 
 
 class OutOfOrderCummulativeOp(HwModule):
