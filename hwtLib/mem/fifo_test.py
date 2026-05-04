@@ -314,10 +314,14 @@ class FifoTC(SimTestCase):
         self.assertValSequenceEqual(self.getUnconsumedInput(), [])
 
 
+FIFO_TCs = [
+    FifoWriterAgentTC,
+    FifoReaderAgentTC,
+    FifoTC,
+]
+
 if __name__ == "__main__":
-    _ALL_TCs = [FifoWriterAgentTC, FifoReaderAgentTC, FifoTC]
     testLoader = unittest.TestLoader()
-    loadedTcs = [testLoader.loadTestsFromTestCase(tc) for tc in _ALL_TCs]
-    suite = unittest.TestSuite(loadedTcs)
+    suite = unittest.TestSuite([testLoader.loadTestsFromTestCase(tc) for tc in FIFO_TCs])
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -14,7 +14,7 @@ from hwtLib.amba.axi_comp.cache.utils import CamWithReadPort
 from hwtLib.commonHwIO.index_key_hs import HwIOIndexKeyRdVld, \
     HwIOIndexKeyInRdVld
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.mem.fifo import Fifo
+from hwtLib.mem.fifoPtrLogic import FifoPtrLogic
 
 
 @serializeParamsUniq
@@ -75,8 +75,8 @@ class FifoOutOfOrderRead(HwModule):
         write_req, write_wait = self._sig("write_req"), self._sig("write_wait")
         read_req, read_wait = self._sig("read_req"), self._sig("read_wait")
 
-        (write_en, write_ptr), (read_en, read_ptr) = Fifo.fifo_pointers(
-            self, ITEMS,
+        fifoPtrs = FifoPtrLogic(self, ITEMS, INIT_SIZE=len(self.INIT_DATA))
+        (write_en, write_ptr), (read_en, read_ptr) = fifoPtrs.fifo_pointers(
             (write_req, write_wait),
             [(read_req, read_wait), ]
         )

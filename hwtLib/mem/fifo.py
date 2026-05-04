@@ -12,10 +12,9 @@ from hwt.hwParam import HwParam
 from hwt.math import log2ceil
 from hwt.pyUtils.typingFuture import override
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwtLib.mem.fifoPtrLogic import FifoPtrLogic
 
 
-# https://eewiki.net/pages/viewpage.action?pageId=20939499
 @serializeParamsUniq
 class Fifo(HwModule):
     """
@@ -58,81 +57,6 @@ class Fifo(HwModule):
             self.dataOut = HwIOFifoReader()._m()
         self._declr_size_and_space()
 
-    def fifo_pointers(self, DEPTH: int,
-                      write_en_wait: tuple[RtlSignal, RtlSignal],
-                      read_en_wait_list: list[tuple[RtlSignal, RtlSignal]])\
-                      ->list[tuple[RtlSignal, RtlSignal]]:
-        """
-        Create fifo writer and reader pointers and enable/wait logic
-        This functions supports multiple reader pointers
-
-        :note: Multiple read pointers are useful when the data in fifo passes
-        trouhg multiple states, this efficiently means that instead of
-        two FIFOs betwen some components we can use just 1 with multiple read poiners.
-        For example 1st read pointer may represent if the data is beeing processed (lock)
-        and the second if the data processing was finished and the item in fifo is deallocated (commit).
-
-        :note: *_en are inputs, *_wait, are outputs
-
-        :attention: writer pointer next logic check only last reader pointer
-        :return: list, tule(en, ptr) for writer and each reader
-        """
-        index_t = HBits(log2ceil(DEPTH), signed=False)
-        # assert isPow2(DEPTH), DEPTH
-        MAX_DEPTH = DEPTH - 1
-        assert MAX_DEPTH > 0, MAX_DEPTH
-        s = self._sig
-        r = self._reg
-        fifo_write = s("fifo_write")
-        write_ptr = r("write_ptr", index_t, min(len(self.INIT_DATA), MAX_DEPTH))
-        ack_ptr_list = [(fifo_write, write_ptr), ]
-        # update writer (head) pointer as needed
-        If(fifo_write,
-            If(write_ptr._eq(MAX_DEPTH),
-                write_ptr(0)
-            ).Else(
-                write_ptr(write_ptr + 1)
-            )
-        )
-
-        en, _ = write_en_wait
-        ptr = write_ptr
-        # instantiate all read pointers
-        for i, (read_en, read_wait) in enumerate(read_en_wait_list):
-            read_ptr = r(f"read_ptr{i:d}", index_t, 0)
-            fifo_read = s(f"fifo_read{i:d}")
-            ack_ptr_list.append((fifo_read, read_ptr))
-            # update reader (tail) pointer as needed
-            If(fifo_read,
-                If(read_ptr._eq(MAX_DEPTH),
-                    read_ptr(0)
-                ).Else(
-                    read_ptr(read_ptr + 1)
-                )
-            )
-
-            looped = r(f"looped{i:d}", def_val=False if len(self.INIT_DATA) <= MAX_DEPTH else True)
-            # looped logic
-            If(en & ptr._eq(MAX_DEPTH),
-                looped(True)
-            ).Elif(read_en & read_ptr._eq(MAX_DEPTH),
-                looped(False)
-            )
-
-            # Update Empty and Full flags
-            read_wait(ptr._eq(read_ptr) & ~looped)
-            fifo_read(read_en & (looped | (ptr != read_ptr)))
-            # previous reader is next port writer (producer) as it next reader can continue only if previous reader did consume the item
-            en, _ = read_en, read_wait
-            ptr = read_ptr
-
-        write_en, write_wait = write_en_wait
-        # Update Empty and Full flags
-        write_wait(write_ptr._eq(read_ptr) & looped)
-        fifo_write(write_en & (~looped | (write_ptr != read_ptr)))  # :note: en & ~wait
-
-        return ack_ptr_list
-
     def constructFifoSizeLogic(self, fifo_read: HBitsRtlSignal, fifo_write: HBitsRtlSignal):
         size = self._reg("size_reg", self.size._dtype, len(self.INIT_DATA))
         If(fifo_read,
@@ -167,8 +91,9 @@ class Fifo(HwModule):
         din = self.dataIn
 
         s = self._sig
-        ((fifo_write, wr_ptr), (fifo_read, rd_ptr),) = self.fifo_pointers(
-            DEPTH, (din.en, din.wait), [(dout.en, dout.wait), ])
+        fifoPtrs = FifoPtrLogic(self, DEPTH, INIT_SIZE=len(self.INIT_DATA))
+        ((fifo_write, wr_ptr), (fifo_read, rd_ptr),) = fifoPtrs.fifo_pointers(
+            (din.en, din.wait), [(dout.en, dout.wait), ])
 
         init_data = self.INIT_DATA
         if not init_data:

@@ -174,7 +174,8 @@ from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.cuckooHashTableWithRam_test import CuckooHashTableWithRamTCs
 from hwtLib.mem.fifoArray_test import FifoArrayTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
-from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
+from hwtLib.mem.fifoPtrLogic_test import FifoPtrLogicc_TCs
+from hwtLib.mem.fifo_test import FIFO_TCs
 from hwtLib.mem.hashTableCoreWithRam_test import HashTableCoreWithRamTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ramTransactional_test import RamTransactionalTCs
@@ -385,9 +386,8 @@ suite = testSuiteFromTCs(
     SimpleAsyncRamTC,
     SimpleSyncRamTC,
     SimpleModuleAxi4Stream_TC,
-    FifoWriterAgentTC,
-    FifoReaderAgentTC,
-    FifoTC,
+    *FifoPtrLogicc_TCs,
+    *FIFO_TCs,
     FifoAsyncTC,
     FifoArrayTC,
     HsJoinPrioritizedTC,
