@@ -10,14 +10,10 @@ from hwt.hwIOs.std import HwIOVectSignal, HwIORdVldSync, HwIOSignal
 from hwt.hwIOs.utils import addClkRstn, propagateClkRstn
 from hwt.hwModule import HwModule
 from hwt.pyUtils.typingFuture import override
-from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
+from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer, freeze_set_of_sets
 from hwt.serializer.combLoopAnalyzer.tarjan import StronglyConnectedComponentSearchTarjan
 from hwt.synth import synthesised, to_rtl_str
 from hwtLib.handshaked.reg import HandshakedReg
-
-
-def freeze_set_of_sets(obj):
-    return frozenset(map(frozenset, obj))
 
 
 class CntrCombLoop(HwModule):
@@ -209,7 +205,7 @@ class CombLoopAnalysisTC(unittest.TestCase):
             ]
         #    print([m for m in loop if m not in ref[0]])
         #    print([m for m in ref[0] if m not in loop])
-        #for loop in comb_loops:
+        # for loop in comb_loops:
 
         self.assertSetEqual(comb_loops,
             freeze_set_of_sets(ref))

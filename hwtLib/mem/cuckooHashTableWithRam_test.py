@@ -6,7 +6,6 @@ from copy import copy
 from hwt.constants import NOP
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.logic.crcPoly import CRC_32, CRC_32C
 from hwtLib.mem.cuckooHashTablWithRam import CuckooHashTableWithRam
 from hwtSimApi.constants import CLK_PERIOD
@@ -22,15 +21,7 @@ class CuckooHashTableWithRam_common_TC(SimTestCase):
                            for i in range(len(self.dut.POLYNOMIALS))]
 
     def test_no_comb_loops(self):
-        s = CombLoopAnalyzer()
-        s.visit_HwModule(self.dut)
-        comb_loops = freeze_set_of_sets(s.report())
-        # for loop in comb_loops:
-        #     print(10 * "-")
-        #     for s in loop:
-        #         print(s.resolve()[1:])
-
-        self.assertEqual(comb_loops, frozenset())
+        CombLoopAnalyzer.check_comb_loops_in_SimTestCase(self)
 
     def cleanupMemory(self):
         for mem in self.TABLE_MEMS:

@@ -2,16 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.cache.cacheWriteAllocWawOnlyWritePropagating import AxiCacheWriteAllocWawOnlyWritePropagating
 from hwtLib.amba.constants import RESP_OKAY
-from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.mem.sim.segmentedArrayProxy import SegmentedArrayProxy
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import set_bit_range, mask, int_list_to_int
-from hwt.hdl.types.bitsConst import HBitsConst
 
 
 class AxiCacheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
@@ -113,15 +112,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
             self.assertDictEqual(self.get_cachelines(), expected)
 
     def test_no_comb_loops(self):
-        s = CombLoopAnalyzer()
-        s.visit_HwModule(self.dut)
-        comb_loops = freeze_set_of_sets(s.report())
-        # for loop in comb_loops:
-        #     print(10 * "-")
-        #     for s in loop:
-        #         print(s.resolve()[1:])
-
-        self.assertEqual(comb_loops, frozenset())
+        CombLoopAnalyzer.check_comb_loops_in_SimTestCase(self)
 
     def test_nop(self):
         dut = self.dut

@@ -11,7 +11,6 @@ from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.lsu.read_aggregator import AxiReadAggregator
 from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.amba.constants import RESP_OKAY
-from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtSimApi.constants import CLK_PERIOD
 
 
@@ -28,15 +27,7 @@ class AxiReadAggregator_1word_burst_TC(SimTestCase):
         cls.compileSim(dut)
 
     def test_no_comb_loops(self):
-        s = CombLoopAnalyzer()
-        s.visit_HwModule(self.dut)
-        comb_loops = freeze_set_of_sets(s.report())
-        # for loop in comb_loops:
-        #     print(10 * "-")
-        #     for s in loop:
-        #         print(s.resolve()[1:])
-
-        self.assertEqual(comb_loops, frozenset())
+        CombLoopAnalyzer.check_comb_loops_in_SimTestCase(self)
 
     def randomize_all(self):
         axi_randomize_per_channel(self, self.dut.m)
@@ -66,7 +57,7 @@ class AxiReadAggregator_1word_burst_TC(SimTestCase):
             trans = dut.s._ag.create_addr_req(addr, trans_len - 1, _id=trans_id)
             dut.s.ar._ag.data.append(trans)
 
-        t = ceil((len(id_addr_tuples) * trans_len + 10) * time_multiplier * CLK_PERIOD )
+        t = ceil((len(id_addr_tuples) * trans_len + 10) * time_multiplier * CLK_PERIOD)
         if randomize:
             self.randomize_all()
             t *= 3

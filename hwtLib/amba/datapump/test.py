@@ -3,7 +3,6 @@ from typing import Optional, List
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.constants import RESP_OKAY
-from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from pyMathBitPrecise.bit_utils import mask, get_bit_range, get_bit
 
 
@@ -22,15 +21,7 @@ class Axi_datapumpTC(SimTestCase):
             return axi_a._ag.create_addr_req(addr)
 
     def test_no_comb_loops(self):
-        s = CombLoopAnalyzer()
-        s.visit_HwModule(self.dut)
-        comb_loops = freeze_set_of_sets(s.report())
-        # for loop in comb_loops:
-        #     print(10 * "-")
-        #     for s in loop:
-        #         print(s.resolve()[1:])
-
-        self.assertEqual(comb_loops, frozenset())
+        CombLoopAnalyzer.check_comb_loops_in_SimTestCase(self)
 
     def mkReq(self, addr, _len, rem=0, _id=0):
         if self.LEN_MAX_VAL:

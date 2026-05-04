@@ -11,7 +11,6 @@ from hwtLib.amba.axi_comp.sim.ram import Axi4SimRam
 from hwtLib.examples.axi.oooOp.counterHashTable import OooOpExampleCounterHashTable
 from hwtLib.examples.axi.oooOp.testUtils import OutOfOrderCummulativeOp_dump_pipeline, \
     OutOfOrderCummulativeOp_dump_pipeline_html
-from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtSimApi.constants import CLK_PERIOD
 
 
@@ -236,7 +235,7 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
             mem_init={i: v for i, v in item_pool},
             randomize=randomize
         )
-        
+
     def test_r_100x_lookup2_found(self):
         self.test_100x_lookup2_found(randomize=True)
 
@@ -302,15 +301,7 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
         )
 
     def test_no_comb_loops(self):
-        s = CombLoopAnalyzer()
-        s.visit_HwModule(self.dut)
-        comb_loops = freeze_set_of_sets(s.report())
-        # for loop in comb_loops:
-        #     print(10 * "-")
-        #     for s in loop:
-        #         print(s.resolve()[1:])
-
-        self.assertEqual(comb_loops, frozenset())
+        CombLoopAnalyzer.check_comb_loops_in_SimTestCase(self)
 
 
 class OooOpExampleCounterHashTable_16threads_TC(OooOpExampleCounterHashTable_4threads_TC):
