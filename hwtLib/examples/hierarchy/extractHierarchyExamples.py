@@ -5,6 +5,7 @@ from hwt.hdl.types.bits import HBits
 from hwt.hwIOs.std import HwIOVectSignal
 from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
+from hwt.synthesizer.rtlLevel.remove_unconnected_signals import RtlNetlistPassRemoveUnconnectedSignals
 from hwtLib.examples.hierarchy.extractHierarchy import extractRegsToSubmodule
 
 
@@ -37,7 +38,9 @@ class HwModuleWidthDynamicallyGeneratedSubunitsForRegistersWithExpr(HwModule):
         r[0](self.i + 1)
         r[1]((r[0] ^ 1) + 1 + r[0])
         self.o(r[1])
-        
+        # :note: this is required because thre are dangling sign cast
+        #        which were temporarly created when adding numbers with signed=None
+        RtlNetlistPassRemoveUnconnectedSignals().runOnRtlNetlist(self._rtlCtx)
         self.uForR0 = extractRegsToSubmodule([r[0], ])
         self.uForR1 = extractRegsToSubmodule([r[1], ])
 
