@@ -39,6 +39,7 @@ from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.en_test import Axi4S_en_TC
 from hwtLib.amba.axis_comp.fifoDrop_test import Axi4SFifoDropTC
+from hwtLib.amba.axis_comp.fifoFrameReversing_test import Axi4S_fifoFrameReversing_TCs
 from hwtLib.amba.axis_comp.fifoMeasuring_test import Axi4S_fifoMeasuringTC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 from hwtLib.amba.axis_comp.frame_deparser.test import Axi4S_frameDeparser_TC
@@ -257,6 +258,7 @@ from hwtLib.xilinx.locallink.axis_conv_test import Axi4S_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
 
+
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
     AxiInterconnectMatrixAddrCrossbar_TCs
 
@@ -388,6 +390,7 @@ suite = testSuiteFromTCs(
     SimpleModuleAxi4Stream_TC,
     *FifoPtrLogicc_TCs,
     *FIFO_TCs,
+    *Axi4S_fifoFrameReversing_TCs,
     FifoAsyncTC,
     FifoArrayTC,
     HsJoinPrioritizedTC,
