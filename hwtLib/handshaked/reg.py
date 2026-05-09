@@ -54,7 +54,7 @@ class HandshakedReg(HandshakedCompBase):
                       outVld: RtlSignal, outRd: RtlSignal):
         """
         latency 0-1, dealy 0, pass input directly to output and if output.ready=0, store data
-        in internal buffer and wait until it is consummed before setting input.ready=1 again.
+        in internal buffer and wait until it is consumed before setting input.ready=1 again.
         Breaks ready chain but has combination path on "valid".
  
         https://github.com/j-marjanovic/chisel-stuff/blob/master/example-14-pcie-endpoint/src/main/scala/pcie_endpoint/SkidBuffer.scala
