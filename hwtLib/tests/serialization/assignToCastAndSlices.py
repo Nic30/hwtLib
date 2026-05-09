@@ -310,6 +310,25 @@ class AssignToASliceOfReg3d(AssignToASliceOfReg3a):
         din.rd(1)
         o(r)
 
+class AssignToASliceOfReg3d(AssignToASliceOfReg3a):
+    """
+    Only a small fragment assigned and then whole signal assigned.
+    """
+
+    @override
+    def hwImpl(self):
+        din, o = self.data_in, self.data_out
+        r = self._reg("r", self.data_out._dtype, def_val=0)
+        Switch(din.addr)\
+        .Case(1,
+              r[16:8](din.data)
+        ).Default(
+            r(123)
+        )
+        din.rd(1)
+        o(r)
+
+
 if __name__ == '__main__':
     from hwt.synth import to_rtl_str
 

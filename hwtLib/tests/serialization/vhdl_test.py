@@ -3,8 +3,9 @@
 
 from hwt.code import Concat
 from hwt.hdl.types.bits import HBits
-from hwt.hdl.types.defs import BIT
-from hwt.hwIOs.std import HwIOVectSignal
+from hwt.hdl.types.defs import BIT, BOOL
+from hwt.hwIOs.std import HwIOVectSignal, HwIOSignal
+from hwt.hwIOs.utils import addClkRstn
 from hwt.hwModule import HwModule
 from hwt.pyUtils.typingFuture import override
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
@@ -44,6 +45,79 @@ class TernaryInConcatExample(HwModule):
                 HBits(22).from_py(0),
                 )
             )
+
+
+class Assign1bVec(HwModule):
+
+    @override
+    def hwDeclr(self):
+        addClkRstn(self)
+        self.i0 = HwIOSignal(HBits(1))
+        self.i1v = HwIOSignal(HBits(1, force_vector=True))
+
+        self.o0 = HwIOSignal(HBits(1))._m()
+        self.o1v = HwIOSignal(HBits(1, force_vector=True))._m()
+
+        self.o2 = HwIOSignal(HBits(1))._m()
+        self.o3v = HwIOSignal(HBits(1, force_vector=True))._m()
+
+    @override
+    def hwImpl(self):
+        self.o0(self.i0)
+        self.o1v(self.i0)
+
+        self.o2(self.i1v)
+        self.o3v(self.i1v)
+
+
+class Assign1bVecWithCast(HwModule):
+
+    @override
+    def hwDeclr(self):
+        addClkRstn(self)
+        self.i0 = HwIOSignal(HBits(1))
+        self.i1v = HwIOSignal(HBits(1, force_vector=True))
+
+        self.o0 = HwIOSignal(HBits(1))._m()
+        self.o1v = HwIOSignal(HBits(1, force_vector=True))._m()
+
+        self.o2 = HwIOSignal(HBits(1))._m()
+        self.o3v = HwIOSignal(HBits(1, force_vector=True))._m()
+
+    @override
+    def hwImpl(self):
+        i0asV = self.i0._reinterpret_cast(HBits(1, force_vector=True))
+        self.o0(i0asV)
+        self.o1v(i0asV)
+
+        i0vAsBit = self.i1v._reinterpret_cast(HBits(1, force_vector=False))
+        self.o2(i0vAsBit)
+        self.o3v(i0vAsBit)
+
+
+class Assign1bVecBool(HwModule):
+
+    @override
+    def hwDeclr(self):
+        addClkRstn(self)
+        self.i0 = HwIOSignal(HBits(1))
+        self.i1v = HwIOSignal(HBits(1, force_vector=True))
+        self.i2bool = HwIOSignal(BOOL)
+
+        self.o0 = HwIOSignal(HBits(1))._m()
+        self.o1v = HwIOSignal(HBits(1, force_vector=True))._m()
+        self.o2bool = HwIOSignal(BOOL)._m()
+        self.o3bool = HwIOSignal(BOOL)._m()
+        self.o4bool = HwIOSignal(BOOL)._m()
+
+    @override
+    def hwImpl(self):
+        self.o0(self.i2bool)
+        self.o1v(self.i2bool)
+
+        self.o2bool(self.i0)
+        self.o3bool(self.i1v)
+        self.o4bool(self.i2bool)
 
 
 class Vhdl2008Serializer_TC(BaseSerializationTC):
@@ -133,11 +207,23 @@ class Vhdl2008Serializer_TC(BaseSerializationTC):
         m = ExampleHBitsMulS1b()
         self.assert_serializes_as_file(m, "ExampleHBitsMulS1b.vhd")
 
+    def test_Assign1bVec(self):
+        m = Assign1bVec()
+        self.assert_serializes_as_file(m, "Assign1bVec.vhd")
+
+    def test_Assign1bVecWithCast(self):
+        m = Assign1bVec()
+        self.assert_serializes_as_file(m, "Assign1bVecWithCast.vhd")
+
+    def test_Assign1bVecBool(self):
+        m = Assign1bVec()
+        self.assert_serializes_as_file(m, "Assign1bVecBool.vhd")
+
 
 if __name__ == '__main__':
     import unittest
     # from hwt.synth import to_rtl_str
-    # print(to_rtl_str(TernaryInConcatExample()))
+    # print(to_rtl_str(Assign1bVecBool()))
     testLoader = unittest.TestLoader()
     suite = testLoader.loadTestsFromTestCase(Vhdl2008Serializer_TC)
     # suite = unittest.TestSuite([Vhdl2008Serializer_TC("test_AssignToASliceOfReg1b")])
