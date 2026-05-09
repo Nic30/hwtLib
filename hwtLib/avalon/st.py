@@ -36,12 +36,13 @@ class AvalonST(HwIODataRdVld):
            e.g. readyLatency=0, readyAllowance=1 can buffer 1 item with ready=0
 
     .. figure:: ./_static/avalon_st_readyLatency_readyAllowance.png
-        .. caption:: Avalon Interface Specifications Updated for Intel Quartus Prime Design Suite: 20.1, https://cdrdv2.intel.com/v1/dl/getContent/667068?fileName=mnl_avalon_spec-683091-667068.pdf
+        .. caption:: Avalon Interface Specifications Updated for Intel Quartus Prime Design Suite: 20.1, https://audentia-gestion.fr/INTEL/PDF/mnl_avalon_spec.pdf
                      Figure 27 - anotated
 
     :attention: if maxChannel of src > dst only frames with low enought number are forwarded if connected in Quartus.
                 if src.maxChannel=8, dst.maxChannel=0 then only frames for channel=0 will be forwarded
-    
+    :ivar firstSymbolInHighOrderBits: if True the first symbol on msb bits, for False it is on data[dataBitsPerSymbol:0]
+
     .. hwt-autodoc::
     """
 
@@ -56,6 +57,7 @@ class AvalonST(HwIODataRdVld):
         self.USE_EMPTY:bool = HwParam(None)
         self.SUPPORT_ZLP: bool = HwParam(False)
         self.packetsPerClock = HwParam(1)
+        self.firstSymbolInHighOrderBits = HwParam(True)
 
     @staticmethod
     def _getWidthOfEmpty(SEGMENT_DATA_WIDTH: int, BYTE_WIDTH: int, SUPPORT_ZLP: bool):

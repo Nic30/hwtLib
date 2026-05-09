@@ -6,7 +6,7 @@ from hwt.hwModule import HwModule
 from hwt.pyUtils.typingFuture import override
 from hwtLib.amba.axi4s import Axi4Stream
 from hwtLib.avalon.st import AvalonST
-from hwtLib.logic.countLeading import CountTrailingZeros
+from hwtLib.logic.countLeading import CountTrailingZeros, CountLeadingZeros
 
 
 class Axi4Stream_to_AvalonST(HwModule):
@@ -36,6 +36,7 @@ class Axi4Stream_to_AvalonST(HwModule):
                 m.ERROR_WIDTH = self.USER_WIDTH - 1
             m.USE_EMPTY = self.USE_KEEP or self.USE_STRB
             assert m.packetsPerClock == 1, m.packetsPerClock
+            m.firstSymbolInHighOrderBits = self.IS_BIGENDIAN
 
     @override
     def hwImpl(self) -> None:
@@ -52,11 +53,17 @@ class Axi4Stream_to_AvalonST(HwModule):
             else:
                 assert self.USE_STRB
                 keep = s.strb
-            cttz = CountTrailingZeros()
-            cttz.DATA_WIDTH = keep._dtype.bit_length()
-            self.cttz = cttz
-            cttz.data_in(keep)
-            m.empty(cttz.data_out._trunc(m.empty._dtype.bit_length())) # cttz coputes also the number for keep==0
+
+            if self.IS_BIGENDIAN:
+                ctz = CountLeadingZeros()
+            else:
+                ctz = CountTrailingZeros()
+
+            ctz.DATA_WIDTH = keep._dtype.bit_length()
+            self.ctz = ctz
+            ctz.data_in(keep)
+
+            m.empty(ctz.data_out._trunc(m.empty._dtype.bit_length()))  # cttz coputes also the number for keep==0
 
         m.vld(s.valid)
         s.ready(m.rd)

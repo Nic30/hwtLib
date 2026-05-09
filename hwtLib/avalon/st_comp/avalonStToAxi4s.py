@@ -36,6 +36,7 @@ class AvalonST_to_Axi4Stream(HwModule):
             m.USER_WIDTH = 1 + self.ERROR_WIDTH  # 1 for startOfPacket
             m.USE_KEEP = self.USE_EMPTY
             assert self.packetsPerClock == 1, self.packetsPerClock
+            m.IS_BIGENDIAN = self.firstSymbolInHighOrderBits
 
     @override
     def hwImpl(self) -> None:
@@ -46,6 +47,10 @@ class AvalonST_to_Axi4Stream(HwModule):
         if self.USE_EMPTY:
             size = m.keep._dtype.bit_length()
             emptyToMaskROM = [mask(size - empty) for empty in range(s.empty._dtype.domain_size())]
+            if self.firstSymbolInHighOrderBits:
+                # handle bigendian, grow mask from msb instead of from lsb
+                emptyToMaskROM = [m << empty for empty, m in enumerate(emptyToMaskROM)]
+
             emptyToMaskROM = self._sig("emptyToMaskROM", m.keep._dtype[len(emptyToMaskROM)], emptyToMaskROM)
             m.keep(emptyToMaskROM[s.empty])
 
