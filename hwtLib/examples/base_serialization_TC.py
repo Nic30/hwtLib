@@ -26,7 +26,8 @@ class BaseSerializationTC(SimTestCase):
         "py": HwtSerializer,
     }
 
-    def _runDifftoolCommand(self, oldFileName, newFileName):
+    @staticmethod
+    def _runDifftoolCommand(oldFileName, newFileName):
         diftool = subprocess.run(["git", "config", "diff.tool"], capture_output=True, text=True).stdout.strip()
         if diftool == "meld":
             # :attention: there is widely used diftool named meld, if you already have meld opened
