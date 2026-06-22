@@ -43,7 +43,7 @@ Also note that the code of the components should be shared if `@serializeParamsU
 * :skull: [orc-apps](https://github.com/orcc/orc-apps) - examples for orcc compiler
 * :skull: [fpga-npu](https://github.com/intel/fpga-npu) - NPU softprocesor, compiler and runtime
 If you see any problem/do not underestand something/do miss something open the github issue as others may step uppon same problem sooner or later.
-
+* [PLC2](https://github.com/PLC2), https://plc2.com/open-source-vhdl-ip-core-library/
 
 ## Installation
 ``` bash
@@ -96,3 +96,4 @@ sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/r
 * [WangXuan95 repositories](https://github.com/WangXuan95?tab=repositories) - SV - Compression/Image processing focused
 * [fpganinja/taxi](https://github.com/fpganinja/taxi) - SV - generic IO/utility modules
 * [CESNET/ndk-fpga](https://github.com/CESNET/ndk-fpga) - VHDL/SV - high-speed networking
+* [Colibri](https://gitlab.cern.ch/colibri/)
