@@ -8,6 +8,7 @@ from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.utils import HConst_from_words
 from hwt.hwIO import HwIO
+from hwtSimApi.agents.base import NOP
 
 WordTupleTy = TypeVar('WordTupleTy')  # a type representing a word used by simulation agent for a target hwio
 
@@ -101,13 +102,18 @@ class SimFrameUtils(Generic[WordTupleTy]):
         Build frame out of data_B bytes and insert it into ag_data deque which is expected
         to be a queue of driver sim agent
         """
-        if data_B:
+        if data_B is NOP:
+            return
+        
+        elif data_B:
             if isinstance(data_B, bytes):
                 data_B = [int(x) for x in data_B]
             t = b8_t[len(data_B) + offset]
             _data_B = t.from_py([None for _ in range(offset)] + data_B)
+        
         else:
             _data_B = data_B
+        
         # :attention: strb signal is reinterpreted as a keep signal
         f = self.pack_frame(_data_B)
         ag_data.extend(f)
