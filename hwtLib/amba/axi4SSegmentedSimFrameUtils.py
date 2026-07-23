@@ -1,4 +1,4 @@
-from typing import Union, Sequence, Generator, Deque, Self
+from typing import Union, Sequence, Generator, Deque, Self, Literal
 
 from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwt.code import Concat
@@ -12,6 +12,8 @@ from hwtLib.amba.axi4SSegmented import Axi4StreamSegmented, \
     _Axi4StreamSegmentedWord, Axi4StreamSegmentedAgentWordType
 from hwtLib.types.ctypes import uint8_t
 from pyMathBitPrecise.bit_utils import get_bit_range
+from hwtSimApi.agents.base import NOP
+from hwt.hdl.types.bits import HBits
 
 
 class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordType]):
@@ -30,6 +32,7 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
         self.PACK_SEGMENT_BITS = PACK_SEGMENT_BITS
         self.USE_EMPTY = Axi4StreamSegmented._hasEmpty(SEGMENT_DATA_WIDTH, BYTE_WIDTH, SUPPORT_ZLP)
         self.USE_ENABLE = Axi4StreamSegmented._hasEnable(SEGMENT_CNT)
+        self._dataInvalid = HBits(self.SEGMENT_DATA_WIDTH).from_py(None)
 
     @override
     @classmethod
@@ -43,7 +46,7 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
                    PACK_SEGMENT_BITS=axiss.PACK_SEGMENT_BITS)
 
     @override
-    def pack_frame(self, frameVal: Union[HConst, Sequence[int]])\
+    def pack_frame(self, frameVal: Union[HConst, Sequence[int], Literal[NOP]])\
             ->Generator[Axi4StreamSegmentedAgentWordType, None, None]:
         """
         pack data of structure into words on Axi4StreamSegmented interface
@@ -52,17 +55,24 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
         
         :returns: generator of tuples tuples (data, USER_SEGMENT_T)
         """
-        frameVal, frameIsZeroLen = self._toHConst(frameVal)
         byte_cnt = self.SEGMENT_BYTE_CNT
         USER_SEGMENT_T = self.USER_SEGMENT_T
         USE_SOF = self.USE_SOF
         USE_ENABLE = self.USE_ENABLE
         USE_EMPTY = self.USE_EMPTY
         ERROR_WIDTH = self.ERROR_WIDTH
+        if frameVal is NOP:
+            assert USE_ENABLE, self
+            userData = {"enable": 0}
+            yield (self._dataInvalid, USER_SEGMENT_T.from_py(userData))
+            return    
+            
+        else:
+            frameVal, frameIsZeroLen = self._toHConst(frameVal)
         if frameIsZeroLen:
             userData = {"eof": 1}
             if USE_ENABLE:
-                userData["enable"] = 1
+                userData["enable"] = 1 
             if USE_EMPTY:
                 userData["empty"] = byte_cnt
             if USE_SOF:
@@ -70,7 +80,7 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
             if ERROR_WIDTH:
                 userData["err"] = 0
 
-            yield (None, USER_SEGMENT_T.from_py(userData))
+            yield (self._dataInvalid , USER_SEGMENT_T.from_py(userData))
             return
 
         dataWidth = self.SEGMENT_DATA_WIDTH
@@ -133,7 +143,9 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
 
     @override
     def send_bytes(self, data_B:Union[bytes, list[int]], ag_data:Deque[Axi4StreamSegmentedAgentWordType], offset:int=0) -> list[Axi4StreamSegmentedAgentWordType]:
-        if data_B:
+        if data_B is NOP:
+            _data_B = NOP
+        elif data_B:
             if isinstance(data_B, bytes):
                 data_B = [int(x) for x in data_B]
             t = uint8_t[len(data_B) + offset]
