@@ -33,7 +33,9 @@ class BaseSerializationTC(SimTestCase):
             # :attention: there is widely used diftool named meld, if you already have meld opened
             #  and run this, it is likely to deadlock (meld 3.22.2, Ubuntu 24.10), if you close all
             #  opened meld windows. The same may happen if many meld windows open ad once
-            process = Popen(["meld", "--newtab", oldFileName, newFileName])
+            env = os.environ.copy()
+            env.pop("PYTHONPATH", None) # required if running in venv
+            process = Popen(["meld", "--newtab", oldFileName, newFileName], env=env)
         else:
             process = Popen(["git", "difftool", "--no-index", oldFileName, newFileName])
         process.wait()
