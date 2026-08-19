@@ -62,13 +62,14 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
         USE_EMPTY = self.USE_EMPTY
         ERROR_WIDTH = self.ERROR_WIDTH
         if frameVal is NOP:
-            assert USE_ENABLE, self
+            assert USE_ENABLE, (self, "need enable signal to be able to mark that the segment is disabled")
             userData = {"enable": 0}
             yield (self._dataInvalid, USER_SEGMENT_T.from_py(userData))
             return    
             
         else:
             frameVal, frameIsZeroLen = self._toHConst(frameVal)
+
         if frameIsZeroLen:
             userData = {"eof": 1}
             if USE_ENABLE:
