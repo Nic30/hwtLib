@@ -1,12 +1,12 @@
 from math import ceil
-from typing import Optional, Union
+from typing import Optional, Union, Sequence
 
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.struct import HStruct
-from hwt.math import shiftIntArray
+from hwt.math import shiftIntArray, isPow2
 from hwt.pyUtils.arrayQuery import grouper
 from pyMathBitPrecise.bit_utils import mask, get_bit_range, int_list_to_int
 
@@ -61,7 +61,7 @@ class SimRam():
         self.cellSize = cellSize
         self.prevAllocatedAddrEnd = 0
 
-    def malloc(self, size, keepOut=None):
+    def malloc(self, size: int, keepOut:Optional[int]=None, alignas: Optional[int]=None, preInit=True):
         """
         Allocates a block of memory of size and initialize it
         with None (invalid value)
@@ -78,26 +78,35 @@ class SimRam():
 
         if keepOut:
             addr += keepOut
-
+            
+        if alignas:
+            assert isPow2(alignas), (f"0x{alignas:x}")
+            addr1 = addr & (alignas - 1)  # & mask for alignment 
+            if addr != addr1:
+                addr = addr1 + alignas  # skip partial segment to first aligned address
+            
         indx = addr // self.cellSize
         if indx * self.cellSize != addr:
             NotImplementedError(
                 f"unaligned allocations not implemented (0x{addr:x})")
-
-        d = self.data
-        for i in range(size // self.cellSize):
-            tmp = indx + i
-
-            if tmp in d.keys():
-                raise AllocationError(
-                    "Address 0x%x is already occupied" % (tmp * self.cellSize))
-
-            d[tmp] = None
-
+        
+        if preInit:
+            d = self.data
+            for i in range(size // self.cellSize):
+                tmp = indx + i
+    
+                if tmp in d.keys():
+                    raise AllocationError(
+                        "Address 0x%x is already occupied" % (tmp * self.cellSize))
+    
+                d[tmp] = None
+                
         self.prevAllocatedAddrEnd = addr
         return addr
 
-    def calloc(self, num, size, keepOut=None, initValues=None) -> int:
+    def calloc(self, num, size, keepOut:Optional[int]=None,
+                initValues: Sequence[Union[int, None, HBitsConst]]=None,
+                alignas: Optional[int]=None) -> int:
         """
         Allocates a block of memory for an array of num elements, each of them
         size bytes long, and initializes all its bits to zero.
@@ -105,7 +114,7 @@ class SimRam():
         :param num: Number of elements to allocate.
         :param size: Size of each element.
         :param keepOut: optional memory spacing between this memory region
-                        and lastly allocated (number of bit between last allocated segment to avoid)
+                        and lastly allocated (number of bits between last allocated segment to avoid)
         :param initValues: iterable of word values to init memory with
         :return: address (byte step) of allocated memory
         """
