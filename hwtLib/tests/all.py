@@ -246,6 +246,7 @@ from hwtLib.tests.transTmpl_test import TransTmpl_TC
 from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
 from hwtLib.tests.types.hConst_test import HConstTC
 from hwtLib.tests.types.hStructConst_test import HStructConstTC
+from hwtLib.tests.types.hStruct_utils_test import HStructFromClassTC
 from hwtLib.tests.types.hUnion_test import HUnionTC
 from hwtLib.tests.types.operatorMul_test import OperatorMulTC
 from hwtLib.tests.types.operators_test import OperatorTC
@@ -300,6 +301,7 @@ suite = testSuiteFromTCs(
     CastTc,
     BitsSlicingTC,
     HStructConstTC,
+    HStructFromClassTC,
     ParametrizationTC,
     BasicSignalMethodsTC,
     StatementsConsistencyTC,
