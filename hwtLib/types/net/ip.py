@@ -5,7 +5,7 @@ from hwtLib.types.ctypes import uint8_t, uint16_t
 IPv4 = 4
 IPv6 = 6
 
-# Internet Header Length – Indicates the number of 4-byte blocks in the IPv4 header.
+# Internet Header Length - Indicates the number of 4-byte blocks in the IPv4 header.
 IHL_DEFAULT = 5
 
 l4port_t = HBits(16)
