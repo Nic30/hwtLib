@@ -287,3 +287,16 @@ class SimRam():
             transTmpl = TransTmpl(structT)
 
         return self._getStruct(bitAddr, transTmpl)
+    
+    def setArray(self, addr: int, item_size: int, data: Sequence[Union[int, HBitsConst]]):
+        """
+        Get array stored in memory
+        """
+        baseIndex = addr // self.cellSize
+        if item_size != self.cellSize or baseIndex * self.cellSize != addr:
+            raise NotImplementedError()
+        else:
+            i = baseIndex
+            for d in data:
+                self.data[i] = d
+                i += 1
