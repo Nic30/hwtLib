@@ -18,7 +18,7 @@ class AllocationError(Exception):
     pass
 
 
-def reshapedInitItems(actualCellSize, requestedCellSize, values):
+def reshapedInitItems(actualCellSize: int, requestedCellSize: int, byteWidth: int, values: Sequence[int]) -> Sequence[int]:
     """
     Convert array item size and items cnt while size of array remains unchanged
 
@@ -31,7 +31,7 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
             and requestedCellSize % actualCellSize == 0):
         itemsInCell = requestedCellSize // actualCellSize
         for itemsInWord in grouper(itemsInCell, values, padvalue=0):
-            yield int_list_to_int(itemsInWord, actualCellSize * 8)
+            yield int_list_to_int(itemsInWord, actualCellSize * byteWidth)
     else:
         raise NotImplementedError(
             f"Reshaping of array from cell size {actualCellSize:d} to {requestedCellSize:d}")
@@ -44,10 +44,11 @@ class SimRam():
     :ivar ~.data: memory dict
     """
 
-    def __init__(self, cellSize:int, parent=None):
+    def __init__(self, cellSize:int, parent=None, byteWidth=8):
         """
         :param cellSize: specifies the number of bytes of word
-            (byte is unit of the addres and it does not have to be 8b)
+            (byte is unit of the addres and it does not have to be 8b, 
+             this is used to translate address to index)
         :param clk: clk signal for synchronization
         :param parent: parent instance of SimRam
                        (memory will be shared with this instance)
@@ -58,7 +59,9 @@ class SimRam():
             self.data: dict[int, Union[int, HBitsConst]] = {}
         else:
             self.data: dict[int, Union[int, HBitsConst]] = parent.data
+
         self.cellSize = cellSize
+        self.byteWidth = byteWidth
         self.prevAllocatedAddrEnd = 0
 
     def malloc(self, size: int, keepOut:Optional[int]=None, alignas: Optional[int]=None, preInit=True):
@@ -104,7 +107,7 @@ class SimRam():
         self.prevAllocatedAddrEnd = addr
         return addr
 
-    def calloc(self, num, size, keepOut:Optional[int]=None,
+    def calloc(self, num: int, size: int, keepOut:Optional[int]=None,
                 initValues: Sequence[Union[int, None, HBitsConst]]=None,
                 alignas: Optional[int]=None) -> int:
         """
@@ -131,13 +134,14 @@ class SimRam():
         wordCnt = ceil((num * size) / self.cellSize)
         if shift:
             # shift all data in init values
-            initValues = shiftIntArray(initValues, self.cellSize * 8, shift * 8)
+            byteWidth = self.byteWidth
+            initValues = shiftIntArray(initValues, self.cellSize * byteWidth, shift * byteWidth)
             wordCnt += 1
 
         if initValues is not None:
             if size != self.cellSize:
                 initValues = list(reshapedInitItems(
-                    size, self.cellSize, initValues))
+                    size, self.cellSize, self.byteWidth, initValues))
             assert len(initValues) == wordCnt, (len(initValues), wordCnt)
 
         d = self.data
@@ -161,7 +165,7 @@ class SimRam():
         """
         baseIndex = addr // self.cellSize
         if item_size != self.cellSize or baseIndex * self.cellSize != addr:
-            return self._getArray(addr * 8, TransTmpl(HBits(item_size * 8)[item_cnt]))
+            return self._getArray(addr * self.byteWidth, TransTmpl(HBits(item_size * self.byteWidth)[item_cnt]))
         else:
             out = []
             for i in range(baseIndex, baseIndex + item_cnt):
@@ -182,7 +186,7 @@ class SimRam():
         :return: instance of BitsVal (derived from SimBits type)
                  which contains copy of selected bits
         """
-        wordWidth = self.cellSize * 8
+        wordWidth = self.cellSize * self.byteWidth
 
         inFieldOffset = 0
         allMask = mask(wordWidth)
@@ -216,7 +220,7 @@ class SimRam():
 
         return value
 
-    def _getArray(self, offset, transTmpl):
+    def _getArray(self, offset: int, transTmpl):
         """
         :param offset: global offset of this transTmpl (and struct)
         :param transTmpl: instance of TransTmpl which specifies items in array
@@ -271,7 +275,7 @@ class SimRam():
         """
         if bitAddr is None:
             assert bitAddr is None
-            bitAddr = addr * 8
+            bitAddr = addr * self.byteWidth
         else:
             assert addr is not None
 
