@@ -90,7 +90,7 @@ class BusEndpointTC(unittest.TestCase):
         t2 = HStruct(
                 (_t, "a"),
                 (HBits(4 * DATA_WIDTH), None),
-                (_t[4], "ds", HStructFieldMeta(split=True)),
+                (_t[4], "ds", HStructFieldMeta(splitMembers=True)),
             )
         self.assertEqual(t, t2)
 
@@ -115,7 +115,7 @@ class BusEndpointTC(unittest.TestCase):
         t2 = HStruct(
                 (_t, "a"),
                 (HBits(4 * DATA_WIDTH), None),
-                (_t2[4], "ds", HStructFieldMeta(split=True)),
+                (_t2[4], "ds", HStructFieldMeta(splitMembers=True)),
             )
 
         self.assertEqual(t, t2)
@@ -138,11 +138,11 @@ class BusEndpointTC(unittest.TestCase):
         _t = HBits(DATA_WIDTH)
         _t2 = HStruct(
             (HStruct((_t, "c"),
-                     (_t, "d")), "nested", HStructFieldMeta(split=True)))
+                     (_t, "d")), "nested", HStructFieldMeta(splitMembers=True)))
         t2 = HStruct(
                 (_t, "a"),
                 (HBits(4 * DATA_WIDTH), None),
-                (_t2[4], "ds", HStructFieldMeta(split=True)),
+                (_t2[4], "ds", HStructFieldMeta(splitMembers=True)),
             )
 
         self.assertEqual(t, t2)
@@ -172,7 +172,7 @@ class BusEndpointTC(unittest.TestCase):
                 (_t, "e"),
                 (HBits(2 * DATA_WIDTH), None),
                 (_t, "f"),
-                )[4], "ds", HStructFieldMeta(split=True)),
+                )[4], "ds", HStructFieldMeta(splitMembers=True)),
         )
         self.assertEqual(t, expected_t)
 
