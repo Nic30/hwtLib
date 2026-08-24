@@ -1,56 +1,66 @@
 import unittest
 
-from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.struct import HStruct, HStructFromClass
 from hwt.hdl.types.bits import HBits
 
 
-@HStruct.fromClass
-class Struct0:
+class Struct0(HStructFromClass):
     f1: HBits(16)
     f0: HBits(8)
 
 
-@HStruct.fromClass
-class Struct1:
+class Struct1(HStructFromClass):
     __: HBits(8)
-    f1: HBits(16)
     f0: HBits(8)
+    f1: HBits(16)
 
 
-@HStruct.fromClass(ignoredPaddingName="_pad")
-class Struct2:
-    _pad: HBits(8)
-    f1: HBits(16)
-    f0: HBits(8)
+class Struct2(Struct1):
+    f2: HBits(32)
 
 
 class HStructFromClassTC(unittest.TestCase):
 
     def test_struct0_type_and_name(self):
-        self.assertIsInstance(Struct0, HStruct)
-        self.assertEqual(Struct0.name, "Struct0")
+        t = Struct0.asHdlType()
+        self.assertIsInstance(t, HStruct)
+        self.assertEqual(t.name, "Struct0")
 
     def test_struct0_fields_count(self):
-        self.assertEqual(len(Struct0.fields), 2)
+        t = Struct0.asHdlType()
+        self.assertEqual(len(t.fields), 2)
 
     def test_struct0_fields_names_and_types(self):
-        fields_info = [(f.name, f.dtype) for f in Struct0.fields]
+        t = Struct0.asHdlType()
+        fields_info = [(f.name, f.dtype) for f in t.fields]
         self.assertEqual(
             fields_info,
             [("f1", HBits(16)), ("f0", HBits(8))],
         )
 
-    def test_struct0_first_field_name(self):
-        # Original test had a small typo: `len(Struct0.fields[1].name)`;
-        # here we check the actual field name.
-        self.assertEqual(Struct0.fields[0].name, "f1")
+    def test_struct1(self):
+        t = Struct1.asHdlType()
+        fields_info = [(f.name, f.dtype) for f in t.fields]
+        self.assertEqual(
+            fields_info,
+            [(None, HBits(8)), ("f0", HBits(8)), ("f1", HBits(16)), ],
+        )
+        t2 = Struct1.asHdlType()
+        self.assertIs(t2, t)
 
-    def test_struct1_padding_field_is_none(self):
-        self.assertIsNone(Struct1.fields[0].name)
-
-    def test_struct2_custom_padding_name(self):
-        self.assertIsNone(Struct2.fields[0].name)
+    def test_struct2(self):
+        t = Struct2.asHdlType()
+        fields_info = [(f.name, f.dtype) for f in t.fields]
+        self.assertEqual(
+            fields_info,
+            [(None, HBits(8)), ("f0", HBits(8)), ("f1", HBits(16)), ("f2", HBits(32)), ],
+        )
 
 
 if __name__ == "__main__":
-    unittest.main()
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(HStructFromClassTC)
+    # suite = unittest.TestSuite([HStructFromClassTC("test_struct0_fields_count")])
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)
+
