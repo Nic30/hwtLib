@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Optional
+from typing import Optional, Type
 
 from hwt.code import If
 from hwt.doc_markers import hwt_expr_producer
@@ -23,10 +23,16 @@ class AvalonST_latencyAdapter(HwModule):
     """
     .. hwt-autodoc::
     """
+    def __init__(self, AVALON_ST_CLS:Type[AvalonST]=AvalonST, hdlName:Optional[str]=None):
+        self.AVALON_ST_CLS = AVALON_ST_CLS
+        super().__init__(hdlName=hdlName)
 
     @override
     def hwConfig(self) -> None:
-        AvalonST.hwConfig(self)
+        AVALON_ST_CLS = self.AVALON_ST_CLS
+        AVALON_ST_CLS.hwConfig(self)
+        del self.AVALON_ST_CLS
+        self.AVALON_ST_CLS = HwParam(AVALON_ST_CLS) # :note: set in constructor to inherit HwParams correctly
         self.OUT_readyLatency:int = HwParam(0)
         self.OUT_readyAllowance: Optional[int] = HwParam(None)
 
@@ -34,8 +40,8 @@ class AvalonST_latencyAdapter(HwModule):
     def hwDeclr(self) -> None:
         addClkRstn(self)
         with self._hwParamsShared():
-            self.dataIn = AvalonST()
-            self.dataOut: AvalonST = AvalonST()._m()
+            self.dataIn: AvalonST = self.AVALON_ST_CLS()
+            self.dataOut: AvalonST = self.AVALON_ST_CLS ()._m()
             self.dataOut.readyLatency = self.OUT_readyLatency
             self.dataOut.readyAllowance = self.OUT_readyAllowance
 

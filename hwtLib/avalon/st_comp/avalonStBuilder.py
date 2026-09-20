@@ -28,7 +28,7 @@ class AvalonSTBuilder(HsBuilder):
             m.OUT_readyAllowance = readyAllowance
             m.OUT_readyLatency = readyLatency
 
-        self._genericInstance(lambda _: AvalonST_latencyAdapter(), name, set_params_fn)
+        self._genericInstance(AvalonST_latencyAdapter, name, set_params_fn)
 
         return self
 
