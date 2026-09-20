@@ -2,7 +2,7 @@ from collections import deque
 from dataclasses import dataclass  # , fields
 from math import ceil
 from typing import Union, Deque, \
-    Self
+    Self, Optional
 
 from hwt.code import segment_get, Concat
 from hwt.hdl.const import HConst
@@ -10,6 +10,7 @@ from hwt.hdl.types.bitConstFunctions import AnyHBitsValue
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.struct import HStruct
 from hwt.hwIOs.agents.rdVldSync import UniversalRdVldSyncAgent
 from hwt.hwIOs.hwIOArray import HwIOArray
@@ -30,10 +31,11 @@ class Axi4StreamSegmentedMockSegmentUserTy():
     :attention: in real HStructConst the property is never None, but instead it is not presetnt
     """
     enable: AnyHBitsValue | None = None
+    empty: AnyHBitsValue | None = None
+    err: AnyHBitsValue | None = None
+    user: AnyHBitsValue | None = None
     sof: AnyHBitsValue | None = None
     eof: AnyHBitsValue | None = None
-    err: AnyHBitsValue | None = None
-    empty: AnyHBitsValue | None = None
 
 
 @dataclass
@@ -43,6 +45,7 @@ class Axi4StreamSegmentedMockSegmentTy():
     """
     data: AnyHBitsValue
     user: Axi4StreamSegmentedMockSegmentUserTy
+
 
 @dataclass
 class Axi4StreamSegmentedMockWordNoPackTy():
@@ -58,8 +61,10 @@ class Axi4StreamSegmentedMockWordNoPackTy():
 
 class Axi4StreamSegmented(Axi_hs, Axi_user):
     """
-    Xilinx/AMD Segmented Axi4Stream interface used for 100G+ Ethernet
+    Xilinx/AMD Segmented Axi4Stream interface used for 100G+ Ethernet, PCIe and alike
     https://docs.amd.com/r/1.3-English/pg314-versal-mrmac/Segmented-Mode?tocId=bPOyhICzaCLnbaKgrT0K4g
+    :attention: Some members of user signal are reordered to reflect at least ordering of Axi4Stream bits because
+        the Xilinx/AMD definitions are ad-hoc on per core basis.
     
     :ivar ~.SEGMENT_CNT: number of segments of the bus
     :ivar ~.SEGMENT_DATA_WIDTH: width of 1 segment of data signal
@@ -69,6 +74,7 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
         sof + enable potentially allows for sparse streams (frame continuing in not directly consequent segment)
     :irar ~.PACK_SEGMENT_BITS: if True the bits for sof, eof, enable, empty and err are packed together to a single
         bit vector, this is beneficial for smaller code size, but it makes harder to read the simulation wave
+    :ivar ~.PER_SEGMENT_USER_T: type of extra per segment bits inside of axi4stream user signal
     :note: user signal is used to encode bus state, format is described in :meth:`Axi4StreamSegmented.hwDeclr`
     
     Typical configuration for Ethernet:
@@ -99,6 +105,7 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
         self.USE_SOF:bool = HwParam(False)
         self.ERROR_WIDTH:int = HwParam(0)
         self.PACK_SEGMENT_BITS:bool = HwParam(False)
+        self.PER_SEGMENT_USER_T:Optional[HdlType] = HwParam(None)
 
     @staticmethod
     def getWastedBandwidthPercent(SEGMENT_CNT:int, DATA_WIDTH: int, PACKET_WIDTH: int):
@@ -172,16 +179,17 @@ class Axi4StreamSegmented(Axi_hs, Axi_user):
             # and that the other flags on the associated user_* signals are valid
             # :note: enable is there to spare MUXes on for other struct members in not populated segments
            * (((BIT, "enable"),) if USE_ENABLE else ()),
+            # Empty indicates the number of empty (unused) bytes in the final (EOP) segment.
+            # Valid only in the segment where EOP and ENA are asserted to 1.
+            # for 8B interface: 0 == 8 bytes valid, 7 == 1 byte valid, ...
+            * (((HBits(EMPTY_WIDTH), "empty"),) if USE_EMPTY else ()),
+            * (((HBits(self.ERROR_WIDTH), "err"),) if self.ERROR_WIDTH else ()),
+            * (((self.PER_SEGMENT_USER_T, "user"),) if self.PER_SEGMENT_USER_T is not None else ()),
             # SOF 1 indicates that the associated data segment contains the beginning of a new frame
             * (((BIT, "sof"),) if self.USE_SOF else ()),
             # EOF indicates end of frame
             (BIT, "eof"),
             # Err indicates error in frame
-            * (((HBits(self.ERROR_WIDTH), "err"),) if self.ERROR_WIDTH else ()),
-            # Empty indicates the number of empty (unused) bytes in the final (EOP) segment.
-            # Valid only in the segment where EOP and ENA are asserted to 1.
-            # for 8B interface: 0 == 8 bytes valid, 7 == 1 byte valid, ...
-            * (((HBits(EMPTY_WIDTH), "empty"),) if USE_EMPTY else ()),
         )
         self.WORD_T = HStruct(
             (HBits(SEGMENT_DATA_WIDTH)[SEGMENT_CNT], "data"),
@@ -237,6 +245,7 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
         else:
             self.USER_SEGMENT_DISABLED = hwIO.USER_SEGMENT_T.from_py({"enable": 0} if self.USE_ENABLE else {})
         self.USE_EMPTY = hwIO._hasEmpty(hwIO.SEGMENT_DATA_WIDTH, hwIO.BYTE_WIDTH, hwIO.SUPPORT_ZLP)
+        self.USE_USER_USER = hwIO.PER_SEGMENT_USER_T is not None
 
     def get_data(self):
         hwIO: Axi4StreamSegmented = self.hwIO
@@ -258,6 +267,7 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
             ERROR_WIDTH = hwIO.ERROR_WIDTH
             USE_EMPTY = self.USE_EMPTY
             USE_ENABLE = self.USE_ENABLE
+            USE_USER_USER = self.USE_USER_USER
             data = [d.read() for d in hwIO.data]
             user = []
             for u in hwIO.user:
@@ -270,8 +280,11 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
                     uVal["empty"] = u.empty.read()
                 if ERROR_WIDTH:
                     uVal["err"] = u.err.read()
+                if USE_USER_USER:
+                    uVal["user"] = u.user.read()
                 if USE_SOF:
                     uVal["sof"] = u.sof.read()
+                
                 user.append(USER_SEGMENT_T.from_py(uVal))
         return (tuple(data), tuple(user))
 
@@ -284,6 +297,7 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
         ERROR_WIDTH = hwIO.ERROR_WIDTH
         USE_ENABLE = self.USE_ENABLE
         USE_EMPTY = self.USE_EMPTY
+        USE_USER_USER = self.USE_USER_USER
         if dataWord is None:
             if hwIO.PACK_SEGMENT_BITS:
                 hwIO.data.write(None)
@@ -294,13 +308,16 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
                 for u in hwIO.user:
                     if USE_ENABLE:
                         u.enable.write(None)
+                    if USE_EMPTY:
+                        u.empty.write(None)
+                    if ERROR_WIDTH:
+                        u.err.write(None)
+                    if USE_USER_USER:
+                        u.user.write(None)
                     if USE_SOF:
                         u.sof.write(None)
                     u.eof.write(None)
-                    if ERROR_WIDTH:
-                        u.err.write(None)
-                    if USE_EMPTY:
-                        u.empty.write(None)
+
         else:
             data = []
             user = []
@@ -326,13 +343,15 @@ class Axi4StreamSegmentedAgent(BaseAxiAgent, UniversalRdVldSyncAgent):
                 for uIO, u in zip(hwIO.user, user):
                     if USE_ENABLE:
                         uIO.enable.write(u.enable)
+                    if USE_EMPTY:
+                        uIO.empty.write(u.empty)
+                    if ERROR_WIDTH:
+                        uIO.err.write(u.err)
+                    if USE_USER_USER:
+                        uIO.user.write(u.user)
                     if USE_SOF:
                         uIO.sof.write(u.sof)
                     uIO.eof.write(u.eof)
-                    if ERROR_WIDTH:
-                        uIO.err.write(u.err)
-                    if USE_EMPTY:
-                        uIO.empty.write(u.empty)
 
 
 _Axi4StreamSegmentedWordOfSegment = tuple[HBitsConst, HConst]

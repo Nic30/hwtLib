@@ -1,4 +1,4 @@
-from typing import Union, Sequence, Generator, Deque, Self, Literal
+from typing import Union, Sequence, Generator, Deque, Self, Literal, Optional
 
 from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwt.code import Concat
@@ -14,12 +14,13 @@ from hwtLib.types.ctypes import uint8_t
 from pyMathBitPrecise.bit_utils import get_bit_range
 from hwtSimApi.agents.base import NOP
 from hwt.hdl.types.bits import HBits
+from hwt.hdl.types.hdlType import HdlType
 
 
 class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordType]):
 
     def __init__(self, SEGMENT_DATA_WIDTH:int, SEGMENT_CNT:int, USER_SEGMENT_T: HStruct, BYTE_WIDTH:int=8,
-                 SUPPORT_ZLP:bool=False, USE_SOF:bool=False, ERROR_WIDTH:int=0, PACK_SEGMENT_BITS:bool=False):
+                 SUPPORT_ZLP:bool=False, USE_SOF:bool=False, ERROR_WIDTH:int=0, PER_SEGMENT_USER_T:Optional[HdlType]=None, PACK_SEGMENT_BITS:bool=False):
         self.SEGMENT_CNT = SEGMENT_CNT
         self.BYTE_WIDTH = BYTE_WIDTH
         self.SEGMENT_DATA_WIDTH = SEGMENT_DATA_WIDTH
@@ -29,6 +30,7 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
         self.SUPPORT_ZLP = SUPPORT_ZLP
         self.USE_SOF = USE_SOF
         self.ERROR_WIDTH = ERROR_WIDTH
+        self.PER_SEGMENT_USER_T = PER_SEGMENT_USER_T
         self.PACK_SEGMENT_BITS = PACK_SEGMENT_BITS
         self.USE_EMPTY = Axi4StreamSegmented._hasEmpty(SEGMENT_DATA_WIDTH, BYTE_WIDTH, SUPPORT_ZLP)
         self.USE_ENABLE = Axi4StreamSegmented._hasEnable(SEGMENT_CNT)
@@ -43,10 +45,11 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
                    SUPPORT_ZLP=axiss.SUPPORT_ZLP,
                    USE_SOF=axiss.USE_SOF,
                    ERROR_WIDTH=axiss.ERROR_WIDTH,
+                   PER_SEGMENT_USER_T=axiss.PER_SEGMENT_USER_T,
                    PACK_SEGMENT_BITS=axiss.PACK_SEGMENT_BITS)
 
     @override
-    def pack_frame(self, frameVal: Union[HConst, Sequence[int], Literal[NOP]])\
+    def pack_frame(self, frameVal: Union[HConst, Sequence[int], Literal[NOP]], userFirstWord:Optional[HConst]=None)\
             ->Generator[Axi4StreamSegmentedAgentWordType, None, None]:
         """
         pack data of structure into words on Axi4StreamSegmented interface
@@ -61,6 +64,7 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
         USE_ENABLE = self.USE_ENABLE
         USE_EMPTY = self.USE_EMPTY
         ERROR_WIDTH = self.ERROR_WIDTH
+        USE_PER_SEGMENT_USER = self.PER_SEGMENT_USER_T is not None
         if frameVal is NOP:
             assert USE_ENABLE, (self, "need enable signal to be able to mark that the segment is disabled")
             userData = {"enable": 0}
@@ -76,10 +80,12 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
                 userData["enable"] = 1 
             if USE_EMPTY:
                 userData["empty"] = byte_cnt
-            if USE_SOF:
-                userData["sof"] = 1
             if ERROR_WIDTH:
                 userData["err"] = 0
+            if USE_PER_SEGMENT_USER:
+                userData["user"] = userFirstWord
+            if USE_SOF:
+                userData["sof"] = 1
 
             yield (self._dataInvalid , USER_SEGMENT_T.from_py(userData))
             return
@@ -109,11 +115,12 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
                     empty = 0
                 userData["empty"] = empty
 
-            if USE_SOF:
-                userData["sof"] = sof
-
             if ERROR_WIDTH:
                 userData["err"] = 0
+            if USE_PER_SEGMENT_USER and sof:
+                userData["user"] = userFirstWord
+            if USE_SOF:
+                userData["sof"] = sof
 
             yield (data, USER_SEGMENT_T.from_py(userData))
 
@@ -143,7 +150,8 @@ class Axi4StreamSegmentedFrameUtils(SimFrameUtils[Axi4StreamSegmentedAgentWordTy
             yield Concat(*reversed(word))
 
     @override
-    def send_bytes(self, data_B:Union[bytes, list[int]], ag_data:Deque[Axi4StreamSegmentedAgentWordType], offset:int=0) -> list[Axi4StreamSegmentedAgentWordType]:
+    def send_bytes(self, data_B:Union[bytes, list[int]], ag_data:Deque[Axi4StreamSegmentedAgentWordType],
+                   offset:int=0) -> list[Axi4StreamSegmentedAgentWordType]:
         if data_B is NOP:
             _data_B = NOP
         elif data_B:
