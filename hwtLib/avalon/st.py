@@ -1,9 +1,12 @@
 from typing import Optional, Union
 
+from hwt.hdl.const import HConst
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.hdlType import HdlType
 from hwt.hwIOs.agents.rdVldSync import HwIODataRdVldAgent
+from hwt.hwIOs.hwIOStruct import HdlType_to_HwIO
 from hwt.hwIOs.std import HwIODataRdVld, HwIOVectSignal, HwIOSignal, HwIORdSync, \
     HwIOVldSync
 from hwt.hwParam import HwParam
@@ -16,7 +19,7 @@ class AvalonST(HwIODataRdVld):
     """
     Avalon stream interface
 
-    :note: handshaked stream with channel, error, sof, eof signal
+    :note: handshaked stream with channel, error, sof, eof signal, binary encoded byte enable using "empty" signal
     
     Based on Avalon Interface Specifications Updated for Intel Quartus Prime Design Suite: 20.1
     https://cdrdv2.intel.com/v1/dl/getContent/667068?fileName=mnl_avalon_spec-683091-667068.pdf
@@ -41,7 +44,10 @@ class AvalonST(HwIODataRdVld):
 
     :attention: if maxChannel of src > dst only frames with low enought number are forwarded if connected in Quartus.
                 if src.maxChannel=8, dst.maxChannel=0 then only frames for channel=0 will be forwarded
-    :ivar firstSymbolInHighOrderBits: if True the first symbol on msb bits, for False it is on data[dataBitsPerSymbol:0]
+    :ivar firstSymbolInHighOrderBits: if True the first symbol on msb bits (big-endian), for False it is on data[dataBitsPerSymbol:0] (little-endian)
+    
+    :ivar ~.user: user signal to inject non standard signals, (user signals are not part of AvalonST specification)
+    :ivar ~.USER_T: type for user signal
 
     .. hwt-autodoc::
     """
@@ -58,6 +64,7 @@ class AvalonST(HwIODataRdVld):
         self.SUPPORT_ZLP: bool = HwParam(False)
         self.packetsPerClock = HwParam(1)
         self.firstSymbolInHighOrderBits = HwParam(True)
+        self.USER_T: Optional[HdlType] = HwParam(None)
 
     @staticmethod
     def _getWidthOfEmpty(SEGMENT_DATA_WIDTH: int, BYTE_WIDTH: int, SUPPORT_ZLP: bool):
@@ -85,10 +92,14 @@ class AvalonST(HwIODataRdVld):
             self.empty = HwIOVectSignal(self._getWidthOfEmptyForSelf())
         if self.ERROR_WIDTH:
             self.error = HwIOVectSignal(self.ERROR_WIDTH)
+        if self.USER_T is not None:
+            self.user = HdlType_to_HwIO().apply(self.USER_T)
+        
         # packet transfer signals
         pktSignalT = BIT if self.packetsPerClock else HBits(self.packetsPerClock)
         self.startOfPacket = HwIOSignal(pktSignalT)
         self.endOfPacket = HwIOSignal(pktSignalT)
+
         HwIOVldSync.hwDeclr(self)
         HwIORdSync.hwDeclr(self)
 
@@ -98,9 +109,12 @@ class AvalonST(HwIODataRdVld):
 
 
 AvalonSTAgentWordType = Union[
-    # (channel?, data, error?, startOfPacket, endOfPacket)
+    # (channel?, data, error?, startOfPacket, endOfPacket, user?)
+    tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst, HBitsConst, HConst],
     tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst, HBitsConst],
+    tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst, HConst],
     tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst],
+    tuple[HBitsConst, HBitsConst, HBitsConst, HConst],
     tuple[HBitsConst, HBitsConst, HBitsConst],
 ]
 
@@ -121,7 +135,7 @@ class AvalonSTAgent(HwIODataRdVldAgent):
 
     @override
     def get_data(self) -> AvalonSTAgentWordType:
-        hwIO = self.hwIO
+        hwIO: AvalonST = self.hwIO
         d = []
         if hwIO.maxChannel:
             d.append(hwIO.channel.read())
@@ -130,6 +144,8 @@ class AvalonSTAgent(HwIODataRdVldAgent):
             d.append(hwIO.empty.read())
         if hwIO.ERROR_WIDTH:
             d.append(hwIO.error.read())
+        if hwIO.USER_T is not None:
+            d.append(hwIO.user.read())
 
         d.append(hwIO.startOfPacket.read())
         d.append(hwIO.endOfPacket.read())
@@ -137,7 +153,7 @@ class AvalonSTAgent(HwIODataRdVldAgent):
 
     @override
     def set_data(self, data: Optional[AvalonSTAgentWordType]):
-        hwIO = self.hwIO
+        hwIO: AvalonST = self.hwIO
         if data is None:
             if hwIO.maxChannel:
                 hwIO.channel.write(None)
@@ -146,6 +162,8 @@ class AvalonSTAgent(HwIODataRdVldAgent):
                 hwIO.empty.write(None)
             if hwIO.ERROR_WIDTH:
                 hwIO.error.write(None)
+            if hwIO.USER_T is not None:
+                hwIO.user.write(None)
             hwIO.endOfPacket.write(None)
             hwIO.startOfPacket.write(None)
         else:
@@ -158,10 +176,16 @@ class AvalonSTAgent(HwIODataRdVldAgent):
             if hwIO.USE_EMPTY:
                 hwIO.empty.write(data[i])
                 i += 1
+            
             if hwIO.ERROR_WIDTH:
                 hwIO.error.write(data[i])
                 i += 1
 
+            if hwIO.USER_T is not None:
+                hwIO.user.write(data[i])
+                i += 1
+  
             hwIO.startOfPacket.write(data[i])
             hwIO.endOfPacket.write(data[i + 1])
+  
             assert len(data) == i + 2, (len(data), i + 2)
