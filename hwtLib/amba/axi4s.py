@@ -18,7 +18,7 @@ class Axi4Stream(Axi_hs, Axi_id, Axi_user, Axi_strb):
     https://static.docs.arm.com/ihi0051/a/IHI0051A_amba4_axi4_stream_v1_0_protocol_spec.pdf
 
     :ivar ~.IS_BIGENDIAN: HwParam which specifies if interface uses bigendian
-        byte order or little-endian byte order
+        byte order or little-endian byte order (if true the byte0 is in  data[msb:msb-8] bits)
 
     :ivar ~.DATA_WIDTH: HwParam which specifies width of data signal
     :ivar ~.HAS_STRB: if set strb signal is present
