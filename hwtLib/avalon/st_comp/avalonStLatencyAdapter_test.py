@@ -119,7 +119,7 @@ class AvalonStCastReadyLatencyAndAllowance_l0a1_TC(AvalonStCastReadyLatencyAndAl
     internal_readyLatency = 0
     internal_readyAllowance = 1
 
-    def test_randomizedAll(self, TIME_MULTIPLIER=2.5):
+    def test_randomizedAll(self, TIME_MULTIPLIER=4.5):
         super().test_randomizedAll(TIME_MULTIPLIER)
 
 
@@ -169,14 +169,14 @@ if __name__ == "__main__":
     import unittest
     from hwt.synth import to_rtl_str
 
-    m = _TestAvalonStCastReadyLatencyAndAllowance_wire()
-    m.internal_readyLatency = 2
-    m.internal_readyAllowance = 2
-    print(to_rtl_str(m))
+    # m = _TestAvalonStCastReadyLatencyAndAllowance_wire()
+    # m.internal_readyLatency = 2
+    # m.internal_readyAllowance = 2
+    # print(to_rtl_str(m))
 
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([AvalonStCastReadyLatencyAndAllowance_l1a1_TC("test_normalOp")])
-    # suite = testLoader.loadTestsFromTestCase(AvalonStCastReadyLatencyAndAllowance_l0a1_TC)
     suite = unittest.TestSuite([testLoader.loadTestsFromTestCase(tc) for tc in AvalonStCastReadyLatencyAndAllowance_TCs])
+    # suite = unittest.TestSuite([AvalonStCastReadyLatencyAndAllowance_l0a1_TC("test_randomizedAll")])
+    # suite = testLoader.loadTestsFromTestCase(AvalonStCastReadyLatencyAndAllowance_l0a1_TC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

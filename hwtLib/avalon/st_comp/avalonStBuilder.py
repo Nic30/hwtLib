@@ -19,6 +19,10 @@ class AvalonSTBuilder(HsBuilder):
     SplitSelectCls = NotImplemented
 
     def castReadyLatencyAndAllowance(self, readyLatency:int, readyAllowance:Optional[int]=None):
+        if self.end.readyLatency == readyLatency and \
+            (0 if not readyAllowance else readyAllowance) == \
+            (0 if self.end.readyAllowance else self.end.readyAllowance):
+            return self
         if self.name:
             name = f"{self.name:s}_latencyAdapter"
         else:
