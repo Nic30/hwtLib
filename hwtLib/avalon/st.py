@@ -109,12 +109,13 @@ class AvalonST(HwIODataRdVld):
 
 
 AvalonSTAgentWordType = Union[
-    # (channel?, data, error?, startOfPacket, endOfPacket, user?)
-    tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst, HBitsConst, HConst],
+    # (channel?, data, error?, user?, startOfPacket, endOfPacket)
+    tuple[HBitsConst, HBitsConst, HBitsConst, HConst, HBitsConst, HBitsConst],
     tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst, HBitsConst],
-    tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst, HConst],
+    tuple[HBitsConst, HBitsConst, HConst, HBitsConst, HBitsConst],
     tuple[HBitsConst, HBitsConst, HBitsConst, HBitsConst],
-    tuple[HBitsConst, HBitsConst, HBitsConst, HConst],
+    tuple[HBitsConst, HBitsConst, HBitsConst],
+    tuple[HBitsConst, HConst, HBitsConst, HBitsConst],
     tuple[HBitsConst, HBitsConst, HBitsConst],
 ]
 
@@ -122,8 +123,7 @@ AvalonSTAgentWordType = Union[
 class AvalonSTAgent(HwIODataRdVldAgent):
     """
     Simulation Agent for AvalonST interface
-    Data is stored in .data property and data format
-    is tuple
+    Data is stored in .data property and data format is tuple :var:`~.AvalonSTAgentWordType`
     """
 
     def __init__(self, sim: HdlSimulator, hwIO: AvalonST, allowNoReset=False):
@@ -132,6 +132,8 @@ class AvalonSTAgent(HwIODataRdVldAgent):
         if hwIO.readyLatency != 0:
             raise NotImplementedError(hwIO)
         HwIODataRdVldAgent.__init__(self, sim, hwIO, allowNoReset)
+        if hwIO.USER_T is not None and not hwIO.USER_T.isScalar():
+            hwIO.user._initSimAgent(sim)
 
     @override
     def get_data(self) -> AvalonSTAgentWordType:
@@ -145,7 +147,10 @@ class AvalonSTAgent(HwIODataRdVldAgent):
         if hwIO.ERROR_WIDTH:
             d.append(hwIO.error.read())
         if hwIO.USER_T is not None:
-            d.append(hwIO.user.read())
+            if hwIO.USER_T.isScalar():
+                d.append(hwIO.user.read())
+            else:
+                d.append(hwIO.user._ag.get_data())
 
         d.append(hwIO.startOfPacket.read())
         d.append(hwIO.endOfPacket.read())
@@ -163,7 +168,11 @@ class AvalonSTAgent(HwIODataRdVldAgent):
             if hwIO.ERROR_WIDTH:
                 hwIO.error.write(None)
             if hwIO.USER_T is not None:
-                hwIO.user.write(None)
+                if hwIO.USER_T.isScalar():
+                    hwIO.user.write(None)
+                else:
+                    hwIO.user._ag.set_data(None)
+                    
             hwIO.endOfPacket.write(None)
             hwIO.startOfPacket.write(None)
         else:
@@ -182,7 +191,11 @@ class AvalonSTAgent(HwIODataRdVldAgent):
                 i += 1
 
             if hwIO.USER_T is not None:
-                hwIO.user.write(data[i])
+                if hwIO.USER_T.isScalar():
+                    hwIO.user.write(data[i])
+                else:
+                    hwIO.user._ag.set_data(data[i])
+                    
                 i += 1
   
             hwIO.startOfPacket.write(data[i])

@@ -12,12 +12,14 @@ from hwtLib.abstract.simFrameUtils import SimFrameUtils
 from hwtLib.amba.axi4s import Axi4Stream, Axi4StreamAgentWordType
 from pyMathBitPrecise.bit_utils import mask, get_bit, \
     get_bit_range, set_bit
+from hwt.constants import NOT_SPECIFIED
 
 
 class Axi4StreamSimFrameUtils(SimFrameUtils[Axi4StreamAgentWordType]):
 
-    def __init__(self, DATA_WIDTH: int, USE_STRB=False, USE_KEEP=False, USE_ID=False, BYTE_WIDTH=8):
+    def __init__(self, DATA_WIDTH: int, USE_STRB=False, USE_KEEP=False, USE_ID=False, USER_WIDTH=0, BYTE_WIDTH=8):
         self.DATA_WIDTH = DATA_WIDTH
+        self.USER_WIDTH = USER_WIDTH
         self.BYTE_WIDTH = BYTE_WIDTH
         self.BYTE_CNT = DATA_WIDTH // BYTE_WIDTH
         self.USE_STRB = USE_STRB
@@ -29,17 +31,18 @@ class Axi4StreamSimFrameUtils(SimFrameUtils[Axi4StreamAgentWordType]):
     @classmethod
     def from_HwIO(cls, axis: Axi4Stream):
         USE_ID = bool(getattr(axis, "ID_WIDTH", 0))
-        if getattr(axis, "USER_WIDTH", 0):
-            raise NotImplementedError()
+        if getattr(axis, "DEST_WIDTH", 0):
+            raise NotImplementedError(axis, "DEST_WIDTH")
 
+        USER_WIDTH = getattr(axis, "USER_WIDTH", 0)
         USE_KEEP = hasattr(axis, "keep")
         USE_STRB = hasattr(axis, "strb")
         if USE_KEEP and USE_STRB:
-            raise NotImplementedError()
-        return Axi4StreamSimFrameUtils(axis.DATA_WIDTH, USE_STRB=USE_STRB, USE_KEEP=USE_KEEP, USE_ID=USE_ID)
+            raise NotImplementedError("Implemented only one of keep/strb at the time")
+        return Axi4StreamSimFrameUtils(axis.DATA_WIDTH, USE_STRB=USE_STRB, USE_KEEP=USE_KEEP, USE_ID=USE_ID, USER_WIDTH=USER_WIDTH)
 
     @override
-    def pack_frame(self, frameVal: Union[HConst, Sequence[int]])\
+    def pack_frame(self, frameVal: Union[HConst, Sequence[int]], userFirstWord=NOT_SPECIFIED)\
             ->Generator[Axi4StreamAgentWordType, None, None]:
         """
         pack data of structure into words on axis interface
@@ -50,6 +53,9 @@ class Axi4StreamSimFrameUtils(SimFrameUtils[Axi4StreamAgentWordType]):
         :returns: generator of tuples (data, strb, isLast), strb is omitted if withStrb=False
         """
         DATA_WIDTH = self.DATA_WIDTH
+        USER_WIDTH = self.USER_WIDTH
+        if USER_WIDTH == 0:
+            assert userFirstWord is NOT_SPECIFIED, userFirstWord
         withStrb = self.USE_STRB or self.USE_KEEP
         if self.USE_STRB and  self.USE_KEEP:
             raise NotImplementedError()
@@ -64,9 +70,10 @@ class Axi4StreamSimFrameUtils(SimFrameUtils[Axi4StreamAgentWordType]):
 
         if withStrb:
             byte_cnt = DATA_WIDTH // 8
-
+        
         words = iterBits(frameVal, bitsInOne=DATA_WIDTH,
                          skipPadding=False, fillup=True)
+        first = True
         for last, d in iter_with_last(words):
             assert d._dtype.bit_length() == DATA_WIDTH, d._dtype.bit_length()
             if withStrb:
@@ -79,9 +86,16 @@ class Axi4StreamSimFrameUtils(SimFrameUtils[Axi4StreamAgentWordType]):
                         assert m == 0, ("Each byte has to be entirely valid"
                                         " or entirely invalid,"
                                         " because of mask granularity", m)
-                yield (d, word_mask, last)
+                if USER_WIDTH:
+                    yield (d, word_mask, userFirstWord if first else None, last)
+                else:
+                    yield (d, word_mask, last)
             else:
-                yield (d, last)
+                if USER_WIDTH:
+                    yield (d, userFirstWord if first else None, last)
+                else:
+                    yield (d, last)
+            first = False
 
     @override
     def concatWordBits(self, frameBeats: Sequence[Axi4StreamAgentWordType]):
@@ -131,10 +145,12 @@ class Axi4StreamSimFrameUtils(SimFrameUtils[Axi4StreamAgentWordType]):
         BYTE_CNT = self.BYTE_CNT
         BYTE_WIDTH = self.BYTE_WIDTH
         BYTE_MASK = mask(BYTE_WIDTH)
+        HAS_USER = self.USER_WIDTH != 0
         mask_all = mask(BYTE_CNT)
         use_id = self.USE_ID
         use_keep = self.USE_KEEP
         use_strb = self.USE_STRB
+        firstWordUser = None
         while ag_data:
             _d = ag_data.popleft()
             if use_id:
@@ -144,22 +160,37 @@ class Axi4StreamSimFrameUtils(SimFrameUtils[Axi4StreamAgentWordType]):
 
             if use_keep:
                 if use_strb:
-                    data, strb, keep, last = _d
+                    if HAS_USER:
+                        data, strb, keep, last = _d
+                    else:
+                        data, strb, keep, user, last = _d
                     strb = int(strb)
                     keep = int(keep)
                 else:
-                    data, keep, last = _d
+                    if HAS_USER:
+                        data, keep, user, last = _d
+                    else:
+                        data, keep, last = _d
                     strb = mask_all
                     keep = int(keep)
             elif use_strb:
-                data, strb, last = _d
+                if HAS_USER:
+                    data, strb, user, last = _d
+                else:
+                    data, strb, last = _d
                 strb = int(strb)
                 keep = mask_all
             else:
-                data, last = _d
+                if HAS_USER:
+                    data, user, last = _d
+                else:
+                    data, last = _d
                 strb = mask_all
                 keep = mask_all
 
+            if HAS_USER and not data_B:
+                firstWordUser = user
+    
             # assert strb & ~keep == 0
             last = int(last)
             if keep == 0:
@@ -215,8 +246,12 @@ class Axi4StreamSimFrameUtils(SimFrameUtils[Axi4StreamAgentWordType]):
             else:
                 raise ValueError("No frame available")
 
-        if use_id:
+        if HAS_USER and use_id:
+            return offset, id_, firstWordUser, data_B
+        elif use_id:
             return offset, id_, data_B
+        elif HAS_USER:
+            return offset, firstWordUser, data_B
         else:
             return offset, data_B
 

@@ -1,7 +1,8 @@
+from collections import deque
 from math import ceil
-from typing import Self, Union, Sequence, Generator, Generic, TypeVar, \
-    Deque
+from typing import Self, Union, Sequence, Generator, Generic, TypeVar, Any
 
+from hwt.constants import NOT_SPECIFIED
 from hwt.hdl.const import HConst
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
@@ -9,6 +10,7 @@ from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.utils import HConst_from_words
 from hwt.hwIO import HwIO
 from hwtSimApi.agents.base import NOP
+
 
 WordTupleTy = TypeVar('WordTupleTy')  # a type representing a word used by simulation agent for a target hwio
 
@@ -54,19 +56,22 @@ class SimFrameUtils(Generic[WordTupleTy]):
 
         return v, isVoid
 
-    def pack_frame(self, structVal: Union[HConst, Sequence[int]])\
+    def pack_frame(self, structVal: Union[HConst, Sequence[int]], userFirstWord=NOT_SPECIFIED)\
             ->Generator[WordTupleTy, None, None]:
         """
         pack data of structure into words of target hwio
         Words are tuples specific to each hwio.
         
         :param structVal: value to be send, HConst instance or list of int for each byte
+        :param userFirstWord: Some interfaces like axi4stream are using "user" singnal
+            which is used for user defined non-standard purposes.
+            userFirstWord is the value for this group of signals in the first word of the frame. 
         
         :returns: generator of word tuples
         """
         raise NotImplementedError("Override this in your implementation of this abstract class")
 
-    def unpack_frame(self, structT: HdlType, frameData: Deque[WordTupleTy]) -> HConst:
+    def unpack_frame(self, structT: HdlType, frameData: deque[WordTupleTy]) -> HConst:
         """
         opposite of :meth:`~.pack_frame`
         """
@@ -89,14 +94,14 @@ class SimFrameUtils(Generic[WordTupleTy]):
         """
         raise NotImplementedError("Override this in your implementation of this abstract class")
 
-    def receive_bytes(self, ag_data: Deque[WordTupleTy]) -> tuple[int, list[int]]:
+    def receive_bytes(self, ag_data: deque[WordTupleTy]) -> Union[tuple[int, list[int]], tuple[int, list[int], Any]]:
         """
         :param ag_data: list of stream hwio words
         :return: tuple dataStartOffset, data_Bytes
         """
         raise NotImplementedError("Override this in your implementation of this abstract class")
 
-    def send_bytes(self, data_B: Union[bytes, list[int]], ag_data: Deque[WordTupleTy], offset:int=0)\
+    def send_bytes(self, data_B: Union[bytes, list[int]], ag_data: deque[WordTupleTy], offset:int=0, userFirstWord=NOT_SPECIFIED)\
             ->list[WordTupleTy]:
         """
         Build frame out of data_B bytes and insert it into ag_data deque which is expected
@@ -115,6 +120,6 @@ class SimFrameUtils(Generic[WordTupleTy]):
             _data_B = data_B
         
         # :attention: strb signal is reinterpreted as a keep signal
-        f = self.pack_frame(_data_B)
+        f = self.pack_frame(_data_B, userFirstWord=userFirstWord)
         ag_data.extend(f)
         return f

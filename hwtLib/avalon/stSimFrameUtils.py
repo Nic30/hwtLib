@@ -1,11 +1,14 @@
-from typing import Union, Sequence, Generator, Deque, Self
+from typing import Union, Sequence, Generator, Deque, Self, Optional, Callable, \
+    Any
 
 from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwt.code import Concat
+from hwt.constants import NOT_SPECIFIED
 from hwt.hdl.const import HConst
 from hwt.hdl.types.bits import HBits
 from hwt.hdl.types.bitsConst import HBitsConst
 from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.hdlType import HdlType
 from hwt.pyUtils.typingFuture import override
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.abstract.simFrameUtils import SimFrameUtils
@@ -19,8 +22,11 @@ class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
     """
 
     def __init__(self, SEGMENT_DATA_WIDTH:int, USE_EMPTY: bool, BYTE_WIDTH:int=8, SEGMENT_CNT:int=1,
-                 SUPPORT_ZLP:bool=False, USE_SOF:bool=True, ERROR_WIDTH:int=0):
+                 SUPPORT_ZLP:bool=False, USER_T: Optional[HdlType]=None, USE_SOF:bool=True, ERROR_WIDTH:int=0):
+        assert SEGMENT_CNT >= 1, self.SEGMENT_CNT
         self.SEGMENT_CNT = SEGMENT_CNT
+        if SEGMENT_CNT > 1:
+            raise NotImplementedError()
         self.BYTE_WIDTH = BYTE_WIDTH
         self.SEGMENT_DATA_WIDTH = SEGMENT_DATA_WIDTH
         self.SEGMENT_BYTE_CNT = SEGMENT_DATA_WIDTH // BYTE_WIDTH
@@ -29,7 +35,29 @@ class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
         self.USE_SOF = USE_SOF
         self.ERROR_WIDTH = ERROR_WIDTH
         self.USE_EMPTY = USE_EMPTY
-
+        self.USER_T = USER_T
+        self._WORD_MEMBER_CASTS = self._getWordMemberCasts()
+    
+    def _getWordMemberCasts(self) -> tuple[Optional[Callable[[Any], HBitsConst]], ...]:
+        res: list[Optional[Callable[[Any], HBitsConst]]] = [
+            None,  # data
+        ]
+        # data, empty?, error?, user?, sof?, eof 
+        if self.USE_EMPTY:
+            emptyT = HBits(AvalonST._getWidthOfEmpty(self.SEGMENT_DATA_WIDTH, self.BYTE_WIDTH, self.SUPPORT_ZLP)).from_py        
+            res.append(emptyT)
+        ERROR_WIDTH = self.ERROR_WIDTH
+        if ERROR_WIDTH:
+            errorT = HBits(ERROR_WIDTH).from_py
+            res.append(errorT)
+        USER_T = self.USER_T
+        if USER_T is not None:
+            res.append(USER_T.from_py)
+        if self.USE_SOF:
+            res.append(BIT.from_py)
+        res.append(BIT.from_py)  # eof
+        return res
+    
     @override
     @classmethod
     def from_HwIO(cls, hwio: AvalonST) -> Self:
@@ -38,11 +66,12 @@ class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
                    SEGMENT_CNT=hwio.packetsPerClock,
                    BYTE_WIDTH=hwio.dataBitsPerSymbol,
                    SUPPORT_ZLP=hwio.SUPPORT_ZLP,
+                   USER_T=hwio.USER_T,
                    USE_SOF=True,
                    ERROR_WIDTH=hwio.ERROR_WIDTH)
 
     @override
-    def pack_frame(self, frameVal: Union[HConst, Sequence[int]])\
+    def pack_frame(self, frameVal: Union[HConst, Sequence[int]], userFirstWord=NOT_SPECIFIED)\
             ->Generator[AvalonSTAgentWordType, None, None]:
         frameVal, frameIsZeroLen = self._toHConst(frameVal)
 
@@ -50,6 +79,10 @@ class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
         USE_SOF = self.USE_SOF
         USE_EMPTY = self.USE_EMPTY
         ERROR_WIDTH = self.ERROR_WIDTH
+        USE_USER = self.USER_T
+        if USE_USER is None:
+            assert userFirstWord is NOT_SPECIFIED
+
         if frameIsZeroLen:
             word = [None  # data
                     ]
@@ -57,6 +90,8 @@ class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
                 word.append(byte_cnt)
             if ERROR_WIDTH:
                 word.append(0)
+            if USE_USER is not None:
+                word.append(userFirstWord)
             if USE_SOF:
                 word.append(1)
             word.append(1)  # eof
@@ -84,6 +119,8 @@ class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
 
             if ERROR_WIDTH:
                 word.append(0)
+            if USE_USER is not None:
+                word.append(userFirstWord if first else None)
             if USE_SOF:
                 word.append(first)
 
@@ -95,87 +132,74 @@ class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
 
     @override
     def concatWordBits(self, frameBeats: Sequence[AvalonSTAgentWordType]):
-        USE_SOF = self.USE_SOF
-        USE_EMPTY = self.USE_EMPTY
+        WORD_MEMBER_CASTS = self._WORD_MEMBER_CASTS
+        memberCnt = len(WORD_MEMBER_CASTS)
+        for busWord in frameBeats:
+            # :note: data on lower bits, eof at msb
+            assert len(busWord) == memberCnt
+            yield Concat(*reversed(d if cast is None else cast(d) for cast, d in zip(WORD_MEMBER_CASTS, busWord)))
+
+    @override
+    def updackWordBits(self, v: HBitsConst):
+        # data, empty?, error?, user?, sof?, eof 
+        d = [
+            v[self.DATA_WIDTH:],  # data
+        ]
+        off = self.DATA_WIDTH
+        if self.USE_EMPTY:
+            emptyW = AvalonST._getWidthOfEmpty(self.DATA_WIDTH, self.BYTE_WIDTH, self.SUPPORT_ZLP)
+            d.append(v[emptyW + off:off])
+            off += emptyW
         ERROR_WIDTH = self.ERROR_WIDTH
-        if USE_EMPTY:
-            emptyT = HBits(AvalonST._getWidthOfEmpty(self.DATA_WIDTH, self.BYTE_WIDTH, self.SUPPORT_ZLP)).from_py
-        b = BIT.from_py
         if ERROR_WIDTH:
-            errorT = HBits(ERROR_WIDTH).from_py
-            if USE_EMPTY:
-                if USE_SOF:
-                    for data, empty, error, sof, eof in frameBeats:
-                        yield Concat(b(eof), b(sof), errorT(error), emptyT(empty), data)
-                else:
-                    for data, empty, error, eof in frameBeats:
-                        yield Concat(b(eof), errorT(error), emptyT(empty), data)
-            else:
-                if USE_SOF:
-                    for data, error, sof, eof in frameBeats:
-                        yield Concat(b(eof), b(sof), errorT(error), data)
-                else:
-                    for data, error, eof in frameBeats:
-                        yield Concat(b(eof), errorT(error), data)
-        else:
-            if USE_EMPTY:
-                if USE_SOF:
-                    for data, empty, error, sof, eof in frameBeats:
-                        yield Concat(b(eof), b(sof), emptyT(empty), data)
-                else:
-                    for data, empty, eof in frameBeats:
-                        yield Concat(b(eof), emptyT(empty), data)
-            else:
-                if USE_SOF:
-                    for data, sof, eof in frameBeats:
-                        yield Concat(b(eof), b(sof), data)
-                else:
-                    for data, eof in frameBeats:
-                        yield Concat(b(eof), data)
+            d.append(v[ERROR_WIDTH + off:off])
+            off += ERROR_WIDTH
+        USER_T = self.USER_T
+        if USER_T is not None:
+            userW = USER_T.bit_length()
+            d.append(v[userW + off:off])
+            off += userW 
+        if self.USE_SOF:
+            d.append(v[1 + off:off])
+            off += 1 
+        d.append(v[1 + off:off])  # eof
+        assert v._dtype.bit_length() == off + 1, ("word value should not contain any additional bits", (v._dtype.bit_length(), off + 1))
+        return tuple(d)
 
     @override
     def receive_bytes(self, ag_data:Deque[AvalonSTAgentWordType]) -> tuple[int, list[Union[int, HBitsConst]], bool]:
-        data_B = []
+        data_B: list[int] = []
         eof = False
         err = 0
+        user = None
         first = True
         SEGMENT_BYTE_CNT = self.SEGMENT_BYTE_CNT
         USE_SOF = self.USE_SOF
         ERROR_WIDTH = self.ERROR_WIDTH
         USE_EMPTY = self.USE_EMPTY
-
+        wordMemberCnt = len(self._WORD_MEMBER_CASTS)
+        USE_USER = self.USER_T
+        firstWordUser = NOT_SPECIFIED
+        
         while ag_data:
             _d = ag_data.popleft()
-
-            if ERROR_WIDTH:
-                if USE_EMPTY:
-                    if USE_SOF:
-                        data, empty, err, sof, eof = _d
-                    else:
-                        data, empty, err, eof = _d
-                        sof = not data_B
-                else:
-                    empty = 0
-                    if USE_SOF:
-                        data, err, sof, eof = _d
-                    else:
-                        data, err, eof = _d
-                        sof = not data_B
+            assert len(_d) == wordMemberCnt, (len(_d), wordMemberCnt)
+            dIt = iter(_d)
+            data = next(dIt)
+            if USE_EMPTY:
+                empty = next(dIt)
             else:
-                err = 0
-                if USE_EMPTY:
-                    if USE_SOF:
-                        data, empty, sof, eof = _d
-                    else:
-                        data, empty, eof = _d
-                        sof = not data_B
-                else:
-                    empty = 0
-                    if USE_SOF:
-                        data, sof, eof = _d
-                    else:
-                        data, eof = _d
-                        sof = not data_B
+                empty = 0
+            if ERROR_WIDTH:
+                err = next(dIt)
+            if USE_USER:
+                user = next(dIt)
+            if USE_SOF:
+                sof = next(dIt)
+            else:
+                sof = not data_B
+            eof = next(dIt)
+           
             if USE_SOF:
                 sof = bool(sof)
                 assert sof == first, ("Soft must be 1 in the first segment of the frame", sof, first)
@@ -195,9 +219,13 @@ class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
                 if get_bit_range(data.vld_mask, i * 8, 8) != 0xff:
                     raise AssertionError(
                         "Data not valid but it should be"
-                        f' based on value of "empty" B_i:{i:d}, empty:{empty:d}, vld_mask:0x{data.vld_mask:x}')
+                        f' based on value of "empty" B_i:{i:d},'
+                        f' empty:{empty:d}, vld_mask:0x{data.vld_mask:x}')
                 data_B.append(d)
-
+            
+            if sof:
+                firstWordUser = user
+            
             if first:
                 first = False
 
@@ -210,5 +238,5 @@ class AvalonStSimFrameUtils(SimFrameUtils[AvalonSTAgentWordType]):
             else:
                 raise ValueError("No frame available")
 
-        return 0, data_B, err
+        return 0, data_B, err, firstWordUser
 
