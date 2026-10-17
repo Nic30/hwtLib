@@ -1,11 +1,10 @@
 from binascii import crc32
 
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4sSimFrameUtils import axi4s_send_bytes, axi4s_receive_bytes
+from hwtLib.amba.axi4sSimFrameUtils import Axi4StreamSimFrameUtils
 from hwtLib.peripheral.ethernet.mac import EthernetMac
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import byte_list_to_be_int
-
 
 REF_FRAME = [
     0x00, 0x0A, 0xE6, 0xF0, 0x05, 0xA3, 0x00, 0x12,
@@ -21,6 +20,7 @@ REF_CRC = [0x7A, 0xD5, 0x6B, 0xB3]
 
 class EthernetMacTx_8b_TC(SimTestCase):
     DW = 8
+
     # [TODO]: tests for packet drop on every error
     @classmethod
     def setUpClass(cls):
@@ -35,17 +35,25 @@ class EthernetMacTx_8b_TC(SimTestCase):
         self.assertEmpty(dut.phy_tx._ag.data)
 
     def pop_tx_frame(self):
-        return axi4s_receive_bytes(self.dut.phy_tx)
+        axis = self.dut.phy_tx
+        ag_data = axis._ag.data
+        fu = Axi4StreamSimFrameUtils.from_HwIO(axis)
+        return fu.receive_bytes(ag_data)
 
     def send_tx_frame(self, data):
-        axi4s_send_bytes(self.dut.eth.tx, data)
+        axis = self.dut.eth.tx
+        fu = Axi4StreamSimFrameUtils.from_HwIO(axis)
+        fu.send_bytes(data, axis._ag.data)
 
     def test_single(self):
         ref_data = REF_FRAME
         crc_ref = REF_CRC
         crc_ref = byte_list_to_be_int(crc_ref)
         dut = self.dut
-        axi4s_send_bytes(dut.eth.tx, ref_data)
+        eth_tx = self.dut.eth.tx
+        eth_tx_fu = Axi4StreamSimFrameUtils.from_HwIO(eth_tx)
+        eth_tx_fu.send_bytes(ref_data, eth_tx._ag.data)
+
         self.runSim(CLK_PERIOD * (len(ref_data) * 2 + 10))
         f = self.pop_tx_frame()
         self.assertEqual(f[0], 0)  # frame offset
@@ -70,8 +78,11 @@ class EthernetMacTx_8b_TC(SimTestCase):
         dut = self.dut
         frames = [[x & 0xff for x in range(1, L + 1)] for L in LENS]
         self.randomize(dut.phy_tx)
+        eth_tx = self.dut.eth.tx
+        eth_tx_fu = Axi4StreamSimFrameUtils.from_HwIO(eth_tx)
         for f in frames:
-            axi4s_send_bytes(dut.eth.tx, f)
+            eth_tx_fu.send_bytes(f, eth_tx._ag.data)
+
         len_sum = sum(LENS)
         self.runSim(CLK_PERIOD * (len_sum * 2 + 10))
         for f_ref in frames:
@@ -105,7 +116,6 @@ EthernetMac_tx_TCs = [
     EthernetMacTx_32b_TC,
     EthernetMacTx_64b_TC,
 ]
-
 
 if __name__ == "__main__":
     import unittest
